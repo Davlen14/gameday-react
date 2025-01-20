@@ -9,7 +9,6 @@ const Games = () => {
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1); // Default to Week 1
 
-    // Fetch games and teams
     useEffect(() => {
         const fetchGamesAndTeams = async () => {
             try {
@@ -23,8 +22,12 @@ const Games = () => {
 
                 // Fetch games for the selected week
                 const gamesData = await teamsService.getGames(week);
+
+                // Filter only FBS games
                 const fbsGames = gamesData.filter(
-                    (game) => game.homeConference && game.awayConference // Only FBS games
+                    (game) =>
+                        game.homeClassification === "fbs" &&
+                        game.awayClassification === "fbs"
                 );
                 setGames(fbsGames);
             } catch (err) {
@@ -35,7 +38,7 @@ const Games = () => {
         };
 
         fetchGamesAndTeams();
-    }, [week, teams]);
+    }, [week]);
 
     // Handle week selection changes
     const handleWeekChange = (event) => {
