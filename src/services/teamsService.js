@@ -36,18 +36,15 @@ export const getPolls = async () => {
     return await fetchData(endpoint, params);
 };
 
-// Fetch games for a specific week in 2024
 export const getGames = async (week) => {
     const endpoint = "/games";
     const params = { year: 2024, week };
+
+    // Fetch all games and filter only FBS games
     const games = await fetchData(endpoint, params);
-
-    games.forEach((game) => {
-        game.homeLogos = game.homeLogos || [];
-        game.awayLogos = game.awayLogos || [];
-    });
-
-    return games;
+    return games.filter(
+        (game) => game.homeConference && game.awayConference
+    );
 };
 
 // Fetch betting lines for a specific game
