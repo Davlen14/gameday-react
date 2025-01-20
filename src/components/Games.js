@@ -52,10 +52,10 @@ const Games = () => {
                 {games.map((game) => (
                     <div key={game.id} className="game-card">
                         <div className="team-logos">
-                            {/* Using logic similar to Teams component */}
+                            {/* Home team logo */}
                             <img
                                 src={
-                                    game.homeLogos
+                                    game.homeLogos && game.homeLogos.length > 0
                                         ? game.homeLogos[0]
                                         : "/photos/default_team.png"
                                 }
@@ -63,9 +63,10 @@ const Games = () => {
                                 className="team-logo"
                             />
                             <span>vs</span>
+                            {/* Away team logo */}
                             <img
                                 src={
-                                    game.awayLogos
+                                    game.awayLogos && game.awayLogos.length > 0
                                         ? game.awayLogos[0]
                                         : "/photos/default_team.png"
                                 }
