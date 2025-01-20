@@ -9,21 +9,22 @@ const Games = () => {
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1); // Default to Week 1
 
+    // Fetch games and teams
     useEffect(() => {
         const fetchGamesAndTeams = async () => {
             try {
                 setIsLoading(true);
-    
+
                 // Fetch teams if not already fetched
                 if (teams.length === 0) {
                     const teamsData = await teamsService.getTeams();
                     setTeams(teamsData);
                 }
-    
+
                 // Fetch games for the selected week
                 const gamesData = await teamsService.getGames(week);
                 const fbsGames = gamesData.filter(
-                    (game) => game.homeConference && game.awayConference
+                    (game) => game.homeConference && game.awayConference // Only FBS games
                 );
                 setGames(fbsGames);
             } catch (err) {
@@ -32,18 +33,24 @@ const Games = () => {
                 setIsLoading(false);
             }
         };
-    
+
         fetchGamesAndTeams();
-    }, [week]);
-    
-    // Improved getTeamLogo with case-insensitive matching
+    }, [week, teams]);
+
+    // Handle week selection changes
+    const handleWeekChange = (event) => {
+        setWeek(Number(event.target.value));
+    };
+
+    // Get team logo with case-insensitive matching
     const getTeamLogo = (teamName) => {
         const team = teams.find(
             (t) => t.school.toLowerCase() === teamName.toLowerCase()
         );
-        return team?.logos ? team.logos[0] : "/photos/default_team.png";
+        return team?.logos ? team.logos[0] : "/photos/default_team.png"; // Fallback logo
     };
 
+    // Render loading or error state
     if (isLoading) return <p>Loading games...</p>;
     if (error) return <p>Error: {error}</p>;
 
@@ -64,7 +71,6 @@ const Games = () => {
                 {games.map((game) => (
                     <div key={game.id} className="game-card">
                         <div className="team-logos">
-                            {/* Fetch logos using getTeamLogo */}
                             <img
                                 src={getTeamLogo(game.homeTeam)}
                                 alt={`${game.homeTeam} Logo`}
