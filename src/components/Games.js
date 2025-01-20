@@ -13,14 +13,17 @@ const Games = () => {
         const fetchGamesAndTeams = async () => {
             try {
                 setIsLoading(true);
-
-                // Fetch teams and games
-                const teamsData = await teamsService.getTeams(); // Fetch teams for logos
-                setTeams(teamsData);
-
-                const gamesData = await teamsService.getGames(week); // Fetch games
+    
+                // Fetch teams if not already fetched
+                if (teams.length === 0) {
+                    const teamsData = await teamsService.getTeams();
+                    setTeams(teamsData);
+                }
+    
+                // Fetch games for the selected week
+                const gamesData = await teamsService.getGames(week);
                 const fbsGames = gamesData.filter(
-                    (game) => game.homeConference && game.awayConference // Filter only FBS games
+                    (game) => game.homeConference && game.awayConference
                 );
                 setGames(fbsGames);
             } catch (err) {
@@ -29,18 +32,16 @@ const Games = () => {
                 setIsLoading(false);
             }
         };
-
+    
         fetchGamesAndTeams();
     }, [week]);
-
-    const handleWeekChange = (event) => {
-        setWeek(Number(event.target.value));
-    };
-
-    // Find team logo by matching the team name
+    
+    // Improved getTeamLogo with case-insensitive matching
     const getTeamLogo = (teamName) => {
-        const team = teams.find((t) => t.school === teamName);
-        return team?.logos ? team.logos[0] : "/photos/default_team.png"; // Fallback to default
+        const team = teams.find(
+            (t) => t.school.toLowerCase() === teamName.toLowerCase()
+        );
+        return team?.logos ? team.logos[0] : "/photos/default_team.png";
     };
 
     if (isLoading) return <p>Loading games...</p>;
