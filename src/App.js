@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./components/Home";
 import Teams from "./components/Teams";
 import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
-import "./App.css"; // Correct path for App.css in /src directory
+import "./App.css"; // Ensure your App.css is loaded
+
+// Icons for navigation
+import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
 
 function App() {
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const toggleMenu = () => {
+        setMenuOpen(!menuOpen);
+    };
+
     return (
         <Router>
             <div className="app">
@@ -15,11 +24,14 @@ function App() {
                 <header className="app-header">
                     <div className="header-content">
                         <h1 className="header-logo">Gameday</h1>
-                        <div className="header-links">
-                            <a href="/" className="header-link">
+                        <button className="hamburger-menu" onClick={toggleMenu}>
+                            &#9776;
+                        </button>
+                        <div className={`header-links ${menuOpen ? "active" : ""}`}>
+                            <a href="/signin" className="header-link">
                                 Sign In
                             </a>
-                            <a href="/" className="header-link">
+                            <a href="/subscribe" className="header-link">
                                 Subscribe
                             </a>
                         </div>
@@ -27,21 +39,21 @@ function App() {
                 </header>
 
                 {/* Navigation Bar */}
-                <nav className="app-nav">
-                    <Link to="/" className="nav-item">
-                        <i className="fas fa-home"></i> Home
+                <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
+                    <Link to="/" className="nav-item" onClick={toggleMenu}>
+                        <FaHome /> Home
                     </Link>
-                    <Link to="/teams" className="nav-item">
-                        <i className="fas fa-list"></i> Teams
+                    <Link to="/teams" className="nav-item" onClick={toggleMenu}>
+                        <FaUsers /> Teams
                     </Link>
-                    <Link to="/games" className="nav-item">
-                        <i className="fas fa-calendar-alt"></i> Games
+                    <Link to="/games" className="nav-item" onClick={toggleMenu}>
+                        <FaFootballBall /> Games
                     </Link>
-                    <Link to="/stats" className="nav-item">
-                        <i className="fas fa-chart-bar"></i> Stats
+                    <Link to="/stats" className="nav-item" onClick={toggleMenu}>
+                        <FaChartBar /> Stats
                     </Link>
-                    <Link to="/more" className="nav-item">
-                        <i className="fas fa-ellipsis-h"></i> More
+                    <Link to="/more" className="nav-item" onClick={toggleMenu}>
+                        <FaEllipsisH /> More
                     </Link>
                 </nav>
 
