@@ -1,23 +1,21 @@
-const BASE_URL = "https://apinext.collegefootballdata.com";
-const API_KEY = process.env.API_KEY; // Use the environment variable
-
-// Generic function to fetch data from the API
+// Proxy-based API interaction for handling CORS
 const fetchData = async (endpoint, params = {}) => {
-    const url = new URL(`${BASE_URL}${endpoint}`);
-    Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
+    const url = `/api/proxy`; // Use the proxy route for all requests
 
     try {
         const response = await fetch(url, {
+            method: "POST", // Use POST to send the request via proxy
             headers: {
-                Authorization: `Bearer ${API_KEY}`, // Dynamically use the environment variable
+                "Content-Type": "application/json", // Send JSON data
             },
+            body: JSON.stringify({ endpoint, params }), // Forward endpoint and parameters
         });
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
 
-        return await response.json();
+        return await response.json(); // Parse the JSON response
     } catch (error) {
         console.error("Fetch Error:", error.message);
         throw error;
@@ -25,34 +23,39 @@ const fetchData = async (endpoint, params = {}) => {
 };
 
 // Fetch FBS teams for 2024
-const getTeams = async () => {
-    const endpoint = "/teams/fbs";
+export const getTeams = async () => {
+    const endpoint = "/teams/fbs"; // Relative endpoint for the API
+    const params = { year: 2024 }; // Query parameters for the request
+    return await fetchData(endpoint, params); // Call fetchData via the proxy
+};
+
+// Fetch polls for 2024
+export const getPolls = async () => {
+    const endpoint = "/polls";
     const params = { year: 2024 };
     return await fetchData(endpoint, params);
 };
 
-// Fetch polls for 2024
-const getPolls = async () => {
-    return await fetchData("/polls", { year: 2024 });
-};
-
 // Fetch games for a specific week in 2024
-const getGames = async (week) => {
-    return await fetchData("/games", { year: 2024, week });
+export const getGames = async (week) => {
+    const endpoint = "/games";
+    const params = { year: 2024, week };
+    return await fetchData(endpoint, params);
 };
 
 // Fetch betting lines for a specific game
-const getGameLines = async (gameId) => {
-    return await fetchData(`/lines/${gameId}`);
+export const getGameLines = async (gameId) => {
+    const endpoint = `/lines/${gameId}`;
+    return await fetchData(endpoint);
 };
 
-// Assign the object to a variable first
+// Assign all functions to a single service object for easier usage
 const teamsService = {
+    getTeams,
     getPolls,
     getGames,
     getGameLines,
-    getTeams,
 };
 
-// Export the named object
+// Export the service object for use in your components
 export default teamsService;

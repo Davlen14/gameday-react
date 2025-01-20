@@ -8,9 +8,13 @@ export default async function handler(req, res) {
     const API_KEY = process.env.API_KEY; // Use the environment variable for the API key
 
     try {
+        // Construct the full URL with query parameters
         const url = new URL(API_URL);
-        Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
+        if (params) {
+            Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
+        }
 
+        // Fetch data from the external API
         const response = await fetch(url, {
             headers: {
                 Authorization: `Bearer ${API_KEY}`,
