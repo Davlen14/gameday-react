@@ -84,11 +84,11 @@ const Games = () => {
 
     // Get media data for a specific game
     const getMediaForGame = (gameId) =>
-        media.find((m) => m.gameId === gameId) || null;
+        media.find((m) => m.id === gameId) || null;
 
     // Get betting lines for a specific game
     const getLinesForGame = (gameId) =>
-        lines.find((l) => l.gameId === gameId)?.lines || [];
+        lines.find((l) => l.id === gameId) || null;
 
     // Render loading or error state
     if (isLoading) return <p>Loading games...</p>;
@@ -146,32 +146,36 @@ const Games = () => {
                                     <p>Weather data not available</p>
                                 )}
                                 {gameMedia ? (
-                                    <p>Network: {gameMedia.network || "N/A"}</p>
+                                    <p>
+                                        Network: {gameMedia.network || "N/A"}{" "}
+                                        {gameMedia.startTime && (
+                                            <>on {new Date(gameMedia.startTime).toLocaleString()}</>
+                                        )}
+                                    </p>
                                 ) : (
                                     <p>Media data not available</p>
                                 )}
                             </div>
                             <div className="betting-lines">
                                 <h4>Betting Lines</h4>
-                                {gameLines.length > 0 ? (
-                                    gameLines.map((line) => (
-                                        <div
-                                            key={line.provider}
-                                            className="betting-line"
-                                        >
-                                            <img
-                                                src={getSportsbookLogo(
-                                                    line.provider
-                                                )}
-                                                alt={`${line.provider} Logo`}
-                                                className="sportsbook-logo"
-                                            />
-                                            <p>
-                                                Spread: {line.spread}, O/U:{" "}
-                                                {line.overUnder}
-                                            </p>
-                                        </div>
-                                    ))
+                                {gameLines ? (
+                                    <div className="betting-line">
+                                        {gameLines.lines.map((line) => (
+                                            <div key={line.provider}>
+                                                <img
+                                                    src={getSportsbookLogo(
+                                                        line.provider
+                                                    )}
+                                                    alt={`${line.provider} Logo`}
+                                                    className="sportsbook-logo"
+                                                />
+                                                <p>
+                                                    Spread: {line.spread}, O/U:{" "}
+                                                    {line.overUnder}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <p>No betting lines available</p>
                                 )}
