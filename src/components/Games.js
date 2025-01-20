@@ -4,7 +4,7 @@ import "../styles/GamesAndTeams.css"; // Ensure the CSS file is imported
 
 const Games = () => {
     const [games, setGames] = useState([]);
-    const [teams, setTeams] = useState([]); // Store all teams
+    const [teams, setTeams] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1); // Default to Week 1
@@ -29,6 +29,7 @@ const Games = () => {
                         game.homeClassification === "fbs" &&
                         game.awayClassification === "fbs"
                 );
+
                 setGames(fbsGames);
             } catch (err) {
                 setError(err.message);
@@ -51,6 +52,16 @@ const Games = () => {
             (t) => t.school.toLowerCase() === teamName.toLowerCase()
         );
         return team?.logos ? team.logos[0] : "/photos/default_team.png"; // Fallback logo
+    };
+
+    // Get sportsbook logo
+    const getSportsbookLogo = (provider) => {
+        const logos = {
+            "DraftKings": "/photos/draftkings.png",
+            "ESPN Bet": "/photos/espnbet.png",
+            "Bovada": "/photos/bovada.png",
+        };
+        return logos[provider] || "/photos/default_sportsbook.png";
     };
 
     // Render loading or error state
@@ -90,10 +101,34 @@ const Games = () => {
                             <h3>
                                 {game.homeTeam} vs {game.awayTeam}
                             </h3>
-                            <p>Score: {game.homePoints} - {game.awayPoints}</p>
+                            <p>
+                                {game.homePoints} - {game.awayPoints}{" "}
+                                {game.status === "final" ? "(Final)" : ""}
+                            </p>
                             <p>Venue: {game.venue}</p>
-                            <p>Status: {game.status}</p>
-                            {game.weather && <p>Weather: {game.weather.summary}</p>}
+                            {game.weather && (
+                                <p>Weather: {game.weather.summary}</p>
+                            )}
+                        </div>
+                        <div className="betting-lines">
+                            <h4>Betting Lines</h4>
+                            {game.betting ? (
+                                Object.keys(game.betting).map((provider) => (
+                                    <div key={provider} className="betting-line">
+                                        <img
+                                            src={getSportsbookLogo(provider)}
+                                            alt={`${provider} Logo`}
+                                            className="sportsbook-logo"
+                                        />
+                                        <p>
+                                            Spread: {game.betting[provider].spread}
+                                            , O/U: {game.betting[provider].overUnder}
+                                        </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No betting lines available</p>
+                            )}
                         </div>
                     </div>
                 ))}

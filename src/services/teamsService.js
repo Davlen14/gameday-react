@@ -22,45 +22,87 @@ const fetchData = async (endpoint, params = {}) => {
     }
 };
 
-// Fetch FBS teams for 2024
+// Fetch FBS teams for a specific year
 export const getTeams = async () => {
-    const endpoint = "/teams/fbs"; // Relative endpoint for the API
-    const params = { year: 2024 }; // Query parameters for the request
-    return await fetchData(endpoint, params); // Call fetchData via the proxy
-};
-
-// Fetch polls for 2024
-export const getPolls = async () => {
-    const endpoint = "/polls";
+    const endpoint = "/teams/fbs";
     const params = { year: 2024 };
     return await fetchData(endpoint, params);
 };
 
+// Fetch game media for a given year and week
+export const getGameMedia = async (year, week) => {
+    const endpoint = "/games/media";
+    const params = { year, week };
+    return await fetchData(endpoint, params);
+};
+
+// Fetch game weather for a given year and week
+export const getGameWeather = async (year, week) => {
+    const endpoint = "/games/weather";
+    const params = { year, week };
+    return await fetchData(endpoint, params);
+};
+
+// Fetch games for a specific year, week, and division
 export const getGames = async (week) => {
     const endpoint = "/games";
     const params = {
         year: 2024,
-        seasonType: "regular", // Default to regular season
-        division: "fbs", // Fetch only FBS games
+        seasonType: "regular",
+        division: "fbs",
         week,
     };
-
     return await fetchData(endpoint, params);
 };
 
-// Fetch betting lines for a specific game
-export const getGameLines = async (gameId) => {
-    const endpoint = `/lines/${gameId}`;
-    return await fetchData(endpoint);
+// Fetch advanced box score for a specific game
+export const getAdvancedBoxScore = async (gameId, week, team, seasonType = "regular") => {
+    const endpoint = "/game/box/advanced";
+    const params = { gameId, week, team, seasonType };
+    return await fetchData(endpoint, params);
 };
 
-// Assign all functions to a single service object for easier usage
+// Fetch betting lines for a specific game or team
+export const getGameLines = async (year, team = null, seasonType = "regular") => {
+    const endpoint = "/lines";
+    const params = { year, seasonType };
+    if (team) params.team = team;
+    return await fetchData(endpoint, params);
+};
+
+// Fetch team stats for a specific year and team
+export const getTeamStats = async (team, year) => {
+    const endpoint = "/stats/team";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+};
+
+// Fetch team polls for a specific year, season type, and optional week
+export const getPolls = async (year, seasonType = "regular", week = null) => {
+    const endpoint = "/rankings";
+    const params = { year, seasonType };
+    if (week) params.week = week;
+    return await fetchData(endpoint, params);
+};
+
+// Fetch play-by-play data for a specific game
+export const getPlayByPlay = async (gameId) => {
+    const endpoint = "/live/plays";
+    const params = { gameId };
+    return await fetchData(endpoint, params);
+};
+
+// Export all functions as a service
 const teamsService = {
     getTeams,
-    getPolls,
     getGames,
+    getGameMedia,
+    getGameWeather,
+    getAdvancedBoxScore,
     getGameLines,
+    getTeamStats,
+    getPolls,
+    getPlayByPlay,
 };
 
-// Export the service object for use in your components
 export default teamsService;
