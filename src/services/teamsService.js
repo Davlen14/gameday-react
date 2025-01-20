@@ -40,7 +40,14 @@ export const getPolls = async () => {
 export const getGames = async (week) => {
     const endpoint = "/games";
     const params = { year: 2024, week };
-    return await fetchData(endpoint, params);
+    const games = await fetchData(endpoint, params);
+
+    games.forEach((game) => {
+        game.homeLogos = game.homeLogos || [];
+        game.awayLogos = game.awayLogos || [];
+    });
+
+    return games;
 };
 
 // Fetch betting lines for a specific game
