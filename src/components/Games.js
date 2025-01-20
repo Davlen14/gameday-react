@@ -5,12 +5,15 @@ import "../styles/GamesAndTeams.css"; // Ensure the CSS file is imported
 const Games = () => {
     const [games, setGames] = useState([]);
     const [teams, setTeams] = useState([]);
+    const [weather, setWeather] = useState([]);
+    const [media, setMedia] = useState([]);
+    const [lines, setLines] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1); // Default to Week 1
 
     useEffect(() => {
-        const fetchGamesAndTeams = async () => {
+        const fetchGamesAndRelatedData = async () => {
             try {
                 setIsLoading(true);
 
@@ -29,8 +32,19 @@ const Games = () => {
                         game.homeClassification === "fbs" &&
                         game.awayClassification === "fbs"
                 );
-
                 setGames(fbsGames);
+
+                // Fetch weather
+                const weatherData = await teamsService.getWeather(week);
+                setWeather(weatherData);
+
+                // Fetch media
+                const mediaData = await teamsService.getGameMedia(week);
+                setMedia(mediaData);
+
+                // Fetch betting lines
+                const linesData = await teamsService.getLines(week);
+                setLines(linesData);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -38,7 +52,7 @@ const Games = () => {
             }
         };
 
-        fetchGamesAndTeams();
+        fetchGamesAndRelatedData();
     }, [week]);
 
     // Handle week selection changes
@@ -64,6 +78,18 @@ const Games = () => {
         return logos[provider] || "/photos/default_sportsbook.png";
     };
 
+    // Get weather data for a specific game
+    const getWeatherForGame = (gameId) =>
+        weather.find((w) => w.id === gameId) || {};
+
+    // Get media data for a specific game
+    const getMediaForGame = (gameId) =>
+        media.find((m) => m.gameId === gameId) || {};
+
+    // Get betting lines for a specific game
+    const getLinesForGame = (gameId) =>
+        lines.find((l) => l.gameId === gameId)?.lines || [];
+
     // Render loading or error state
     if (isLoading) return <p>Loading games...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -82,56 +108,70 @@ const Games = () => {
                 </select>
             </label>
             <div className="games-grid">
-                {games.map((game) => (
-                    <div key={game.id} className="game-card">
-                        <div className="team-logos">
-                            <img
-                                src={getTeamLogo(game.homeTeam)}
-                                alt={`${game.homeTeam} Logo`}
-                                className="team-logo"
-                            />
-                            <span>vs</span>
-                            <img
-                                src={getTeamLogo(game.awayTeam)}
-                                alt={`${game.awayTeam} Logo`}
-                                className="team-logo"
-                            />
+                {games.map((game) => {
+                    const gameWeather = getWeatherForGame(game.id);
+                    const gameMedia = getMediaForGame(game.id);
+                    const gameLines = getLinesForGame(game.id);
+
+                    return (
+                        <div key={game.id} className="game-card">
+                            <div className="team-logos">
+                                <img
+                                    src={getTeamLogo(game.homeTeam)}
+                                    alt={`${game.homeTeam} Logo`}
+                                    className="team-logo"
+                                />
+                                <span>vs</span>
+                                <img
+                                    src={getTeamLogo(game.awayTeam)}
+                                    alt={`${game.awayTeam} Logo`}
+                                    className="team-logo"
+                                />
+                            </div>
+                            <div className="game-info">
+                                <h3>
+                                    {game.homeTeam} vs {game.awayTeam}
+                                </h3>
+                                <p>
+                                    {game.homePoints} - {game.awayPoints}{" "}
+                                    {game.status === "final" ? "(Final)" : ""}
+                                </p>
+                                <p>Venue: {game.venue}</p>
+                                {gameWeather && (
+                                    <p>Weather: {gameWeather.summary}</p>
+                                )}
+                                {gameMedia && (
+                                    <p>Network: {gameMedia.network || "N/A"}</p>
+                                )}
+                            </div>
+                            <div className="betting-lines">
+                                <h4>Betting Lines</h4>
+                                {gameLines.length > 0 ? (
+                                    gameLines.map((line) => (
+                                        <div
+                                            key={line.provider}
+                                            className="betting-line"
+                                        >
+                                            <img
+                                                src={getSportsbookLogo(
+                                                    line.provider
+                                                )}
+                                                alt={`${line.provider} Logo`}
+                                                className="sportsbook-logo"
+                                            />
+                                            <p>
+                                                Spread: {line.spread}, O/U:{" "}
+                                                {line.overUnder}
+                                            </p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No betting lines available</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="game-info">
-                            <h3>
-                                {game.homeTeam} vs {game.awayTeam}
-                            </h3>
-                            <p>
-                                {game.homePoints} - {game.awayPoints}{" "}
-                                {game.status === "final" ? "(Final)" : ""}
-                            </p>
-                            <p>Venue: {game.venue}</p>
-                            {game.weather && (
-                                <p>Weather: {game.weather.summary}</p>
-                            )}
-                        </div>
-                        <div className="betting-lines">
-                            <h4>Betting Lines</h4>
-                            {game.betting ? (
-                                Object.keys(game.betting).map((provider) => (
-                                    <div key={provider} className="betting-line">
-                                        <img
-                                            src={getSportsbookLogo(provider)}
-                                            alt={`${provider} Logo`}
-                                            className="sportsbook-logo"
-                                        />
-                                        <p>
-                                            Spread: {game.betting[provider].spread}
-                                            , O/U: {game.betting[provider].overUnder}
-                                        </p>
-                                    </div>
-                                ))
-                            ) : (
-                                <p>No betting lines available</p>
-                            )}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
