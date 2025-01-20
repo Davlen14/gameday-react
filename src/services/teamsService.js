@@ -1,5 +1,5 @@
 const BASE_URL = "https://apinext.collegefootballdata.com";
-const API_KEY = "XB5Eui0++wuuyh5uZ2c+UJY4jmLKQ2jxShzJXZaM9ET21a1OgubV4/mFlCxzsBIQ"; // Replace with your actual API key
+const API_KEY = process.env.API_KEY; // Use the environment variable
 
 // Generic function to fetch data from the API
 const fetchData = async (endpoint, params = {}) => {
@@ -9,7 +9,7 @@ const fetchData = async (endpoint, params = {}) => {
     try {
         const response = await fetch(url, {
             headers: {
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${API_KEY}`, // Dynamically use the environment variable
             },
         });
 
