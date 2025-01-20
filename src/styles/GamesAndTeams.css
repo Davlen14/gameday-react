@@ -53,3 +53,11 @@
     font-size: 1rem;
     color: #555;
 }
+.sportsbook-logo {
+    width: 50px; /* Set a fixed width */
+    height: 30px; /* Set a fixed height */
+    object-fit: contain; /* Ensures the aspect ratio is maintained */
+    display: block;
+    margin: 0 auto; /* Centers the image within its container */
+    border-radius: 4px; /* Slightly rounded corners for better appearance */
+}
