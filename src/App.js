@@ -13,7 +13,17 @@ function App() {
             <div className="app">
                 {/* Header */}
                 <header className="app-header">
-                    <h1>Gameday</h1>
+                    <div className="header-content">
+                        <h1 className="header-logo">Gameday</h1>
+                        <div className="header-links">
+                            <a href="/" className="header-link">
+                                Sign In
+                            </a>
+                            <a href="/" className="header-link">
+                                Subscribe
+                            </a>
+                        </div>
+                    </div>
                 </header>
 
                 {/* Navigation Bar */}
