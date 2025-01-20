@@ -34,16 +34,16 @@ const Games = () => {
                 );
                 setGames(fbsGames);
 
-                // Fetch weather
-                const weatherData = await teamsService.getWeather(week);
+                // Fetch weather data
+                const weatherData = await teamsService.getGameWeather(2024, week);
                 setWeather(weatherData);
 
-                // Fetch media
-                const mediaData = await teamsService.getGameMedia(week);
+                // Fetch media data
+                const mediaData = await teamsService.getGameMedia(2024, week);
                 setMedia(mediaData);
 
                 // Fetch betting lines
-                const linesData = await teamsService.getLines(week);
+                const linesData = await teamsService.getGameLines(2024);
                 setLines(linesData);
             } catch (err) {
                 setError(err.message);
@@ -53,7 +53,7 @@ const Games = () => {
         };
 
         fetchGamesAndRelatedData();
-    }, [week]);
+    }, [week, teams.length]);
 
     // Handle week selection changes
     const handleWeekChange = (event) => {
@@ -80,11 +80,11 @@ const Games = () => {
 
     // Get weather data for a specific game
     const getWeatherForGame = (gameId) =>
-        weather.find((w) => w.id === gameId) || {};
+        weather.find((w) => w.id === gameId) || null;
 
     // Get media data for a specific game
     const getMediaForGame = (gameId) =>
-        media.find((m) => m.gameId === gameId) || {};
+        media.find((m) => m.gameId === gameId) || null;
 
     // Get betting lines for a specific game
     const getLinesForGame = (gameId) =>
@@ -137,11 +137,18 @@ const Games = () => {
                                     {game.status === "final" ? "(Final)" : ""}
                                 </p>
                                 <p>Venue: {game.venue}</p>
-                                {gameWeather && (
-                                    <p>Weather: {gameWeather.summary}</p>
+                                {gameWeather ? (
+                                    <p>
+                                        Weather: {gameWeather.weatherCondition},{" "}
+                                        {gameWeather.temperature}°F
+                                    </p>
+                                ) : (
+                                    <p>Weather data not available</p>
                                 )}
-                                {gameMedia && (
+                                {gameMedia ? (
                                     <p>Network: {gameMedia.network || "N/A"}</p>
+                                ) : (
+                                    <p>Media data not available</p>
                                 )}
                             </div>
                             <div className="betting-lines">
