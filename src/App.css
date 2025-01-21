@@ -55,9 +55,9 @@ body {
 
 .header-link {
   text-decoration: none;
-  color: white;
+  color: rgb(142, 0, 0);
   font-weight: bold;
-  border: 1px solid white;
+  border: 1px solid rgb(142, 0, 0);
   border-radius: 5px;
   padding: 5px 10px;
   font-family: "Exo 2", sans-serif;
@@ -65,8 +65,8 @@ body {
 }
 
 .header-link:hover {
-  background-color: white;
-  color: #ff0000;
+  background-color: rgb(142, 0, 0);
+  color: #ffffff;
 }
 
 /* Navbar */
