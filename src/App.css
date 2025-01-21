@@ -1,34 +1,23 @@
-/* General Body Styles */
-body {
-  margin: 0;
-  font-family: "Exo 2", sans-serif;
-  background-color: #f5f5f5;
-  color: #111;
-}
-
-/* App Container */
-.app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Header */
+/* Navbar Styles */
 .app-header {
-  background-color: #ff0000;
-  color: white;
-  padding: 10px 20px;
+  background-color: #fff;
+  color: #333;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 5px 20px;
+  height: 50px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  border-bottom: 0.5px solid red;
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+.app-header.dark {
+  background-color: #333;
+  color: #e0e0e0;
 }
 
 .header-logo {
@@ -36,15 +25,14 @@ body {
   font-weight: bold;
   text-transform: uppercase;
   font-family: "Exo 2", sans-serif;
-  color: white;
+  color: inherit;
 }
 
 .hamburger-menu {
-  display: none;
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: white;
+  color: inherit;
   cursor: pointer;
 }
 
@@ -53,72 +41,67 @@ body {
   gap: 15px;
 }
 
-.header-link {
+.header-links a {
   text-decoration: none;
-  color: white;
+  color: #333;
   font-weight: bold;
-  border: 1px solid white;
-  border-radius: 5px;
   padding: 5px 10px;
-  font-family: "Exo 2", sans-serif;
+  border-radius: 5px;
   transition: all 0.3s ease;
 }
 
-.header-link:hover {
-  background-color: white;
-  color: #ff0000;
+.header-links a:hover {
+  background-color: red;
+  color: white;
 }
 
-/* Navbar */
+.header-links.dark a {
+  color: #e0e0e0;
+}
+
+.header-links.dark a:hover {
+  background-color: red;
+  color: white;
+}
+
+/* Navbar Items */
 .app-nav {
   display: flex;
-  justify-content: center;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  justify-content: space-around;
+  background-color: #fff;
   padding: 10px 0;
   position: sticky;
-  top: 0;
+  top: 50px;
   z-index: 100;
 }
 
 .nav-item {
   text-decoration: none;
-  color: #555;
+  color: #333;
   font-size: 1rem;
   font-weight: bold;
-  margin: 0 20px;
-  position: relative;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 5px;
-  font-family: "Exo 2", sans-serif;
+  transition: color 0.3s ease;
 }
 
 .nav-item:hover {
-  color: #ff0000;
+  color: red;
 }
 
-.nav-item::after {
-  content: "";
-  display: block;
-  width: 0%;
-  height: 2px;
-  background-color: #ff0000;
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  transition: width 0.3s ease;
+/* Dark Mode Support */
+.app-nav.dark {
+  background-color: #333;
+  color: #e0e0e0;
 }
 
-.nav-item:hover::after {
-  width: 100%;
+.nav-item.dark {
+  color: #e0e0e0;
 }
 
-/* Main Content */
-.app-content {
-  flex: 1;
-  padding: 20px;
+.nav-item.dark:hover {
+  color: red;
 }
 
 /* Responsive Design */
@@ -129,27 +112,27 @@ body {
 
   .header-links {
     display: none;
-  }
-
-  .header-links.active {
-    display: flex;
     flex-direction: column;
     position: absolute;
     top: 50px;
     right: 20px;
-    background-color: #ff0000;
+    background-color: #fff;
     padding: 10px;
     border-radius: 5px;
   }
 
+  .header-links.active {
+    display: flex;
+  }
+
   .app-nav {
-    flex-direction: column;
-    align-items: center;
     display: none;
   }
 
   .app-nav.active {
     display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .nav-item {
