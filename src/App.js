@@ -5,11 +5,19 @@ import Teams from "./components/Teams";
 import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
-import "./App.css";
-import "./Navbar.css";
+import "./App.css"; // General app styles
+import "./Navbar.css"; // Navbar-specific styles
+
+// Icons for navigation
+import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
 
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
 
   const toggleDropdown = (menu) => {
     setDropdownOpen((prev) => (prev === menu ? null : menu));
@@ -134,6 +142,25 @@ function App() {
             </div>
           </div>
         </header>
+
+        {/* Navigation Bar */}
+        <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
+          <Link to="/" className="nav-item" onClick={toggleMenu}>
+            <FaHome /> Home
+          </Link>
+          <Link to="/teams" className="nav-item" onClick={toggleMenu}>
+            <FaUsers /> Teams
+          </Link>
+          <Link to="/games" className="nav-item" onClick={toggleMenu}>
+            <FaFootballBall /> Games
+          </Link>
+          <Link to="/stats" className="nav-item" onClick={toggleMenu}>
+            <FaChartBar /> Stats
+          </Link>
+          <Link to="/more" className="nav-item" onClick={toggleMenu}>
+            <FaEllipsisH /> More
+          </Link>
+        </nav>
 
         {/* Main Content */}
         <main className="app-content">
