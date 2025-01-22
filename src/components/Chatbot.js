@@ -4,21 +4,27 @@ import "../styles/Chatbot.css";
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]); // Add user's message
+    setInput(""); // Clear input field
+    setLoading(true); // Show loading indicator
 
     try {
-      // Send user input to the backend
-      const response = await fetch("/api/gpt", {
+      // Send the user input to the backend
+      const response = await fetch("/api/proxy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: input }),
+        body: JSON.stringify({
+          endpoint: "/gemini", // Use the Gemini endpoint
+          prompt: input, // User's input
+        }),
       });
 
       if (!response.ok) {
@@ -26,20 +32,27 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
-      const botMessage = { sender: "bot", text: data.message };
-      setMessages((prev) => [...prev, botMessage]);
+      const botMessage = {
+        sender: "bot",
+        text: data.message || "Sorry, I couldn't understand that.",
+      };
+
+      setMessages((prev) => [...prev, botMessage]); // Add bot's response
     } catch (error) {
       console.error("Error:", error);
-      const errorMessage = { sender: "bot", text: "Oops! Something went wrong. Try again later." };
-      setMessages((prev) => [...prev, errorMessage]);
+      const errorMessage = {
+        sender: "bot",
+        text: "Oops! Something went wrong. Please try again later.",
+      };
+      setMessages((prev) => [...prev, errorMessage]); // Add error message
+    } finally {
+      setLoading(false); // Stop loading indicator
     }
-
-    setInput("");
   };
 
   const handleExampleClick = async (example) => {
-    setInput(example);
-    await handleSend();
+    setInput(example); // Populate input field with example
+    await handleSend(); // Automatically send the example
   };
 
   return (
@@ -70,6 +83,11 @@ const Chatbot = () => {
             {message.text}
           </div>
         ))}
+        {loading && (
+          <div className="chatbot-message bot-message">
+            <i>Loading...</i>
+          </div>
+        )}
       </div>
       <div className="chatbot-input">
         <input
@@ -77,8 +95,11 @@ const Chatbot = () => {
           placeholder="Ask a question..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          disabled={loading} // Disable input while loading
         />
-        <button onClick={handleSend}>Send</button>
+        <button onClick={handleSend} disabled={loading}>
+          Send
+        </button>
       </div>
     </div>
   );
