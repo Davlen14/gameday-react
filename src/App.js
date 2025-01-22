@@ -94,7 +94,7 @@ function App() {
                 {dropdownOpen === "gamedaygpt" && (
                   <div className="dropdown-menu">
                     <Link to="/predict-outcomes">Predict Outcomes</Link>
-                    <Link to="/ask-questions">Ask Questions</Link>
+                    <Route path="/ask-questions" element={<Chatbot />} />
                     <Link to="/betting-suggestions">Betting Suggestions</Link>
                   </div>
                 )}
