@@ -22,6 +22,8 @@ body {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative; /* Ensures dropdowns are properly aligned within the header */
+  z-index: 1000; /* Places the header above all other content */
 }
 
 .header-content {
@@ -99,13 +101,13 @@ body {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: 100%;
+  position: absolute; /* Ensure dropdowns overlap content */
+  top: 100%; /* Align dropdown below the button */
   left: 0;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  z-index: 10;
+  z-index: 1100; /* Ensure dropdowns appear above other content */
   padding: 10px 0;
   min-width: 200px;
 }
@@ -127,6 +129,8 @@ body {
 .app-content {
   flex: 1;
   padding: 20px;
+  position: relative; /* Prevents content from overlapping dropdowns */
+  z-index: 1; /* Ensures content is layered below dropdowns */
 }
 
 /* Responsive Design for Header */
@@ -149,10 +153,11 @@ body {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1100; /* Ensures dropdowns are visible in mobile view */
   }
 
   .dropdown-menu {
-    position: static;
+    position: static; /* For better usability in mobile view */
     background-color: #ffffff;
     box-shadow: none;
     border-radius: 0;
