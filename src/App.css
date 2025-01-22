@@ -16,12 +16,14 @@ body {
 /* Header */
 .app-header {
   background-color: #ffffff;
-  color: white;
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .header-content {
@@ -37,6 +39,7 @@ body {
   text-transform: uppercase;
   font-family: "Exo 2", sans-serif;
   color: rgb(149, 0, 0);
+  font-style: italic;
 }
 
 .hamburger-menu {
@@ -77,8 +80,8 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 10px 0;
   position: sticky;
-  top: 0;
-  z-index: 100;
+  top: 60px;
+  z-index: 999;
 }
 
 .nav-item {
@@ -113,6 +116,37 @@ body {
 
 .nav-item:hover::after {
   width: 100%;
+}
+
+/* Dropdown */
+.nav-item:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 35px;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.dropdown-menu a {
+  display: block;
+  text-decoration: none;
+  color: #555;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: #870000;
+  color: #ffffff;
 }
 
 /* Main Content */
