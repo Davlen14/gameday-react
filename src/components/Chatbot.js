@@ -5,29 +5,41 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
+
     const userMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = { sender: "bot", text: `You asked about "${input}". Let me fetch some data.` };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+    try {
+      // Send user input to the backend
+      const response = await fetch("/api/gpt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch response from the API");
+      }
+
+      const data = await response.json();
+      const botMessage = { sender: "bot", text: data.message };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMessage = { sender: "bot", text: "Oops! Something went wrong. Try again later." };
+      setMessages((prev) => [...prev, errorMessage]);
+    }
 
     setInput("");
   };
 
-  const handleExampleClick = (example) => {
-    const userMessage = { sender: "user", text: example };
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Simulate bot response for the example
-    setTimeout(() => {
-      const botResponse = { sender: "bot", text: `Great! Here's more about "${example}".` };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+  const handleExampleClick = async (example) => {
+    setInput(example);
+    await handleSend();
   };
 
   return (
@@ -47,22 +59,6 @@ const Chatbot = () => {
           <button onClick={() => handleExampleClick("What are the betting suggestions?")}>
             What are the betting suggestions? →
           </button>
-        </div>
-        <div className="chatbot-section capabilities">
-          <h2>Capabilities</h2>
-          <ul>
-            <li>Understands predefined football statistics queries.</li>
-            <li>Provides insights into teams, players, and rankings.</li>
-            <li>Suggests betting odds based on analytics.</li>
-          </ul>
-        </div>
-        <div className="chatbot-section limitations">
-          <h2>Limitations</h2>
-          <ul>
-            <li>May not have real-time updates for every game.</li>
-            <li>Responses depend on the available API data.</li>
-            <li>Not a substitute for professional betting advice.</li>
-          </ul>
         </div>
       </div>
       <div className="chatbot-messages">
