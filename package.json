@@ -38,5 +38,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://apinext.collegefootballdata.com"
+  "proxy": "https://apinext.collegefootballdata.com",
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  }
 }

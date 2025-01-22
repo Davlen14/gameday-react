@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-"../styles/Chatbot.css";
+import "../styles/Chatbot.css";
 import { FaFootballBall, FaChartBar, FaMoneyBillWave, FaQuestionCircle } from "react-icons/fa";
 
 const Chatbot = () => {
