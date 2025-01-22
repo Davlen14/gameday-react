@@ -21,9 +21,6 @@ body {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
 }
 
 .header-content {
@@ -42,34 +39,59 @@ body {
   font-style: italic;
 }
 
-.hamburger-menu {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: rgb(132, 0, 0);
-  cursor: pointer;
-}
-
 .header-links {
   display: flex;
   gap: 15px;
+  align-items: center;
 }
 
 .header-link {
+  position: relative;
   text-decoration: none;
-  color: rgb(142, 0, 0);
+  color: rgb(149, 0, 0);
   font-weight: bold;
-  border: 1px solid rgb(142, 0, 0);
-  border-radius: 5px;
-  padding: 5px 10px;
+  padding: 10px 15px;
   font-family: "Exo 2", sans-serif;
   transition: all 0.3s ease;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .header-link:hover {
-  background-color: rgb(142, 0, 0);
-  color: #ffffff;
+  background-color: #f0f0f0;
+  color: rgb(149, 0, 0);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.dropdown-menu a {
+  display: block;
+  text-decoration: none;
+  color: rgb(149, 0, 0);
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: rgb(149, 0, 0);
+}
+
+/* Show Dropdown on Hover */
+.header-link:hover .dropdown-menu {
+  display: block;
 }
 
 /* Navbar */
@@ -80,8 +102,8 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 10px 0;
   position: sticky;
-  top: 60px;
-  z-index: 999;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-item {
@@ -116,37 +138,6 @@ body {
 
 .nav-item:hover::after {
   width: 100%;
-}
-
-/* Dropdown */
-.nav-item:hover .dropdown-menu {
-  display: block;
-}
-
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 35px;
-  left: 0;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 10px 0;
-  border-radius: 5px;
-  z-index: 1000;
-}
-
-.dropdown-menu a {
-  display: block;
-  text-decoration: none;
-  color: #555;
-  padding: 8px 20px;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-  background-color: #870000;
-  color: #ffffff;
 }
 
 /* Main Content */
