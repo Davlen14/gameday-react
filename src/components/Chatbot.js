@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import "../styles/Chatbot.css";
-import { FaFootballBall, FaChartBar, FaMoneyBillWave, FaQuestionCircle } from "react-icons/fa";
 
 const Chatbot = () => {
-  const [messages, setMessages] = useState([
-    { sender: "bot", text: "Hi! I'm your Gameday Assistant. How can I help you?" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
   const handleSend = () => {
@@ -15,31 +12,58 @@ const Chatbot = () => {
 
     // Simulate bot response
     setTimeout(() => {
-      const botResponse = { sender: "bot", text: `I see you're interested in "${input}". Here's what I found.` };
+      const botResponse = { sender: "bot", text: `You asked about "${input}". Let me fetch some data.` };
       setMessages((prev) => [...prev, botResponse]);
     }, 1000);
 
     setInput("");
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    const userMessage = { sender: "user", text: suggestion };
+  const handleExampleClick = (example) => {
+    const userMessage = { sender: "user", text: example };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Simulate bot response for suggestion
+    // Simulate bot response for the example
     setTimeout(() => {
-      const botResponse = {
-        sender: "bot",
-        text: `Great! Let me pull some data for "${suggestion}".`,
-      };
+      const botResponse = { sender: "bot", text: `Great! Here's more about "${example}".` };
       setMessages((prev) => [...prev, botResponse]);
     }, 1000);
   };
 
   return (
-    <div className="chatbot-container">
+    <div className="chatbot-fullscreen">
       <div className="chatbot-header">
-        <h2>GamedayGPT</h2>
+        <h1>GamedayGPT</h1>
+      </div>
+      <div className="chatbot-sections">
+        <div className="chatbot-section examples">
+          <h2>Examples</h2>
+          <button onClick={() => handleExampleClick("Who has the best rushing yards?")}>
+            Who has the best rushing yards? →
+          </button>
+          <button onClick={() => handleExampleClick("Show me today's spread analysis.")}>
+            Show me today's spread analysis. →
+          </button>
+          <button onClick={() => handleExampleClick("What are the betting suggestions?")}>
+            What are the betting suggestions? →
+          </button>
+        </div>
+        <div className="chatbot-section capabilities">
+          <h2>Capabilities</h2>
+          <ul>
+            <li>Understands predefined football statistics queries.</li>
+            <li>Provides insights into teams, players, and rankings.</li>
+            <li>Suggests betting odds based on analytics.</li>
+          </ul>
+        </div>
+        <div className="chatbot-section limitations">
+          <h2>Limitations</h2>
+          <ul>
+            <li>May not have real-time updates for every game.</li>
+            <li>Responses depend on the available API data.</li>
+            <li>Not a substitute for professional betting advice.</li>
+          </ul>
+        </div>
       </div>
       <div className="chatbot-messages">
         {messages.map((message, index) => (
@@ -50,32 +74,6 @@ const Chatbot = () => {
             {message.text}
           </div>
         ))}
-      </div>
-      <div className="chatbot-suggestions">
-        <button
-          className="chatbot-suggestion"
-          onClick={() => handleSuggestionClick("Who has the best rushing yards?")}
-        >
-          <FaFootballBall /> Best Rushing Yards
-        </button>
-        <button
-          className="chatbot-suggestion"
-          onClick={() => handleSuggestionClick("Spread analysis for today's games.")}
-        >
-          <FaChartBar /> Spread Analysis
-        </button>
-        <button
-          className="chatbot-suggestion"
-          onClick={() => handleSuggestionClick("Betting suggestions.")}
-        >
-          <FaMoneyBillWave /> Betting Suggestions
-        </button>
-        <button
-          className="chatbot-suggestion"
-          onClick={() => handleSuggestionClick("How do rankings look for this week?")}
-        >
-          <FaQuestionCircle /> Rankings
-        </button>
       </div>
       <div className="chatbot-input">
         <input
