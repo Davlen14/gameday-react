@@ -5,6 +5,7 @@ import Teams from "./components/Teams";
 import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
+import Chatbot from "./components/Chatbot"; // Ensure the path to the Chatbot.js file is correct
 import "./App.css"; // General app styles
 import "./Navbar.css"; // Navbar-specific styles
 
