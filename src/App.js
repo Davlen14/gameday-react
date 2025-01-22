@@ -5,7 +5,7 @@ import Teams from "./components/Teams";
 import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
-import Chatbot from "./components/Chatbot"; // Ensure the path to the Chatbot.js file is correct
+import Chatbot from "./components/Chatbot"; // Ensure the path to Chatbot.js is correct
 import "./App.css"; // General app styles
 import "./Navbar.css"; // Navbar-specific styles
 
@@ -95,7 +95,7 @@ function App() {
                 {dropdownOpen === "gamedaygpt" && (
                   <div className="dropdown-menu">
                     <Link to="/predict-outcomes">Predict Outcomes</Link>
-                    <Route path="/ask-questions" element={<Chatbot />} />
+                    <Link to="/ask-questions">Ask Questions</Link>
                     <Link to="/betting-suggestions">Betting Suggestions</Link>
                   </div>
                 )}
@@ -171,6 +171,7 @@ function App() {
             <Route path="/games" element={<Games />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/more" element={<More />} />
+            <Route path="/ask-questions" element={<Chatbot />} />
           </Routes>
         </main>
       </div>
