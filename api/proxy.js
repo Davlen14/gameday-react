@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
     try {
         if (endpoint === "/gemini") {
-            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-bison-001:generateText`;
+            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
             const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
             if (!GEMINI_API_KEY) {
@@ -23,9 +23,11 @@ export default async function handler(req, res) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    prompt: {
-                        text: prompt || "",
-                    },
+                    contents: [
+                        {
+                            parts: [{ text: prompt || "" }],
+                        },
+                    ],
                 }),
             });
 
