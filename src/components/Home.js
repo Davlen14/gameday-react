@@ -113,10 +113,11 @@ const Home = () => {
 
             <style jsx>{`
                 :root {
-                    --primary-color: #0d223f;
-                    --accent-color: #ff4655;
-                    --text-color: #ffffff;
-                    --background-color: #1a1a1a;
+                    --primary-color: #ffffff;
+                    --accent-color: rgb(142, 0, 0);
+                    --text-color: #333333;
+                    --background-color: #f5f5f5;
+                    --border-color: #dddddd;
                 }
 
                 .home-container {
@@ -140,8 +141,8 @@ const Home = () => {
                     padding: 0.5rem;
                     margin-left: 0.5rem;
                     background: var(--primary-color);
-                    color: white;
-                    border: none;
+                    color: var(--text-color);
+                    border: 1px solid var(--border-color);
                     border-radius: 4px;
                 }
 
@@ -164,20 +165,22 @@ const Home = () => {
                     background: var(--primary-color);
                     padding: 1.5rem;
                     border-radius: 10px;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    border: 1px solid var(--border-color);
                 }
 
                 .ranking-item {
                     display: flex;
                     align-items: center;
                     padding: 1rem 0;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    border-bottom: 1px solid var(--border-color);
                 }
 
                 .team-logo {
                     width: 40px;
                     height: 40px;
                     margin-right: 1rem;
+                    object-fit: contain;
                 }
 
                 .team-info {
@@ -203,7 +206,8 @@ const Home = () => {
                     background: var(--primary-color);
                     border-radius: 10px;
                     padding: 1.5rem;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    border: 1px solid var(--border-color);
                 }
 
                 .teams-container {
@@ -224,6 +228,7 @@ const Home = () => {
                     width: 60px;
                     height: 60px;
                     margin-bottom: 0.5rem;
+                    object-fit: contain;
                 }
 
                 .vs-circle {
@@ -235,6 +240,7 @@ const Home = () => {
                     align-items: center;
                     justify-content: center;
                     font-weight: bold;
+                    color: white;
                 }
 
                 .game-details {
@@ -243,13 +249,14 @@ const Home = () => {
 
                 .game-time {
                     font-size: 0.9rem;
-                    color: #cccccc;
+                    color: #666666;
                     margin-bottom: 0.5rem;
                 }
 
                 .game-venue {
                     font-size: 0.9rem;
                     margin-bottom: 1rem;
+                    color: #666666;
                 }
 
                 .score-container {
@@ -265,7 +272,7 @@ const Home = () => {
                 }
 
                 .games-slider::-webkit-scrollbar-track {
-                    background: rgba(0,0,0,0.1);
+                    background: rgba(0,0,0,0.05);
                 }
 
                 .games-slider::-webkit-scrollbar-thumb {
