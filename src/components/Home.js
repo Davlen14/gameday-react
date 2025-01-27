@@ -12,14 +12,21 @@ const Home = () => {
             try {
                 setIsLoading(true);
 
-                // Fetch polls and games
+                // Fetch polls and games with proper parameters
                 const [pollsData, gamesData] = await Promise.all([
                     teamsService.getPolls(),
-                    teamsService.getGames(1), // Fetch games for week 1 as default
+                    teamsService.getGames(2024, 1), // Added year parameter
                 ]);
 
+                // Filter FBS games like in Games component
+                const fbsGames = gamesData.filter(
+                    (game) =>
+                        game.homeClassification === "fbs" &&
+                        game.awayClassification === "fbs"
+                );
+
                 setPolls(pollsData);
-                setGames(gamesData);
+                setGames(fbsGames);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -43,19 +50,21 @@ const Home = () => {
                 <ul>
                     {polls.map((poll) => (
                         <li key={poll.id}>
-                            <strong>{poll.name}</strong>: {poll.rankings.length} rankings
+                            <strong>{poll.name}</strong>: {poll.rankings?.length} rankings
                         </li>
                     ))}
                 </ul>
             </section>
 
-            {/* Games Section */}
+            {/* Games Section - Fixed property names */}
             <section>
                 <h3>Games (Week 1)</h3>
                 <ul>
                     {games.map((game) => (
                         <li key={game.id}>
-                            <strong>{game.home_team} vs {game.away_team}</strong> - {game.start_date}
+                            {/* Changed to camelCase properties */}
+                            <strong>{game.homeTeam} vs {game.awayTeam}</strong> -{" "}
+                            {new Date(game.startDate).toLocaleDateString()}
                         </li>
                     ))}
                 </ul>
