@@ -6,7 +6,8 @@ import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
 import Chatbot from "./components/Chatbot";
-import GameDetailView from "./components/GameDetailView"; // ADDED IMPORT
+import GameDetailView from "./components/GameDetailView";
+import TeamDetail from "./components/TeamDetail"; // Added TeamDetail import
 import "./App.css";
 import "./Navbar.css";
 import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
@@ -167,21 +168,46 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/:teamId" element={<TeamDetail />} /> {/* Added team detail route */}
             <Route path="/games" element={<Games />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
-            {/* ADDED GAME DETAIL ROUTE */}
             <Route path="/games/:gameId" element={<GameDetailView />} />
             
-            {/* Add placeholder routes for other links */}
+            {/* Conference Placeholders */}
             <Route path="/sec" element={<div>SEC Conference Page</div>} />
             <Route path="/bigten" element={<div>Big Ten Conference Page</div>} />
             <Route path="/acc" element={<div>ACC Conference Page</div>} />
             <Route path="/pac12" element={<div>Pac-12 Conference Page</div>} />
             <Route path="/big12" element={<div>Big 12 Conference Page</div>} />
             <Route path="/others" element={<div>Other Conferences Page</div>} />
-            {/* Add similar placeholders for other dropdown routes */}
+            
+            {/* Lines Placeholders */}
+            <Route path="/current-lines" element={<div>Current Lines Page</div>} />
+            <Route path="/spread-analysis" element={<div>Spread Analysis Page</div>} />
+            <Route path="/moneyline-comparisons" element={<div>Moneyline Comparisons Page</div>} />
+            <Route path="/over-under-metrics" element={<div>Over/Under Metrics Page</div>} />
+            
+            {/* Metrics Placeholders */}
+            <Route path="/team-comparisons" element={<div>Team Comparisons Page</div>} />
+            <Route path="/advanced-box-scores" element={<div>Advanced Box Scores Page</div>} />
+            <Route path="/player-analytics" element={<div>Player Analytics Page</div>} />
+            <Route path="/power-rankings" element={<div>Power Rankings Page</div>} />
+            
+            {/* GamedayGPT Placeholders */}
+            <Route path="/predict-outcomes" element={<div>Predict Outcomes Page</div>} />
+            <Route path="/betting-suggestions" element={<div>Betting Suggestions Page</div>} />
+            
+            {/* Tools Placeholders */}
+            <Route path="/play-by-play" element={<div>Play-by-Play Analysis Page</div>} />
+            <Route path="/game-simulations" element={<div>Game Simulations Page</div>} />
+            <Route path="/live-updates" element={<div>Live Updates Page</div>} />
+            
+            {/* Resources Placeholders */}
+            <Route path="/how-to-use" element={<div>How to Use Page</div>} />
+            <Route path="/tutorials" element={<div>Tutorials Page</div>} />
+            <Route path="/faq" element={<div>FAQ Page</div>} />
           </Routes>
         </main>
       </div>

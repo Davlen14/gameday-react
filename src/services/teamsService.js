@@ -22,37 +22,32 @@ const fetchData = async (endpoint, params = {}) => {
     }
 };
 
-// Fetch specific game by ID
+// Existing core functions
 export const getGameById = async (gameId) => {
     const endpoint = "/games";
     const params = { id: gameId };
     const response = await fetchData(endpoint, params);
-    if (!response || response.length === 0) return null;
-    return response[0];
+    return response?.[0] || null;
 };
 
-// Fetch FBS teams for a specific year
 export const getTeams = async () => {
     const endpoint = "/teams/fbs";
     const params = { year: 2024 };
     return await fetchData(endpoint, params);
 };
 
-// Fetch game media for a given year and week
 export const getGameMedia = async (year, week) => {
     const endpoint = "/games/media";
     const params = { year, week };
     return await fetchData(endpoint, params);
 };
 
-// Fetch game weather for a given year and week
 export const getGameWeather = async (year, week) => {
     const endpoint = "/games/weather";
     const params = { year, week };
     return await fetchData(endpoint, params);
 };
 
-// Fetch games for a specific year, week, and division
 export const getGames = async (week) => {
     const endpoint = "/games";
     const params = {
@@ -64,14 +59,12 @@ export const getGames = async (week) => {
     return await fetchData(endpoint, params);
 };
 
-// Fetch advanced box score for a specific game
 export const getAdvancedBoxScore = async (gameId, week, team, seasonType = "regular") => {
     const endpoint = "/game/box/advanced";
     const params = { gameId, week, team, seasonType };
     return await fetchData(endpoint, params);
 };
 
-// Fetch betting lines for a specific game or team
 export const getGameLines = async (year, team = null, seasonType = "regular") => {
     const endpoint = "/lines";
     const params = { year, seasonType };
@@ -79,14 +72,12 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
     return await fetchData(endpoint, params);
 };
 
-// Fetch team stats for a specific year and team
 export const getTeamStats = async (team, year) => {
     const endpoint = "/stats/team";
     const params = { year, team };
     return await fetchData(endpoint, params);
 };
 
-// Fetch team polls with proper parameters and data transformation
 export const getPolls = async (year = 2024, pollType = 'ap', week = null) => {
     const endpoint = "/rankings";
     const params = { 
@@ -99,7 +90,6 @@ export const getPolls = async (year = 2024, pollType = 'ap', week = null) => {
 
     const data = await fetchData(endpoint, params);
     
-    // Transform API response to match component expectations
     return data.map(pollGroup => ({
         id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
@@ -113,16 +103,54 @@ export const getPolls = async (year = 2024, pollType = 'ap', week = null) => {
     }));
 };
 
-// Fetch play-by-play data for a specific game
 export const getPlayByPlay = async (gameId) => {
     const endpoint = "/live/plays";
     const params = { gameId };
     return await fetchData(endpoint, params);
 };
 
-// Export all functions as a service
+// New FBS-specific additions
+export const getTeamDetails = async (teamId) => {
+    const endpoint = "/teams";
+    const response = await fetchData(endpoint, { id: teamId });
+    return response?.[0] || null;
+};
+
+export const getTeamSchedule = async (teamId, year = 2024) => {
+    const endpoint = "/games";
+    return await fetchData(endpoint, {
+        year,
+        team: teamId,
+        seasonType: "regular",
+        division: "fbs"
+    });
+};
+
+export const getTeamRoster = async (teamId, year = 2024) => {
+    const endpoint = "/roster";
+    return await fetchData(endpoint, { teamId, year });
+};
+
+export const getTeamVenue = async (teamId) => {
+    const endpoint = "/venues";
+    const response = await fetchData(endpoint, { teamId });
+    return response?.[0] || null;
+};
+
+export const getAdvancedStats = async (teamId) => {
+    const endpoint = "/stats/season/advanced";
+    return await fetchData(endpoint, { team: teamId });
+};
+
+export const getTeamMatchup = async (team1, team2) => {
+    const endpoint = "/teams/matchup";
+    return await fetchData(endpoint, { team1, team2 });
+};
+
+// Export all functions
 const teamsService = {
-    getGameById,  // Added this function
+    // Original functions
+    getGameById,
     getTeams,
     getGames,
     getGameMedia,
@@ -132,6 +160,14 @@ const teamsService = {
     getTeamStats,
     getPolls,
     getPlayByPlay,
+    
+    // New FBS additions
+    getTeamDetails,
+    getTeamSchedule,
+    getTeamRoster,
+    getTeamVenue,
+    getAdvancedStats,
+    getTeamMatchup
 };
 
 export default teamsService;
