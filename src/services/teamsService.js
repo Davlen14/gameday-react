@@ -1,21 +1,21 @@
 // Proxy-based API interaction for handling CORS
 const fetchData = async (endpoint, params = {}) => {
-    const url = `/api/proxy`; // Use the proxy route for all requests
+    const url = `/api/proxy`;
 
     try {
         const response = await fetch(url, {
-            method: "POST", // Use POST to send the request via proxy
+            method: "POST",
             headers: {
-                "Content-Type": "application/json", // Send JSON data
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ endpoint, params }), // Forward endpoint and parameters
+            body: JSON.stringify({ endpoint, params }),
         });
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
 
-        return await response.json(); // Parse the JSON response
+        return await response.json();
     } catch (error) {
         console.error("Fetch Error:", error.message);
         throw error;
@@ -77,12 +77,31 @@ export const getTeamStats = async (team, year) => {
     return await fetchData(endpoint, params);
 };
 
-// Fetch team polls for a specific year, season type, and optional week
-export const getPolls = async (year, seasonType = "regular", week = null) => {
+// Fetch team polls with proper parameters and data transformation
+export const getPolls = async (year = 2024, pollType = 'ap', week = null) => {
     const endpoint = "/rankings";
-    const params = { year, seasonType };
+    const params = { 
+        year,
+        pollType,
+        seasonType: "regular"
+    };
+    
     if (week) params.week = week;
-    return await fetchData(endpoint, params);
+
+    const data = await fetchData(endpoint, params);
+    
+    // Transform API response to match component expectations
+    return data.map(pollGroup => ({
+        id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
+        name: pollGroup.polls[0].poll,
+        rankings: pollGroup.polls[0].ranks.map(team => ({
+            school: team.school,
+            conference: team.conference,
+            rank: team.rank,
+            points: team.points,
+            firstPlaceVotes: team.firstPlaceVotes
+        }))
+    }));
 };
 
 // Fetch play-by-play data for a specific game

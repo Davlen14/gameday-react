@@ -14,19 +14,12 @@ const Home = () => {
 
                 // Fetch polls and games with proper parameters
                 const [pollsData, gamesData] = await Promise.all([
-                    teamsService.getPolls(),
-                    teamsService.getGames(2024, 1), // Added year parameter
+                    teamsService.getPolls(2024, 'ap', 1), // Added required parameters
+                    teamsService.getGames(1), // Correct week parameter
                 ]);
 
-                // Filter FBS games like in Games component
-                const fbsGames = gamesData.filter(
-                    (game) =>
-                        game.homeClassification === "fbs" &&
-                        game.awayClassification === "fbs"
-                );
-
                 setPolls(pollsData);
-                setGames(fbsGames);
+                setGames(gamesData);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -50,21 +43,29 @@ const Home = () => {
                 <ul>
                     {polls.map((poll) => (
                         <li key={poll.id}>
-                            <strong>{poll.name}</strong>: {poll.rankings?.length} rankings
+                            <strong>{poll.name}</strong>: {poll.rankings?.length} teams ranked
+                            <ol>
+                                {poll.rankings.slice(0, 5).map((team) => (
+                                    <li key={team.school}>
+                                        {team.school} ({team.points} pts)
+                                    </li>
+                                ))}
+                            </ol>
                         </li>
                     ))}
                 </ul>
             </section>
 
-            {/* Games Section - Fixed property names */}
+            {/* Games Section */}
             <section>
                 <h3>Games (Week 1)</h3>
                 <ul>
                     {games.map((game) => (
                         <li key={game.id}>
-                            {/* Changed to camelCase properties */}
-                            <strong>{game.homeTeam} vs {game.awayTeam}</strong> -{" "}
-                            {new Date(game.startDate).toLocaleDateString()}
+                            <strong>{game.homeTeam} vs {game.awayTeam}</strong>
+                            <div>
+                                {new Date(game.startDate).toLocaleDateString()} @ {game.venue}
+                            </div>
                         </li>
                     ))}
                 </ul>
