@@ -1,6 +1,7 @@
 :root {
   --primary: #950000;
   --secondary: #b30000;
+  --status-green: #22c55e; /* New green color variable */
   --background: #ffffff;
   --surface: #f5f5f5;
   --text-primary: #111;
@@ -112,14 +113,24 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--primary);
+  color: var(--status-green); /* Changed to green */
   font-weight: 500;
+}
+
+.connection-status span {
+  animation: blink 1.5s infinite; /* Blinking animation */
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
 .status-indicator {
   width: 8px;
   height: 8px;
-  background: var(--primary);
+  background: var(--status-green); /* Changed to green */
   border-radius: 50%;
 }
 
@@ -131,7 +142,7 @@
 }
 
 .status-dot {
-  color: var(--primary);
+  color: var(--status-green); /* Changed to green */
 }
 
 .chat-area {
