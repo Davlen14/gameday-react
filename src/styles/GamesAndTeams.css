@@ -1,63 +1,281 @@
 .games-container {
-    padding: 20px;
-    max-width: 1200px;
+    padding: 2rem;
+    max-width: 1440px;
     margin: 0 auto;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.week-dropdown {
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.week-dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
 }
 
 .game-card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-    text-align: center;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f1f5f9;
 }
 
 .game-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
-.team-logos {
-    display: flex;
-    justify-content: center;
+.teams-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 10px;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .team-logo {
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #fff;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.team-details {
+    text-align: center;
+}
+
+.team-details h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.score {
+    display: inline-block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-top: 0.5rem;
+}
+
+.vs-circle {
+    background: #3b82f6;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
 }
 
 .game-info {
-    margin-top: 15px;
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
-.game-info h3 {
-    font-size: 1.25rem;
-    color: #333;
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #64748b;
+    font-size: 0.95rem;
 }
 
-.game-info p {
-    font-size: 1rem;
-    color: #555;
+.info-item .icon {
+    width: 20px;
+    height: 20px;
+    fill: #64748b;
 }
+
+.final {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.game-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.weather-card, .broadcast-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.temperature {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.condition {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.broadcast-card {
+    background: #eff6ff;
+}
+
+.broadcast-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.network {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.time {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
+.betting-section {
+    padding-top: 2rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.betting-section h4 {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.sportsbooks {
+    display: grid;
+    gap: 1rem;
+}
+
+.sportsbook {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+}
+
 .sportsbook-logo {
-    width: 50px; /* Set a fixed width */
-    height: 30px; /* Set a fixed height */
-    object-fit: contain; /* Ensures the aspect ratio is maintained */
-    display: block;
-    margin: 0 auto; /* Centers the image within its container */
-    border-radius: 4px; /* Slightly rounded corners for better appearance */
+    width: 70px;
+    height: 35px;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+.odds {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.spread, .overunder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.spread strong, .overunder strong {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 4rem;
+    font-size: 1.2rem;
+}
+
+.error {
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+    }
+    
+    .teams-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .vs-circle {
+        margin: 1.5rem auto;
+    }
+    
+    .game-meta {
+        grid-template-columns: 1fr;
+    }
 }
