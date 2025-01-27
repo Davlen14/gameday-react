@@ -111,29 +111,28 @@ export const getPlayByPlay = async (gameId) => {
 
 // New FBS-specific additions
 export const getTeamDetails = async (teamId) => {
-    const endpoint = "/teams";
-    const response = await fetchData(endpoint, { id: teamId });
+    const endpoint = `/teams/${teamId}`;  // Team ID in path
+    const response = await fetchData(endpoint);
     return response?.[0] || null;
 };
 
 export const getTeamSchedule = async (teamId, year = 2024) => {
-    const endpoint = "/games";
+    const endpoint = `/teams/${teamId}/schedule`;  // Team ID in path
     return await fetchData(endpoint, {
         year,
-        team: teamId,
         seasonType: "regular",
         division: "fbs"
     });
 };
 
 export const getTeamRoster = async (teamId, year = 2024) => {
-    const endpoint = "/roster";
-    return await fetchData(endpoint, { teamId, year });
+    const endpoint = `/teams/${teamId}/roster`;  // Team ID in path
+    return await fetchData(endpoint, { year });
 };
 
 export const getTeamVenue = async (teamId) => {
-    const endpoint = "/venues";
-    const response = await fetchData(endpoint, { teamId });
+    const endpoint = `/teams/${teamId}/venue`;  // Team ID in path
+    const response = await fetchData(endpoint);
     return response?.[0] || null;
 };
 
