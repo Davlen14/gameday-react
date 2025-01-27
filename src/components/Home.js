@@ -4,6 +4,8 @@ import teamsService from "../services/teamsService";
 const Home = () => {
     const [polls, setPolls] = useState([]);
     const [games, setGames] = useState([]);
+    const [teams, setTeams] = useState([]);
+    const [week, setWeek] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -11,13 +13,13 @@ const Home = () => {
         const fetchHomeData = async () => {
             try {
                 setIsLoading(true);
-
-                // Fetch polls and games with proper parameters
-                const [pollsData, gamesData] = await Promise.all([
-                    teamsService.getPolls(2024, 'ap', 1), // Added required parameters
-                    teamsService.getGames(1), // Correct week parameter
+                const [teamsData, pollsData, gamesData] = await Promise.all([
+                    teamsService.getTeams(),
+                    teamsService.getPolls(2024, 'ap', week),
+                    teamsService.getGames(week),
                 ]);
 
+                setTeams(teamsData);
                 setPolls(pollsData);
                 setGames(gamesData);
             } catch (err) {
@@ -28,48 +30,255 @@ const Home = () => {
         };
 
         fetchHomeData();
-    }, []);
+    }, [week]);
 
-    if (isLoading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+    const getTeamLogo = (teamName) => {
+        const team = teams.find(t => t.school.toLowerCase() === teamName.toLowerCase());
+        return team?.logos?.[0] || "/photos/default_team.png";
+    };
+
+    if (isLoading) return <div className="loading-container">Loading...</div>;
+    if (error) return <div className="error-container">Error: {error}</div>;
 
     return (
-        <div>
-            <h2>Welcome to Gameday</h2>
+        <div className="home-container">
+            <header className="hero-header">
+                <h1>Welcome to Gameday</h1>
+                <div className="week-selector">
+                    <label>Week:
+                        <select value={week} onChange={(e) => setWeek(Number(e.target.value))}>
+                            {[...Array(17).keys()].map(w => (
+                                <option key={w+1} value={w+1}>Week {w+1}</option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+            </header>
 
             {/* Polls Section */}
-            <section>
-                <h3>Polls</h3>
-                <ul>
-                    {polls.map((poll) => (
-                        <li key={poll.id}>
-                            <strong>{poll.name}</strong>: {poll.rankings?.length} teams ranked
-                            <ol>
-                                {poll.rankings.slice(0, 5).map((team) => (
-                                    <li key={team.school}>
-                                        {team.school} ({team.points} pts)
-                                    </li>
+            <section className="polls-section">
+                <h2 className="section-title">Top 25 Rankings</h2>
+                <div className="polls-grid">
+                    {polls.map(poll => (
+                        <div key={poll.id} className="poll-card">
+                            <h3>{poll.name}</h3>
+                            <div className="rankings-list">
+                                {poll.rankings.slice(0, 5).map(team => (
+                                    <div key={team.school} className="ranking-item">
+                                        <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                                        <div className="team-info">
+                                            <span className="rank">#{team.rank}</span>
+                                            <span className="team-name">{team.school}</span>
+                                            <span className="points">{team.points} pts</span>
+                                        </div>
+                                    </div>
                                 ))}
-                            </ol>
-                        </li>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </section>
 
             {/* Games Section */}
-            <section>
-                <h3>Games (Week 1)</h3>
-                <ul>
-                    {games.map((game) => (
-                        <li key={game.id}>
-                            <strong>{game.homeTeam} vs {game.awayTeam}</strong>
-                            <div>
-                                {new Date(game.startDate).toLocaleDateString()} @ {game.venue}
+            <section className="games-section">
+                <h2 className="section-title">Week {week} Matchups</h2>
+                <div className="games-slider">
+                    {games.map(game => (
+                        <div key={game.id} className="game-card">
+                            <div className="teams-container">
+                                <div className="team">
+                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                    <span>{game.homeTeam}</span>
+                                </div>
+                                <div className="vs-circle">VS</div>
+                                <div className="team">
+                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                    <span>{game.awayTeam}</span>
+                                </div>
                             </div>
-                        </li>
+                            <div className="game-details">
+                                <p className="game-time">
+                                    {new Date(game.startDate).toLocaleString()}
+                                </p>
+                                <p className="game-venue">{game.venue}</p>
+                                <div className="score-container">
+                                    <span>{game.homePoints || '-'}</span>
+                                    <span>{game.awayPoints || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </section>
+
+            <style jsx>{`
+                :root {
+                    --primary-color: #0d223f;
+                    --accent-color: #ff4655;
+                    --text-color: #ffffff;
+                    --background-color: #1a1a1a;
+                }
+
+                .home-container {
+                    padding: 2rem;
+                    background-color: var(--background-color);
+                    color: var(--text-color);
+                    min-height: 100vh;
+                }
+
+                .hero-header {
+                    text-align: center;
+                    margin-bottom: 3rem;
+                    position: relative;
+                }
+
+                .week-selector {
+                    margin-top: 1rem;
+                }
+
+                select {
+                    padding: 0.5rem;
+                    margin-left: 0.5rem;
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                }
+
+                .section-title {
+                    color: var(--accent-color);
+                    border-bottom: 2px solid var(--accent-color);
+                    padding-bottom: 0.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                /* Polls Section */
+                .polls-grid {
+                    display: grid;
+                    gap: 2rem;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    margin-bottom: 3rem;
+                }
+
+                .poll-card {
+                    background: var(--primary-color);
+                    padding: 1.5rem;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+
+                .ranking-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 1rem 0;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                }
+
+                .team-logo {
+                    width: 40px;
+                    height: 40px;
+                    margin-right: 1rem;
+                }
+
+                .team-info {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .rank {
+                    color: var(--accent-color);
+                    font-weight: bold;
+                }
+
+                /* Games Section */
+                .games-slider {
+                    display: flex;
+                    overflow-x: auto;
+                    gap: 2rem;
+                    padding-bottom: 2rem;
+                }
+
+                .game-card {
+                    flex: 0 0 300px;
+                    background: var(--primary-color);
+                    border-radius: 10px;
+                    padding: 1.5rem;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+
+                .teams-container {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1rem;
+                }
+
+                .team {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+
+                .team img {
+                    width: 60px;
+                    height: 60px;
+                    margin-bottom: 0.5rem;
+                }
+
+                .vs-circle {
+                    background: var(--accent-color);
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                }
+
+                .game-details {
+                    text-align: center;
+                }
+
+                .game-time {
+                    font-size: 0.9rem;
+                    color: #cccccc;
+                    margin-bottom: 0.5rem;
+                }
+
+                .game-venue {
+                    font-size: 0.9rem;
+                    margin-bottom: 1rem;
+                }
+
+                .score-container {
+                    display: flex;
+                    justify-content: space-around;
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                }
+
+                /* Scrollbar Styling */
+                .games-slider::-webkit-scrollbar {
+                    height: 8px;
+                }
+
+                .games-slider::-webkit-scrollbar-track {
+                    background: rgba(0,0,0,0.1);
+                }
+
+                .games-slider::-webkit-scrollbar-thumb {
+                    background: var(--accent-color);
+                    border-radius: 4px;
+                }
+
+                .loading-container, .error-container {
+                    text-align: center;
+                    padding: 2rem;
+                    font-size: 1.2rem;
+                }
+            `}</style>
         </div>
     );
 };
