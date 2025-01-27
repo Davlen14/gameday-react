@@ -7,7 +7,7 @@ import Stats from "./components/Stats";
 import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
-import TeamDetail from "./components/TeamDetail"; // Added TeamDetail import
+import TeamDetail from "./components/TeamDetailView"; // Added TeamDetail import
 import "./App.css";
 import "./Navbar.css";
 import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
