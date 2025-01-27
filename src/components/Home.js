@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Added Link import
 import teamsService from "../services/teamsService";
 
 const Home = () => {
@@ -33,7 +34,7 @@ const Home = () => {
     }, [week]);
 
     const getTeamLogo = (teamName) => {
-        const team = teams.find(t => t.school.toLowerCase() === teamName.toLowerCase());
+        const team = teams.find(t => t.school.toLowerCase() === teamName?.toLowerCase());
         return team?.logos?.[0] || "/photos/default_team.png";
     };
 
@@ -79,34 +80,40 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Games Section */}
+            {/* Games Section with Router Links */}
             <section className="games-section">
                 <h2 className="section-title">Week {week} Matchups</h2>
                 <div className="games-slider">
                     {games.map(game => (
-                        <div key={game.id} className="game-card">
-                            <div className="teams-container">
-                                <div className="team">
-                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                                    <span>{game.homeTeam}</span>
+                        <Link 
+                            to={`/games/${game.id}`} 
+                            key={game.id} 
+                            className="game-card-link"
+                        >
+                            <div className="game-card">
+                                <div className="teams-container">
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                        <span>{game.homeTeam}</span>
+                                    </div>
+                                    <div className="vs-circle">VS</div>
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                        <span>{game.awayTeam}</span>
+                                    </div>
                                 </div>
-                                <div className="vs-circle">VS</div>
-                                <div className="team">
-                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                                    <span>{game.awayTeam}</span>
+                                <div className="game-details">
+                                    <p className="game-time">
+                                        {new Date(game.startDate).toLocaleString()}
+                                    </p>
+                                    <p className="game-venue">{game.venue}</p>
+                                    <div className="score-container">
+                                        <span>{game.homePoints || '-'}</span>
+                                        <span>{game.awayPoints || '-'}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="game-details">
-                                <p className="game-time">
-                                    {new Date(game.startDate).toLocaleString()}
-                                </p>
-                                <p className="game-venue">{game.venue}</p>
-                                <div className="score-container">
-                                    <span>{game.homePoints || '-'}</span>
-                                    <span>{game.awayPoints || '-'}</span>
-                                </div>
-                            </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </section>
@@ -201,6 +208,17 @@ const Home = () => {
                     padding-bottom: 2rem;
                 }
 
+                .game-card-link {
+                    text-decoration: none;
+                    color: inherit;
+                    display: block;
+                    transition: transform 0.2s ease;
+                }
+
+                .game-card-link:hover {
+                    transform: translateY(-5px);
+                }
+
                 .game-card {
                     flex: 0 0 300px;
                     background: var(--primary-color);
@@ -208,6 +226,12 @@ const Home = () => {
                     padding: 1.5rem;
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
                     border: 1px solid var(--border-color);
+                    cursor: pointer;
+                    transition: box-shadow 0.2s ease;
+                }
+
+                .game-card:hover {
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
                 }
 
                 .teams-container {

@@ -5,11 +5,10 @@ import Teams from "./components/Teams";
 import Games from "./components/Games";
 import Stats from "./components/Stats";
 import More from "./components/More";
-import Chatbot from "./components/Chatbot"; // Ensure the path to Chatbot.js is correct
-import "./App.css"; // General app styles
-import "./Navbar.css"; // Navbar-specific styles
-
-// Icons for navigation
+import Chatbot from "./components/Chatbot";
+import GameDetailView from "./components/GameDetailView"; // ADDED IMPORT
+import "./App.css";
+import "./Navbar.css";
 import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
 
 function App() {
@@ -172,6 +171,17 @@ function App() {
             <Route path="/stats" element={<Stats />} />
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
+            {/* ADDED GAME DETAIL ROUTE */}
+            <Route path="/games/:gameId" element={<GameDetailView />} />
+            
+            {/* Add placeholder routes for other links */}
+            <Route path="/sec" element={<div>SEC Conference Page</div>} />
+            <Route path="/bigten" element={<div>Big Ten Conference Page</div>} />
+            <Route path="/acc" element={<div>ACC Conference Page</div>} />
+            <Route path="/pac12" element={<div>Pac-12 Conference Page</div>} />
+            <Route path="/big12" element={<div>Big 12 Conference Page</div>} />
+            <Route path="/others" element={<div>Other Conferences Page</div>} />
+            {/* Add similar placeholders for other dropdown routes */}
           </Routes>
         </main>
       </div>
@@ -180,4 +190,3 @@ function App() {
 }
 
 export default App;
-

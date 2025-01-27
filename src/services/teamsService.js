@@ -22,6 +22,15 @@ const fetchData = async (endpoint, params = {}) => {
     }
 };
 
+// Fetch specific game by ID
+export const getGameById = async (gameId) => {
+    const endpoint = "/games";
+    const params = { id: gameId };
+    const response = await fetchData(endpoint, params);
+    if (!response || response.length === 0) return null;
+    return response[0];
+};
+
 // Fetch FBS teams for a specific year
 export const getTeams = async () => {
     const endpoint = "/teams/fbs";
@@ -113,6 +122,7 @@ export const getPlayByPlay = async (gameId) => {
 
 // Export all functions as a service
 const teamsService = {
+    getGameById,  // Added this function
     getTeams,
     getGames,
     getGameMedia,
