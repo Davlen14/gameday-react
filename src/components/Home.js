@@ -55,6 +55,40 @@ const Home = () => {
                 </div>
             </header>
 
+            {/* Games Section */}
+            <section className="games-section">
+                <h2 className="section-title">Week {week} Matchups</h2>
+                <div className="games-slider">
+                    {games
+                        .filter(game => game.division === 'FBS')
+                        .map(game => (
+                            <div key={game.id} className="game-card">
+                                <div className="teams-container">
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                        <span>{game.homeTeam}</span>
+                                    </div>
+                                    <div className="vs-circle">VS</div>
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                        <span>{game.awayTeam}</span>
+                                    </div>
+                                </div>
+                                <div className="game-details">
+                                    <p className="game-time">
+                                        {new Date(game.startDate).toLocaleString()}
+                                    </p>
+                                    <p className="game-venue">{game.venue}</p>
+                                    <div className="score-container">
+                                        <span>{game.homePoints || '-'}</span>
+                                        <span>{game.awayPoints || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                </div>
+            </section>
+
             {/* Polls Section */}
             <section className="polls-section">
                 <h2 className="section-title">Top 25 Rankings</h2>
@@ -79,44 +113,13 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Games Section */}
-            <section className="games-section">
-                <h2 className="section-title">Week {week} Matchups</h2>
-                <div className="games-slider">
-                    {games.map(game => (
-                        <div key={game.id} className="game-card">
-                            <div className="teams-container">
-                                <div className="team">
-                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                                    <span>{game.homeTeam}</span>
-                                </div>
-                                <div className="vs-circle">VS</div>
-                                <div className="team">
-                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                                    <span>{game.awayTeam}</span>
-                                </div>
-                            </div>
-                            <div className="game-details">
-                                <p className="game-time">
-                                    {new Date(game.startDate).toLocaleString()}
-                                </p>
-                                <p className="game-venue">{game.venue}</p>
-                                <div className="score-container">
-                                    <span>{game.homePoints || '-'}</span>
-                                    <span>{game.awayPoints || '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
             <style jsx>{`
                 :root {
-                    --primary-color: #0d223f;
-                    --accent-color: #ff4655;
-                    --text-color: #ffffff;
-                    --background-color: #1a1a1a;
+                    --primary-color: #ffffff;
+                    --accent-color: rgb(142, 0, 0);
+                    --text-color: #333333;
+                    --background-color: #f5f5f5;
+                    --border-color: #dddddd;
                 }
 
                 .home-container {
@@ -139,9 +142,9 @@ const Home = () => {
                 select {
                     padding: 0.5rem;
                     margin-left: 0.5rem;
-                    background: var(--primary-color);
-                    color: white;
-                    border: none;
+                    background: white;
+                    color: var(--text-color);
+                    border: 1px solid var(--border-color);
                     border-radius: 4px;
                 }
 
@@ -152,50 +155,13 @@ const Home = () => {
                     margin-bottom: 2rem;
                 }
 
-                /* Polls Section */
-                .polls-grid {
-                    display: grid;
-                    gap: 2rem;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    margin-bottom: 3rem;
-                }
-
-                .poll-card {
-                    background: var(--primary-color);
-                    padding: 1.5rem;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                }
-
-                .ranking-item {
-                    display: flex;
-                    align-items: center;
-                    padding: 1rem 0;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                }
-
-                .team-logo {
-                    width: 40px;
-                    height: 40px;
-                    margin-right: 1rem;
-                }
-
-                .team-info {
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                .rank {
-                    color: var(--accent-color);
-                    font-weight: bold;
-                }
-
                 /* Games Section */
                 .games-slider {
                     display: flex;
                     overflow-x: auto;
                     gap: 2rem;
                     padding-bottom: 2rem;
+                    margin-bottom: 3rem;
                 }
 
                 .game-card {
@@ -203,7 +169,8 @@ const Home = () => {
                     background: var(--primary-color);
                     border-radius: 10px;
                     padding: 1.5rem;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    border: 1px solid var(--border-color);
                 }
 
                 .teams-container {
@@ -218,12 +185,14 @@ const Home = () => {
                     flex-direction: column;
                     align-items: center;
                     text-align: center;
+                    width: 45%;
                 }
 
                 .team img {
                     width: 60px;
                     height: 60px;
                     margin-bottom: 0.5rem;
+                    object-fit: contain;
                 }
 
                 .vs-circle {
@@ -235,6 +204,7 @@ const Home = () => {
                     align-items: center;
                     justify-content: center;
                     font-weight: bold;
+                    color: white;
                 }
 
                 .game-details {
@@ -243,13 +213,14 @@ const Home = () => {
 
                 .game-time {
                     font-size: 0.9rem;
-                    color: #cccccc;
+                    color: #666666;
                     margin-bottom: 0.5rem;
                 }
 
                 .game-venue {
                     font-size: 0.9rem;
                     margin-bottom: 1rem;
+                    color: #666666;
                 }
 
                 .score-container {
@@ -259,13 +230,57 @@ const Home = () => {
                     font-weight: bold;
                 }
 
+                /* Polls Section */
+                .polls-grid {
+                    display: grid;
+                    gap: 2rem;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                }
+
+                .poll-card {
+                    background: var(--primary-color);
+                    padding: 1.5rem;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    border: 1px solid var(--border-color);
+                }
+
+                .ranking-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 1rem 0;
+                    border-bottom: 1px solid var(--border-color);
+                }
+
+                .team-logo {
+                    width: 40px;
+                    height: 40px;
+                    margin-right: 1rem;
+                    object-fit: contain;
+                }
+
+                .team-info {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .rank {
+                    color: var(--accent-color);
+                    font-weight: bold;
+                }
+
+                .points {
+                    font-size: 0.9rem;
+                    color: #666666;
+                }
+
                 /* Scrollbar Styling */
                 .games-slider::-webkit-scrollbar {
                     height: 8px;
                 }
 
                 .games-slider::-webkit-scrollbar-track {
-                    background: rgba(0,0,0,0.1);
+                    background: rgba(0,0,0,0.05);
                 }
 
                 .games-slider::-webkit-scrollbar-thumb {
@@ -277,6 +292,7 @@ const Home = () => {
                     text-align: center;
                     padding: 2rem;
                     font-size: 1.2rem;
+                    color: var(--text-color);
                 }
             `}</style>
         </div>
