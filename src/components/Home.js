@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // Added Link import
+import { Link } from "react-router-dom";
+import { FaTv } from "react-icons/fa";
 import teamsService from "../services/teamsService";
 
 const Home = () => {
@@ -36,6 +37,17 @@ const Home = () => {
     const getTeamLogo = (teamName) => {
         const team = teams.find(t => t.school.toLowerCase() === teamName?.toLowerCase());
         return team?.logos?.[0] || "/photos/default_team.png";
+    };
+
+    const getNetworkLogo = (network) => {
+        // Add your network logo mappings here
+        const networks = {
+            'ESPN': <FaTv className="network-icon espn" />,
+            'FOX': <FaTv className="network-icon fox" />,
+            'ABC': <FaTv className="network-icon abc" />,
+            'CBS': <FaTv className="network-icon cbs" />
+        };
+        return networks[network] || <FaTv className="network-icon default" />;
     };
 
     if (isLoading) return <div className="loading-container">Loading...</div>;
@@ -91,25 +103,50 @@ const Home = () => {
                             className="game-card-link"
                         >
                             <div className="game-card">
-                                <div className="teams-container">
-                                    <div className="team">
-                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                                        <span>{game.homeTeam}</span>
+                                <div className="game-header">
+                                    <div className="game-time">
+                                        {new Date(game.startDate).toLocaleDateString('en-US', {
+                                            weekday: 'short', 
+                                            month: 'short', 
+                                            day: 'numeric'
+                                        })}
                                     </div>
-                                    <div className="vs-circle">VS</div>
-                                    <div className="team">
-                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                                        <span>{game.awayTeam}</span>
+                                    <div className="network">
+                                        {getNetworkLogo(game.network || 'ESPN')}
+                                        <span className="network-name">{game.network || 'ESPN'}</span>
                                     </div>
                                 </div>
-                                <div className="game-details">
-                                    <p className="game-time">
-                                        {new Date(game.startDate).toLocaleString()}
-                                    </p>
-                                    <p className="game-venue">{game.venue}</p>
-                                    <div className="score-container">
-                                        <span>{game.homePoints || '-'}</span>
-                                        <span>{game.awayPoints || '-'}</span>
+                                
+                                <div className="teams-container">
+                                    <div className="team home-team">
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                        <div className="team-info">
+                                            <span className="team-name">{game.homeTeam}</span>
+                                            <span className="team-record">(8-2)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="vs-container">
+                                        <div className="vs-circle">VS</div>
+                                        <div className="score-container">
+                                            <span className="score">{game.homePoints || '-'}</span>
+                                            <span className="score-divider">-</span>
+                                            <span className="score">{game.awayPoints || '-'}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="team away-team">
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                        <div className="team-info">
+                                            <span className="team-name">{game.awayTeam}</span>
+                                            <span className="team-record">(7-3)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="game-footer">
+                                    <div className="game-venue">
+                                        <span>📍 {game.venue}</span>
                                     </div>
                                 </div>
                             </div>
@@ -151,6 +188,7 @@ const Home = () => {
                     color: var(--text-color);
                     border: 1px solid var(--border-color);
                     border-radius: 4px;
+                    font-size: 1rem;
                 }
 
                 .section-title {
@@ -158,6 +196,8 @@ const Home = () => {
                     border-bottom: 2px solid var(--accent-color);
                     padding-bottom: 0.5rem;
                     margin-bottom: 2rem;
+                    font-size: 1.8rem;
+                    font-weight: 600;
                 }
 
                 /* Polls Section */
@@ -171,8 +211,8 @@ const Home = () => {
                 .poll-card {
                     background: var(--primary-color);
                     padding: 1.5rem;
-                    border-radius: 10px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    border-radius: 16px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
                     border: 1px solid var(--border-color);
                 }
 
@@ -200,7 +240,7 @@ const Home = () => {
                     font-weight: bold;
                 }
 
-                /* Games Section */
+                /* Modern Game Cards */
                 .games-slider {
                     display: flex;
                     overflow-x: auto;
@@ -212,33 +252,55 @@ const Home = () => {
                     text-decoration: none;
                     color: inherit;
                     display: block;
-                    transition: transform 0.2s ease;
-                }
-
-                .game-card-link:hover {
-                    transform: translateY(-5px);
+                    transition: transform 0.3s ease;
                 }
 
                 .game-card {
                     flex: 0 0 300px;
-                    background: var(--primary-color);
-                    border-radius: 10px;
+                    background: linear-gradient(145deg, #ffffff, #f8f8f8);
+                    border-radius: 16px;
                     padding: 1.5rem;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                    border: 1px solid var(--border-color);
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
                     cursor: pointer;
-                    transition: box-shadow 0.2s ease;
+                    transition: all 0.3s ease;
                 }
 
                 .game-card:hover {
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    transform: translateY(-5px);
+                    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
                 }
 
-                .teams-container {
+                .game-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 1rem;
+                    margin-bottom: 1.5rem;
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+
+                .network {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .network-icon {
+                    font-size: 1.2rem;
+                    color: var(--accent-color);
+                }
+
+                .network-name {
+                    font-weight: 500;
+                }
+
+                .teams-container {
+                    display: grid;
+                    grid-template-columns: 1fr auto 1fr;
+                    align-items: center;
+                    gap: 1.5rem;
+                    margin-bottom: 1.5rem;
                 }
 
                 .team {
@@ -249,50 +311,81 @@ const Home = () => {
                 }
 
                 .team img {
-                    width: 60px;
-                    height: 60px;
-                    margin-bottom: 0.5rem;
+                    width: 72px;
+                    height: 72px;
+                    margin-bottom: 0.75rem;
                     object-fit: contain;
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                }
+
+                .team-name {
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                    margin-bottom: 0.25rem;
+                }
+
+                .team-record {
+                    font-size: 0.85rem;
+                    color: #666;
+                }
+
+                .vs-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5rem;
                 }
 
                 .vs-circle {
-                    background: var(--accent-color);
-                    width: 40px;
-                    height: 40px;
+                    background: linear-gradient(135deg, var(--accent-color), #b30000);
+                    width: 48px;
+                    height: 48px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-weight: bold;
+                    font-weight: 700;
                     color: white;
+                    font-size: 1.1rem;
+                    box-shadow: 0 4px 12px rgba(142, 0, 0, 0.2);
+                    transition: transform 0.3s ease;
                 }
 
-                .game-details {
-                    text-align: center;
-                }
-
-                .game-time {
-                    font-size: 0.9rem;
-                    color: #666666;
-                    margin-bottom: 0.5rem;
-                }
-
-                .game-venue {
-                    font-size: 0.9rem;
-                    margin-bottom: 1rem;
-                    color: #666666;
+                .game-card:hover .vs-circle {
+                    transform: scale(1.1);
                 }
 
                 .score-container {
                     display: flex;
-                    justify-content: space-around;
-                    font-size: 1.2rem;
-                    font-weight: bold;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .score {
+                    font-size: 1.4rem;
+                    font-weight: 700;
+                    color: var(--text-color);
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 6px;
+                    background: rgba(0, 0, 0, 0.04);
+                }
+
+                .score-divider {
+                    font-weight: 500;
+                    color: #999;
+                }
+
+                .game-footer {
+                    padding-top: 1rem;
+                    margin-top: 1rem;
+                    border-top: 1px solid rgba(0, 0, 0, 0.08);
+                    font-size: 0.9rem;
+                    color: #666;
                 }
 
                 /* Scrollbar Styling */
                 .games-slider::-webkit-scrollbar {
-                    height: 8px;
+                    height: 6px;
                 }
 
                 .games-slider::-webkit-scrollbar-track {
@@ -300,14 +393,39 @@ const Home = () => {
                 }
 
                 .games-slider::-webkit-scrollbar-thumb {
-                    background: var(--accent-color);
+                    background: rgba(142, 0, 0, 0.3);
                     border-radius: 4px;
+                }
+
+                .games-slider::-webkit-scrollbar-thumb:hover {
+                    background: rgba(142, 0, 0, 0.4);
                 }
 
                 .loading-container, .error-container {
                     text-align: center;
                     padding: 2rem;
                     font-size: 1.2rem;
+                }
+
+                @media (max-width: 768px) {
+                    .game-card {
+                        flex: 0 0 280px;
+                    }
+
+                    .team img {
+                        width: 56px;
+                        height: 56px;
+                    }
+
+                    .vs-circle {
+                        width: 40px;
+                        height: 40px;
+                        font-size: 1rem;
+                    }
+
+                    .score {
+                        font-size: 1.2rem;
+                    }
                 }
             `}</style>
         </div>
