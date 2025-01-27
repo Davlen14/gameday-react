@@ -34,8 +34,14 @@ const Home = () => {
 
     const getTeamLogo = (teamName) => {
         const team = teams.find(t => t.school.toLowerCase() === teamName.toLowerCase());
-        return team?.logos?.[0] || "/photos/default_team.png";
-    };
+        
+        // Force HTTPS for ESPN logos
+        if (team?.logos?.[0]) {
+          return team.logos[0].replace('http://', 'https://');
+        }
+        
+        return "/photos/default_team.png"; // Make sure this exists in your public folder
+      };
 
     if (isLoading) return <div className="loading-container">Loading...</div>;
     if (error) return <div className="error-container">Error: {error}</div>;
