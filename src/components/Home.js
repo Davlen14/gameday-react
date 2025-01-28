@@ -23,7 +23,14 @@ const Home = () => {
 
                 setTeams(teamsData);
                 setPolls(pollsData);
-                setGames(gamesData);
+
+                // Filter games to include only FBS teams
+                const fbsGames = gamesData.filter(
+                    (game) =>
+                        game.homeClassification === "fbs" &&
+                        game.awayClassification === "fbs"
+                );
+                setGames(fbsGames);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -35,17 +42,18 @@ const Home = () => {
     }, [week]);
 
     const getTeamLogo = (teamName) => {
-        const team = teams.find(t => t.school.toLowerCase() === teamName?.toLowerCase());
+        const team = teams.find(
+            (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+        );
         return team?.logos?.[0] || "/photos/default_team.png";
     };
 
     const getNetworkLogo = (network) => {
-        // Add your network logo mappings here
         const networks = {
-            'ESPN': <FaTv className="network-icon espn" />,
-            'FOX': <FaTv className="network-icon fox" />,
-            'ABC': <FaTv className="network-icon abc" />,
-            'CBS': <FaTv className="network-icon cbs" />
+            ESPN: <FaTv className="network-icon espn" />,
+            FOX: <FaTv className="network-icon fox" />,
+            ABC: <FaTv className="network-icon abc" />,
+            CBS: <FaTv className="network-icon cbs" />,
         };
         return networks[network] || <FaTv className="network-icon default" />;
     };
@@ -58,10 +66,16 @@ const Home = () => {
             <header className="hero-header">
                 <h1>Welcome to Gameday</h1>
                 <div className="week-selector">
-                    <label>Week:
-                        <select value={week} onChange={(e) => setWeek(Number(e.target.value))}>
-                            {[...Array(17).keys()].map(w => (
-                                <option key={w+1} value={w+1}>Week {w+1}</option>
+                    <label>
+                        Week:
+                        <select
+                            value={week}
+                            onChange={(e) => setWeek(Number(e.target.value))}
+                        >
+                            {[...Array(17).keys()].map((w) => (
+                                <option key={w + 1} value={w + 1}>
+                                    Week {w + 1}
+                                </option>
                             ))}
                         </select>
                     </label>
@@ -72,17 +86,30 @@ const Home = () => {
             <section className="polls-section">
                 <h2 className="section-title">Top 25 Rankings</h2>
                 <div className="polls-grid">
-                    {polls.map(poll => (
+                    {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
                             <h3>{poll.name}</h3>
                             <div className="rankings-list">
-                                {poll.rankings.slice(0, 5).map(team => (
-                                    <div key={team.school} className="ranking-item">
-                                        <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                                {poll.rankings.slice(0, 5).map((team) => (
+                                    <div
+                                        key={team.school}
+                                        className="ranking-item"
+                                    >
+                                        <img
+                                            src={getTeamLogo(team.school)}
+                                            alt={team.school}
+                                            className="team-logo"
+                                        />
                                         <div className="team-info">
-                                            <span className="rank">#{team.rank}</span>
-                                            <span className="team-name">{team.school}</span>
-                                            <span className="points">{team.points} pts</span>
+                                            <span className="rank">
+                                                #{team.rank}
+                                            </span>
+                                            <span className="team-name">
+                                                {team.school}
+                                            </span>
+                                            <span className="points">
+                                                {team.points} pts
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -92,54 +119,80 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Games Section with Router Links */}
+            {/* Games Section */}
             <section className="games-section">
                 <h2 className="section-title">Week {week} Matchups</h2>
                 <div className="games-slider">
-                    {games.map(game => (
-                        <Link 
-                            to={`/games/${game.id}`} 
-                            key={game.id} 
+                    {games.map((game) => (
+                        <Link
+                            to={`/games/${game.id}`}
+                            key={game.id}
                             className="game-card-link"
                         >
                             <div className="game-card">
                                 <div className="game-header">
                                     <div className="game-time">
-                                        {new Date(game.startDate).toLocaleDateString('en-US', {
-                                            weekday: 'short', 
-                                            month: 'short', 
-                                            day: 'numeric'
+                                        {new Date(
+                                            game.startDate
+                                        ).toLocaleDateString("en-US", {
+                                            weekday: "short",
+                                            month: "short",
+                                            day: "numeric",
                                         })}
                                     </div>
                                     <div className="network">
-                                        {getNetworkLogo(game.network || 'ESPN')}
-                                        <span className="network-name">{game.network || 'ESPN'}</span>
+                                        {getNetworkLogo(
+                                            game.network || "ESPN"
+                                        )}
+                                        <span className="network-name">
+                                            {game.network || "ESPN"}
+                                        </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="teams-container">
                                     <div className="team home-team">
-                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                        <img
+                                            src={getTeamLogo(game.homeTeam)}
+                                            alt={game.homeTeam}
+                                        />
                                         <div className="team-info">
-                                            <span className="team-name">{game.homeTeam}</span>
-                                            <span className="team-record">(8-2)</span>
+                                            <span className="team-name">
+                                                {game.homeTeam}
+                                            </span>
+                                            <span className="team-record">
+                                                (8-2)
+                                            </span>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="vs-container">
                                         <div className="vs-circle">VS</div>
                                         <div className="score-container">
-                                            <span className="score">{game.homePoints || '-'}</span>
-                                            <span className="score-divider">-</span>
-                                            <span className="score">{game.awayPoints || '-'}</span>
+                                            <span className="score">
+                                                {game.homePoints || "-"}
+                                            </span>
+                                            <span className="score-divider">
+                                                -
+                                            </span>
+                                            <span className="score">
+                                                {game.awayPoints || "-"}
+                                            </span>
                                         </div>
                                     </div>
 
                                     <div className="team away-team">
-                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                        <img
+                                            src={getTeamLogo(game.awayTeam)}
+                                            alt={game.awayTeam}
+                                        />
                                         <div className="team-info">
-                                            <span className="team-name">{game.awayTeam}</span>
-                                            <span className="team-record">(7-3)</span>
+                                            <span className="team-name">
+                                                {game.awayTeam}
+                                            </span>
+                                            <span className="team-record">
+                                                (7-3)
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
