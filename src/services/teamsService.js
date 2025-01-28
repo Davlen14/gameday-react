@@ -75,12 +75,18 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 export const getTeamStats = async (team, year) => {
     const endpoint = "/stats/team";
     const params = { year, team };
+
+    // Fetch data from the proxy
     const response = await fetchData(endpoint, params);
 
-    // Filter for relevant stats: passing yards, rushing yards, and total yards
+    console.log("Raw Team Stats Response:", response); // Log full response
+
+    // Filter for relevant stats
     const relevantStats = response.filter((stat) =>
         ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
     );
+
+    console.log("Filtered Relevant Stats:", relevantStats); // Log filtered stats
 
     return relevantStats.reduce((acc, stat) => {
         acc[stat.statName] = stat.statValue;
