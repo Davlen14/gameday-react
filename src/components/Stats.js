@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "../styles/Stats.css";
-import teamsService from "../services/teamsService";
+import "../styles/Stats.css"; // Import the external CSS
+import teamsService from "../services/teamsService"; // Import the teamsService for fetching data
 
 const Stats = () => {
     const [teamStats, setTeamStats] = useState([]);
@@ -10,25 +10,10 @@ const Stats = () => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                const allTeams = await teamsService.getTeams(); // Fetch all teams
-                const fbsTeams = allTeams.filter((team) => team.division === "fbs"); // Filter for FBS teams
-
-                console.log("Fetched FBS Teams:", fbsTeams); // Log FBS teams
-
-                // Fetch stats for each team
-                const statsPromises = fbsTeams.map((team) =>
-                    teamsService.getTeamStats(team.school, 2024).then((stats) => ({
-                        id: team.id,
-                        name: team.school,
-                        logo: team.logos?.[0] || "/photos/default_team.png",
-                        stats,
-                    }))
-                );
-
-                const stats = await Promise.all(statsPromises);
-                console.log("Fetched Team Stats:", stats); // Log fetched stats
-
-                setTeamStats(stats);
+                const data = await teamsService.getTeams(); // Fetch all teams
+                console.log("Fetched Team Data:", data); // Debug fetched data
+                const fbsTeams = data.filter((team) => team.division === "fbs"); // Filter FBS teams
+                setTeamStats(fbsTeams);
             } catch (error) {
                 console.error("Error fetching stats:", error);
             } finally {
@@ -38,6 +23,13 @@ const Stats = () => {
 
         fetchStats();
     }, []);
+
+    const getTeamLogo = (teamName) => {
+        const team = teamStats.find(
+            (t) => t.school.toLowerCase() === teamName.toLowerCase()
+        );
+        return team?.logos?.[0] || "/photos/default_team.png";
+    };
 
     const renderTeamStats = (statName) => {
         if (loading) {
@@ -54,8 +46,8 @@ const Stats = () => {
 
         return sortedTeams.slice(0, 5).map((team) => (
             <div key={team.id} className="team-row">
-                <img src={team.logo} alt={team.name} className="team-logo" />
-                <span className="team-name">{team.name}</span>
+                <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                <span className="team-name">{team.school}</span>
                 <span className="team-stat">{team.stats[statName]}</span>
             </div>
         ));
@@ -92,6 +84,56 @@ const Stats = () => {
                         ) : (
                             <p className="stat-placeholder">Coming Soon</p>
                         )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Team Defense Section */}
+            <div className="stats-section">
+                <h2 className="section-title">Team Defense</h2>
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <h3 className="stat-title">Yards Allowed</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Points Allowed</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Sacks</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Player Statistics Section */}
+            <div className="stats-section">
+                <h2 className="section-title">Player Statistics</h2>
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <h3 className="stat-title">Passing Yards</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Rushing Yards</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Receiving Yards</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Tackles</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Sacks</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
+                    </div>
+                    <div className="stat-card">
+                        <h3 className="stat-title">Interceptions</h3>
+                        <p className="stat-placeholder">Coming Soon</p>
                     </div>
                 </div>
             </div>
