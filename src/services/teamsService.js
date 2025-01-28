@@ -129,10 +129,14 @@ export const getTeamSchedule = async (teamId, year = 2024) => {
 // In teamsService.js, modify getTeamRoster
 export const getTeamRoster = async (teamId, year = 2024) => {
     const endpoint = "/roster";
-    const response = await fetchData(endpoint, { teamId, year });
-    
-    // Transform API response to handle empty names
-    return response.map(player => ({
+    const response = await fetchData(endpoint, { year });
+
+    console.log("Full roster response:", response);
+
+    // Filter the roster by teamId client-side
+    const filteredRoster = response.filter(player => player.teamId === parseInt(teamId));
+
+    return filteredRoster.map(player => ({
         ...player,
         fullName: [player.firstName, player.lastName].filter(n => n).join(' ').trim() || 'Unknown Player'
     }));
