@@ -11,7 +11,9 @@ const Stats = () => {
             try {
                 setLoading(true);
                 const data = await teamsService.getTeams(); // Fetch all teams
+                console.log("Fetched Team Data:", data); // Debug the fetched data
                 const fbsTeams = data.filter((team) => team.division === "fbs"); // Filter FBS teams
+                console.log("Filtered FBS Teams:", fbsTeams); // Debug the filtered FBS teams
                 setTeamStats(fbsTeams);
             } catch (error) {
                 console.error("Error fetching stats:", error);
