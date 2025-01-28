@@ -11,9 +11,8 @@ const Stats = () => {
             try {
                 setLoading(true);
                 const data = await teamsService.getTeams(); // Fetch all teams
-                console.log("Fetched Team Data:", data); // Debug the fetched data
+                console.log("Fetched Team Data:", data); // Debug fetched data
                 const fbsTeams = data.filter((team) => team.division === "fbs"); // Filter FBS teams
-                console.log("Filtered FBS Teams:", fbsTeams); // Debug the filtered FBS teams
                 setTeamStats(fbsTeams);
             } catch (error) {
                 console.error("Error fetching stats:", error);
@@ -25,19 +24,30 @@ const Stats = () => {
         fetchStats();
     }, []);
 
+    const getTeamLogo = (teamName) => {
+        const team = teamStats.find(
+            (t) => t.school.toLowerCase() === teamName.toLowerCase()
+        );
+        return team?.logos?.[0] || "/photos/default_team.png";
+    };
+
     const renderTeamStats = (statName) => {
         if (loading) {
             return <p className="stat-placeholder">Loading...</p>;
         }
 
-        const sortedTeams = [...teamStats].sort(
-            (a, b) => b.stats[statName] - a.stats[statName]
-        );
+        const sortedTeams = [...teamStats]
+            .filter((team) => team.stats?.[statName] !== undefined)
+            .sort((a, b) => b.stats[statName] - a.stats[statName]);
+
+        if (sortedTeams.length === 0) {
+            return <p className="stat-placeholder">No data available</p>;
+        }
 
         return sortedTeams.slice(0, 5).map((team) => (
             <div key={team.id} className="team-row">
-                <img src={team.logo} alt={team.name} className="team-logo" />
-                <span className="team-name">{team.name}</span>
+                <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                <span className="team-name">{team.school}</span>
                 <span className="team-stat">{team.stats[statName]}</span>
             </div>
         ));
