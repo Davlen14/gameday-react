@@ -102,18 +102,19 @@ const TeamDetail = () => {
             case "Rankings":
                 return (
                     <div>
-                        <h2>Rankings</h2>
+                        <h2>Ratings</h2>
                         {isLoading.ratings ? (
-                            <p>Loading rankings...</p>
+                            <p>Loading ratings...</p>
                         ) : (
                             <>
-                                <p>Overall Rank: {ratings?.overall || "N/A"}</p>
-                                <p style={{ color: "green" }}>Offense Rank: {ratings?.offenseRank || "N/A"}</p>
-                                <p style={{ color: "red" }}>Defense Rank: {ratings?.defenseRank || "N/A"}</p>
+                                <p>Overall Rating: {ratings?.overall || "N/A"}</p>
+                                <p style={{ color: "green" }}>Offense Rating: {ratings?.offense || "N/A"}</p>
+                                <p style={{ color: "red" }}>Defense Rating: {ratings?.defense || "N/A"}</p>
                             </>
                         )}
                     </div>
                 );
+            
             case "Roster":
                 return (
                     <div>
