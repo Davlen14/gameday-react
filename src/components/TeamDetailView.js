@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 
@@ -10,16 +10,20 @@ const TeamDetail = () => {
     const [schedule, setSchedule] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("Rankings");
     const [sortOption, setSortOption] = useState("Name");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+    const [isLoadingRatings, setIsLoadingRatings] = useState(false);
+    const [isLoadingRoster, setIsLoadingRoster] = useState(false);
+    const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
     const [error, setError] = useState(null);
 
     const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
     const sortOptions = ["Name", "Position", "Height", "Year"];
 
+    // Fetch team data
     useEffect(() => {
         const fetchTeam = async () => {
             try {
-                setIsLoading(true);
+                setIsLoadingTeam(true);
                 const teamsData = await teamsService.getTeams();
                 const foundTeam = teamsData.find((t) => t.id === parseInt(teamId));
                 if (!foundTeam) throw new Error("Team not found");
@@ -27,50 +31,63 @@ const TeamDetail = () => {
             } catch (err) {
                 setError(`Error fetching team data: ${err.message}`);
             } finally {
-                setIsLoading(false);
+                setIsLoadingTeam(false);
             }
         };
         fetchTeam();
     }, [teamId]);
 
+    // Fetch team ratings
     useEffect(() => {
         const fetchRatings = async () => {
             try {
+                setIsLoadingRatings(true);
                 const data = await teamsService.getTeamRatings(teamId, 2024);
                 setRatings(data);
             } catch (err) {
                 console.error("Error fetching ratings:", err.message);
+            } finally {
+                setIsLoadingRatings(false);
             }
         };
         fetchRatings();
     }, [teamId]);
 
+    // Fetch team roster
     useEffect(() => {
         const fetchRoster = async () => {
             try {
+                setIsLoadingRoster(true);
                 const data = await teamsService.getTeamRoster(teamId, 2024);
                 setRoster(data);
             } catch (err) {
                 console.error("Error fetching roster:", err.message);
+            } finally {
+                setIsLoadingRoster(false);
             }
         };
         fetchRoster();
     }, [teamId]);
 
+    // Fetch team schedule
     useEffect(() => {
         const fetchSchedule = async () => {
             try {
+                setIsLoadingSchedule(true);
                 const data = await teamsService.getTeamSchedule(teamId, 2024);
                 setSchedule(data);
             } catch (err) {
                 console.error("Error fetching schedule:", err.message);
+            } finally {
+                setIsLoadingSchedule(false);
             }
         };
         fetchSchedule();
     }, [teamId]);
 
-    const sortRoster = (roster, option) => {
-        switch (option) {
+    // Sort roster
+    const sortedRoster = useMemo(() => {
+        switch (sortOption) {
             case "Name":
                 return [...roster].sort((a, b) => a.fullName.localeCompare(b.fullName));
             case "Position":
@@ -82,65 +99,81 @@ const TeamDetail = () => {
             default:
                 return roster;
         }
-    };
+    }, [roster, sortOption]);
 
+    // Render category content
     const renderCategoryContent = () => {
         switch (selectedCategory) {
             case "Rankings":
                 return (
                     <div>
                         <h2>Rankings</h2>
-                        <p>Overall Rank: {ratings?.overall || "N/A"}</p>
-                        <p style={{ color: "green" }}>Offense Rank: {ratings?.offense || "N/A"}</p>
-                        <p style={{ color: "red" }}>Defense Rank: {ratings?.defense || "N/A"}</p>
+                        {isLoadingRatings ? (
+                            <p>Loading rankings...</p>
+                        ) : (
+                            <>
+                                <p>Overall Rank: {ratings?.overall || "N/A"}</p>
+                                <p style={{ color: "green" }}>Offense Rank: {ratings?.offenseRank || "N/A"}</p>
+                                <p style={{ color: "red" }}>Defense Rank: {ratings?.defenseRank || "N/A"}</p>
+                            </>
+                        )}
                     </div>
                 );
             case "Roster":
                 return (
                     <div>
                         <h2>Roster</h2>
-                        <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
-                            {sortOptions.map((option) => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                        {roster.length > 0 ? (
-                            sortRoster(roster, sortOption).map((player, index) => (
-                                <div key={index} style={{ padding: "0.5rem", borderBottom: "1px solid #ddd" }}>
-                                    <span>
-                                        <strong>{player.fullName}</strong> - {player.position || "N/A"}
-                                    </span>
-                                    <span>Height: {formatHeight(player.height)}</span>
-                                    <span>Year: {player.year || "N/A"}</span>
-                                </div>
-                            ))
+                        {isLoadingRoster ? (
+                            <p>Loading roster...</p>
                         ) : (
-                            <p>No roster data available.</p>
+                            <>
+                                <select
+                                    onChange={(e) => setSortOption(e.target.value)}
+                                    value={sortOption}
+                                    style={{ marginBottom: "1rem", padding: "0.5rem" }}
+                                >
+                                    {sortOptions.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                                {sortedRoster.length > 0 ? (
+                                    sortedRoster.map((player, index) => (
+                                        <div key={index} style={{ padding: "0.5rem", borderBottom: "1px solid #ddd" }}>
+                                            <span>
+                                                <strong>{player.fullName}</strong> - {player.position || "N/A"}
+                                            </span>
+                                            <span>Height: {formatHeight(player.height)}</span>
+                                            <span>Year: {player.year || "N/A"}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No roster data available.</p>
+                                )}
+                            </>
                         )}
-                    </div>
-                );
-            case "Statistics":
-                return (
-                    <div>
-                        <h2>Statistics</h2>
-                        <p>Coming soon...</p>
                     </div>
                 );
             case "Schedule":
                 return (
                     <div>
                         <h2>Schedule</h2>
-                        {schedule.map((game, index) => (
-                            <div key={index} style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
-                                <p>
-                                    {game.homeTeam} vs {game.awayTeam} - {" "}
-                                    <span style={{ color: game.homePoints > game.awayPoints ? "green" : "red" }}>
-                                        {game.homePoints} - {game.awayPoints}
-                                    </span>
-                                </p>
-                                <p>Venue: {game.venue || "TBD"}</p>
-                            </div>
-                        ))}
+                        {isLoadingSchedule ? (
+                            <p>Loading schedule...</p>
+                        ) : (
+                            schedule.map((game, index) => (
+                                <div key={index} style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
+                                    <p>
+                                        {game.homeTeam} vs {game.awayTeam} -{" "}
+                                        <span style={{ color: game.homePoints > game.awayPoints ? "green" : "red" }}>
+                                            {game.homePoints} - {game.awayPoints}
+                                        </span>
+                                    </p>
+                                    <p>Venue: {game.venue || "TBD"}</p>
+                                </div>
+                            ))
+                        )}
                     </div>
                 );
             case "News":
@@ -162,7 +195,7 @@ const TeamDetail = () => {
         return `${feet}'${remainderInches}"`;
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoadingTeam) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
     if (!team) return <div>Team not found</div>;
 

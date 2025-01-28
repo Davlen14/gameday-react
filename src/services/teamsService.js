@@ -109,7 +109,7 @@ export const getPlayByPlay = async (gameId) => {
     return await fetchData(endpoint, params);
 };
 
-// New FBS-specific additions
+// Updated FBS-specific functions
 export const getTeamById = async (teamId) => {
     const endpoint = "/teams/fbs";
     const allTeams = await fetchData(endpoint, { year: 2024 });
@@ -120,50 +120,77 @@ export const getTeamById = async (teamId) => {
     return foundTeam;
 };
 
-export const getTeamSchedule = async (teamId, year = 2024) => {
+export const getTeamSchedule = async (team, year = 2024) => {
     const endpoint = "/games";
-    return await fetchData(endpoint, {
+    const params = {
         year,
-        team: teamId,
+        team,
         seasonType: "regular",
         division: "fbs",
-    });
-};
+    };
+    const response = await fetchData(endpoint, params);
 
-export const getTeamRoster = async (teamId, year = 2024) => {
-    const endpoint = "/roster";
-    const response = await fetchData(endpoint, { year });
+    if (!response || !response.length) {
+        throw new Error("No schedule data found");
+    }
 
-    console.log("Full roster response:", response);
-
-    const filteredRoster = response.filter(player => player.teamId === parseInt(teamId));
-
-    return filteredRoster.map(player => ({
-        ...player,
-        fullName: [player.firstName, player.lastName].filter(Boolean).join(' ').trim() || "Unknown Player",
+    return response.map((game) => ({
+        id: game.id,
+        week: game.week,
+        date: game.startDate,
+        homeTeam: game.homeTeam,
+        awayTeam: game.awayTeam,
+        homePoints: game.homePoints || 0,
+        awayPoints: game.awayPoints || 0,
+        venue: game.venue || "TBD",
+        conferenceGame: game.conferenceGame,
+        neutralSite: game.neutralSite,
     }));
 };
 
-export const getTeamVenue = async (teamId) => {
-    const endpoint = "/venues";
-    const response = await fetchData(endpoint, { teamId });
-    return response?.[0] || null;
+export const getTeamRoster = async (team, year = 2024) => {
+    const endpoint = "/roster";
+    const params = { year, team };
+    const response = await fetchData(endpoint, params);
+
+    if (!response || !response.length) {
+        throw new Error("No roster data found");
+    }
+
+    return response.map((player) => ({
+        id: player.id || null,
+        fullName: `${player.firstName || ""} ${player.lastName || ""}`.trim() || "Unknown Player",
+        position: player.position || "N/A",
+        height: player.height || "N/A",
+        weight: player.weight || "N/A",
+        year: player.year || "N/A",
+        homeCity: player.homeCity || "N/A",
+        homeState: player.homeState || "N/A",
+    }));
 };
 
-export const getAdvancedStats = async (teamId) => {
-    const endpoint = "/stats/season/advanced";
-    return await fetchData(endpoint, { team: teamId });
-};
-
-export const getTeamMatchup = async (team1, team2) => {
-    const endpoint = "/teams/matchup";
-    return await fetchData(endpoint, { team1, team2 });
-};
-
-export const getTeamRatings = async (teamId, year = 2024) => {
+export const getTeamRatings = async (team, year = 2024) => {
     const endpoint = "/ratings/sp";
-    const params = { year, team: teamId };
-    return await fetchData(endpoint, params);
+    const params = { year, team };
+    const response = await fetchData(endpoint, params);
+
+    if (!response || !response.length) {
+        throw new Error("No ratings data found");
+    }
+
+    const teamData = response.find((item) => item.team === team);
+    if (!teamData) {
+        throw new Error(`Ratings data not found for team: ${team}`);
+    }
+
+    return {
+        overall: teamData.rating,
+        offense: teamData.offense?.rating || "N/A",
+        defense: teamData.defense?.rating || "N/A",
+        specialTeams: teamData.specialTeams?.rating || "N/A",
+        offenseRank: teamData.offense?.ranking || "N/A",
+        defenseRank: teamData.defense?.ranking || "N/A",
+    };
 };
 
 // Export all functions
