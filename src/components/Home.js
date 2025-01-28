@@ -17,7 +17,7 @@ const Home = () => {
                 setIsLoading(true);
                 const [teamsData, pollsData, gamesData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, 'ap', week),
+                    teamsService.getPolls(2024, "ap", week),
                     teamsService.getGames(week),
                 ]);
 
@@ -84,38 +84,29 @@ const Home = () => {
 
             {/* Polls Section */}
             <section className="polls-section">
-                <div className="polls-header">
-                    <img
-                        src="/photos/committee.png"
-                        alt="Committee Logo"
-                        className="polls-logo"
-                    />
-                </div>
                 <div className="polls-grid">
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
-                            <h3>{poll.name}</h3>
+                            <h3 className="poll-title">
+                                <img
+                                    src="/photos/committee.png"
+                                    alt="Committee Logo"
+                                    className="poll-logo"
+                                />
+                                {poll.name}
+                            </h3>
                             <div className="rankings-list">
                                 {poll.rankings.slice(0, 5).map((team) => (
-                                    <div
-                                        key={team.school}
-                                        className="ranking-item"
-                                    >
+                                    <div key={team.school} className="ranking-item">
                                         <img
                                             src={getTeamLogo(team.school)}
                                             alt={team.school}
                                             className="team-logo"
                                         />
                                         <div className="team-info">
-                                            <span className="rank">
-                                                #{team.rank}
-                                            </span>
-                                            <span className="team-name">
-                                                {team.school}
-                                            </span>
-                                            <span className="points">
-                                                {team.points} pts
-                                            </span>
+                                            <span className="rank">#{team.rank}</span>
+                                            <span className="team-name">{team.school}</span>
+                                            <span className="points">{team.points} pts</span>
                                         </div>
                                     </div>
                                 ))}
@@ -260,6 +251,20 @@ const Home = () => {
                 }
 
                 /* Polls Section */
+                .poll-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                }
+
+                .poll-logo {
+                    width: 1.5rem; /* Matches text size */
+                    height: 1.5rem;
+                    object-fit: contain;
+                }
+
                 .polls-grid {
                     display: grid;
                     gap: 2rem;
@@ -268,25 +273,18 @@ const Home = () => {
                 }
 
                 .poll-card {
-                    background: var(--primary-color);
+                    background: #fff;
                     padding: 1.5rem;
                     border-radius: 16px;
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-                    border: 1px solid var(--border-color);
+                    border: 1px solid #ddd;
                 }
-                  .polls-logo {
-                    width: 150px;
-                    height: auto;
-                    margin: 0 auto;
-                    display: block;
-                }
-  
 
                 .ranking-item {
                     display: flex;
                     align-items: center;
                     padding: 1rem 0;
-                    border-bottom: 1px solid var(--border-color);
+                    border-bottom: 1px solid #ddd;
                 }
 
                 .team-logo {
@@ -302,7 +300,7 @@ const Home = () => {
                 }
 
                 .rank {
-                    color: var(--accent-color);
+                    color: rgb(142, 0, 0);
                     font-weight: bold;
                 }
 
