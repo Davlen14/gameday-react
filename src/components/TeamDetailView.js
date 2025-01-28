@@ -9,39 +9,80 @@ const TeamDetail = () => {
     const [roster, setRoster] = useState([]);
     const [schedule, setSchedule] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("Rankings");
-    const [isLoading, setIsLoading] = useState(true);
+    const [sortOption, setSortOption] = useState("Name");
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
+    const sortOptions = ["Name", "Position", "Height", "Year"];
 
     useEffect(() => {
-        const fetchTeamData = async () => {
+        const fetchTeam = async () => {
             try {
                 setIsLoading(true);
-
-                // Fetch team data
                 const teamsData = await teamsService.getTeams();
                 const foundTeam = teamsData.find((t) => t.id === parseInt(teamId));
                 if (!foundTeam) throw new Error("Team not found");
                 setTeam(foundTeam);
-
-                // Fetch additional data
-                const ratingsData = await teamsService.getTeamRatings(teamId, 2024);
-                const rosterData = await teamsService.getTeamRoster(teamId, 2024);
-                const scheduleData = await teamsService.getTeamSchedule(teamId, 2024);
-
-                setRatings(ratingsData);
-                setRoster(rosterData);
-                setSchedule(scheduleData);
             } catch (err) {
-                setError(err.message);
+                setError(`Error fetching team data: ${err.message}`);
             } finally {
                 setIsLoading(false);
             }
         };
-
-        fetchTeamData();
+        fetchTeam();
     }, [teamId]);
+
+    useEffect(() => {
+        const fetchRatings = async () => {
+            try {
+                const data = await teamsService.getTeamRatings(teamId, 2024);
+                setRatings(data);
+            } catch (err) {
+                console.error("Error fetching ratings:", err.message);
+            }
+        };
+        fetchRatings();
+    }, [teamId]);
+
+    useEffect(() => {
+        const fetchRoster = async () => {
+            try {
+                const data = await teamsService.getTeamRoster(teamId, 2024);
+                setRoster(data);
+            } catch (err) {
+                console.error("Error fetching roster:", err.message);
+            }
+        };
+        fetchRoster();
+    }, [teamId]);
+
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            try {
+                const data = await teamsService.getTeamSchedule(teamId, 2024);
+                setSchedule(data);
+            } catch (err) {
+                console.error("Error fetching schedule:", err.message);
+            }
+        };
+        fetchSchedule();
+    }, [teamId]);
+
+    const sortRoster = (roster, option) => {
+        switch (option) {
+            case "Name":
+                return [...roster].sort((a, b) => a.fullName.localeCompare(b.fullName));
+            case "Position":
+                return [...roster].sort((a, b) => (a.position || "").localeCompare(b.position || ""));
+            case "Height":
+                return [...roster].sort((a, b) => (a.height || 0) - (b.height || 0));
+            case "Year":
+                return [...roster].sort((a, b) => (a.year || 0) - (b.year || 0));
+            default:
+                return roster;
+        }
+    };
 
     const renderCategoryContent = () => {
         switch (selectedCategory) {
@@ -58,8 +99,13 @@ const TeamDetail = () => {
                 return (
                     <div>
                         <h2>Roster</h2>
+                        <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                            {sortOptions.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
                         {roster.length > 0 ? (
-                            roster.map((player, index) => (
+                            sortRoster(roster, sortOption).map((player, index) => (
                                 <div key={index} style={{ padding: "0.5rem", borderBottom: "1px solid #ddd" }}>
                                     <span>
                                         <strong>{player.fullName}</strong> - {player.position || "N/A"}
@@ -87,7 +133,7 @@ const TeamDetail = () => {
                         {schedule.map((game, index) => (
                             <div key={index} style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
                                 <p>
-                                    {game.homeTeam} vs {game.awayTeam} -{" "}
+                                    {game.homeTeam} vs {game.awayTeam} - {" "}
                                     <span style={{ color: game.homePoints > game.awayPoints ? "green" : "red" }}>
                                         {game.homePoints} - {game.awayPoints}
                                     </span>
@@ -98,7 +144,12 @@ const TeamDetail = () => {
                     </div>
                 );
             case "News":
-                return <div><h2>News</h2><p>Coming soon...</p></div>;
+                return (
+                    <div>
+                        <h2>News</h2>
+                        <p>Coming soon...</p>
+                    </div>
+                );
             default:
                 return null;
         }
