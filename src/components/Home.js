@@ -84,7 +84,13 @@ const Home = () => {
 
             {/* Polls Section */}
             <section className="polls-section">
-                <h2 className="section-title">Top 25 Rankings</h2>
+                <div className="polls-header">
+                    <img
+                        src="/photos/committee.png"
+                        alt="Committee Logo"
+                        className="polls-logo"
+                    />
+                </div>
                 <div className="polls-grid">
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
@@ -199,7 +205,7 @@ const Home = () => {
 
                                 <div className="game-footer">
                                     <div className="game-venue">
-                                        <span>📍 {game.venue}</span>
+                                        <span>🏟️ {game.venue}</span>
                                     </div>
                                 </div>
                             </div>
@@ -268,6 +274,13 @@ const Home = () => {
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
                     border: 1px solid var(--border-color);
                 }
+                  .polls-logo {
+                    width: 150px;
+                    height: auto;
+                    margin: 0 auto;
+                    display: block;
+                }
+  
 
                 .ranking-item {
                     display: flex;
