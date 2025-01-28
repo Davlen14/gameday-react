@@ -27,6 +27,12 @@ function App() {
   return (
     <Router>
       <div className="app">
+        {/* Adding Google Font Link */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700;900&display=swap"
+          rel="stylesheet"
+        />
+
         {/* Header */}
         <header className="app-header">
           <div className="header-content">
@@ -174,7 +180,7 @@ function App() {
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
             <Route path="/games/:gameId" element={<GameDetailView />} />
-            
+
             {/* Conference Placeholders */}
             <Route path="/sec" element={<div>SEC Conference Page</div>} />
             <Route path="/bigten" element={<div>Big Ten Conference Page</div>} />
@@ -182,28 +188,28 @@ function App() {
             <Route path="/pac12" element={<div>Pac-12 Conference Page</div>} />
             <Route path="/big12" element={<div>Big 12 Conference Page</div>} />
             <Route path="/others" element={<div>Other Conferences Page</div>} />
-            
+
             {/* Lines Placeholders */}
             <Route path="/current-lines" element={<div>Current Lines Page</div>} />
             <Route path="/spread-analysis" element={<div>Spread Analysis Page</div>} />
             <Route path="/moneyline-comparisons" element={<div>Moneyline Comparisons Page</div>} />
             <Route path="/over-under-metrics" element={<div>Over/Under Metrics Page</div>} />
-            
+
             {/* Metrics Placeholders */}
             <Route path="/team-comparisons" element={<div>Team Comparisons Page</div>} />
             <Route path="/advanced-box-scores" element={<div>Advanced Box Scores Page</div>} />
             <Route path="/player-analytics" element={<div>Player Analytics Page</div>} />
             <Route path="/power-rankings" element={<div>Power Rankings Page</div>} />
-            
+
             {/* GamedayGPT Placeholders */}
             <Route path="/predict-outcomes" element={<div>Predict Outcomes Page</div>} />
             <Route path="/betting-suggestions" element={<div>Betting Suggestions Page</div>} />
-            
+
             {/* Tools Placeholders */}
             <Route path="/play-by-play" element={<div>Play-by-Play Analysis Page</div>} />
             <Route path="/game-simulations" element={<div>Game Simulations Page</div>} />
             <Route path="/live-updates" element={<div>Live Updates Page</div>} />
-            
+
             {/* Resources Placeholders */}
             <Route path="/how-to-use" element={<div>How to Use Page</div>} />
             <Route path="/tutorials" element={<div>Tutorials Page</div>} />
