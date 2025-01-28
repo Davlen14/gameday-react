@@ -17,14 +17,14 @@ const Teams = () => {
         }, {});
     };
 
-    // Conference logo mapping with proper file names
+    // Conference logo mapping
     const conferenceLogos = {
         "ACC": "ACC.png",
         "American Athletic": "American Athletic.png",
         "Big 12": "Big 12.png",
         "Big Ten": "Big Ten.png",
         "Conference USA": "Conference USA.png",
-        "FBS Independents": "FBS Indep...dents.png",
+        "FBS Independents": "FBS Independents.png",
         "Mid-American": "Mid-American.png",
         "Mountain West": "Mountain West.png",
         "Pac-12": "Pac-12.png",
@@ -54,154 +54,158 @@ const Teams = () => {
     return (
         <div className="teams-container">
             <h1 className="page-title">FBS Teams by Conference</h1>
-            
-            {Object.entries(groupedTeams).map(([conference, teams]) => (
-                <section key={conference} className="conference-section">
-                    <div className="conference-header">
-                        <img 
-                            src={`/photos/${conferenceLogos[conference]}`}
-                            alt={conference}
-                            className="conference-logo"
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                            }}
-                        />
-                        <h2 className="conference-title">{conference}</h2>
-                    </div>
-                    
-                    <div className="teams-grid">
-                        {teams.map((team) => (
-                            <Link 
-                                key={team.id}
-                                to={`/teams/${team.id}`}
-                                className="team-card"
-                            >
-                                <div className="card-content">
-                                    <img
-                                        src={team.logos?.[0] || "/photos/default-team.png"}
-                                        alt={team.school}
-                                        className="team-logo"
-                                    />
-                                    <div className="team-info">
-                                        <h3>{team.school}</h3>
-                                        <p className="location">
-                                            {team.location.city}, {team.location.state}
-                                        </p>
+
+            {/* Conference Grid - Ensures multiple columns */}
+            <div className="conferences-grid">
+                {Object.entries(groupedTeams).map(([conference, teams]) => (
+                    <section key={conference} className="conference-section">
+                        <div className="conference-header">
+                            <img 
+                                src={`/photos/${conferenceLogos[conference]}`}
+                                alt={conference}
+                                className="conference-logo"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <h2 className="conference-title">{conference}</h2>
+                        </div>
+
+                        <div className="teams-grid">
+                            {teams.map((team) => (
+                                <Link 
+                                    key={team.id}
+                                    to={`/teams/${team.id}`}
+                                    className="team-card"
+                                >
+                                    <div className="card-content">
+                                        <img
+                                            src={team.logos?.[0] || "/photos/default-team.png"}
+                                            alt={team.school}
+                                            className="team-logo"
+                                        />
+                                        <div className="team-info">
+                                            <h3>{team.school}</h3>
+                                            <p className="location">
+                                                {team.location.city}, {team.location.state}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
-            ))}
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                ))}
+            </div>
+
+            {/* Embedded CSS */}
+            <style>{`
+                .teams-container {
+                    padding: 2rem;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    text-align: center;
+                }
+
+                /* Title stays centered */
+                .page-title {
+                    font-size: 2.5rem;
+                    margin-bottom: 3rem;
+                    color: #1a1a1a;
+                    letter-spacing: -0.05em;
+                }
+
+                /* Conferences grid - Each conference is in a multi-column layout */
+                .conferences-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                    gap: 2rem;
+                    justify-content: center;
+                }
+
+                /* Each Conference Block */
+                .conference-section {
+                    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+                    border-radius: 16px;
+                    padding: 2rem;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    text-align: center;
+                }
+
+                /* Conference Header */
+                .conference-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1rem;
+                    border-bottom: 2px solid #ddd;
+                    padding-bottom: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                /* Conference Logo */
+                .conference-logo {
+                    height: 50px;
+                    width: auto;
+                }
+
+                /* Conference Title */
+                .conference-title {
+                    font-size: 1.5rem;
+                    color: #2c3e50;
+                    margin: 0;
+                }
+
+                /* Grid for Teams Inside a Conference */
+                .teams-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1rem;
+                }
+
+                /* Team Cards */
+                .team-card {
+                    text-decoration: none;
+                    color: inherit;
+                    background: white;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+                    transition: transform 0.3s ease-in-out;
+                }
+
+                .team-card:hover {
+                    transform: scale(1.05);
+                }
+
+                .card-content {
+                    padding: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+                .team-logo {
+                    width: 80px;
+                    height: 80px;
+                    object-fit: contain;
+                    margin-bottom: 0.75rem;
+                }
+
+                .team-info {
+                    text-align: center;
+                }
+
+                .team-info h3 {
+                    font-size: 1.1rem;
+                    margin: 0;
+                }
+
+                .location {
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                }
+            `}</style>
         </div>
     );
 };
 
 export default Teams;
-
-// Add this CSS to your stylesheet
-const styles = `
-.teams-container {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.page-title {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
-    color: #1a1a1a;
-    letter-spacing: -0.05em;
-}
-
-.conference-section {
-    margin-bottom: 4rem;
-    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-.conference-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.conference-logo {
-    height: 80px;
-    margin: 0 auto 1rem;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-.conference-title {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin: 0.5rem 0;
-}
-
-.teams-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
-    padding: 1rem;
-}
-
-.team-card {
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.team-card:hover {
-    transform: translateY(-5px);
-}
-
-.card-content {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-}
-
-.team-logo {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    margin-bottom: 1.2rem;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-.team-info {
-    text-align: center;
-}
-
-.team-info h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
-    color: #1a1a1a;
-}
-
-.location {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.loading, .error {
-    text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
-}
-`;
-
-// Inject styles
-document.head.insertAdjacentHTML('beforeend', `<style>${styles}</style>`);
