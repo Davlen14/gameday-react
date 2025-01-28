@@ -61,6 +61,7 @@ body {
   text-decoration: none;
   color: white;
   font-weight: bold;
+  font-family: "Titillium Web", sans-serif;
   background-color: rgb(149, 0, 0);
   border: 1px solid rgb(149, 0, 0);
   border-radius: 5px;
@@ -74,6 +75,7 @@ body {
 
 .subscribe-button {
   background-color: #ffffff;
+  font-family: "Titillium Web", sans-serif;
   color: rgb(149, 0, 0);
   border: 1px solid rgb(149, 0, 0);
 }
