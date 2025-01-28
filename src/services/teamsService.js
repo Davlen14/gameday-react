@@ -22,7 +22,7 @@ const fetchData = async (endpoint, params = {}) => {
     }
 };
 
-// Existing core functions
+// Core API interaction functions
 export const getGameById = async (gameId) => {
     const endpoint = "/games";
     const params = { id: gameId };
@@ -78,18 +78,18 @@ export const getTeamStats = async (team, year) => {
     return await fetchData(endpoint, params);
 };
 
-export const getPolls = async (year = 2024, pollType = 'ap', week = null) => {
+export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     const endpoint = "/rankings";
     const params = { 
-        year,
-        pollType,
-        seasonType: "regular"
+        year, 
+        pollType, 
+        seasonType: "regular" 
     };
-    
+
     if (week) params.week = week;
 
     const data = await fetchData(endpoint, params);
-    
+
     return data.map(pollGroup => ({
         id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
@@ -110,10 +110,14 @@ export const getPlayByPlay = async (gameId) => {
 };
 
 // New FBS-specific additions
-export const getTeamDetails = async (teamId) => {
-    const endpoint = "/teams";
-    const response = await fetchData(endpoint, { id: teamId });
-    return response?.[0] || null;
+export const getTeamById = async (teamId) => {
+    const endpoint = "/teams/fbs";
+    const allTeams = await fetchData(endpoint, { year: 2024 });
+
+    const foundTeam = allTeams.find((team) => team.id === parseInt(teamId));
+    if (!foundTeam) throw new Error(`Team with ID ${teamId} not found`);
+
+    return foundTeam;
 };
 
 export const getTeamSchedule = async (teamId, year = 2024) => {
@@ -122,23 +126,21 @@ export const getTeamSchedule = async (teamId, year = 2024) => {
         year,
         team: teamId,
         seasonType: "regular",
-        division: "fbs"
+        division: "fbs",
     });
 };
 
-// In teamsService.js, modify getTeamRoster
 export const getTeamRoster = async (teamId, year = 2024) => {
     const endpoint = "/roster";
     const response = await fetchData(endpoint, { year });
 
     console.log("Full roster response:", response);
 
-    // Filter the roster by teamId client-side
     const filteredRoster = response.filter(player => player.teamId === parseInt(teamId));
 
     return filteredRoster.map(player => ({
         ...player,
-        fullName: [player.firstName, player.lastName].filter(n => n).join(' ').trim() || 'Unknown Player'
+        fullName: [player.firstName, player.lastName].filter(Boolean).join(' ').trim() || "Unknown Player",
     }));
 };
 
@@ -160,7 +162,6 @@ export const getTeamMatchup = async (team1, team2) => {
 
 // Export all functions
 const teamsService = {
-    // Original functions
     getGameById,
     getTeams,
     getGames,
@@ -171,14 +172,12 @@ const teamsService = {
     getTeamStats,
     getPolls,
     getPlayByPlay,
-    
-    // New FBS additions
-    getTeamDetails,
+    getTeamById,
     getTeamSchedule,
     getTeamRoster,
     getTeamVenue,
     getAdvancedStats,
-    getTeamMatchup
+    getTeamMatchup,
 };
 
 export default teamsService;
