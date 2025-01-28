@@ -10,82 +10,77 @@ const TeamDetail = () => {
     const [schedule, setSchedule] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("Rankings");
     const [sortOption, setSortOption] = useState("Name");
-    const [isLoadingTeam, setIsLoadingTeam] = useState(false);
-    const [isLoadingRatings, setIsLoadingRatings] = useState(false);
-    const [isLoadingRoster, setIsLoadingRoster] = useState(false);
-    const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+    const [isLoading, setIsLoading] = useState({ team: false, ratings: false, roster: false, schedule: false });
     const [error, setError] = useState(null);
 
     const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
     const sortOptions = ["Name", "Position", "Height", "Year"];
 
-    // Fetch team data
+    // Fetch team and related data
     useEffect(() => {
-        const fetchTeam = async () => {
+        const fetchData = async () => {
             try {
-                setIsLoadingTeam(true);
+                setIsLoading((prev) => ({ ...prev, team: true }));
+
+                // Fetch team data
                 const teamsData = await teamsService.getTeams();
                 const foundTeam = teamsData.find((t) => t.id === parseInt(teamId));
                 if (!foundTeam) throw new Error("Team not found");
                 setTeam(foundTeam);
+
+                // Fetch related data
+                await Promise.all([
+                    fetchRatings(foundTeam.school),
+                    fetchRoster(foundTeam.school),
+                    fetchSchedule(foundTeam.school),
+                ]);
             } catch (err) {
-                setError(`Error fetching team data: ${err.message}`);
+                setError(`Error: ${err.message}`);
             } finally {
-                setIsLoadingTeam(false);
+                setIsLoading((prev) => ({ ...prev, team: false }));
             }
         };
-        fetchTeam();
-    }, [teamId]);
 
-    // Fetch team ratings
-    useEffect(() => {
-        const fetchRatings = async () => {
+        const fetchRatings = async (teamName) => {
             try {
-                setIsLoadingRatings(true);
-                const data = await teamsService.getTeamRatings(teamId, 2024);
+                setIsLoading((prev) => ({ ...prev, ratings: true }));
+                const data = await teamsService.getTeamRatings(teamName, 2024);
                 setRatings(data);
             } catch (err) {
                 console.error("Error fetching ratings:", err.message);
             } finally {
-                setIsLoadingRatings(false);
+                setIsLoading((prev) => ({ ...prev, ratings: false }));
             }
         };
-        fetchRatings();
-    }, [teamId]);
 
-    // Fetch team roster
-    useEffect(() => {
-        const fetchRoster = async () => {
+        const fetchRoster = async (teamName) => {
             try {
-                setIsLoadingRoster(true);
-                const data = await teamsService.getTeamRoster(teamId, 2024);
+                setIsLoading((prev) => ({ ...prev, roster: true }));
+                const data = await teamsService.getTeamRoster(teamName, 2024);
                 setRoster(data);
             } catch (err) {
                 console.error("Error fetching roster:", err.message);
             } finally {
-                setIsLoadingRoster(false);
+                setIsLoading((prev) => ({ ...prev, roster: false }));
             }
         };
-        fetchRoster();
-    }, [teamId]);
 
-    // Fetch team schedule
-    useEffect(() => {
-        const fetchSchedule = async () => {
+        const fetchSchedule = async (teamName) => {
             try {
-                setIsLoadingSchedule(true);
-                const data = await teamsService.getTeamSchedule(teamId, 2024);
+                setIsLoading((prev) => ({ ...prev, schedule: true }));
+                const data = await teamsService.getTeamSchedule(teamName, 2024);
                 setSchedule(data);
             } catch (err) {
                 console.error("Error fetching schedule:", err.message);
             } finally {
-                setIsLoadingSchedule(false);
+                setIsLoading((prev) => ({ ...prev, schedule: false }));
             }
         };
-        fetchSchedule();
+
+        fetchData();
     }, [teamId]);
 
-    // Sort roster
+    // Sort roster based on the selected option
     const sortedRoster = useMemo(() => {
         switch (sortOption) {
             case "Name":
@@ -101,14 +96,14 @@ const TeamDetail = () => {
         }
     }, [roster, sortOption]);
 
-    // Render category content
+    // Render category-specific content
     const renderCategoryContent = () => {
         switch (selectedCategory) {
             case "Rankings":
                 return (
                     <div>
                         <h2>Rankings</h2>
-                        {isLoadingRatings ? (
+                        {isLoading.ratings ? (
                             <p>Loading rankings...</p>
                         ) : (
                             <>
@@ -123,7 +118,7 @@ const TeamDetail = () => {
                 return (
                     <div>
                         <h2>Roster</h2>
-                        {isLoadingRoster ? (
+                        {isLoading.roster ? (
                             <p>Loading roster...</p>
                         ) : (
                             <>
@@ -159,13 +154,13 @@ const TeamDetail = () => {
                 return (
                     <div>
                         <h2>Schedule</h2>
-                        {isLoadingSchedule ? (
+                        {isLoading.schedule ? (
                             <p>Loading schedule...</p>
                         ) : (
                             schedule.map((game, index) => (
                                 <div key={index} style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
                                     <p>
-                                        {game.homeTeam} vs {game.awayTeam} -{" "}
+                                        {game.homeTeam} vs {game.awayTeam} - {" "}
                                         <span style={{ color: game.homePoints > game.awayPoints ? "green" : "red" }}>
                                             {game.homePoints} - {game.awayPoints}
                                         </span>
@@ -195,8 +190,8 @@ const TeamDetail = () => {
         return `${feet}'${remainderInches}"`;
     };
 
-    if (isLoadingTeam) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (isLoading.team) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
     if (!team) return <div>Team not found</div>;
 
     return (
@@ -238,3 +233,4 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+

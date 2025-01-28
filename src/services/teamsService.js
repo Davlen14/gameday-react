@@ -120,17 +120,33 @@ export const getTeamById = async (teamId) => {
     return foundTeam;
 };
 
-export const getTeamSchedule = async (team, year = 2024) => {
-    const endpoint = "/games";
-    const params = {
-        year,
-        team,
-        seasonType: "regular",
-        division: "fbs",
-    };
+export const getTeamRoster = async (team, year = 2024) => {
+    const endpoint = "/roster";
+    const params = { year, team }; // Ensure `team` is the team name (e.g., "Michigan")
     const response = await fetchData(endpoint, params);
 
-    if (!response || !response.length) {
+    if (!response || response.length === 0) {
+        throw new Error("No roster data found");
+    }
+
+    return response.map((player) => ({
+        id: player.id || null,
+        fullName: `${player.firstName || ""} ${player.lastName || ""}`.trim() || "Unknown Player",
+        position: player.position || "N/A",
+        height: player.height || "N/A",
+        weight: player.weight || "N/A",
+        year: player.year || "N/A",
+        homeCity: player.homeCity || "N/A",
+        homeState: player.homeState || "N/A",
+    }));
+};
+
+export const getTeamSchedule = async (team, year = 2024) => {
+    const endpoint = "/games";
+    const params = { year, team, seasonType: "regular", division: "fbs" };
+    const response = await fetchData(endpoint, params);
+
+    if (!response || response.length === 0) {
         throw new Error("No schedule data found");
     }
 
@@ -148,33 +164,12 @@ export const getTeamSchedule = async (team, year = 2024) => {
     }));
 };
 
-export const getTeamRoster = async (team, year = 2024) => {
-    const endpoint = "/roster";
-    const params = { year, team };
-    const response = await fetchData(endpoint, params);
-
-    if (!response || !response.length) {
-        throw new Error("No roster data found");
-    }
-
-    return response.map((player) => ({
-        id: player.id || null,
-        fullName: `${player.firstName || ""} ${player.lastName || ""}`.trim() || "Unknown Player",
-        position: player.position || "N/A",
-        height: player.height || "N/A",
-        weight: player.weight || "N/A",
-        year: player.year || "N/A",
-        homeCity: player.homeCity || "N/A",
-        homeState: player.homeState || "N/A",
-    }));
-};
-
 export const getTeamRatings = async (team, year = 2024) => {
     const endpoint = "/ratings/sp";
-    const params = { year, team };
+    const params = { year, team }; // Ensure `team` is the team name (e.g., "Michigan")
     const response = await fetchData(endpoint, params);
 
-    if (!response || !response.length) {
+    if (!response || response.length === 0) {
         throw new Error("No ratings data found");
     }
 
