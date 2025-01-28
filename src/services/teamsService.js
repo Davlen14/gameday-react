@@ -193,6 +193,24 @@ export const getTeamRatings = async (team, year = 2024) => {
     };
 };
 
+const getTeamVenue = async (teamId) => {
+    const endpoint = "/venues";
+    const response = await fetchData(endpoint, { teamId });
+    return response?.[0] || null;
+};
+
+const getAdvancedStats = async (teamId) => {
+    const endpoint = "/stats/season/advanced";
+    return await fetchData(endpoint, { team: teamId });
+};
+
+const getTeamMatchup = async (team1, team2) => {
+    const endpoint = "/teams/matchup";
+    return await fetchData(endpoint, { team1, team2 });
+};
+
+
+
 // Export all functions
 const teamsService = {
     getGameById,
