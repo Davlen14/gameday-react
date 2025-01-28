@@ -76,22 +76,28 @@ export const getTeamStats = async (team, year) => {
     const endpoint = "/stats/team";
     const params = { year, team };
 
-    // Fetch data from the proxy
-    const response = await fetchData(endpoint, params);
+    try {
+        // Fetch data from the proxy
+        const response = await fetchData(endpoint, params);
 
-    console.log("Raw Team Stats Response:", response); // Log full response
+        console.log("Raw Team Stats Response:", response); // Log full response
 
-    // Filter for relevant stats
-    const relevantStats = response.filter((stat) =>
-        ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
-    );
+        // Filter for relevant stats
+        const relevantStats = response.filter((stat) =>
+            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
+        );
 
-    console.log("Filtered Relevant Stats:", relevantStats); // Log filtered stats
+        console.log("Filtered Relevant Stats:", relevantStats); // Log filtered stats
 
-    return relevantStats.reduce((acc, stat) => {
-        acc[stat.statName] = stat.statValue;
-        return acc;
-    }, {});
+        // Format the stats into a dictionary for easier access
+        return relevantStats.reduce((acc, stat) => {
+            acc[stat.statName] = stat.statValue;
+            return acc;
+        }, {});
+    } catch (error) {
+        console.error("Error fetching team stats:", error);
+        throw error; // Propagate the error
+    }
 };
 
 export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
