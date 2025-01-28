@@ -53,8 +53,6 @@ const Teams = () => {
 
     return (
         <div className="teams-container">
-            <h1 className="page-title">FBS Teams by Conference</h1>
-
             {/* Conference List (Vertical) */}
             <div className="conferences-list">
                 {Object.entries(groupedTeams).map(([conference, teams]) => (
@@ -69,7 +67,7 @@ const Teams = () => {
                             <h2 className="conference-title">{conference}</h2>
                         </div>
 
-                        {/* Table Layout for Teams */}
+                        {/* Landscape Table Layout for Teams */}
                         <div className="teams-table">
                             {teams.map((team) => (
                                 <Link 
@@ -96,17 +94,8 @@ const Teams = () => {
             <style>{`
                 .teams-container {
                     padding: 2rem;
-                    max-width: 1200px;
+                    max-width: 1400px;
                     margin: 0 auto;
-                    text-align: center;
-                }
-
-                /* Title stays centered */
-                .page-title {
-                    font-size: 2rem;
-                    margin-bottom: 2rem;
-                    color: #1a1a1a;
-                    font-weight: bold;
                 }
 
                 /* Conferences are stacked vertically */
@@ -116,7 +105,7 @@ const Teams = () => {
                     gap: 2rem;
                 }
 
-                /* Each Conference Block */
+                /* Each Conference Block (Landscape Layout) */
                 .conference-section {
                     background: white;
                     border-radius: 10px;
@@ -129,7 +118,7 @@ const Teams = () => {
                 .conference-header {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 12px;
                     border-bottom: 2px solid #ddd;
                     padding-bottom: 0.75rem;
                     margin-bottom: 1rem;
@@ -137,39 +126,40 @@ const Teams = () => {
 
                 /* Conference Logo */
                 .conference-logo {
-                    height: 40px;
+                    height: 50px;
                     width: auto;
                 }
 
                 /* Conference Title */
                 .conference-title {
-                    font-size: 1.4rem;
+                    font-size: 1.6rem;
                     color: #333;
                     margin: 0;
                     font-weight: bold;
                 }
 
-                /* Table Layout for Teams */
+                /* Landscape Table Layout for Teams */
                 .teams-table {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                    gap: 10px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    justify-content: flex-start;
                     padding: 10px;
-                    justify-content: center;
                 }
 
-                /* Team Cards (Minimal Size) */
+                /* Bigger Team Cards */
                 .team-card {
                     text-decoration: none;
                     color: inherit;
                     background: white;
-                    border-radius: 8px;
-                    padding: 0.75rem;
+                    border-radius: 10px;
+                    padding: 1rem;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 10px;
                     border: 1px solid #ddd;
                     transition: transform 0.2s ease-in-out;
+                    min-width: 180px;
                 }
 
                 .team-card:hover {
@@ -180,17 +170,17 @@ const Teams = () => {
                 .team-content {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 12px;
                 }
 
                 .team-logo {
-                    width: 40px;
-                    height: 40px;
+                    width: 50px;
+                    height: 50px;
                     object-fit: contain;
                 }
 
                 .team-name {
-                    font-size: 0.95rem;
+                    font-size: 1rem;
                     font-weight: bold;
                     color: #333;
                 }
@@ -198,11 +188,12 @@ const Teams = () => {
                 /* Responsive Styles */
                 @media (max-width: 768px) {
                     .teams-table {
-                        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                        flex-direction: column;
+                        align-items: center;
                     }
 
                     .conference-title {
-                        font-size: 1.2rem;
+                        font-size: 1.4rem;
                     }
                 }
             `}</style>
