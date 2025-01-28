@@ -51,7 +51,7 @@ const Teams = () => {
 
     const groupedTeams = groupByConference(teams);
 
-    return (
+     return (
         <div className="teams-container">
             <h1 className="page-title">FBS Teams by Conference</h1>
             
