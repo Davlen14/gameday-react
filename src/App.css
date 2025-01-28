@@ -27,6 +27,7 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   position: relative; /* Ensures dropdowns are properly aligned within the header */
   z-index: 1000; /* Places the header above all other content */
+  font-family: "Titillium Web", sans-serif; /* Consistent font */
 }
 
 .header-content {
@@ -50,6 +51,7 @@ body {
   gap: 20px;
   flex-grow: 1;
   justify-content: center; /* Center navigation items */
+  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
 }
 
 .header-buttons {
@@ -100,6 +102,7 @@ body {
   padding: 10px 15px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
+  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
 }
 
 .dropdown-button:hover {
@@ -116,6 +119,7 @@ body {
   z-index: 1100; /* Ensure dropdowns appear above other content */
   padding: 10px 0;
   min-width: 200px;
+  font-family: "Titillium Web", sans-serif; /* Consistent font */
 }
 
 .dropdown-menu a {
@@ -125,6 +129,7 @@ body {
   color: #111;
   font-size: 0.9rem;
   transition: background-color 0.3s ease;
+  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
 }
 
 .dropdown-menu a:hover {
@@ -137,6 +142,7 @@ body {
   padding: 20px;
   position: relative; /* Prevents content from overlapping dropdowns */
   z-index: 1; /* Ensures content is layered below dropdowns */
+  font-family: "Titillium Web", sans-serif; /* Consistent font */
 }
 
 /* Responsive Design for Header */
