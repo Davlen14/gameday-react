@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from "react";
+import "../styles/Stats.css"; // Import the external CSS
+import teamsService from "../services/teamsService"; // Import the teamsService for fetching data
+
 const Stats = () => {
     const [teamStats, setTeamStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -51,3 +55,5 @@ const Stats = () => {
         </div>
     );
 };
+
+export default Stats;
