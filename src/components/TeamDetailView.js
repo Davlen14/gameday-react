@@ -71,6 +71,12 @@ const TeamDetail = () => {
         rosterContainer: {
             marginTop: "2rem"
         },
+        rosterHeader: {
+            fontSize: "1.5rem",
+            marginBottom: "1rem",
+            fontWeight: "600",
+            textAlign: "center"
+        },
         rosterItem: {
             padding: "1rem",
             borderBottom: "1px solid #eee",
@@ -78,12 +84,6 @@ const TeamDetail = () => {
             justifyContent: "space-between",
             alignItems: "center",
             fontSize: "1rem"
-        },
-        rosterHeader: {
-            fontSize: "1.5rem",
-            marginBottom: "1rem",
-            fontWeight: "600",
-            textAlign: "center"
         }
     };
 
