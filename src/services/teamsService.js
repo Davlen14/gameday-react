@@ -160,6 +160,12 @@ export const getTeamMatchup = async (team1, team2) => {
     return await fetchData(endpoint, { team1, team2 });
 };
 
+export const getTeamRatings = async (teamId, year = 2024) => {
+    const endpoint = "/ratings/sp";
+    const params = { year, team: teamId };
+    return await fetchData(endpoint, params);
+};
+
 // Export all functions
 const teamsService = {
     getGameById,
@@ -171,6 +177,7 @@ const teamsService = {
     getGameLines,
     getTeamStats,
     getPolls,
+    getTeamRatings,
     getPlayByPlay,
     getTeamById,
     getTeamSchedule,
