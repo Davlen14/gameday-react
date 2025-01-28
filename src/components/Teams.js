@@ -51,7 +51,7 @@ const Teams = () => {
 
     const groupedTeams = groupByConference(teams);
 
-     return (
+    return (
         <div className="teams-container">
             <h1 className="page-title">FBS Teams by Conference</h1>
             
@@ -98,7 +98,9 @@ const Teams = () => {
     );
 };
 
-// Updated CSS for consistent layout
+export default Teams;
+
+// Add this CSS to your stylesheet
 const styles = `
 .teams-container {
     padding: 2rem;
@@ -143,10 +145,9 @@ const styles = `
 
 .teams-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.5rem;
     padding: 1rem;
-    justify-content: center;
 }
 
 .team-card {
@@ -157,9 +158,6 @@ const styles = `
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    height: 100%;
-    min-height: 300px;
-    display: flex;
 }
 
 .team-card:hover {
@@ -171,7 +169,7 @@ const styles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    height: 100%;
 }
 
 .team-logo {
@@ -179,53 +177,23 @@ const styles = `
     height: 120px;
     object-fit: contain;
     margin-bottom: 1.2rem;
-    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
 .team-info {
     text-align: center;
-    width: 100%;
 }
 
 .team-info h3 {
     margin: 0 0 0.5rem;
     font-size: 1.1rem;
     color: #1a1a1a;
-    line-height: 1.3;
 }
 
 .location {
     color: #6c757d;
     font-size: 0.9rem;
     margin: 0;
-    line-height: 1.4;
-}
-
-@media (min-width: 1200px) {
-    .teams-grid {
-        grid-template-columns: repeat(4, minmax(240px, 1fr));
-    }
-}
-
-@media (max-width: 1199px) and (min-width: 768px) {
-    .teams-grid {
-        grid-template-columns: repeat(3, minmax(240px, 1fr));
-    }
-}
-
-@media (max-width: 767px) {
-    .teams-grid {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
-    }
-    
-    .team-logo {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .card-content {
-        padding: 1rem;
-    }
 }
 
 .loading, .error {
@@ -237,5 +205,3 @@ const styles = `
 
 // Inject styles
 document.head.insertAdjacentHTML('beforeend', `<style>${styles}</style>`);
-
-export default Teams;
