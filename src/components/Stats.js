@@ -1,7 +1,46 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Stats.css"; // Import the external CSS
+import teamsService from "../services/teamsService"; // Import the teamsService for fetching data
 
 const Stats = () => {
+    const [teamStats, setTeamStats] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoading(true);
+                const data = await teamsService.getTeams(); // Fetch all teams
+                const fbsTeams = data.filter((team) => team.division === "fbs"); // Filter FBS teams
+                setTeamStats(fbsTeams);
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    const renderTeamStats = (statName) => {
+        if (loading) {
+            return <p className="stat-placeholder">Loading...</p>;
+        }
+
+        const sortedTeams = [...teamStats].sort(
+            (a, b) => b.stats[statName] - a.stats[statName]
+        );
+
+        return sortedTeams.slice(0, 5).map((team) => (
+            <div key={team.id} className="team-row">
+                <img src={team.logo} alt={team.name} className="team-logo" />
+                <span className="team-name">{team.name}</span>
+                <span className="team-stat">{team.stats[statName]}</span>
+            </div>
+        ));
+    };
+
     return (
         <div className="stats-container">
             <h1 className="stats-header">College Football Stats</h1>
@@ -12,15 +51,27 @@ const Stats = () => {
                 <div className="stats-grid">
                     <div className="stat-card">
                         <h3 className="stat-title">Passing Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
+                        {teamStats.length > 0 ? (
+                            renderTeamStats("netPassingYards")
+                        ) : (
+                            <p className="stat-placeholder">Coming Soon</p>
+                        )}
                     </div>
                     <div className="stat-card">
                         <h3 className="stat-title">Rushing Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
+                        {teamStats.length > 0 ? (
+                            renderTeamStats("rushingYards")
+                        ) : (
+                            <p className="stat-placeholder">Coming Soon</p>
+                        )}
                     </div>
                     <div className="stat-card">
                         <h3 className="stat-title">Total Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
+                        {teamStats.length > 0 ? (
+                            renderTeamStats("totalYards")
+                        ) : (
+                            <p className="stat-placeholder">Coming Soon</p>
+                        )}
                     </div>
                 </div>
             </div>

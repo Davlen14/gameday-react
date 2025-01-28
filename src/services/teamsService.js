@@ -75,7 +75,17 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 export const getTeamStats = async (team, year) => {
     const endpoint = "/stats/team";
     const params = { year, team };
-    return await fetchData(endpoint, params);
+    const response = await fetchData(endpoint, params);
+
+    // Filter for relevant stats: passing yards, rushing yards, and total yards
+    const relevantStats = response.filter((stat) =>
+        ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
+    );
+
+    return relevantStats.reduce((acc, stat) => {
+        acc[stat.statName] = stat.statValue;
+        return acc;
+    }, {});
 };
 
 export const getPolls = async (year = 2024, pollType = "ap", week = null) => {

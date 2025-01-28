@@ -64,3 +64,30 @@
     color: #666;
     font-style: italic;
 }
+.team-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.team-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.team-name {
+    flex: 1;
+    font-weight: bold;
+    text-align: left;
+}
+
+.team-stat {
+    font-size: 1rem;
+    color: var(--primary);
+    font-weight: bold;
+}
