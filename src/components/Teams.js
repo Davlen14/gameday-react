@@ -90,113 +90,131 @@ const Teams = () => {
                 ))}
             </div>
 
-            {/* Embedded CSS */}
-            <style>{`
-                .teams-container {
-                    padding: 2rem;
-                    max-width: 1400px;
-                    margin: 0 auto;
-                }
+{/* Embedded CSS */}
+<style>{`
+    .teams-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
 
-                /* Conferences are stacked vertically */
-                .conferences-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2rem;
-                }
+    /* Conferences are stacked vertically */
+    .conferences-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
 
-                /* Each Conference Block (Landscape Layout) */
-                .conference-section {
-                    background: white;
-                    border-radius: 10px;
-                    padding: 1.5rem;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-                    text-align: left;
-                }
+    /* Each Conference Block (Full Width) */
+    .conference-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        width: 100%; /* Ensures the section takes the full width */
+    }
 
-                /* Conference Header */
-                .conference-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    border-bottom: 2px solid #ddd;
-                    padding-bottom: 0.75rem;
-                    margin-bottom: 1rem;
-                }
+    /* Conference Header */
+    .conference-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+    }
 
-                /* Conference Logo */
-                .conference-logo {
-                    height: 50px;
-                    width: auto;
-                }
+    /* Conference Logo */
+    .conference-logo {
+        height: 50px;
+        width: auto;
+    }
 
-                /* Conference Title */
-                .conference-title {
-                    font-size: 1.6rem;
-                    color: #333;
-                    margin: 0;
-                    font-weight: bold;
-                }
+    /* Conference Title */
+    .conference-title {
+        font-size: 1.6rem;
+        color: #333;
+        margin: 0;
+        font-weight: bold;
+    }
 
-                /* Landscape Table Layout for Teams */
-                .teams-table {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 12px;
-                    justify-content: flex-start;
-                    padding: 10px;
-                }
+    /* Teams Table Layout */
+    .teams-table {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: flex-start; /* Align teams properly */
+        padding: 20px;
+    }
 
-                /* Bigger Team Cards */
-                .team-card {
-                    text-decoration: none;
-                    color: inherit;
-                    background: white;
-                    border-radius: 10px;
-                    padding: 1rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    border: 1px solid #ddd;
-                    transition: transform 0.2s ease-in-out;
-                    min-width: 180px;
-                }
+    /* Bigger Team Cards */
+    .team-card {
+        text-decoration: none;
+        color: inherit;
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #ddd;
+        transition: transform 0.2s ease-in-out;
+        min-width: 220px; /* Adjust for larger cards */
+        flex: 1 1 calc(20% - 20px); /* Responsive layout for 5 cards per row */
+        max-width: 240px;
+    }
 
-                .team-card:hover {
-                    transform: scale(1.05);
-                    background: #f9f9f9;
-                }
+    .team-card:hover {
+        transform: scale(1.05);
+        background: #f9f9f9;
+    }
 
-                .team-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
+    .team-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
 
-                .team-logo {
-                    width: 50px;
-                    height: 50px;
-                    object-fit: contain;
-                }
+    .team-logo {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
 
-                .team-name {
-                    font-size: 1rem;
-                    font-weight: bold;
-                    color: #333;
-                }
+    .team-name {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+    }
 
-                /* Responsive Styles */
-                @media (max-width: 768px) {
-                    .teams-table {
-                        flex-direction: column;
-                        align-items: center;
-                    }
+    /* Responsive Styles */
+    @media (max-width: 1024px) {
+        .teams-table {
+            justify-content: center; /* Align to center on smaller screens */
+        }
 
-                    .conference-title {
-                        font-size: 1.4rem;
-                    }
-                }
-            `}</style>
+        .team-card {
+            flex: 1 1 calc(33% - 20px); /* Show 3 cards per row */
+        }
+    }
+
+    @media (max-width: 768px) {
+        .team-card {
+            flex: 1 1 calc(50% - 20px); /* Show 2 cards per row */
+        }
+
+        .conference-title {
+            font-size: 1.4rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .team-card {
+            flex: 1 1 100%; /* One card per row */
+        }
+    }
+`}</style>
         </div>
     );
 };
