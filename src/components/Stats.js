@@ -10,27 +10,26 @@ const Stats = () => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                
-                // Fetch all teams
+
+                // Fetch all FBS teams
                 const allTeams = await teamsService.getTeams();
                 const fbsTeams = allTeams.filter((team) => team.division === "fbs");
 
-                console.log("Fetched FBS Teams:", fbsTeams); // Debug FBS teams
-                
-                // Fetch stats for each team and structure the response
+                console.log("Fetched FBS Teams:", fbsTeams);
+
+                // Fetch offense stats for each team
                 const statsPromises = fbsTeams.map(async (team) => {
                     const stats = await teamsService.getTeamStats(team.school, 2024);
                     return {
                         id: team.id,
                         name: team.school,
-                        logo: team.logos?.[0] || "/photos/default_team.png",
-                        stats, // Merging fetched stats
+                        stats,
                     };
                 });
 
                 const stats = await Promise.all(statsPromises);
-                console.log("Fetched Team Stats:", stats); // Debug fetched stats
-                
+                console.log("Fetched Team Stats:", stats);
+
                 setTeamStats(stats);
             } catch (error) {
                 console.error("Error fetching stats:", error);
@@ -41,13 +40,6 @@ const Stats = () => {
 
         fetchStats();
     }, []);
-
-    const getTeamLogo = (teamName) => {
-        const team = teamStats.find(
-            (t) => t.name.toLowerCase() === teamName.toLowerCase()
-        );
-        return team?.logo || "/photos/default_team.png";
-    };
 
     const renderTeamStats = (statName) => {
         if (loading) {
@@ -64,7 +56,6 @@ const Stats = () => {
 
         return sortedTeams.slice(0, 5).map((team) => (
             <div key={team.id} className="team-row">
-                <img src={getTeamLogo(team.name)} alt={team.name} className="team-logo" />
                 <span className="team-name">{team.name}</span>
                 <span className="team-stat">{team.stats[statName]}</span>
             </div>
