@@ -74,61 +74,52 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 
 export const getTeamStats = async (team, year) => {
     const statsEndpoint = "/stats/season"; // Endpoint to fetch team stats
-    const encodedTeam = encodeURIComponent(team); // Encode team name
-    const params = { year, team: encodedTeam };
-
-    // Define offensive stat categories explicitly
-    const offensiveStats = [
-        "completionAttempts",
-        "netPassingYards",
-        "passingTDs",
-        "rushingYards",
-        "rushingAttempts",
-        "rushingTDs",
-        "totalYards",
-        "yardsPerPass",
-        "yardsPerRushAttempt",
-        "firstDowns",
-    ];
+    const params = { year, team }; // Pass the raw team name without extra encoding
 
     try {
+        console.log(`Fetching stats for team: ${team} (Raw)`);
+
         // Fetch team stats
         const response = await fetchData(statsEndpoint, params);
 
         if (!Array.isArray(response)) {
             console.error(`Unexpected API response for ${team}:`, response);
-            // Return default values for all offensive stats
-            return offensiveStats.reduce((acc, stat) => {
-                acc[stat] = 0;
-                return acc;
-            }, {});
+            // Return default values for missing stats
+            return {
+                netPassingYards: 0,
+                rushingYards: 0,
+                totalYards: 0,
+            };
         }
 
         console.log(`Raw Team Stats for ${team}:`, response);
 
-        // Filter relevant offensive stats from the response
+        // Filter relevant stats (optional, if you only need specific ones)
         const relevantStats = response.filter((stat) =>
-            offensiveStats.includes(stat.statName)
+            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
         );
 
         console.log(`Filtered Stats for ${team}:`, relevantStats);
 
-        // Initialize with default values (0) for missing stats
+        // Initialize with default values
         return relevantStats.reduce((acc, stat) => {
             acc[stat.statName] = stat.statValue;
             return acc;
-        }, offensiveStats.reduce((acc, stat) => {
-            acc[stat] = 0; // Default value if the stat is not found
-            return acc;
-        }, {}));
+        }, {
+            netPassingYards: 0,
+            rushingYards: 0,
+            totalYards: 0,
+        });
+
     } catch (error) {
         console.error(`Error fetching stats for ${team}:`, error);
 
-        // Return default values for offensive stats on error
-        return offensiveStats.reduce((acc, stat) => {
-            acc[stat] = 0;
-            return acc;
-        }, {});
+        // Return default values on error
+        return {
+            netPassingYards: 0,
+            rushingYards: 0,
+            totalYards: 0,
+        };
     }
 };
 
