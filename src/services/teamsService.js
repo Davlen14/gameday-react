@@ -108,6 +108,11 @@ export const getTeamStats = async (team, year) => {
 
         console.log("Valid Offensive Stats:", validOffensiveStats);
 
+        // Fallback: If no valid offensive stats, log a warning and continue
+        if (validOffensiveStats.length === 0) {
+            console.warn("No valid offensive stats found in stat categories.");
+        }
+
         // 🔹 Fetch team stats
         const response = await fetchData(statsEndpoint, params);
 
@@ -136,7 +141,6 @@ export const getTeamStats = async (team, year) => {
             acc[stat] = 0; // Default value if the stat is not found
             return acc;
         }, {}));
-
     } catch (error) {
         console.error(`Error fetching stats for ${team}:`, error);
 
