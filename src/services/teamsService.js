@@ -79,7 +79,7 @@ export const getTeamStats = async (team, year) => {
     const params = { year, team: encodedTeam };
 
     try {
-        // 🔹 Fetch stat categories to dynamically filter offensive stats
+        // Fetch stat categories to dynamically filter offensive stats
         const statCategories = await fetchData(statsCategoriesEndpoint);
 
         if (!Array.isArray(statCategories)) {
@@ -87,7 +87,7 @@ export const getTeamStats = async (team, year) => {
             throw new Error("Failed to fetch stat categories.");
         }
 
-        // 🔹 Define offensive stat categories
+        // Define offensive stat categories explicitly or dynamically from stat categories
         const offensiveStats = [
             "completionAttempts",
             "netPassingYards",
@@ -99,45 +99,36 @@ export const getTeamStats = async (team, year) => {
             "yardsPerPass",
             "yardsPerRushAttempt",
             "firstDowns",
-        ];
+        ].filter((stat) => statCategories.includes(stat)); // Filter by valid stat categories
 
-        // Validate that offensiveStats exist in the statCategories
-        const validOffensiveStats = offensiveStats.filter((stat) =>
-            statCategories.includes(stat)
-        );
+        console.log("Valid Offensive Stats:", offensiveStats);
 
-        console.log("Valid Offensive Stats:", validOffensiveStats);
-
-        // Fallback: If no valid offensive stats, log a warning and continue
-        if (validOffensiveStats.length === 0) {
-            console.warn("No valid offensive stats found in stat categories.");
-        }
-
-        // 🔹 Fetch team stats
+        // Fetch team stats
         const response = await fetchData(statsEndpoint, params);
 
         if (!Array.isArray(response)) {
             console.error(`Unexpected API response for ${team}:`, response);
-            return validOffensiveStats.reduce((acc, stat) => {
-                acc[stat] = 0; // Set default value for missing stats
+            // Return default values for all offensive stats
+            return offensiveStats.reduce((acc, stat) => {
+                acc[stat] = 0;
                 return acc;
             }, {});
         }
 
         console.log(`Raw Team Stats for ${team}:`, response);
 
-        // 🔹 Filter relevant offensive stats
+        // Filter relevant offensive stats from the response
         const relevantStats = response.filter((stat) =>
-            validOffensiveStats.includes(stat.statName)
+            offensiveStats.includes(stat.statName)
         );
 
         console.log(`Filtered Stats for ${team}:`, relevantStats);
 
-        // 🔹 Initialize with default values (0) for missing stats
+        // Initialize with default values (0) for missing stats
         return relevantStats.reduce((acc, stat) => {
             acc[stat.statName] = stat.statValue;
             return acc;
-        }, validOffensiveStats.reduce((acc, stat) => {
+        }, offensiveStats.reduce((acc, stat) => {
             acc[stat] = 0; // Default value if the stat is not found
             return acc;
         }, {}));
