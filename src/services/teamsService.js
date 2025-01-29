@@ -74,27 +74,27 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 
 export const getTeamStats = async (team, year) => {
     const statsEndpoint = "/stats/season"; // API endpoint for team stats
-    const params = { year, team }; // Pass the raw team name without extra encoding
+    const encodedTeam = encodeURIComponent(team.trim()); // Ensure proper encoding
+    const params = { year, team: encodedTeam }; // Pass formatted team name
 
     try {
-        console.log(`Fetching stats for team: ${team}`);
+        console.log(`Fetching stats for team: ${team} (Encoded: ${encodedTeam})`);
 
         // Fetch team stats from the API
         const response = await fetchData(statsEndpoint, params);
 
+        console.log(`API Response for ${team}:`, response);
+
         if (!Array.isArray(response) || response.length === 0) {
-            console.error(`Unexpected or empty API response for ${team}:`, response);
-            // Return default stats if no response or unexpected data
+            console.warn(`No data returned for ${team}. API Response:`, response);
             return {
-                netPassingYards: 0,
-                rushingYards: 0,
-                totalYards: 0,
+                netPassingYards: "N/A",
+                rushingYards: "N/A",
+                totalYards: "N/A",
             };
         }
 
-        console.log(`Raw Team Stats for ${team}:`, response);
-
-        // Filter relevant stats based on your requirements
+        // Filter only the required stats
         const relevantStats = response.filter((stat) =>
             ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
         );
@@ -110,14 +110,14 @@ export const getTeamStats = async (team, year) => {
             rushingYards: 0,
             totalYards: 0,
         });
+
     } catch (error) {
         console.error(`Error fetching stats for ${team}:`, error);
 
-        // Return default values on error
         return {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
+            netPassingYards: "N/A",
+            rushingYards: "N/A",
+            totalYards: "N/A",
         };
     }
 };
