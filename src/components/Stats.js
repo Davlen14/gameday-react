@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from "react";
-import "../styles/Stats.css"; // Import the external CSS
-import teamsService from "../services/teamsService"; // Import the teamsService for fetching data
+import "../styles/Stats.css";
+import teamsService from "../services/teamsService";
 
 const Stats = () => {
     const [teamStats, setTeamStats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
 
-                // Fetch all FBS teams
+                // 1️⃣ Fetch all FBS teams
                 const allTeams = await teamsService.getTeams();
                 const fbsTeams = allTeams.filter((team) => team.division === "fbs");
 
-                console.log("Fetched FBS Teams:", fbsTeams);
+                console.log("Fetched FBS Teams:", fbsTeams.map((t) => t.school));
 
-                // Fetch offense stats for each team
+                // 2️⃣ Fetch stats for each team using Promise.allSettled
                 const statsPromises = fbsTeams.map(async (team) => {
-                    const stats = await teamsService.getTeamStats(team.school, 2024);
-                    return {
-                        id: team.id,
-                        name: team.school,
-                        stats,
-                    };
+                    try {
+                        const stats = await teamsService.getTeamStats(team.school, 2024);
+                        return {
+                            id: team.id,
+                            name: team.school,
+                            stats,
+                        };
+                    } catch (error) {
+                        console.error(`Failed to fetch stats for ${team.school}:`, error);
+                        return null;
+                    }
                 });
 
-                const stats = await Promise.all(statsPromises);
+                const results = await Promise.allSettled(statsPromises);
+                const stats = results
+                    .filter((result) => result.status === "fulfilled" && result.value)
+                    .map((result) => result.value);
+
                 console.log("Fetched Team Stats:", stats);
 
                 setTeamStats(stats);
             } catch (error) {
-                console.error("Error fetching stats:", error);
+                console.error("Error fetching team stats:", error);
+                setError("Failed to load team stats. Please try again later.");
             } finally {
                 setLoading(false);
             }
@@ -42,22 +53,19 @@ const Stats = () => {
     }, []);
 
     const renderTeamStats = (statName) => {
-        if (loading) {
-            return <p className="stat-placeholder">Loading...</p>;
-        }
+        if (loading) return <p className="stat-placeholder">Loading...</p>;
+        if (error) return <p className="stat-placeholder">{error}</p>;
 
-        const sortedTeams = [...teamStats]
+        const sortedTeams = teamStats
             .filter((team) => team.stats?.[statName] !== undefined)
-            .sort((a, b) => b.stats[statName] - a.stats[statName]);
+            .sort((a, b) => (b.stats[statName] || 0) - (a.stats[statName] || 0));
 
-        if (sortedTeams.length === 0) {
-            return <p className="stat-placeholder">No data available</p>;
-        }
+        if (sortedTeams.length === 0) return <p className="stat-placeholder">No data available</p>;
 
         return sortedTeams.slice(0, 5).map((team) => (
             <div key={team.id} className="team-row">
                 <span className="team-name">{team.name}</span>
-                <span className="team-stat">{team.stats[statName]}</span>
+                <span className="team-stat">{team.stats[statName] || 0}</span>
             </div>
         ));
     };
@@ -72,78 +80,39 @@ const Stats = () => {
                 <div className="stats-grid">
                     <div className="stat-card">
                         <h3 className="stat-title">Passing Yards</h3>
-                        {teamStats.length > 0 ? (
-                            renderTeamStats("netPassingYards")
-                        ) : (
-                            <p className="stat-placeholder">Coming Soon</p>
-                        )}
+                        {renderTeamStats("netPassingYards")}
                     </div>
                     <div className="stat-card">
                         <h3 className="stat-title">Rushing Yards</h3>
-                        {teamStats.length > 0 ? (
-                            renderTeamStats("rushingYards")
-                        ) : (
-                            <p className="stat-placeholder">Coming Soon</p>
-                        )}
+                        {renderTeamStats("rushingYards")}
                     </div>
                     <div className="stat-card">
                         <h3 className="stat-title">Total Yards</h3>
-                        {teamStats.length > 0 ? (
-                            renderTeamStats("totalYards")
-                        ) : (
-                            <p className="stat-placeholder">Coming Soon</p>
-                        )}
+                        {renderTeamStats("totalYards")}
                     </div>
                 </div>
             </div>
 
-            {/* Team Defense Section (Kept as "Coming Soon") */}
+            {/* Team Defense Section */}
             <div className="stats-section">
                 <h2 className="section-title">Team Defense</h2>
                 <div className="stats-grid">
-                    <div className="stat-card">
-                        <h3 className="stat-title">Yards Allowed</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Points Allowed</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Sacks</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
+                    <div className="stat-card"><h3 className="stat-title">Yards Allowed</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Points Allowed</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Sacks</h3><p className="stat-placeholder">Coming Soon</p></div>
                 </div>
             </div>
 
-            {/* Player Statistics Section (Kept as "Coming Soon") */}
+            {/* Player Statistics Section */}
             <div className="stats-section">
                 <h2 className="section-title">Player Statistics</h2>
                 <div className="stats-grid">
-                    <div className="stat-card">
-                        <h3 className="stat-title">Passing Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Rushing Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Receiving Yards</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Tackles</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Sacks</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Interceptions</h3>
-                        <p className="stat-placeholder">Coming Soon</p>
-                    </div>
+                    <div className="stat-card"><h3 className="stat-title">Passing Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Rushing Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Receiving Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Tackles</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Sacks</h3><p className="stat-placeholder">Coming Soon</p></div>
+                    <div className="stat-card"><h3 className="stat-title">Interceptions</h3><p className="stat-placeholder">Coming Soon</p></div>
                 </div>
             </div>
         </div>
