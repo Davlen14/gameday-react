@@ -11,20 +11,26 @@ const Stats = () => {
             try {
                 setLoading(true);
 
-                // Fetch all FBS teams
+                // 1️⃣ Fetch all FBS teams
                 const allTeams = await teamsService.getTeams();
                 const fbsTeams = allTeams.filter((team) => team.division === "fbs");
 
                 console.log("Fetched FBS Teams:", fbsTeams.map((t) => t.school));
 
-                // Fetch stats for each team
+                // 2️⃣ Fetch stats for each team
                 const statsPromises = fbsTeams.map(async (team) => {
                     try {
-                        const encodedTeam = encodeURIComponent(team.school); // 🔹 Encode team name
+                        const encodedTeam = encodeURIComponent(team.school); // Encode team name
                         console.log(`Fetching stats for team: ${team.school} (Encoded: ${encodedTeam})`);
 
                         const stats = await teamsService.getTeamStats(encodedTeam, 2024);
-                        console.log(`Received Stats for ${team.school}:`, stats);
+
+                        console.log(`API Request Payload for ${team.school}:`, {
+                            endpoint: "/stats/season",
+                            params: { year: 2024, team: encodedTeam },
+                        });
+
+                        console.log(`API Response for ${team.school}:`, stats);
 
                         return {
                             name: team.school,
