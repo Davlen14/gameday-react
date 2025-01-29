@@ -73,36 +73,25 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-    const statsCategoriesEndpoint = "/stats/categories"; // Endpoint to fetch stat categories
     const statsEndpoint = "/stats/season"; // Endpoint to fetch team stats
     const encodedTeam = encodeURIComponent(team); // Encode team name
     const params = { year, team: encodedTeam };
 
+    // Define offensive stat categories explicitly
+    const offensiveStats = [
+        "completionAttempts",
+        "netPassingYards",
+        "passingTDs",
+        "rushingYards",
+        "rushingAttempts",
+        "rushingTDs",
+        "totalYards",
+        "yardsPerPass",
+        "yardsPerRushAttempt",
+        "firstDowns",
+    ];
+
     try {
-        // Fetch stat categories to dynamically filter offensive stats
-        const statCategories = await fetchData(statsCategoriesEndpoint);
-
-        if (!Array.isArray(statCategories)) {
-            console.error("Unexpected stat categories response:", statCategories);
-            throw new Error("Failed to fetch stat categories.");
-        }
-
-        // Define offensive stat categories explicitly or dynamically from stat categories
-        const offensiveStats = [
-            "completionAttempts",
-            "netPassingYards",
-            "passingTDs",
-            "rushingYards",
-            "rushingAttempts",
-            "rushingTDs",
-            "totalYards",
-            "yardsPerPass",
-            "yardsPerRushAttempt",
-            "firstDowns",
-        ].filter((stat) => statCategories.includes(stat)); // Filter by valid stat categories
-
-        console.log("Valid Offensive Stats:", offensiveStats);
-
         // Fetch team stats
         const response = await fetchData(statsEndpoint, params);
 
