@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
 const Stats = () => {
-    const [teamStats, setTeamStats] = useState([]);
+    const [ohioStateStats, setOhioStateStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -11,47 +11,24 @@ const Stats = () => {
             try {
                 setLoading(true);
 
-                // 1️⃣ Fetch all FBS teams
-                const allTeams = await teamsService.getTeams();
-                const fbsTeams = allTeams.filter((team) => team.division === "fbs");
+                // Encode "Ohio State" for the API request
+                const encodedTeam = encodeURIComponent("Ohio State");
+                console.log(`Fetching stats for team: Ohio State (Encoded: ${encodedTeam})`);
 
-                console.log("Fetched FBS Teams:", fbsTeams.map((t) => t.school));
+                // Fetch stats for Ohio State
+                const stats = await teamsService.getTeamStats(encodedTeam, 2024);
 
-                // 2️⃣ Fetch stats for each team
-                const statsPromises = fbsTeams.map(async (team) => {
-                    try {
-                        const encodedTeam = encodeURIComponent(team.school); // Encode team name
-                        console.log(`Fetching stats for team: ${team.school} (Encoded: ${encodedTeam})`);
-
-                        const stats = await teamsService.getTeamStats(encodedTeam, 2024);
-
-                        console.log(`API Request Payload for ${team.school}:`, {
-                            endpoint: "/stats/season",
-                            params: { year: 2024, team: encodedTeam },
-                        });
-
-                        console.log(`API Response for ${team.school}:`, stats);
-
-                        return {
-                            name: team.school,
-                            stats,
-                        };
-                    } catch (error) {
-                        console.error(`Failed to fetch stats for ${team.school}:`, error);
-                        return { name: team.school, stats: null };
-                    }
+                console.log(`API Request Payload for Ohio State:`, {
+                    endpoint: "/stats/season",
+                    params: { year: 2024, team: encodedTeam },
                 });
 
-                const results = await Promise.allSettled(statsPromises);
-                const stats = results
-                    .filter((result) => result.status === "fulfilled")
-                    .map((result) => result.value);
+                console.log(`API Response for Ohio State:`, stats);
 
-                console.log("Fetched Team Stats:", stats);
-                setTeamStats(stats);
+                setOhioStateStats(stats);
             } catch (error) {
-                console.error("Error fetching team stats:", error);
-                setError("Failed to load team stats.");
+                console.error("Error fetching stats for Ohio State:", error);
+                setError("Failed to load Ohio State stats.");
             } finally {
                 setLoading(false);
             }
@@ -65,36 +42,29 @@ const Stats = () => {
 
     return (
         <div>
-            <h1>College Football Stats</h1>
+            <h1>Ohio State Football Stats</h1>
 
             <h2>Team Offense</h2>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Team</th>
-                        <th>Passing Yards</th>
-                        <th>Rushing Yards</th>
-                        <th>Total Yards</th>
+                        <th>Stat</th>
+                        <th>Value</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {teamStats.map((team) => (
-                        <tr key={team.name}>
-                            <td>{team.name}</td>
-                            <td>
-                                {team.stats?.netPassingYards ?? "N/A"}
-                                {team.stats === null && <span> ❌ No Data</span>}
-                            </td>
-                            <td>
-                                {team.stats?.rushingYards ?? "N/A"}
-                                {team.stats === null && <span> ❌ No Data</span>}
-                            </td>
-                            <td>
-                                {team.stats?.totalYards ?? "N/A"}
-                                {team.stats === null && <span> ❌ No Data</span>}
-                            </td>
+                    {ohioStateStats ? (
+                        Object.entries(ohioStateStats).map(([statName, statValue]) => (
+                            <tr key={statName}>
+                                <td>{statName}</td>
+                                <td>{statValue ?? "N/A"}</td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="2">No data available for Ohio State.</td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
         </div>
