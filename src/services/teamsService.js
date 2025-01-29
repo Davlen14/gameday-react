@@ -73,18 +73,18 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-    const statsEndpoint = "/stats/season"; // Endpoint to fetch team stats
+    const statsEndpoint = "/stats/season"; // API endpoint for team stats
     const params = { year, team }; // Pass the raw team name without extra encoding
 
     try {
-        console.log(`Fetching stats for team: ${team} (Raw)`);
+        console.log(`Fetching stats for team: ${team}`);
 
-        // Fetch team stats
+        // Fetch team stats from the API
         const response = await fetchData(statsEndpoint, params);
 
-        if (!Array.isArray(response)) {
-            console.error(`Unexpected API response for ${team}:`, response);
-            // Return default values for missing stats
+        if (!Array.isArray(response) || response.length === 0) {
+            console.error(`Unexpected or empty API response for ${team}:`, response);
+            // Return default stats if no response or unexpected data
             return {
                 netPassingYards: 0,
                 rushingYards: 0,
@@ -94,14 +94,14 @@ export const getTeamStats = async (team, year) => {
 
         console.log(`Raw Team Stats for ${team}:`, response);
 
-        // Filter relevant stats (optional, if you only need specific ones)
+        // Filter relevant stats based on your requirements
         const relevantStats = response.filter((stat) =>
             ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
         );
 
         console.log(`Filtered Stats for ${team}:`, relevantStats);
 
-        // Initialize with default values
+        // Initialize with default values and populate with actual data
         return relevantStats.reduce((acc, stat) => {
             acc[stat.statName] = stat.statValue;
             return acc;
@@ -110,7 +110,6 @@ export const getTeamStats = async (team, year) => {
             rushingYards: 0,
             totalYards: 0,
         });
-
     } catch (error) {
         console.error(`Error fetching stats for ${team}:`, error);
 

@@ -11,19 +11,12 @@ const Stats = () => {
             try {
                 setLoading(true);
 
-                // Encode "Ohio State" for the API request
-                const encodedTeam = encodeURIComponent("Ohio State");
-                console.log(`Fetching stats for team: Ohio State (Encoded: ${encodedTeam})`);
+                console.log("Fetching stats for Ohio State...");
 
-                // Fetch stats for Ohio State
-                const stats = await teamsService.getTeamStats(encodedTeam, 2024);
+                // Fetch stats for Ohio State (team name passed as-is)
+                const stats = await teamsService.getTeamStats("Ohio State", 2024);
 
-                console.log(`API Request Payload for Ohio State:`, {
-                    endpoint: "/stats/season",
-                    params: { year: 2024, team: encodedTeam },
-                });
-
-                console.log(`API Response for Ohio State:`, stats);
+                console.log("API Response for Ohio State:", stats);
 
                 setOhioStateStats(stats);
             } catch (error) {
