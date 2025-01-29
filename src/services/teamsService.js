@@ -2,6 +2,8 @@
 const fetchData = async (endpoint, params = {}) => {
     const url = `/api/proxy`;
 
+    console.log("🔹 FetchData Call → Endpoint:", endpoint, "Params:", params); // Debugging
+
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -11,14 +13,66 @@ const fetchData = async (endpoint, params = {}) => {
             body: JSON.stringify({ endpoint, params }),
         });
 
+        console.log(`🔹 API Response for ${endpoint}:`, response);
+
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
 
         return await response.json();
     } catch (error) {
-        console.error("Fetch Error:", error.message);
+        console.error("🚨 Fetch Error:", error.message);
         throw error;
+    }
+};
+
+// Core API interaction functions
+export const getTeamStats = async (team, year) => {
+    const endpoint = "/stats/season"; // Use "/stats/season" to match working CURL request
+    const encodedTeam = encodeURIComponent(team); // Ensure proper encoding
+    const params = { year, team: encodedTeam };
+
+    console.log(`📡 Calling getTeamStats for ${team} (${year}) →`, endpoint, params);
+
+    try {
+        const response = await fetchData(endpoint, params);
+
+        console.log(`✅ Raw Team Stats for ${team}:`, response); // Log entire response
+
+        // Ensure response is an array before processing
+        if (!Array.isArray(response)) {
+            console.error(`⚠️ Unexpected API response for ${team}:`, response);
+            return {
+                netPassingYards: 0,
+                rushingYards: 0,
+                totalYards: 0,
+            };
+        }
+
+        // Filter for relevant offensive stats
+        const relevantStats = response.filter((stat) =>
+            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
+        );
+
+        console.log(`📊 Filtered Stats for ${team}:`, relevantStats);
+
+        return relevantStats.reduce((acc, stat) => {
+            acc[stat.statName] = stat.statValue;
+            return acc;
+        }, {
+            netPassingYards: 0,
+            rushingYards: 0,
+            totalYards: 0,
+        });
+
+    } catch (error) {
+        console.error(`❌ Error fetching stats for ${team}:`, error);
+
+        return {
+            netPassingYards: 0,
+            rushingYards: 0,
+            totalYards: 0,
+        };
     }
 };
 
@@ -72,54 +126,6 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
     return await fetchData(endpoint, params);
 };
 
-export const getTeamStats = async (team, year) => {
-    const endpoint = "/stats/season"; // Use "/stats/season" to match working CURL request
-    const encodedTeam = encodeURIComponent(team); // Ensure proper encoding
-    const params = { year, team: encodedTeam };
-
-    try {
-        const response = await fetchData(endpoint, params);
-
-        // 🔹 Ensure response is an array before processing
-        if (!Array.isArray(response)) {
-            console.error(`Unexpected API response for ${team}:`, response);
-            return {
-                netPassingYards: 0,
-                rushingYards: 0,
-                totalYards: 0,
-            };
-        }
-
-        console.log(`Raw Team Stats for ${team}:`, response);
-
-        // 🔹 Filter for relevant offensive stats
-        const relevantStats = response.filter((stat) =>
-            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
-        );
-
-        console.log(`Filtered Stats for ${team}:`, relevantStats);
-
-        // 🔹 Initialize with default values (0) for missing stats
-        return relevantStats.reduce((acc, stat) => {
-            acc[stat.statName] = stat.statValue;
-            return acc;
-        }, {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        });
-
-    } catch (error) {
-        console.error(`Error fetching stats for ${team}:`, error);
-
-        // 🔹 Return default stats if API request fails
-        return {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        };
-    }
-};
 
 export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     const endpoint = "/rankings";
