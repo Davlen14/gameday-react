@@ -20,7 +20,12 @@ const Stats = () => {
                 // Fetch stats for each team
                 const statsPromises = fbsTeams.map(async (team) => {
                     try {
-                        const stats = await teamsService.getTeamStats(team.school, 2024);
+                        const encodedTeam = encodeURIComponent(team.school); // 🔹 Encode team name
+                        console.log(`Fetching stats for team: ${team.school} (Encoded: ${encodedTeam})`);
+
+                        const stats = await teamsService.getTeamStats(encodedTeam, 2024);
+                        console.log(`Received Stats for ${team.school}:`, stats);
+
                         return {
                             name: team.school,
                             stats,
@@ -70,9 +75,18 @@ const Stats = () => {
                     {teamStats.map((team) => (
                         <tr key={team.name}>
                             <td>{team.name}</td>
-                            <td>{team.stats?.netPassingYards ?? "N/A"}</td>
-                            <td>{team.stats?.rushingYards ?? "N/A"}</td>
-                            <td>{team.stats?.totalYards ?? "N/A"}</td>
+                            <td>
+                                {team.stats?.netPassingYards ?? "N/A"}
+                                {team.stats === null && <span> ❌ No Data</span>}
+                            </td>
+                            <td>
+                                {team.stats?.rushingYards ?? "N/A"}
+                                {team.stats === null && <span> ❌ No Data</span>}
+                            </td>
+                            <td>
+                                {team.stats?.totalYards ?? "N/A"}
+                                {team.stats === null && <span> ❌ No Data</span>}
+                            </td>
                         </tr>
                     ))}
                 </tbody>

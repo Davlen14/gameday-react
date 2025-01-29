@@ -74,7 +74,8 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 
 export const getTeamStats = async (team, year) => {
     const endpoint = "/stats/season"; // Use "/stats/season" to match working CURL request
-    const params = { year, team };
+    const encodedTeam = encodeURIComponent(team); // Ensure proper encoding
+    const params = { year, team: encodedTeam };
 
     try {
         const response = await fetchData(endpoint, params);
@@ -107,10 +108,10 @@ export const getTeamStats = async (team, year) => {
             rushingYards: 0,
             totalYards: 0,
         });
-        
+
     } catch (error) {
         console.error(`Error fetching stats for ${team}:`, error);
-        
+
         // 🔹 Return default stats if API request fails
         return {
             netPassingYards: 0,
