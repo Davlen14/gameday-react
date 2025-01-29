@@ -28,7 +28,7 @@ const fetchData = async (endpoint, params = {}) => {
 
 // Core API interaction functions
 export const getTeamStats = async (team, year) => {
-    const endpoint = "/stats/season"; // Use "/stats/season" to match working CURL request
+    const endpoint = "stats/stats/season"; // Use "/stats/season" to match working CURL request
     const encodedTeam = encodeURIComponent(team); // Ensure proper encoding
     const params = { year, team: encodedTeam };
 
