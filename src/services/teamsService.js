@@ -72,53 +72,31 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
     return await fetchData(endpoint, params);
 };
 
-export const getTeamStats = async (team, year) => {
-    const statsEndpoint = "/stats/season"; // API endpoint for team stats
-    const params = { year, team }; // Pass the raw team name without extra encoding
+export const getTeamStats = async (teamId, year, retries = 3) => {
+    const statsEndpoint = "/stats/season";
+    const params = { year, team: teamId }; // Using team ID instead of name
 
-    try {
-        console.log(`Fetching stats for team: ${team}`);
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            console.log(`Fetching stats for team ID: ${teamId} (Attempt ${attempt})...`);
+            const response = await fetchData(statsEndpoint, params);
 
-        // Fetch team stats from the API
-        const response = await fetchData(statsEndpoint, params);
+            if (!Array.isArray(response) || response.length === 0) {
+                console.warn(`No data for team ID: ${teamId}, returning default values.`);
+                return { netPassingYards: 0, rushingYards: 0, totalYards: 0 };
+            }
 
-        if (!Array.isArray(response) || response.length === 0) {
-            console.error(`Unexpected or empty API response for ${team}:`, response);
-            // Return default stats if no response or unexpected data
-            return {
-                netPassingYards: 0,
-                rushingYards: 0,
-                totalYards: 0,
-            };
+            return response.reduce((acc, stat) => {
+                acc[stat.statName] = stat.statValue;
+                return acc;
+            }, { netPassingYards: 0, rushingYards: 0, totalYards: 0 });
+
+        } catch (error) {
+            console.error(`Error fetching stats for team ID: ${teamId} (Attempt ${attempt}):`, error);
+            if (attempt === retries) {
+                return { netPassingYards: 0, rushingYards: 0, totalYards: 0 }; // Default on failure
+            }
         }
-
-        console.log(`Raw Team Stats for ${team}:`, response);
-
-        // Filter relevant stats based on your requirements
-        const relevantStats = response.filter((stat) =>
-            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
-        );
-
-        console.log(`Filtered Stats for ${team}:`, relevantStats);
-
-        // Initialize with default values and populate with actual data
-        return relevantStats.reduce((acc, stat) => {
-            acc[stat.statName] = stat.statValue;
-            return acc;
-        }, {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        });
-    } catch (error) {
-        console.error(`Error fetching stats for ${team}:`, error);
-
-        // Return default values on error
-        return {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        };
     }
 };
 

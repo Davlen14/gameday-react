@@ -10,24 +10,33 @@ const Stats = () => {
         const fetchAllStats = async () => {
             try {
                 setLoading(true);
-
                 console.log("Fetching list of teams...");
-                const teams = await teamsService.getTeams(); // Fetch all FBS teams
-
+        
+                const teams = await teamsService.getTeams(); // Fetch all teams
+        
                 console.log("Teams fetched:", teams);
-
-                const statsPromises = teams.map(async (team) => {
+        
+                const allStats = [];
+        
+                for (const team of teams) {
                     try {
-                        const stats = await teamsService.getTeamStats(team.school, 2024);
-                        return { team: team.school, stats };
+                        console.log(`Fetching stats for ${team.school} (ID: ${team.id})...`);
+        
+                        // Add a delay between each request (250ms)
+                        const stats = await new Promise((resolve) =>
+                            setTimeout(async () => {
+                                const data = await teamsService.getTeamStats(team.id, 2024); // Use ID instead of name
+                                resolve(data);
+                            }, 250)
+                        );
+        
+                        allStats.push({ team: team.school, stats });
                     } catch (err) {
                         console.error(`Error fetching stats for ${team.school}:`, err);
-                        return { team: team.school, stats: null };
+                        allStats.push({ team: team.school, stats: null });
                     }
-                });
-
-                const allStats = await Promise.all(statsPromises);
-
+                }
+        
                 console.log("All Team Stats:", allStats);
                 setAllTeamStats(allStats);
             } catch (error) {
