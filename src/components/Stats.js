@@ -2,32 +2,43 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
 const Stats = () => {
-    const [ohioStateStats, setOhioStateStats] = useState(null);
+    const [allTeamStats, setAllTeamStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchAllStats = async () => {
             try {
                 setLoading(true);
 
-                console.log("Fetching stats for Ohio State...");
+                console.log("Fetching list of teams...");
+                const teams = await teamsService.getTeams(); // Fetch all FBS teams
 
-                // Fetch stats for Ohio State (team name passed as-is)
-                const stats = await teamsService.getTeamStats("Ohio State", 2024);
+                console.log("Teams fetched:", teams);
 
-                console.log("API Response for Ohio State:", stats);
+                const statsPromises = teams.map(async (team) => {
+                    try {
+                        const stats = await teamsService.getTeamStats(team.school, 2024);
+                        return { team: team.school, stats };
+                    } catch (err) {
+                        console.error(`Error fetching stats for ${team.school}:`, err);
+                        return { team: team.school, stats: null };
+                    }
+                });
 
-                setOhioStateStats(stats);
+                const allStats = await Promise.all(statsPromises);
+
+                console.log("All Team Stats:", allStats);
+                setAllTeamStats(allStats);
             } catch (error) {
-                console.error("Error fetching stats for Ohio State:", error);
-                setError("Failed to load Ohio State stats.");
+                console.error("Error fetching team stats:", error);
+                setError("Failed to load team stats.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchStats();
+        fetchAllStats();
     }, []);
 
     if (loading) return <p>Loading...</p>;
@@ -35,31 +46,37 @@ const Stats = () => {
 
     return (
         <div>
-            <h1>Ohio State Football Stats</h1>
+            <h1>College Football Stats (2024)</h1>
 
-            <h2>Team Offense</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Stat</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {ohioStateStats ? (
-                        Object.entries(ohioStateStats).map(([statName, statValue]) => (
-                            <tr key={statName}>
-                                <td>{statName}</td>
-                                <td>{statValue ?? "N/A"}</td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="2">No data available for Ohio State.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+            {allTeamStats.length > 0 ? (
+                allTeamStats.map(({ team, stats }) => (
+                    <div key={team}>
+                        <h2>{team}</h2>
+                        {stats ? (
+                            <table border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Stat</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(stats).map(([statName, statValue]) => (
+                                        <tr key={statName}>
+                                            <td>{statName}</td>
+                                            <td>{statValue ?? "N/A"}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No stats available for {team}.</p>
+                        )}
+                    </div>
+                ))
+            ) : (
+                <p>No team stats available.</p>
+            )}
         </div>
     );
 };
