@@ -73,30 +73,32 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-    const endpoint = "/stats/team";
+    const endpoint = "/stats/season"; // Changed from "/stats/team" to match working CURL example
     const params = { year, team };
 
     try {
-        // Fetch data from the proxy
         const response = await fetchData(endpoint, params);
-
-        console.log("Raw Team Stats Response:", response); // Log full response
+        console.log("Raw Team Stats Response:", response);
 
         // Filter for relevant stats
         const relevantStats = response.filter((stat) =>
             ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
         );
 
-        console.log("Filtered Relevant Stats:", relevantStats); // Log filtered stats
+        console.log("Filtered Relevant Stats:", relevantStats);
 
-        // Format the stats into a dictionary for easier access
+        // Initialize with default values in case some stats are missing
         return relevantStats.reduce((acc, stat) => {
             acc[stat.statName] = stat.statValue;
             return acc;
-        }, {});
+        }, {
+            netPassingYards: 0,  // Default value
+            rushingYards: 0,     // Default value
+            totalYards: 0        // Default value
+        });
     } catch (error) {
-        console.error("Error fetching team stats:", error);
-        throw error; // Propagate the error
+        console.error(`Error fetching stats for ${team}:`, error);
+        throw error;
     }
 };
 
