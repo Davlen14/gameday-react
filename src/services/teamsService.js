@@ -248,7 +248,32 @@ const getTeamMatchup = async (team1, team2) => {
     return await fetchData(endpoint, { team1, team2 });
 };
 
+// NEW ENDPOINTS ADDED FROM SWIFT SERVICE
 
+export const getTeamRecords = async (teamId, year) => {
+    const endpoint = "/records";
+    const params = { teamId, year };
+    return await fetchData(endpoint, params);
+};
+
+export const getPlayerSeasonStats = async (year = 2024, category, seasonType = "regular", limit = 10000) => {
+    const endpoint = "/stats/player/season";
+    const params = { year, category, seasonType, limit };
+    return await fetchData(endpoint, params);
+};
+
+export const getPlayerGameStats = async (gameId, year, week, seasonType, team, category = null) => {
+    const endpoint = "/games/players";
+    const params = { gameId, year, week, seasonType, team };
+    if (category) params.category = category;
+    return await fetchData(endpoint, params);
+};
+
+export const fetchScoreboard = async (year, week) => {
+    const endpoint = "/games";
+    const params = { year, week };
+    return await fetchData(endpoint, params);
+};
 
 // Export all functions
 const teamsService = {
@@ -269,6 +294,11 @@ const teamsService = {
     getTeamVenue,
     getAdvancedStats,
     getTeamMatchup,
+    // New endpoints added
+    getTeamRecords,
+    getPlayerSeasonStats,
+    getPlayerGameStats,
+    fetchScoreboard,
 };
 
 export default teamsService;
