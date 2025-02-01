@@ -37,13 +37,52 @@ body {
   width: 100%;
 }
 
+/* Header Logo */
 .header-logo {
-  font-size: 1.8rem;
-  font-weight: bold;
+  position: relative;
+  float: left;
+  margin: 0;
+  padding: 0 35px 0 50px;
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  color: #fff !important; /* White text */
   text-transform: uppercase;
-  font-family: "Titillium Web", sans-serif; /* Updated font-family */
-  color: rgb(149, 0, 0);
-  margin-right: 30px;
+  font-style: italic;
+  z-index: 1;
+  line-height: 43px; /* Match ESPN's logo height */
+}
+
+.header-logo::before {
+  transform: skew(-25deg, 0deg);
+  content: "";
+  display: block;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: -30px;
+  background-color: #111; /* Dark background */
+  right: -10px;
+  z-index: -1;
+}
+
+.header-logo::after {
+  transform: skew(-25deg, 0deg);
+  content: "";
+  display: block;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background-color: #222; /* Slightly lighter dark accent */
+  left: -20px;
+  right: -20px;
+  z-index: -2;
+}
+
+@media (min-width: 1455px) {
+  .header-logo::before {
+    left: -15px;
+  }
 }
 
 .header-nav {
