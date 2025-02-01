@@ -4,6 +4,7 @@ import teamsService from "../services/teamsService";
 
 const TeamDetail = () => {
   const { teamId } = useParams();
+  const [allTeams, setAllTeams] = useState([]);
   const [team, setTeam] = useState(null);
   const [ratings, setRatings] = useState({});
   const [roster, setRoster] = useState([]);
@@ -21,21 +22,21 @@ const TeamDetail = () => {
   const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
   const sortOptions = ["Name", "Position", "Height", "Year"];
 
-  // Modern inline styles for a fresh look
+  // Modern inline styles using the Home component's color scheme
   const styles = {
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
       padding: "2rem",
       fontFamily: "'Roboto', sans-serif",
-      backgroundColor: "#f7f7f7",
+      backgroundColor: "#f5f5f5", // Home background color
       minHeight: "100vh",
     },
     backLink: {
       display: "block",
       marginBottom: "1rem",
       textDecoration: "none",
-      color: "#007bff",
+      color: "rgb(142, 0, 0)", // Accent color from Home
       fontWeight: "bold",
     },
     header: {
@@ -53,9 +54,9 @@ const TeamDetail = () => {
     categoryButton: (selected) => ({
       marginRight: "0.5rem",
       padding: "0.5rem 1rem",
-      border: "none",
-      background: selected ? "#007bff" : "#e0e0e0",
-      color: selected ? "#fff" : "#333",
+      border: "1px solid #dddddd",
+      background: selected ? "rgb(142, 0, 0)" : "#ffffff",
+      color: selected ? "#fff" : "#333333",
       borderRadius: "20px",
       cursor: "pointer",
       transition: "background 0.3s, color 0.3s",
@@ -73,7 +74,7 @@ const TeamDetail = () => {
       justifyContent: "space-between",
       alignItems: "center",
       padding: "0.75rem 0",
-      borderBottom: "1px solid #eee",
+      borderBottom: "1px solid #dddddd",
     },
     rosterItemName: {
       fontWeight: "bold",
@@ -82,7 +83,7 @@ const TeamDetail = () => {
     select: {
       padding: "0.5rem",
       marginBottom: "1rem",
-      border: "1px solid #ccc",
+      border: "1px solid #dddddd",
       borderRadius: "4px",
       outline: "none",
     },
@@ -100,10 +101,19 @@ const TeamDetail = () => {
       display: "flex",
       alignItems: "center",
     },
+    // Used in header/roster (circular)
     teamLogoSmall: {
       width: "50px",
       height: "50px",
       borderRadius: "50%",
+      objectFit: "cover",
+      marginRight: "0.5rem",
+    },
+    // For schedule logos: rounded square style
+    scheduleTeamLogo: {
+      width: "50px",
+      height: "50px",
+      borderRadius: "8px",
       objectFit: "cover",
       marginRight: "0.5rem",
     },
@@ -117,14 +127,23 @@ const TeamDetail = () => {
     }),
   };
 
+  // Helper function (like in Home) to get a team's logo based on its name
+  const getTeamLogo = (teamName) => {
+    const found = allTeams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return found?.logos?.[0] || "/photos/default_team.png";
+  };
+
   // Fetch team and related data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading((prev) => ({ ...prev, team: true }));
 
-        // Fetch team data
+        // Fetch teams data and set allTeams state
         const teamsData = await teamsService.getTeams();
+        setAllTeams(teamsData);
         const foundTeam = teamsData.find((t) => t.id === parseInt(teamId));
         if (!foundTeam) throw new Error("Team not found");
         setTeam(foundTeam);
@@ -272,20 +291,11 @@ const TeamDetail = () => {
               schedule.map((game, index) => (
                 <div key={index} style={styles.scheduleCard}>
                   <div style={styles.teamInfo}>
-                    {game.homeLogo ? (
-                      <img
-                        src={game.homeLogo}
-                        alt={game.homeTeam}
-                        style={styles.teamLogoSmall}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          ...styles.teamLogoSmall,
-                          background: "#ccc",
-                        }}
-                      />
-                    )}
+                    <img
+                      src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                      alt={game.homeTeam}
+                      style={styles.scheduleTeamLogo}
+                    />
                     <span>{game.homeTeam}</span>
                   </div>
                   <div style={{ flex: 1, textAlign: "center" }}>
@@ -308,20 +318,11 @@ const TeamDetail = () => {
                     </div>
                   </div>
                   <div style={styles.teamInfo}>
-                    {game.awayLogo ? (
-                      <img
-                        src={game.awayLogo}
-                        alt={game.awayTeam}
-                        style={styles.teamLogoSmall}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          ...styles.teamLogoSmall,
-                          background: "#ccc",
-                        }}
-                      />
-                    )}
+                    <img
+                      src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                      alt={game.awayTeam}
+                      style={styles.scheduleTeamLogo}
+                    />
                     <span>{game.awayTeam}</span>
                   </div>
                 </div>
@@ -362,7 +363,7 @@ const TeamDetail = () => {
       </Link>
       <div style={styles.header}>
         <img
-          src={team.logos?.[0] || ""}
+          src={team.logos?.[0] || "/photos/default_team.png"}
           alt={team.school}
           style={styles.logo}
           onError={(e) => (e.target.style.display = "none")}
@@ -387,4 +388,3 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
-
