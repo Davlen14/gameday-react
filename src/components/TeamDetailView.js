@@ -120,8 +120,8 @@ const TeamDetail = () => {
       objectFit: "cover",
       marginRight: "0.5rem",
     },
-    // New style for player logos in the roster
-    playerLogo: {
+    // New style for team logos in the roster (using team logo)
+    teamLogoForRoster: {
       width: "40px",
       height: "40px",
       borderRadius: "50%",
@@ -144,11 +144,6 @@ const TeamDetail = () => {
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
     );
     return found?.logos?.[0] || "/photos/default_team.png";
-  };
-
-  // Optionally, a helper for player logos. It assumes each player object might have a "logo" property.
-  const getPlayerLogo = (player) => {
-    return player.logo || "/photos/default_player.png";
   };
 
   // Fetch team and related data
@@ -281,10 +276,11 @@ const TeamDetail = () => {
                 {sortedRoster.length > 0 ? (
                   sortedRoster.map((player, index) => (
                     <div key={index} style={styles.rosterItem}>
+                      {/* Using the team logo for each roster item */}
                       <img
-                        src={getPlayerLogo(player)}
-                        alt={player.fullName}
-                        style={styles.playerLogo}
+                        src={getTeamLogo(team.school)}
+                        alt={team.school}
+                        style={styles.teamLogoForRoster}
                       />
                       <div style={styles.rosterItemDetails}>
                         <span style={styles.rosterItemName}>
