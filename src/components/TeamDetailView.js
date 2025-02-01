@@ -22,13 +22,13 @@ const TeamDetail = () => {
   const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
   const sortOptions = ["Name", "Position", "Height", "Year"];
 
-  // Modern inline styles using the Home component's color scheme
+  // Updated font-family to use "Titillium Web" for the whole component
   const styles = {
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
       padding: "2rem",
-      fontFamily: "'Roboto', sans-serif",
+      fontFamily: "'Titillium Web', sans-serif",
       backgroundColor: "#f5f5f5", // Home background color
       minHeight: "100vh",
     },
@@ -71,10 +71,13 @@ const TeamDetail = () => {
     },
     rosterItem: {
       display: "flex",
-      justifyContent: "space-between",
       alignItems: "center",
       padding: "0.75rem 0",
       borderBottom: "1px solid #dddddd",
+    },
+    rosterItemDetails: {
+      display: "flex",
+      flexDirection: "column",
     },
     rosterItemName: {
       fontWeight: "bold",
@@ -101,7 +104,7 @@ const TeamDetail = () => {
       display: "flex",
       alignItems: "center",
     },
-    // Used in header/roster (circular)
+    // Used for header logos (circular)
     teamLogoSmall: {
       width: "50px",
       height: "50px",
@@ -116,6 +119,14 @@ const TeamDetail = () => {
       borderRadius: "8px",
       objectFit: "cover",
       marginRight: "0.5rem",
+    },
+    // New style for player logos in the roster
+    playerLogo: {
+      width: "40px",
+      height: "40px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      marginRight: "1rem",
     },
     vsText: {
       margin: "0 1rem",
@@ -133,6 +144,11 @@ const TeamDetail = () => {
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
     );
     return found?.logos?.[0] || "/photos/default_team.png";
+  };
+
+  // Optionally, a helper for player logos. It assumes each player object might have a "logo" property.
+  const getPlayerLogo = (player) => {
+    return player.logo || "/photos/default_player.png";
   };
 
   // Fetch team and related data
@@ -265,12 +281,19 @@ const TeamDetail = () => {
                 {sortedRoster.length > 0 ? (
                   sortedRoster.map((player, index) => (
                     <div key={index} style={styles.rosterItem}>
-                      <span style={styles.rosterItemName}>
-                        {player.fullName}
-                      </span>
-                      <span>{player.position || "N/A"}</span>
-                      <span>Height: {formatHeight(player.height)}</span>
-                      <span>Year: {player.year || "N/A"}</span>
+                      <img
+                        src={getPlayerLogo(player)}
+                        alt={player.fullName}
+                        style={styles.playerLogo}
+                      />
+                      <div style={styles.rosterItemDetails}>
+                        <span style={styles.rosterItemName}>
+                          {player.fullName}
+                        </span>
+                        <span>{player.position || "N/A"}</span>
+                        <span>Height: {formatHeight(player.height)}</span>
+                        <span>Year: {player.year || "N/A"}</span>
+                      </div>
                     </div>
                   ))
                 ) : (
