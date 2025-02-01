@@ -70,25 +70,36 @@ const GameDetailView = () => {
 
   return (
     <div className="game-detail-container">
-      <div className="game-info">
-        <div className="score-display">
-          <span className="team-score">
-            {game.awayTeam} <strong>{game.awayPoints}</strong>
-          </span>
-          <span className="score-separator">–</span>
-          <span className="team-score">
-            <strong>{game.homePoints}</strong> {game.homeTeam}
-          </span>
-        </div>
-        <div className="game-status">
-          <span className="game-time">{formatGameTime(game.startDate)}</span>
-          <span className="venue">{game.venue}</span>
-        </div>
-      </div>
-
       <div className="field-container">
         <div className="football-field">
-          {/* Left Endzone (Home Team) */}
+          {/* Glassy overlay with game info */}
+          <div className="game-info">
+            <div className="score-display">
+              <span className="team-score">
+                <img
+                  src={getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="score-team-logo"
+                />
+                {game.awayTeam} <strong>{game.awayPoints}</strong>
+              </span>
+              <span className="score-separator">–</span>
+              <span className="team-score">
+                <img
+                  src={getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="score-team-logo"
+                />
+                {game.homeTeam} <strong>{game.homePoints}</strong>
+              </span>
+            </div>
+            <div className="game-status">
+              <span className="game-time">{formatGameTime(game.startDate)}</span>
+              <span className="venue">{game.venue}</span>
+            </div>
+          </div>
+
+          {/* Left Endzone */}
           <div className="endzone left" style={{ background: game.homeColor }}>
             <img
               src={getTeamLogo(game.homeTeam)}
@@ -137,7 +148,7 @@ const GameDetailView = () => {
             </div>
           </div>
 
-          {/* Right Endzone (Home Team) */}
+          {/* Right Endzone */}
           <div className="endzone right" style={{ background: game.homeColor }}>
             <img
               src={getTeamLogo(game.homeTeam)}
@@ -179,18 +190,41 @@ const GameDetailView = () => {
           padding: 20px;
         }
 
+        .field-container {
+          position: relative;
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          margin-top: 20px;
+        }
+
+        .football-field {
+          position: relative;
+          display: flex;
+          width: 100%;
+          height: 65vh;
+          min-height: 500px;
+          border: 4px solid #5d4a36;
+        }
+
+        /* Glassy overlay for game info */
         .game-info {
           position: absolute;
-          top: 30px;
+          top: 10px;
           left: 50%;
           transform: translateX(-50%);
-          z-index: 2;
-          background: rgba(0, 0, 0, 0.7);
-          padding: 15px 30px;
-          border-radius: 8px;
-          text-align: center;
+          z-index: 10;
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 12px;
+          padding: 10px 20px;
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
           color: white;
-          backdrop-filter: blur(5px);
         }
 
         .score-display {
@@ -206,6 +240,14 @@ const GameDetailView = () => {
           gap: 0.5rem;
         }
 
+        .score-team-logo {
+          width: 30px;
+          height: 30px;
+          object-fit: contain;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
         .score-separator {
           font-weight: bold;
           color: #ffd700;
@@ -215,26 +257,8 @@ const GameDetailView = () => {
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
-          margin-top: 0.5rem;
           font-size: 0.9rem;
           opacity: 0.9;
-        }
-
-        .field-container {
-          position: relative;
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-          margin-top: 150px;
-        }
-
-        .football-field {
-          display: flex;
-          width: 100%;
-          height: 65vh;
-          min-height: 500px;
-          border: 4px solid #5d4a36;
         }
 
         .endzone {
