@@ -2,103 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 
-// A circular indicator for win probability (mimicking your SwiftUI CircularWinProbabilityView)
-const CircularWinProbabilityView = ({ teamLogoURL, winProbability }) => {
-  const size = 80;
-  const strokeWidth = 10;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  // Expect winProbability as a number between 0 and 1
-  const offset = circumference - winProbability * circumference;
-
-  return (
-    <svg width={size} height={size} className="circular-win-probability">
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={strokeWidth}
-        fill="none"
-        stroke="rgba(128,128,128,0.2)"
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={strokeWidth}
-        fill="none"
-        stroke="green"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
-      <image
-        href={teamLogoURL || "/photos/default_team.png"}
-        x={size / 2 - 15}
-        y={size / 2 - 15}
-        height="30"
-        width="30"
-      />
-    </svg>
-  );
-};
-
-// A simple star rating component (similar to StarRatingView in SwiftUI)
-const StarRatingView = ({ rating }) => {
-  const stars = [];
-  for (let i = 0; i < 5; i++) {
-    if (i < Math.round(rating)) {
-      stars.push(
-        <i key={i} className="fas fa-star" style={{ color: "yellow" }}></i>
-      );
-    } else {
-      stars.push(
-        <i key={i} className="far fa-star" style={{ color: "yellow" }}></i>
-      );
-    }
-  }
-  return <div className="star-rating">{stars}</div>;
-};
-
-// A basic player stats view; customize as needed
-const PlayerStatsView = ({ playerGameStats }) => {
-  return (
-    <div className="player-stats-view">
-      <h3>Player Stats</h3>
-      {playerGameStats.length === 0 ? (
-        <p>No player stats available</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Stat</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerGameStats.map((player) => (
-              <tr key={player.id}>
-                <td>{player.name}</td>
-                <td>{player.stat}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-};
-
 const GameDetailView = () => {
   const { gameId } = useParams();
   const [game, setGame] = useState(null);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Additional states for completed game details
-  const [advancedBoxScore, setAdvancedBoxScore] = useState(null);
-  const [playerGameStats, setPlayerGameStats] = useState([]);
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -110,7 +19,7 @@ const GameDetailView = () => {
 
         if (!gameData) throw new Error("Game not found");
 
-        // Enhance game data with team colors (or other properties)
+        // Enhance game data with team colors
         const enhancedGame = {
           ...gameData,
           homeColor:
@@ -133,24 +42,6 @@ const GameDetailView = () => {
     fetchGameData();
   }, [gameId]);
 
-  // Fetch additional box score and player stats if the game is completed
-  useEffect(() => {
-    if (game && game.completed) {
-      const fetchAdditionalData = async () => {
-        try {
-          const boxScore = await teamsService.getAdvancedBoxScore(game.id);
-          setAdvancedBoxScore(boxScore);
-          const stats = await teamsService.getPlayerGameStats(game.id);
-          setPlayerGameStats(stats);
-        } catch (err) {
-          console.error("Error fetching additional data:", err);
-        }
-      };
-      fetchAdditionalData();
-    }
-  }, [game]);
-
-  // Helper to get the team logo
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -158,7 +49,6 @@ const GameDetailView = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Format the game start date/time
   const formatGameTime = (dateString) => {
     const options = {
       weekday: "short",
@@ -180,196 +70,118 @@ const GameDetailView = () => {
 
   return (
     <div className="game-detail-container">
-      {game.completed ? (
-        // Completed Game View (top performers and extra game details)
-        <div className="completed-game-container">
-          {/* Teams Overview */}
-          <div className="teams-overview">
-            <div className="team-section">
-              <CircularWinProbabilityView
-                teamLogoURL={getTeamLogo(game.homeTeam)}
-                winProbability={
-                  advancedBoxScore
-                    ? parseFloat(advancedBoxScore.gameInfo.homeWinProb)
-                    : 0
-                }
-              />
-              <div className="team-info">
-                <span className="team-name">{game.homeTeam}</span>
-                <span className="team-score">
-                  {advancedBoxScore
-                    ? advancedBoxScore.gameInfo.homePoints
-                    : game.homePoints}
-                </span>
-              </div>
-            </div>
-            <div className="vs-text">vs</div>
-            <div className="team-section">
-              <CircularWinProbabilityView
-                teamLogoURL={getTeamLogo(game.awayTeam)}
-                winProbability={
-                  advancedBoxScore
-                    ? parseFloat(advancedBoxScore.gameInfo.awayWinProb)
-                    : 0
-                }
-              />
-              <div className="team-info">
-                <span className="team-name">{game.awayTeam}</span>
-                <span className="team-score">
-                  {advancedBoxScore
-                    ? advancedBoxScore.gameInfo.awayPoints
-                    : game.awayPoints}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Game Meta: Date, Venue, and Network */}
-          <div className="game-meta">
-            <div className="meta-item">
-              <i className="fas fa-calendar-alt"></i> {formatGameTime(game.startDate)}
-            </div>
-            <div className="meta-item">
-              <i className="fas fa-map-marker-alt"></i> {game.venue}
-            </div>
-            <div className="meta-item">
-              <i className="fas fa-tv"></i> {game.network || "TBD"}
-            </div>
-          </div>
-
-          {/* Extra Game Details */}
-          {advancedBoxScore && (
-            <div className="game-extra-details">
-              <div>
-                Winner:{" "}
-                {advancedBoxScore.gameInfo.homeWinner ? game.homeTeam : game.awayTeam}
-              </div>
-              <div>
-                Excitement Index:{" "}
-                <StarRatingView
-                  rating={parseFloat(advancedBoxScore.gameInfo.excitement)}
+      <div className="field-container">
+        <div className="football-field">
+          {/* Glassy overlay with game info */}
+          <div className="game-info">
+            <div className="score-display">
+              <span className="team-score">
+                <img
+                  src={getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="score-team-logo"
                 />
-              </div>
+                {game.awayTeam} <strong>{game.awayPoints}</strong>
+              </span>
+              <span className="score-separator">–</span>
+              <span className="team-score">
+                <img
+                  src={getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="score-team-logo"
+                />
+                {game.homeTeam} <strong>{game.homePoints}</strong>
+              </span>
             </div>
-          )}
-
-          {/* Player Stats Section */}
-          <PlayerStatsView playerGameStats={playerGameStats} />
-        </div>
-      ) : (
-        // Live game view (existing football field layout)
-        <div className="field-container">
-          <div className="football-field">
-            {/* Glassy overlay with game info */}
-            <div className="game-info">
-              <div className="score-display">
-                <span className="team-score">
-                  <img
-                    src={getTeamLogo(game.awayTeam)}
-                    alt={game.awayTeam}
-                    className="score-team-logo"
-                  />
-                  {game.awayTeam} <strong>{game.awayPoints}</strong>
-                </span>
-                <span className="score-separator">–</span>
-                <span className="team-score">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="score-team-logo"
-                  />
-                  {game.homeTeam} <strong>{game.homePoints}</strong>
-                </span>
-              </div>
-              <div className="game-status">
-                <span className="game-time">
-                  {formatGameTime(game.startDate)}
-                </span>
-                <span className="venue">{game.venue}</span>
-              </div>
+            <div className="game-status">
+              <span className="game-time">{formatGameTime(game.startDate)}</span>
+              <span className="venue">{game.venue}</span>
             </div>
+          </div>
 
-            {/* Left Endzone */}
-            <div className="endzone left" style={{ background: game.homeColor }}>
-              <img
-                src={getTeamLogo(game.homeTeam)}
-                alt={game.homeTeam}
-                className="endzone-logo"
-              />
-              <div className="endzone-label">{game.homeTeam}</div>
-            </div>
+          {/* Left Endzone */}
+          <div className="endzone left" style={{ background: game.homeColor }}>
+            <img
+              src={getTeamLogo(game.homeTeam)}
+              alt={game.homeTeam}
+              className="endzone-logo"
+            />
+            <div className="endzone-label">{game.homeTeam}</div>
+          </div>
 
-            {/* Playing Field */}
-            <div className="playing-field">
-              {/* Yard Lines */}
-              {[...Array(11)].map((_, i) => (
-                <div
-                  key={i}
-                  className="yard-line"
-                  style={{ left: `${i * 10}%` }}
-                ></div>
-              ))}
-              {/* Yard Numbers */}
-              {[10, 20, 30, 40, 50, 40, 30, 20, 10].map((num, i) => (
-                <div
-                  key={i}
-                  className="yard-number"
-                  style={{ left: `${(i + 1) * 10}%` }}
-                >
-                  {num}
-                </div>
-              ))}
-
-              {/* Center Logo */}
-              <div className="center-logo">
-                <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                <div className="field-overlay"></div>
-              </div>
-
-              {/* Ball Marker */}
+          {/* Playing Field */}
+          <div className="playing-field">
+            {/* Yard Lines */}
+            {[...Array(11)].map((_, i) => (
               <div
-                className="ball-marker"
-                style={{ left: `${game.currentYardLine || 34}%`, top: "50%" }}
+                key={i}
+                className="yard-line"
+                style={{ left: `${i * 10}%` }}
+              ></div>
+            ))}
+            {/* Yard Numbers */}
+            {[10, 20, 30, 40, 50, 40, 30, 20, 10].map((num, i) => (
+              <div
+                key={i}
+                className="yard-number"
+                style={{ left: `${(i + 1) * 10}%` }}
               >
-                <div className="ball-shadow"></div>
+                {num}
               </div>
-            </div>
+            ))}
 
-            {/* Right Endzone */}
-            <div className="endzone right" style={{ background: game.homeColor }}>
+            {/* Center Logo */}
+            <div className="center-logo">
               <img
                 src={getTeamLogo(game.homeTeam)}
                 alt={game.homeTeam}
-                className="endzone-logo"
               />
-              <div className="endzone-label">{game.homeTeam}</div>
+              <div className="field-overlay"></div>
+            </div>
+
+            {/* Ball Marker */}
+            <div
+              className="ball-marker"
+              style={{ left: `${game.currentYardLine || 34}%`, top: "50%" }}
+            >
+              <div className="ball-shadow"></div>
             </div>
           </div>
 
-          {/* Game Details Panel */}
-          <div className="game-details-panel">
-            <div className="play-by-play">
-              <h3>Last Play</h3>
-              <p>{game.lastPlay || "No play information available"}</p>
-            </div>
+          {/* Right Endzone */}
+          <div className="endzone right" style={{ background: game.homeColor }}>
+            <img
+              src={getTeamLogo(game.homeTeam)}
+              alt={game.homeTeam}
+              className="endzone-logo"
+            />
+            <div className="endzone-label">{game.homeTeam}</div>
+          </div>
+        </div>
 
-            <div className="game-stats">
-              <div className="stat-item">
-                <span>Possession</span>
-                <strong>{game.possession || "N/A"}</strong>
-              </div>
-              <div className="stat-item">
-                <span>Down</span>
-                <strong>{game.down || "N/A"}</strong>
-              </div>
-              <div className="stat-item">
-                <span>Yards to Go</span>
-                <strong>{game.yardsToGo || "N/A"}</strong>
-              </div>
+        {/* Game Details Panel */}
+        <div className="game-details-panel">
+          <div className="play-by-play">
+            <h3>Last Play</h3>
+            <p>{game.lastPlay || "No play information available"}</p>
+          </div>
+
+          <div className="game-stats">
+            <div className="stat-item">
+              <span>Possession</span>
+              <strong>{game.possession || "N/A"}</strong>
+            </div>
+            <div className="stat-item">
+              <span>Down</span>
+              <strong>{game.down || "N/A"}</strong>
+            </div>
+            <div className="stat-item">
+              <span>Yards to Go</span>
+              <strong>{game.yardsToGo || "N/A"}</strong>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       <style jsx>{`
         .game-detail-container {
@@ -377,81 +189,7 @@ const GameDetailView = () => {
           margin: 2rem auto;
           padding: 20px;
         }
-        .loading-container,
-        .error-container {
-          text-align: center;
-          padding: 2rem;
-          font-size: 1.2rem;
-          color: white;
-        }
-        /* Completed Game Styles */
-        .completed-game-container {
-          background: rgba(0, 0, 0, 0.1);
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        .teams-overview {
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-        .team-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .team-info {
-          text-align: center;
-          margin-top: 8px;
-        }
-        .team-name {
-          font-size: 20px;
-          font-weight: bold;
-        }
-        .team-score {
-          font-size: 28px;
-          font-weight: bold;
-        }
-        .vs-text {
-          font-size: 24px;
-          font-weight: bold;
-        }
-        .game-meta {
-          display: flex;
-          justify-content: space-around;
-          margin-bottom: 20px;
-          font-size: 16px;
-        }
-        .meta-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .game-extra-details {
-          text-align: center;
-          margin-bottom: 20px;
-          font-size: 16px;
-        }
-        .player-stats-view {
-          margin-top: 20px;
-          background: rgba(0, 0, 0, 0.7);
-          padding: 1.5rem;
-          border-radius: 8px;
-          color: white;
-        }
-        .player-stats-view table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .player-stats-view th,
-        .player-stats-view td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: center;
-        }
-        /* Live Game (Football Field) Styles */
+
         .field-container {
           position: relative;
           background: rgba(0, 0, 0, 0.1);
@@ -460,6 +198,7 @@ const GameDetailView = () => {
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
           margin-top: 20px;
         }
+
         .football-field {
           position: relative;
           display: flex;
@@ -468,6 +207,8 @@ const GameDetailView = () => {
           min-height: 500px;
           border: 4px solid #5d4a36;
         }
+
+        /* Glassy overlay for game info */
         .game-info {
           position: absolute;
           top: 10px;
@@ -485,17 +226,20 @@ const GameDetailView = () => {
           gap: 5px;
           color: white;
         }
+
         .score-display {
           display: flex;
           align-items: center;
           gap: 1rem;
           font-size: 1.5rem;
         }
+
         .team-score {
           display: flex;
           align-items: center;
           gap: 0.5rem;
         }
+
         .score-team-logo {
           width: 30px;
           height: 30px;
@@ -503,10 +247,12 @@ const GameDetailView = () => {
           border-radius: 50%;
           border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
         .score-separator {
           font-weight: bold;
           color: #ffd700;
         }
+
         .game-status {
           display: flex;
           flex-direction: column;
@@ -514,6 +260,7 @@ const GameDetailView = () => {
           font-size: 0.9rem;
           opacity: 0.9;
         }
+
         .endzone {
           width: 8.33%;
           display: flex;
@@ -525,17 +272,20 @@ const GameDetailView = () => {
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
           padding: 5px;
         }
+
         .endzone-logo {
           width: 80px;
           height: 80px;
           object-fit: contain;
           filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
         }
+
         .endzone-label {
           font-size: 0.6em;
           margin-top: 8px;
           text-align: center;
         }
+
         .playing-field {
           position: relative;
           width: 83.33%;
@@ -549,6 +299,7 @@ const GameDetailView = () => {
               transparent 20px
             );
         }
+
         .yard-line {
           position: absolute;
           top: 0;
@@ -556,6 +307,7 @@ const GameDetailView = () => {
           width: 2px;
           background: rgba(255, 255, 255, 0.8);
         }
+
         .yard-number {
           position: absolute;
           bottom: 10px;
@@ -565,6 +317,7 @@ const GameDetailView = () => {
           text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
           transform: translateX(-50%);
         }
+
         .center-logo {
           position: absolute;
           left: 50%;
@@ -578,11 +331,13 @@ const GameDetailView = () => {
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
           z-index: 2;
         }
+
         .center-logo img {
           width: 100%;
           height: 100%;
           object-fit: contain;
         }
+
         .ball-marker {
           position: absolute;
           width: 20px;
@@ -594,6 +349,7 @@ const GameDetailView = () => {
           animation: pulse 1.5s infinite;
           z-index: 3;
         }
+
         .ball-shadow {
           position: absolute;
           width: 40px;
@@ -605,6 +361,7 @@ const GameDetailView = () => {
           transform: translateX(-50%);
           filter: blur(2px);
         }
+
         @keyframes pulse {
           0% {
             transform: translate(-50%, -50%) scale(0.95);
@@ -616,18 +373,21 @@ const GameDetailView = () => {
             transform: translate(-50%, -50%) scale(0.95);
           }
         }
+
         .game-details-panel {
           display: grid;
           grid-template-columns: 2fr 1fr;
           gap: 2rem;
           margin-top: 2rem;
         }
+
         .play-by-play {
           padding: 1.5rem;
           background: rgba(0, 0, 0, 0.7);
           border-radius: 8px;
           color: white;
         }
+
         .game-stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -636,12 +396,14 @@ const GameDetailView = () => {
           background: rgba(0, 0, 0, 0.7);
           border-radius: 8px;
         }
+
         .stat-item {
           text-align: center;
           padding: 1rem;
           background: rgba(255, 255, 255, 0.1);
           border-radius: 6px;
         }
+
         @media (max-width: 768px) {
           .football-field {
             flex-direction: column;
@@ -672,6 +434,14 @@ const GameDetailView = () => {
           .game-details-panel {
             grid-template-columns: 1fr;
           }
+        }
+
+        .loading-container,
+        .error-container {
+          text-align: center;
+          padding: 2rem;
+          font-size: 1.2rem;
+          color: white;
         }
       `}</style>
     </div>
