@@ -147,7 +147,7 @@
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  z-index: 1500; /* Ensure dropdown appears above navbar */
+  z-index: 2000; /* Ensure dropdown appears above navbar */
   padding: 8px 0;
   min-width: 180px;
   font-size: 0.85rem;
