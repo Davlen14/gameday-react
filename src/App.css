@@ -4,7 +4,7 @@
 /* General Body Styles */
 body {
   margin: 0;
-  font-family: "Titillium Web", sans-serif; /* Updated font-family */
+  font-family: "Titillium Web", sans-serif;
   background-color: #f5f5f5;
   color: #111;
 }
@@ -25,9 +25,10 @@ body {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  position: relative; /* Ensures dropdowns are properly aligned within the header */
-  z-index: 1000; /* Places the header above all other content */
-  font-family: "Titillium Web", sans-serif; /* Consistent font */
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1100;
 }
 
 .header-content {
@@ -35,62 +36,25 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 /* Header Logo */
 .header-logo {
-  position: relative;
-  float: left;
-  margin: 0;
-  padding: 0 35px 0 50px;
   font-family: 'Titillium Web', sans-serif;
   font-weight: 700;
   font-size: 26px;
-  color: #fff !important; /* White text */
+  color: #870000;
   text-transform: uppercase;
   font-style: italic;
-  z-index: 1;
-  line-height: 43px; /* Match ESPN's logo height */
 }
 
-.header-logo::before {
-  transform: skew(-25deg, 0deg);
-  content: "";
-  display: block;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: -30px;
-  background-color: #111; /* Dark background */
-  right: -10px;
-  z-index: -1;
-}
-
-.header-logo::after {
-  transform: skew(-25deg, 0deg);
-  content: "";
-  display: block;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  background-color: #222; /* Slightly lighter dark accent */
-  left: -20px;
-  right: -20px;
-  z-index: -2;
-}
-
-@media (min-width: 1455px) {
-  .header-logo::before {
-    left: -15px;
-  }
-}
-
+/* Header Navigation */
 .header-nav {
   display: flex;
   gap: 20px;
   flex-grow: 1;
-  justify-content: center; /* Center navigation items */
-  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
+  justify-content: center;
 }
 
 .header-buttons {
@@ -102,7 +66,6 @@ body {
   text-decoration: none;
   color: white;
   font-weight: bold;
-  font-family: "Titillium Web", sans-serif;
   background-color: rgb(149, 0, 0);
   border: 1px solid rgb(149, 0, 0);
   border-radius: 5px;
@@ -111,12 +74,11 @@ body {
 }
 
 .header-link:hover {
-  background-color: rgb(142, 0, 0);
+  background-color: rgb(120, 0, 0);
 }
 
 .subscribe-button {
   background-color: #ffffff;
-  font-family: "Titillium Web", sans-serif;
   color: rgb(149, 0, 0);
   border: 1px solid rgb(149, 0, 0);
 }
@@ -141,7 +103,6 @@ body {
   padding: 10px 15px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
-  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
 }
 
 .dropdown-button:hover {
@@ -149,16 +110,15 @@ body {
 }
 
 .dropdown-menu {
-  position: absolute; /* Ensure dropdowns overlap content */
-  top: 100%; /* Align dropdown below the button */
+  position: absolute;
+  top: 100%;
   left: 0;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  z-index: 1100; /* Ensure dropdowns appear above other content */
+  z-index: 1100;
   padding: 10px 0;
   min-width: 200px;
-  font-family: "Titillium Web", sans-serif; /* Consistent font */
 }
 
 .dropdown-menu a {
@@ -168,7 +128,6 @@ body {
   color: #111;
   font-size: 0.9rem;
   transition: background-color 0.3s ease;
-  font-family: "Titillium Web", sans-serif; /* Ensure consistent font */
 }
 
 .dropdown-menu a:hover {
@@ -179,17 +138,19 @@ body {
 .app-content {
   flex: 1;
   padding: 20px;
-  position: relative; /* Prevents content from overlapping dropdowns */
-  z-index: 1; /* Ensures content is layered below dropdowns */
-  font-family: "Titillium Web", sans-serif; /* Consistent font */
+  position: relative;
+  z-index: 1;
 }
 
-/* Responsive Design for Header */
-@media (max-width: 768px) {
-  .hamburger-menu {
-    display: block;
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .header-nav {
+    flex-direction: column;
+    align-items: center;
   }
+}
 
+@media (max-width: 768px) {
   .header-nav {
     display: none;
   }
@@ -204,18 +165,15 @@ body {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1100; /* Ensures dropdowns are visible in mobile view */
+    z-index: 1100;
   }
 
   .dropdown-menu {
-    position: static; /* For better usability in mobile view */
+    position: static;
     background-color: #ffffff;
     box-shadow: none;
     border-radius: 0;
   }
-
-  .dropdown-menu a {
-    padding: 10px;
-  }
 }
+
 

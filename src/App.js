@@ -7,7 +7,7 @@ import Stats from "./components/Stats";
 import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
-import TeamDetail from "./components/TeamDetailView"; // Added TeamDetail import
+import TeamDetail from "./components/TeamDetailView";
 import "./App.css";
 import "./Navbar.css";
 import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
@@ -27,23 +27,11 @@ function App() {
   return (
     <Router>
       <div className="app">
-        {/* Adding Google Font Link */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700;900&display=swap"
-          rel="stylesheet"
-        />
-
-        {/* Header */}
         <header className="app-header">
           <div className="header-content">
             <h1 className="header-logo">Gameday</h1>
             <nav className="header-nav">
-              {/* Conferences */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("conferences")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
+              <div className="dropdown" onMouseEnter={() => toggleDropdown("conferences")} onMouseLeave={() => toggleDropdown(null)}>
                 <button className="dropdown-button">Conferences</button>
                 {dropdownOpen === "conferences" && (
                   <div className="dropdown-menu">
@@ -56,13 +44,9 @@ function App() {
                   </div>
                 )}
               </div>
-
-              {/* Lines */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("lines")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
+              
+              {/* Existing Sections */}
+              <div className="dropdown" onMouseEnter={() => toggleDropdown("lines")} onMouseLeave={() => toggleDropdown(null)}>
                 <button className="dropdown-button">Lines</button>
                 {dropdownOpen === "lines" && (
                   <div className="dropdown-menu">
@@ -73,147 +57,59 @@ function App() {
                   </div>
                 )}
               </div>
-
-              {/* Metrics */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("metrics")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
-                <button className="dropdown-button">Metrics</button>
-                {dropdownOpen === "metrics" && (
-                  <div className="dropdown-menu">
-                    <Link to="/team-comparisons">Team Comparisons</Link>
-                    <Link to="/advanced-box-scores">Advanced Box Scores</Link>
-                    <Link to="/player-analytics">Player Analytics</Link>
-                    <Link to="/power-rankings">Power Rankings</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* GamedayGPT */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("gamedaygpt")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
-                <button className="dropdown-button">GamedayGPT</button>
-                {dropdownOpen === "gamedaygpt" && (
-                  <div className="dropdown-menu">
-                    <Link to="/predict-outcomes">Predict Outcomes</Link>
-                    <Link to="/ask-questions">Ask Questions</Link>
-                    <Link to="/betting-suggestions">Betting Suggestions</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* Tools */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("tools")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
-                <button className="dropdown-button">Tools</button>
-                {dropdownOpen === "tools" && (
-                  <div className="dropdown-menu">
-                    <Link to="/play-by-play">Play-by-Play Analysis</Link>
-                    <Link to="/game-simulations">Game Simulations</Link>
-                    <Link to="/live-updates">Live Updates</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* Resources */}
-              <div
-                className="dropdown"
-                onMouseEnter={() => toggleDropdown("resources")}
-                onMouseLeave={() => toggleDropdown(null)}
-              >
-                <button className="dropdown-button">Resources</button>
-                {dropdownOpen === "resources" && (
-                  <div className="dropdown-menu">
-                    <Link to="/how-to-use">How to Use Gameday</Link>
-                    <Link to="/tutorials">Tutorials</Link>
-                    <Link to="/faq">FAQ</Link>
-                  </div>
-                )}
-              </div>
+              
+              {/* New Header Additions */}
+              <Link to="/recruiting-hub" className="header-link">Recruiting Hub</Link>
+              <Link to="/coaching-carousel" className="header-link">Coaching Carousel</Link>
+              <Link to="/live-score-tracker" className="header-link">Live Score Tracker</Link>
+              <Link to="/ai-betting-edge" className="header-link">AI Betting Edge</Link>
+              <Link to="/news-analysis" className="header-link">News & Analysis</Link>
             </nav>
+            
             <div className="header-buttons">
-              <a href="/signin" className="header-link">
-                Sign In
-              </a>
-              <a href="/subscribe" className="header-link subscribe-button">
-                Subscribe
-              </a>
+              <a href="/signin" className="header-link">Sign In</a>
+              <a href="/subscribe" className="header-link subscribe-button">Subscribe</a>
             </div>
           </div>
         </header>
 
-        {/* Navigation Bar */}
         <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
-          <Link to="/" className="nav-item" onClick={toggleMenu}>
-            <FaHome /> Home
-          </Link>
-          <Link to="/teams" className="nav-item" onClick={toggleMenu}>
-            <FaUsers /> Teams
-          </Link>
-          <Link to="/games" className="nav-item" onClick={toggleMenu}>
-            <FaFootballBall /> Games
-          </Link>
-          <Link to="/stats" className="nav-item" onClick={toggleMenu}>
-            <FaChartBar /> Stats
-          </Link>
-          <Link to="/more" className="nav-item" onClick={toggleMenu}>
-            <FaEllipsisH /> More
-          </Link>
+          <Link to="/" className="nav-item" onClick={toggleMenu}><FaHome /> Home</Link>
+          <Link to="/teams" className="nav-item" onClick={toggleMenu}><FaUsers /> Teams</Link>
+          <Link to="/games" className="nav-item" onClick={toggleMenu}><FaFootballBall /> Games</Link>
+          <Link to="/stats" className="nav-item" onClick={toggleMenu}><FaChartBar /> Stats</Link>
+          <Link to="/more" className="nav-item" onClick={toggleMenu}><FaEllipsisH /> More</Link>
+          
+          {/* New Navbar Additions */}
+          <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
+          <Link to="/rivalry-talk" className="nav-item">Rivalry Talk</Link>
+          <Link to="/crystal-ball-recruits" className="nav-item">Crystal Ball Recruits</Link>
+          <Link to="/live-betting-strategy" className="nav-item">Live Betting Strategy</Link>
+          <Link to="/coach-tracker" className="nav-item">Coach Tracker</Link>
         </nav>
 
-        {/* Main Content */}
         <main className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/teams" element={<Teams />} />
-            <Route path="/teams/:teamId" element={<TeamDetail />} /> {/* Added team detail route */}
+            <Route path="/teams/:teamId" element={<TeamDetail />} />
             <Route path="/games" element={<Games />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
             <Route path="/games/:gameId" element={<GameDetailView />} />
-
-            {/* Conference Placeholders */}
-            <Route path="/sec" element={<div>SEC Conference Page</div>} />
-            <Route path="/bigten" element={<div>Big Ten Conference Page</div>} />
-            <Route path="/acc" element={<div>ACC Conference Page</div>} />
-            <Route path="/pac12" element={<div>Pac-12 Conference Page</div>} />
-            <Route path="/big12" element={<div>Big 12 Conference Page</div>} />
-            <Route path="/others" element={<div>Other Conferences Page</div>} />
-
-            {/* Lines Placeholders */}
-            <Route path="/current-lines" element={<div>Current Lines Page</div>} />
-            <Route path="/spread-analysis" element={<div>Spread Analysis Page</div>} />
-            <Route path="/moneyline-comparisons" element={<div>Moneyline Comparisons Page</div>} />
-            <Route path="/over-under-metrics" element={<div>Over/Under Metrics Page</div>} />
-
-            {/* Metrics Placeholders */}
-            <Route path="/team-comparisons" element={<div>Team Comparisons Page</div>} />
-            <Route path="/advanced-box-scores" element={<div>Advanced Box Scores Page</div>} />
-            <Route path="/player-analytics" element={<div>Player Analytics Page</div>} />
-            <Route path="/power-rankings" element={<div>Power Rankings Page</div>} />
-
-            {/* GamedayGPT Placeholders */}
-            <Route path="/predict-outcomes" element={<div>Predict Outcomes Page</div>} />
-            <Route path="/betting-suggestions" element={<div>Betting Suggestions Page</div>} />
-
-            {/* Tools Placeholders */}
-            <Route path="/play-by-play" element={<div>Play-by-Play Analysis Page</div>} />
-            <Route path="/game-simulations" element={<div>Game Simulations Page</div>} />
-            <Route path="/live-updates" element={<div>Live Updates Page</div>} />
-
-            {/* Resources Placeholders */}
-            <Route path="/how-to-use" element={<div>How to Use Page</div>} />
-            <Route path="/tutorials" element={<div>Tutorials Page</div>} />
-            <Route path="/faq" element={<div>FAQ Page</div>} />
+            
+            {/* New Routes */}
+            <Route path="/recruiting-hub" element={<div>Recruiting Hub Page</div>} />
+            <Route path="/coaching-carousel" element={<div>Coaching Carousel Page</div>} />
+            <Route path="/live-score-tracker" element={<div>Live Score Tracker Page</div>} />
+            <Route path="/ai-betting-edge" element={<div>AI Betting Edge Page</div>} />
+            <Route path="/news-analysis" element={<div>News & Analysis Page</div>} />
+            <Route path="/pickem-predictions" element={<div>Pick'em & Predictions Page</div>} />
+            <Route path="/rivalry-talk" element={<div>Rivalry Talk Page</div>} />
+            <Route path="/crystal-ball-recruits" element={<div>Crystal Ball Recruits Page</div>} />
+            <Route path="/live-betting-strategy" element={<div>Live Betting Strategy Page</div>} />
+            <Route path="/coach-tracker" element={<div>Coach Tracker Page</div>} />
           </Routes>
         </main>
       </div>
@@ -222,3 +118,4 @@ function App() {
 }
 
 export default App;
+
