@@ -29,7 +29,7 @@ function App() {
       <div className="app">
         <header className="app-header">
           <div className="header-content">
-            <h1 className="header-logo">Gameday</h1>
+            <h1 className="header-logo">GAMEDAY</h1>
             <nav className="header-nav">
               <div className="dropdown" onMouseEnter={() => toggleDropdown("conferences")} onMouseLeave={() => toggleDropdown(null)}>
                 <button className="dropdown-button">Conferences</button>
@@ -44,7 +44,7 @@ function App() {
                   </div>
                 )}
               </div>
-              
+
               <div className="dropdown" onMouseEnter={() => toggleDropdown("lines")} onMouseLeave={() => toggleDropdown(null)}>
                 <button className="dropdown-button">Lines</button>
                 {dropdownOpen === "lines" && (
@@ -56,7 +56,7 @@ function App() {
                   </div>
                 )}
               </div>
-              
+
               <div className="dropdown" onMouseEnter={() => toggleDropdown("gamedaygpt")} onMouseLeave={() => toggleDropdown(null)}>
                 <button className="dropdown-button">GamedayGPT</button>
                 {dropdownOpen === "gamedaygpt" && (
@@ -67,8 +67,8 @@ function App() {
                   </div>
                 )}
               </div>
-              
-              {/* New Header Sections */}
+
+              {/* Additional Modern Header Sections */}
               <Link to="/resources" className="header-link">Resources</Link>
               <Link to="/sportsbooks" className="header-link">Sportsbooks</Link>
               <Link to="/how-to-bet" className="header-link">How to Bet</Link>
@@ -79,7 +79,7 @@ function App() {
               <Link to="/recruiting-hub" className="header-link">Recruiting Hub</Link>
               <Link to="/coaching-carousel" className="header-link">Coaching Carousel</Link>
             </nav>
-            
+
             <div className="header-buttons">
               <a href="/get-started" className="header-button get-started">
                 <FaQrcode /> Get Started
@@ -97,6 +97,7 @@ function App() {
           </div>
         </header>
 
+        {/* Navigation Bar */}
         <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
           <Link to="/" className="nav-item" onClick={toggleMenu}><FaHome /> Home</Link>
           <Link to="/teams" className="nav-item" onClick={toggleMenu}><FaUsers /> Teams</Link>
@@ -107,6 +108,7 @@ function App() {
           <Link to="/channels" className="nav-item">Channels</Link>
         </nav>
 
+        {/* Main Content */}
         <main className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -127,6 +129,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
