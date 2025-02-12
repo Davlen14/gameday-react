@@ -7,6 +7,7 @@ body {
   font-family: "Titillium Web", sans-serif;
   background-color: #f5f5f5;
   color: #111;
+  overflow-x: hidden;
 }
 
 /* App Container */
@@ -16,7 +17,9 @@ body {
   min-height: 100vh;
 }
 
-/* Header */
+/* =============================== */
+/* HEADER SECTION */
+/* =============================== */
 .app-header {
   background-color: #ffffff;
   color: #111;
@@ -28,8 +31,10 @@ body {
   position: sticky;
   top: 0;
   width: 100%;
+  max-width: 100vw;
   z-index: 1100;
   font-size: 0.95rem;
+  overflow-x: hidden;
 }
 
 .header-content {
@@ -37,6 +42,8 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   flex-wrap: wrap;
 }
 
@@ -50,18 +57,24 @@ body {
   font-style: italic;
 }
 
-/* Header Navigation */
+/* HEADER NAVIGATION */
 .header-nav {
   display: flex;
   gap: 15px;
   flex-grow: 1;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-/* Updated Header Buttons */
+/* =============================== */
+/* HEADER BUTTONS */
+/* =============================== */
 .header-buttons {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .header-button {
@@ -75,6 +88,7 @@ body {
   border-radius: 5px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 /* Get Started (Scarlet with QR Code) */
@@ -113,7 +127,9 @@ body {
   box-shadow: 0px 3px 8px rgba(180, 180, 180, 0.3);
 }
 
-/* Dropdown Styling */
+/* =============================== */
+/* DROPDOWN MENU */
+/* =============================== */
 .dropdown {
   position: relative;
 }
@@ -159,47 +175,68 @@ body {
   background-color: rgba(149, 0, 0, 0.1);
 }
 
-/* Main Content */
+/* =============================== */
+/* NAVIGATION BAR */
+/* =============================== */
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =============================== */
+/* MAIN CONTENT */
+/* =============================== */
 .app-content {
   flex: 1;
   padding: 20px;
   position: relative;
   z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
-/* Responsive Design */
+/* =============================== */
+/* RESPONSIVE DESIGN */
+/* =============================== */
 @media (max-width: 1024px) {
-  .header-nav {
+  .header-content {
     flex-direction: column;
     align-items: center;
+    text-align: center;
+  }
+
+  .header-buttons {
+    justify-content: center;
+    margin-top: 10px;
   }
 }
 
 @media (max-width: 768px) {
   .header-nav {
-    display: none;
-  }
-
-  .header-nav.active {
-    display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 45px;
-    right: 20px;
-    background-color: #ffffff;
-    padding: 8px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1100;
+    gap: 10px;
+    text-align: center;
   }
 
-  .dropdown-menu {
-    position: static;
-    background-color: #ffffff;
-    box-shadow: none;
-    border-radius: 0;
+  .app-nav {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
   }
 }
+
 
 
 
