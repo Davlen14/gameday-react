@@ -21,7 +21,6 @@
   width: 100%; /* Ensure full width */
   z-index: 1100;
   font-size: 0.95rem;
-  overflow-x: hidden;
 }
 
 /* Navbar Container */
@@ -53,7 +52,6 @@
   justify-content: center;
   flex-wrap: nowrap;
   position: relative; /* Ensures dropdown stacks correctly */
-  z-index: 1200; /* Higher than navbar but lower than dropdown */
 }
 
 /* Header Buttons */

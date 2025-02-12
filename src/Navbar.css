@@ -8,20 +8,10 @@
   padding: 10px 20px;
   position: sticky;
   top: 0;
-  width: 100vw; /* Ensure full viewport width */
+  width: 100%; /* Ensure full viewport width */
   z-index: 999;
   flex-wrap: wrap;
   margin: 0; /* Remove max-width limitation */
-}
-
-/* Navbar Container */
-.nav-container {
-  display: flex;
-  justify-content: space-between; /* Space between logo, nav items, and buttons */
-  align-items: center;
-  width: 100%; /* Ensure full width */
-  max-width: 1280px;
-  margin: 0 auto;
 }
 
 /* Navbar Items */
