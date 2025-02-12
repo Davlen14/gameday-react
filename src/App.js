@@ -67,6 +67,17 @@ function App() {
                   </div>
                 )}
               </div>
+              
+              {/* New Header Sections */}
+              <Link to="/resources" className="header-link">Resources</Link>
+              <Link to="/sportsbooks" className="header-link">Sportsbooks</Link>
+              <Link to="/how-to-bet" className="header-link">How to Bet</Link>
+              <Link to="/newsletter" className="header-link">Newsletter</Link>
+              <Link to="/education" className="header-link">Education</Link>
+              <Link to="/ai-betting-edge" className="header-link">AI Betting Edge</Link>
+              <Link to="/live-score-tracker" className="header-link">Live Score Tracker</Link>
+              <Link to="/recruiting-hub" className="header-link">Recruiting Hub</Link>
+              <Link to="/coaching-carousel" className="header-link">Coaching Carousel</Link>
             </nav>
             
             <div className="header-buttons">
@@ -92,6 +103,8 @@ function App() {
           <Link to="/games" className="nav-item" onClick={toggleMenu}><FaFootballBall /> Games</Link>
           <Link to="/stats" className="nav-item" onClick={toggleMenu}><FaChartBar /> Stats</Link>
           <Link to="/more" className="nav-item" onClick={toggleMenu}><FaEllipsisH /> More</Link>
+          <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
+          <Link to="/channels" className="nav-item">Channels</Link>
         </nav>
 
         <main className="app-content">
@@ -114,5 +127,6 @@ function App() {
 }
 
 export default App;
+
 
 
