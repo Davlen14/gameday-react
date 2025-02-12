@@ -57,6 +57,7 @@ body {
   justify-content: center;
 }
 
+/* Existing Header Buttons */
 .header-buttons {
   display: flex;
   gap: 15px;
@@ -86,6 +87,59 @@ body {
 .subscribe-button:hover {
   background-color: rgb(149, 0, 0);
   color: #ffffff;
+}
+
+/* =================== */
+/* NEW BUTTON STYLES */
+/* =================== */
+
+.header-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-family: "Titillium Web", sans-serif;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.9rem;
+}
+
+/* Get Started (Scarlet with QR Code) */
+.get-started {
+  background-color: rgb(149, 0, 0);
+  color: white;
+  border: 1px solid rgb(149, 0, 0);
+}
+
+.get-started:hover {
+  background-color: rgb(120, 0, 0);
+  box-shadow: 0px 4px 10px rgba(149, 0, 0, 0.3);
+}
+
+/* Upgrade (Scarlet) */
+.upgrade {
+  background-color: rgb(149, 0, 0);
+  color: white;
+  border: 1px solid rgb(149, 0, 0);
+}
+
+.upgrade:hover {
+  background-color: rgb(120, 0, 0);
+  box-shadow: 0px 4px 10px rgba(149, 0, 0, 0.3);
+}
+
+/* Login (Light Gray) */
+.login {
+  background-color: rgb(230, 230, 230);
+  color: rgb(80, 80, 80);
+  border: 1px solid rgb(200, 200, 200);
+}
+
+.login:hover {
+  background-color: rgb(210, 210, 210);
+  box-shadow: 0px 4px 10px rgba(180, 180, 180, 0.3);
 }
 
 /* Dropdown Styling */
@@ -175,5 +229,6 @@ body {
     border-radius: 0;
   }
 }
+
 
 

@@ -10,7 +10,7 @@ import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
 import "./App.css";
 import "./Navbar.css";
-import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH } from "react-icons/fa";
+import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH, FaQrcode, FaUser, FaArrowUp } from "react-icons/fa";
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,8 +70,18 @@ function App() {
             </nav>
             
             <div className="header-buttons">
-              <a href="/signin" className="header-link">Sign In</a>
-              <a href="/subscribe" className="header-link subscribe-button">Subscribe</a>
+              <a href="/get-started" className="header-button get-started">
+                <FaQrcode /> Get Started
+              </a>
+              <a href="/upgrade" className="header-button upgrade">
+                <FaArrowUp /> Upgrade
+              </a>
+              <a href="/signin" className="header-button login">
+                <FaUser /> Login
+              </a>
+              <a href="/subscribe" className="header-button subscribe">
+                Subscribe
+              </a>
             </div>
           </div>
         </header>
@@ -104,4 +114,5 @@ function App() {
 }
 
 export default App;
+
 
