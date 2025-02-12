@@ -1,30 +1,36 @@
 /* Navbar Styles */
 .app-nav {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 12px 20px;
+  padding: 10px 20px;
   position: sticky;
   top: 0;
+  width: 100%;
   z-index: 1000;
   flex-wrap: wrap;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
+/* Navbar Items */
 .nav-item {
   text-decoration: none;
   color: #333;
-  font-size: 1rem;
-  font-weight: bold;
-  margin: 0 15px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 12px;
   position: relative;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-family: "Exo 2", sans-serif;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 5px;
+  white-space: nowrap;
 }
 
 .nav-item:hover {
@@ -48,16 +54,29 @@
   width: 100%;
 }
 
-/* Responsive Design for Navbar */
+/* Make sure the navbar spans across */
+.nav-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =============================== */
+/* RESPONSIVE DESIGN */
+/* =============================== */
 @media (max-width: 1024px) {
   .app-nav {
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      justify-content: space-evenly;
       padding: 10px 0;
   }
 
   .nav-item {
-      margin: 8px 0;
+      font-size: 0.9rem;
+      padding: 8px;
   }
 }
 
@@ -68,10 +87,14 @@
 
   .app-nav.active {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
   }
 
   .nav-item {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       padding: 6px 10px;
   }
 }
+
