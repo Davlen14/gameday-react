@@ -67,17 +67,6 @@ function App() {
                   </div>
                 )}
               </div>
-
-              {/* Additional Modern Header Sections */}
-              <Link to="/resources" className="header-link">Resources</Link>
-              <Link to="/sportsbooks" className="header-link">Sportsbooks</Link>
-              <Link to="/how-to-bet" className="header-link">How to Bet</Link>
-              <Link to="/newsletter" className="header-link">Newsletter</Link>
-              <Link to="/education" className="header-link">Education</Link>
-              <Link to="/ai-betting-edge" className="header-link">AI Betting Edge</Link>
-              <Link to="/live-score-tracker" className="header-link">Live Score Tracker</Link>
-              <Link to="/recruiting-hub" className="header-link">Recruiting Hub</Link>
-              <Link to="/coaching-carousel" className="header-link">Coaching Carousel</Link>
             </nav>
 
             <div className="header-buttons">
@@ -89,9 +78,6 @@ function App() {
               </a>
               <a href="/signin" className="header-button login">
                 <FaUser /> Login
-              </a>
-              <a href="/subscribe" className="header-button subscribe">
-                Subscribe
               </a>
             </div>
           </div>
@@ -129,6 +115,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
