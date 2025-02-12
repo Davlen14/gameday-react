@@ -8,9 +8,6 @@
 /* =============================== */
 /* HEADER SECTION */
 /* =============================== */
-/* =============================== */
-/* HEADER SECTION */
-/* =============================== */
 .app-header {
   background-color: #ffffff;
   color: #111;
@@ -35,6 +32,28 @@
   width: 100%; /* Ensure full width */
   max-width: 1280px;
   margin: 0 auto;
+}
+
+/* Header Logo */
+.header-logo {
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #870000;
+  text-transform: uppercase;
+  font-style: italic;
+  margin-right: auto; /* Pushes everything else to the right */
+}
+
+/* Header Navigation */
+.header-nav {
+  display: flex;
+  gap: 15px;
+  flex-grow: 1;
+  justify-content: center;
+  flex-wrap: nowrap;
+  position: relative; /* Ensures dropdown stacks correctly */
+  z-index: 1200; /* Higher than navbar but lower than dropdown */
 }
 
 /* Header Buttons */
@@ -97,20 +116,113 @@
   box-shadow: 0px 3px 8px rgba(180, 180, 180, 0.3);
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .app-header {
-    flex-direction: column;
-    align-items: center;
-  }
+/* =============================== */
+/* DROPDOWN MENU */
+/* =============================== */
+.dropdown {
+  position: relative;
+}
 
-  .nav-container {
+.dropdown-button {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: rgb(142, 0, 0);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-button:hover {
+  background-color: rgba(142, 0, 0, 0.1);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  z-index: 1500;
+  padding: 8px 0;
+  min-width: 180px;
+  font-size: 0.85rem;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 15px;
+  text-decoration: none;
+  color: #111;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: rgba(149, 0, 0, 0.1);
+}
+
+/* =============================== */
+/* NAVIGATION BAR */
+/* =============================== */
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =============================== */
+/* MAIN CONTENT */
+/* =============================== */
+.app-content {
+  flex: 1;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* =============================== */
+/* RESPONSIVE DESIGN */
+/* =============================== */
+@media (max-width: 1024px) {
+  .header-content {
     flex-direction: column;
     align-items: center;
+    text-align: center;
   }
 
   .header-buttons {
+    justify-content: center;
     margin-top: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-nav {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .app-nav {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
   }
 }
 
