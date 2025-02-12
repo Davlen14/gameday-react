@@ -1,18 +1,17 @@
 /* Navbar Styles */
 .app-nav {
   display: flex;
-  justify-content: center;
+  justify-content: center; /* Centers items */
   align-items: center;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 10px 20px;
   position: sticky;
   top: 0;
-  width: 100%;
+  width: 100vw; /* Ensure full viewport width */
   z-index: 1000;
   flex-wrap: wrap;
-  max-width: 1280px;
-  margin: 0 auto;
+  margin: 0; /* Remove max-width limitation */
 }
 
 /* Navbar Items */
