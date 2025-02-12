@@ -28,7 +28,7 @@ function App() {
     <Router>
       <div className="app">
         <header className="app-header">
-          <div className="header-content">
+          <div className="nav-container">
             <h1 className="header-logo">GAMEDAY</h1>
             <nav className="header-nav">
               <div className="dropdown" onMouseEnter={() => toggleDropdown("conferences")} onMouseLeave={() => toggleDropdown(null)}>

@@ -14,6 +14,16 @@
   margin: 0; /* Remove max-width limitation */
 }
 
+/* Navbar Container */
+.nav-container {
+  display: flex;
+  justify-content: space-between; /* Space between logo, nav items, and buttons */
+  align-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
 /* Navbar Items */
 .nav-item {
   text-decoration: none;
@@ -53,47 +63,34 @@
   width: 100%;
 }
 
-/* Make sure the navbar spans across */
-.nav-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  z-index: 1500; /* Ensure dropdown appears on top */
+  padding: 8px 0;
+  min-width: 180px;
+  font-size: 0.85rem;
 }
 
-/* =============================== */
-/* RESPONSIVE DESIGN */
-/* =============================== */
+/* Responsive Design */
 @media (max-width: 1024px) {
   .app-nav {
-      flex-direction: row;
-      justify-content: space-evenly;
-      padding: 10px 0;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .nav-item {
-      font-size: 0.9rem;
-      padding: 8px;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-nav {
-      display: none;
+  .nav-container {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .app-nav.active {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px 0;
-  }
-
-  .nav-item {
-      font-size: 0.85rem;
-      padding: 6px 10px;
+  .header-buttons {
+    margin-top: 10px;
   }
 }
 
