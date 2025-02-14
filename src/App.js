@@ -10,6 +10,7 @@ import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
 import "./App.css";
 import "./Navbar.css";
+import "./Header.css";  // ✅ Now includes header styles
 import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH, FaQrcode, FaUser, FaArrowUp } from "react-icons/fa";
 
 function App() {
@@ -27,8 +28,9 @@ function App() {
   return (
     <Router>
       <div className="app">
+        {/* Header Section */}
         <header className="app-header">
-          <div className="nav-container">
+          <div className="header-nav-container"> {/* ✅ Renamed to avoid conflicts */}
             <h1 className="header-logo">GAMEDAY</h1>
             <nav className="header-nav">
               <div className="dropdown" onMouseEnter={() => toggleDropdown("conferences")} onMouseLeave={() => toggleDropdown(null)}>
@@ -69,29 +71,32 @@ function App() {
               </div>
             </nav>
 
-            <div className="header-buttons">
-              <a href="/get-started" className="header-button get-started">
+            {/* Header Buttons */}
+            <div className="header-actions"> {/* ✅ Renamed from header-buttons */}
+              <a href="/get-started" className="header-action-button get-started">
                 <FaQrcode /> Get Started
               </a>
-              <a href="/upgrade" className="header-button upgrade">
+              <a href="/upgrade" className="header-action-button upgrade">
                 <FaArrowUp /> Upgrade
               </a>
-              <a href="/signin" className="header-button login">
+              <a href="/signin" className="header-action-button login">
                 <FaUser /> Login
               </a>
             </div>
           </div>
         </header>
 
-        {/* Navigation Bar */}
+        {/* Navbar Section */}
         <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
-          <Link to="/" className="nav-item" onClick={toggleMenu}><FaHome /> Home</Link>
-          <Link to="/teams" className="nav-item" onClick={toggleMenu}><FaUsers /> Teams</Link>
-          <Link to="/games" className="nav-item" onClick={toggleMenu}><FaFootballBall /> Games</Link>
-          <Link to="/stats" className="nav-item" onClick={toggleMenu}><FaChartBar /> Stats</Link>
-          <Link to="/more" className="nav-item" onClick={toggleMenu}><FaEllipsisH /> More</Link>
-          <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
-          <Link to="/channels" className="nav-item">Channels</Link>
+          <div className="navbar-container"> {/* ✅ Matches new naming convention */}
+            <Link to="/" className="nav-item" onClick={toggleMenu}><FaHome /> Home</Link>
+            <Link to="/teams" className="nav-item" onClick={toggleMenu}><FaUsers /> Teams</Link>
+            <Link to="/games" className="nav-item" onClick={toggleMenu}><FaFootballBall /> Games</Link>
+            <Link to="/stats" className="nav-item" onClick={toggleMenu}><FaChartBar /> Stats</Link>
+            <Link to="/more" className="nav-item" onClick={toggleMenu}><FaEllipsisH /> More</Link>
+            <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
+            <Link to="/channels" className="nav-item">Channels</Link>
+          </div>
         </nav>
 
         {/* Main Content */}

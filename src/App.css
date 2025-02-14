@@ -6,178 +6,6 @@
 }
 
 /* =============================== */
-/* HEADER SECTION */
-/* =============================== */
-.app-header {
-  background-color: #ffffff;
-  color: #111;
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  width: 100%; /* Ensure full width */
-  z-index: 1100;
-  font-size: 0.95rem;
-}
-
-/* Navbar Container */
-.nav-container {
-  display: flex;
-  justify-content: space-between; /* Space between logo, nav items, and buttons */
-  align-items: center;
-  width: 100%; /* Ensure full width */
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-/* Header Logo */
-.header-logo {
-  font-family: 'Titillium Web', sans-serif;
-  font-weight: 700;
-  font-size: 22px;
-  color: #870000;
-  text-transform: uppercase;
-  font-style: italic;
-  margin-right: auto; /* Pushes everything else to the right */
-}
-
-/* Header Navigation */
-.header-nav {
-  display: flex;
-  gap: 15px;
-  flex-grow: 1;
-  justify-content: center;
-  flex-wrap: nowrap;
-  position: relative; /* Ensures dropdown stacks correctly */
-}
-
-/* Header Buttons */
-.header-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  align-items: center;
-  margin-left: auto; /* Pushes it to the far right */
-}
-
-.header-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  font-family: "Titillium Web", sans-serif;
-  padding: 8px 12px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-/* Get Started (Scarlet with QR Code) */
-.get-started {
-  background-color: rgb(149, 0, 0);
-  color: white;
-  border: 1px solid rgb(149, 0, 0);
-}
-
-.get-started:hover {
-  background-color: rgb(120, 0, 0);
-  box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
-}
-
-/* Upgrade (Scarlet) */
-.upgrade {
-  background-color: rgb(149, 0, 0);
-  color: white;
-  border: 1px solid rgb(149, 0, 0);
-}
-
-.upgrade:hover {
-  background-color: rgb(120, 0, 0);
-  box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
-}
-
-/* Login (Light Gray) */
-.login {
-  background-color: rgb(230, 230, 230);
-  color: rgb(80, 80, 80);
-  border: 1px solid rgb(200, 200, 200);
-}
-
-.login:hover {
-  background-color: rgb(210, 210, 210);
-  box-shadow: 0px 3px 8px rgba(180, 180, 180, 0.3);
-}
-
-/* =============================== */
-/* DROPDOWN MENU */
-/* =============================== */
-.dropdown {
-  position: relative;
-}
-
-.dropdown-button {
-  background: none;
-  border: none;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: rgb(142, 0, 0);
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.dropdown-button:hover {
-  background-color: rgba(142, 0, 0, 0.1);
-}
-
-/* Dropdown Menu */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  z-index: 2000; /* Ensure dropdown appears above navbar */
-  padding: 8px 0;
-  min-width: 180px;
-  font-size: 0.85rem;
-}
-
-.dropdown-menu a {
-  display: block;
-  padding: 8px 15px;
-  text-decoration: none;
-  color: #111;
-  transition: background-color 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-  background-color: rgba(149, 0, 0, 0.1);
-}
-
-/* =============================== */
-/* NAVIGATION BAR */
-/* =============================== */
-.app-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  padding: 10px;
-  width: 100%; /* Ensure full width */
-  margin: 0 auto;
-}
-
-/* =============================== */
 /* MAIN CONTENT */
 /* =============================== */
 .app-content {
@@ -187,42 +15,24 @@
   z-index: 1;
   max-width: 1280px;
   margin: 0 auto;
-  overflow: visible; /* Add this line */
+  overflow: visible;
 }
 
 /* =============================== */
 /* RESPONSIVE DESIGN */
 /* =============================== */
 @media (max-width: 1024px) {
-  .header-content {
+  .app-nav {
     flex-direction: column;
     align-items: center;
-    text-align: center;
-  }
-
-  .header-buttons {
-    justify-content: center;
-    margin-top: 10px;
   }
 }
 
 @media (max-width: 768px) {
-  .header-nav {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
-
   .app-nav {
     flex-direction: column;
     gap: 10px;
     text-align: center;
-  }
-
-  .header-buttons {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
   }
 }
 
