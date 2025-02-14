@@ -208,17 +208,18 @@ const Home = () => {
             <style jsx>{`
                 :root {
                     --primary-color: #ffffff;
-                    --accent-color: rgb(142, 0, 0);
+                    --accent-color: #D4001C;
                     --text-color: #333333;
                     --background-color: #f5f5f5;
                     --border-color: #dddddd;
                 }
 
                 .home-container {
-                    padding: 2rem;
-                    background-color: var(--background-color);
-                    color: var(--text-color);
-                    min-height: 100vh;
+                font-family: "Orbitron", "Titillium Web", sans-serif; 
+                padding: 2rem;
+                background-color: var(--background-color);
+                color: var(--text-color);
+                min-height: 100vh;
                 }
 
                 .hero-header {
