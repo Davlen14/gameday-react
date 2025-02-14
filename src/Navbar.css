@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
 /* =============================== */
 /* SECONDARY BAR (White) */
 /* =============================== */
@@ -13,6 +15,7 @@
   width: 100%;
   z-index: 999;
   border-bottom: 1px solid #e0e0e0; /* subtle divider */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .secondary-bar-container {
@@ -23,6 +26,7 @@
   max-width: 1280px;
   margin: 0 auto;
   height: 100%; /* fill the full 50px */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 /* Nav Items: Home, Teams, Games, etc. */
@@ -37,7 +41,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: Arial, sans-serif;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 6px 0; /* minimal vertical padding */
 }
 
@@ -61,8 +65,7 @@
   width: 100%;
 }
 
-/* 
-   If you prefer a fill background on hover instead of just color change, 
+/* If you prefer a fill background on hover instead of just color change, 
    you can add: background-color: #f2f2f2; to .nav-item:hover
    or remove the ::after lines. 
 */
