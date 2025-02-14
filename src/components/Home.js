@@ -301,7 +301,7 @@ const Home = () => {
                 }
 
                 .rank {
-                    color: rgb(142, 0, 0);
+                    color:  #D4001C;
                     font-weight: bold;
                 }
 
