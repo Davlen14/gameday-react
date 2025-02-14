@@ -132,9 +132,11 @@
     margin-top: 0.25rem;
 }
 .scoreboard-tv-icon {
-    font-size: 0.65rem; /* slightly smaller */
-    color: red; /* red TV icon as requested */
-}
+    font-size: 1.2rem;           /* Increase the size */
+    color: #e53935;              /* Modern red tone */
+    opacity: 0.9;                /* Slight transparency for a modern feel */
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2); /* Optional subtle glow */
+  }
 .scoreboard-tv-network {
     font-size: 0.6rem; /* slightly smaller */
     color: #666;
