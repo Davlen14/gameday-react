@@ -41,9 +41,7 @@ function App() {
         <header className="top-bar">
           <div className="top-bar-container">
             {/* Logo on the left */}
-            <h1 className="top-bar-logo">
-              GameDay<span className="plus-sign">+</span>
-            </h1>
+            <h1 className="top-bar-logo">GAMEDAY</h1>
 
             {/* Middle nav: Conferences, Lines, GamedayGPT */}
             <nav className="top-bar-nav">
