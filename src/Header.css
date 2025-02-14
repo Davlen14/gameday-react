@@ -41,20 +41,27 @@
 /* LOGO (Bigger, Bolder, Italic, with White Divider on the Right) */
 /* Using Orbitron as primary font, with Titillium Web as fallback */
 .top-bar-logo {
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-weight: 900;       /* Extra bold */
-  font-size: 22px;        /* Larger text, similar to NCAA size */
-  font-style: italic;     /* Make it italic */
-  text-transform: uppercase;
-  color: #ffffff;
+    font-family: 'Orbitron', 'Titillium Web', sans-serif;
+    font-weight: 900;       /* Extra bold */
+    font-size: 22px;        /* Larger text, similar to NCAA size */
+    font-style: italic;     /* Make it italic */
+    /* Remove text-transform so that it retains your capitalization (G and D only) */
+    /* text-transform: uppercase; */
+    color: #ffffff;
+    
+    /* Let the container's padding handle spacing; no extra left margin */
+    margin-left: 0;
+    padding-right: 20px;    /* Space before the divider */
+    
+    /* Vertical white divider on the right of the logo */
+    border-right: 1px solid #ffffff;
+  }
   
-  /* Remove extra left margin; container's padding handles spacing */
-  margin-left: 0;
-  padding-right: 20px;    /* Space before the divider */
-  
-  /* Vertical white divider on the right of the logo */
-  border-right: 1px solid #ffffff;
-}
+  /* Style the plus sign so it appears larger */
+  .plus-sign {
+    font-size: 28px;  /* Increase the plus sign size */
+    margin-left: 4px; /* Optional: add a little space between text and plus */
+  }
 
 /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
 .top-bar-nav {
