@@ -1,66 +1,59 @@
 /***********************************************************
- * Minimal ESPN-Style Top Scoreboard Bar (Filter Bar)
+ * ESPN-Style Minimal Top Scoreboard Bar (Filter Bar)
  ***********************************************************/
 
 /* Container for the entire thin scoreboard filter bar */
 .top-scoreboard {
-    background-color: #ffffff;
+    background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
-    height: 35px; /* reduced from 40px to 35px for extra slim look */
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0.5rem; /* less horizontal padding */
+    padding: 0 1rem;
     font-family: "Orbitron", "Titillium Web", sans-serif;
   }
   
-  /* Left side: e.g., "Conference" filter */
+  /* Left side: "NCAAF" filter label */
   .scoreboard-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
   
-  .scoreboard-left .filter-label {
+  /* Instead of .filter-label and .conference-dropdown, 
+     we'll just show "NCAAF" as a clickable label. */
+  .ncaaf-dropdown {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #373737;
-  }
-  
-  /* The conference dropdown */
-  .conference-dropdown {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.75rem;
-    border: 1px solid #dddddd;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-    color: #333333;
+    color: #333;
+    text-transform: uppercase;
     cursor: pointer;
   }
   
-  /* Right side: e.g., "Week" filter */
+  /* Right side: "Week" filter */
   .scoreboard-right {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
   
   /* Label for the week dropdown */
   .week-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #333333;
+    color: #333;
   }
   
   /* The week dropdown */
   .week-dropdown {
-    padding: 0.2rem 0.4rem;
     font-size: 0.75rem;
-    border: 1px solid #dddddd;
+    color: #333;
+    cursor: pointer;
+    border: 1px solid #ddd;
     border-radius: 4px;
     background-color: #f9f9f9;
-    color: #333333;
-    cursor: pointer;
+    padding: 0.2rem 0.4rem;
   }
   
   /***********************************************************
@@ -73,7 +66,7 @@
       height: auto;
       padding: 0.5rem;
     }
-    
+  
     .scoreboard-left,
     .scoreboard-right {
       flex: 1 1 100%;
@@ -86,22 +79,23 @@
    * Horizontal Scoreboard Ticker for Games
    ***********************************************************/
   
-   .scoreboard-wrapper {
+  /* Outer wrapper */
+  .scoreboard-wrapper {
     width: 100%;
     display: block;
     padding: 0;
     margin: 0;
-    /* Optional: set a background color if desired */
-    background-color: #ffffff;
+    background-color: #fff;
   }
   
   /* Container for the horizontally scrolling game cards */
   .scoreboard-container {
     display: flex;
     overflow-x: auto;  /* enables horizontal scrolling */
-    gap: 1rem;
-    padding: 0.5rem 1rem;
+    gap: 0;
+    padding: 0 1rem;
     -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
+    border-bottom: 1px solid #ddd;
   }
   
   /* Remove default link styles for scoreboard cards */
@@ -113,51 +107,56 @@
   /* Each individual scoreboard card */
   .scoreboard-card {
     flex: 0 0 auto; /* prevents cards from shrinking, keeping them side by side */
-    width: 160px;   /* fixed width for each card */
-    background-color: #f9f9f9;
-    border-radius: 6px;
-    padding: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-right: 1px solid #ddd;
+    background: none;
+    transition: background-color 0.2s ease;
   }
   
+  /* Remove border on last card to match ESPN style */
+  .scoreboard-card:last-child {
+    border-right: none;
+  }
+  
+  /* Optional subtle hover effect (change background slightly) */
   .scoreboard-card:hover {
-    transform: translateY(-2px);
+    background-color: #f8f8f8;
   }
   
   /* Container for the team info within each card */
   .teams {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
   }
   
   /* Each team block (for home and away teams) */
   .team {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
+    gap: 0.35rem;
   }
   
-  /* Team logo styling */
+  /* Team logo styling (smaller for ESPN-like minimalism) */
   .team-logo {
-    width: 40px;  
-    height: 40px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
-    margin-bottom: 0.25rem;
   }
   
   /* Team name styling */
   .team-name {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 0.2rem;
+    color: #333;
   }
   
   /* Team record styling */
   .team-record {
-    font-size: 0.75rem;
-    color: #666666;
+    font-size: 0.7rem;
+    color: #666;
   }
+  

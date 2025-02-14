@@ -55,14 +55,10 @@ const Scoreboard = () => {
       {/* Top Scoreboard Filter Bar */}
       <div className="top-scoreboard">
         <div className="scoreboard-left">
-          {/* 
-            Optionally, you can add a conference filter here.
-            For example, you might want to list available conferences.
-            Currently, this area could display a default or selected conference.
-          */}
-          <span className="filter-label">Conference:</span>
-          <div className="conference-dropdown">FBS</div>
+          {/* NCAAF label/link */}
+          <span className="ncaaf-dropdown">NCAAF</span>
         </div>
+  
         <div className="scoreboard-right">
           <span className="week-label">Week:</span>
           <select
@@ -79,7 +75,7 @@ const Scoreboard = () => {
           </select>
         </div>
       </div>
-
+  
       {/* Horizontal Scrolling Scoreboard Cards */}
       <div className="scoreboard-container">
         {games.map((game) => (
@@ -117,6 +113,7 @@ const Scoreboard = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Scoreboard;
