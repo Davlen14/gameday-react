@@ -24,7 +24,6 @@
 .top-bar-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
@@ -42,6 +41,7 @@
   margin-left: 10px;
   padding-right: 20px;
   border-right: 1px solid #ffffff;
+  flex-shrink: 0; /* Prevents it from getting squished */
 }
 
 /* NAV LINKS - Adjusted Position */
@@ -51,6 +51,7 @@
   gap: 15px;
   margin-left: 20px; /* Moves it closer to the logo */
   flex-grow: 1; /* Ensures it adapts properly */
+  justify-content: flex-start; /* Keeps it near the left */
 }
 
 /* DROPDOWNS */
@@ -116,6 +117,7 @@
   gap: 10px;
   justify-content: flex-end;
   padding-right: 15px;
+  flex-shrink: 0; /* Ensures it doesn’t squeeze the rest */
 }
 
 /* BUTTON STYLING */
@@ -154,7 +156,7 @@
 }
 
 .search-input {
-  width: 180px; /* Slightly smaller */
+  width: 180px;
   padding: 6px 12px;
   border: 1px solid #ffffff;
   border-radius: 20px;
