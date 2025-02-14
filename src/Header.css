@@ -59,36 +59,37 @@
 
 /* RIGHT-SIDE BUTTONS */
 .top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto; /* Pushes buttons to the right */
-  margin-right: 20px; /* Adds some spacing from the edge */
-}
-
-/* All top-bar-button share the same base style */
-.top-bar-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  font-weight: 300; /* Slim text */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  padding: 8px 12px;
-  border-radius: 3px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.85rem;
-  background-color: #ffffff; /* White background */
-  color: #D4001C; /* Scarlet text/icons */
-  border: 1px solid #D4001C; /* Scarlet border */
-  cursor: pointer;
-}
-
-.top-bar-button:hover {
-  background-color: #D4001C; /* Scarlet fill on hover */
-  color: #ffffff; /* White text/icons on hover */
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
-}
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto; /* Pushes buttons to the right */
+    margin-right: 40px; /* Adds some spacing from the far right edge */
+  }
+  
+  /* BUTTON STYLING */
+  .top-bar-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    font-weight: 300; /* Slim text */
+    font-family: 'Orbitron', 'Titillium Web', sans-serif;
+    padding: 8px 12px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.85rem;
+    background-color: #ffffff; /* White background */
+    color: #D4001C; /* Scarlet text/icons */
+    border: 1px solid #ffffff; /* Scarlet border */
+    cursor: pointer;
+  }
+  
+  /* BUTTON HOVER EFFECT */
+  .top-bar-button:hover {
+    background-color: #D4001C; /* Scarlet fill on hover */
+    color: #ffffff; /* White text/icons on hover */
+    box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
+  }
 
 /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
 .top-bar-nav {
