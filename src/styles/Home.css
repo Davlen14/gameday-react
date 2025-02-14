@@ -18,13 +18,14 @@
   /* Hero Section */
   .hero-header {
     text-align: center;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/photos/OhioChamp.jpeg');
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)),
+        url('${process.env.PUBLIC_URL}/photos/OhioChamp.jpeg');
     background-size: cover;
     background-position: center;
     padding: 4rem 2rem;
     color: #ffffff;
     border-radius: 10px;
-  }
+}
   .hero-header h1 {
     font-size: 2.5rem;
     font-weight: 700;
@@ -151,4 +152,3 @@
       flex: 0 0 280px;
     }
   }
-  

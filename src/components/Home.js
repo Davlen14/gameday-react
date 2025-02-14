@@ -25,10 +25,9 @@ const Home = () => {
                 setTeams(teamsData);
                 setPolls(pollsData);
 
+                // Filter only FBS matchups
                 const fbsGames = gamesData.filter(
-                    (game) =>
-                        game.homeClassification === "fbs" &&
-                        game.awayClassification === "fbs"
+                    (game) => game.homeClassification === "fbs" && game.awayClassification === "fbs"
                 );
                 setGames(fbsGames);
             } catch (err) {
@@ -41,15 +40,13 @@ const Home = () => {
         fetchHomeData();
     }, [week]);
 
-    const getImageUrl = (filename) => `${process.env.PUBLIC_URL}/photos/${filename}`;
-
+    // **Helper function to get team logos**
     const getTeamLogo = (teamName) => {
-        const team = teams.find(
-            (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-        );
-        return team?.logos?.[0] || getImageUrl("default_team.png");
+        const team = teams.find((t) => t.school.toLowerCase() === teamName?.toLowerCase());
+        return team?.logos?.[0] || `${process.env.PUBLIC_URL}/photos/default_team.png`;
     };
 
+    // **Helper function to get network logos**
     const getNetworkLogo = (network) => {
         const networks = {
             ESPN: <FaTv className="network-icon espn" />,
@@ -60,17 +57,18 @@ const Home = () => {
         return networks[network] || <FaTv className="network-icon default" />;
     };
 
+    // **Offseason News Articles**
+    const newsArticles = [
+        { title: "Georgia No More?", image: `${process.env.PUBLIC_URL}/photos/Ksmart.jpg` },
+        { title: "What's Next for Sanders and Colorado?", image: `${process.env.PUBLIC_URL}/photos/CU.jpg` },
+        { title: "A Team to Look Out For: Penn State", image: `${process.env.PUBLIC_URL}/photos/Pennst.jpg` },
+        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: `${process.env.PUBLIC_URL}/photos/Oregon.jpg` },
+        { title: "The Kings of College Football: Ohio State", image: `${process.env.PUBLIC_URL}/photos/OhioChamp.jpeg` },
+        { title: "New Sheriff in Town: Arch Manning Era?", image: `${process.env.PUBLIC_URL}/photos/ArchTime.jpg` },
+    ];
+
     if (isLoading) return <div className="loading-container">Loading...</div>;
     if (error) return <div className="error-container">Error: {error}</div>;
-
-    const newsArticles = [
-        { title: "Georgia No More?", image: "Ksmart.jpeg" },
-        { title: "What's Next for Sanders and Colorado?", image: "CU.jpg" },
-        { title: "A Team to Look Out For: Penn State", image: "Pennst.jpg" },
-        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "Oregon.jpg" },
-        { title: "The Kings of College Football: Ohio State", image: "Oregon.jpg" },
-        { title: "New Sheriff in Town: Arch Manning Era?", image: "ArchTime.jpg" },
-    ];
 
     return (
         <div className="home-container">
@@ -80,10 +78,7 @@ const Home = () => {
                 <div className="week-selector">
                     <label>
                         Week:
-                        <select
-                            value={week}
-                            onChange={(e) => setWeek(Number(e.target.value))}
-                        >
+                        <select value={week} onChange={(e) => setWeek(Number(e.target.value))}>
                             {[...Array(17).keys()].map((w) => (
                                 <option key={w + 1} value={w + 1}>
                                     Week {w + 1}
@@ -100,7 +95,7 @@ const Home = () => {
                 <div className="news-grid">
                     {newsArticles.map((article, index) => (
                         <div key={index} className="news-card">
-                            <img src={getImageUrl(article.image)} alt={article.title} className="news-image" />
+                            <img src={article.image} alt={article.title} className="news-image" />
                             <h3>{article.title}</h3>
                             <p>Read more about this topic in our latest analysis.</p>
                         </div>
@@ -115,7 +110,7 @@ const Home = () => {
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
                             <h3 className="poll-title">
-                                <img src={getImageUrl("committee.png")} alt="Committee Logo" className="poll-logo" />
+                                <img src={`${process.env.PUBLIC_URL}/photos/committee.png`} alt="Committee Logo" className="poll-logo" />
                                 {poll.name}
                             </h3>
                             <div className="rankings-list">
