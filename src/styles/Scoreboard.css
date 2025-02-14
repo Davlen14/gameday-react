@@ -107,13 +107,13 @@
 
 /* Each scoreboard "card" (one matchup) */
 .scoreboard-game-card {
-    position: relative;          /* Needed for absolute positioning of O/U */
+    /* No absolute positioning needed; no extra bottom padding */
     flex: 0 0 auto;
-    min-width: 150px;            /* wider cards */
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 0.5rem 0.75rem 2rem; /* extra bottom padding for O/U */
+    padding: 0.5rem 0.75rem; /* just normal padding */
     border-right: 1px solid #ccc;
     background: none;
     transition: background-color 0.2s ease;
@@ -153,7 +153,7 @@
 
 /* Team score styling (smaller) */
 .scoreboard-team-score {
-    font-size: 0.65rem; /* reduced size */
+    font-size: 0.65rem;
     font-weight: 600;
     color: #333;
     margin-left: 0.25rem;
@@ -187,27 +187,35 @@
 }
 
 /***********************************************************
- * New Sportsbook OU Block: pinned bottom-right
+ * Home row: holds the home team on the left, O/U on the right
  ***********************************************************/
-.scoreboard-sportsbook {
-    position: absolute;   /* pinned to bottom-right */
-    bottom: 0.5rem;
-    right: 0.5rem;
+.scoreboard-home-row {
+    display: flex;
+    justify-content: space-between; /* home team left, O/U right */
+    align-items: center;
+    width: 100%;
+    margin-top: 0.3rem; /* optional spacing above this row */
+}
+
+/* The O/U container (inline with home team) */
+.scoreboard-sportsbook.scoreboard-home-ou {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
 
+/* O/U sportsbook logo (slightly smaller) */
 .scoreboard-sportsbook-logo {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     object-fit: contain;
 }
 
+/* O/U text: smaller & gray */
 .scoreboard-sportsbook-ou {
-    font-size: 0.65rem;
+    font-size: 0.6rem;   /* smaller text */
     font-weight: 600;
-    color: #333;
+    color: #888;         /* gray to stand out less */
 }
 
 /***********************************************************

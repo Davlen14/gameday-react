@@ -22,7 +22,7 @@ const Scoreboard = () => {
           teamsService.getTeams(),
           teamsService.getGames(week),
           teamsService.getGameMedia(2024, week),
-          teamsService.getGameLines(2024)
+          teamsService.getGameLines(2024),
         ]);
 
         setTeams(teamsData);
@@ -90,7 +90,7 @@ const Scoreboard = () => {
       return dateObj.toLocaleString([], {
         weekday: "short",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       });
     }
     return "";
@@ -134,8 +134,7 @@ const Scoreboard = () => {
           const gameLines = getLinesForGame(game.id);
           let chosenLine = null;
           if (gameLines && gameLines.lines) {
-            const providers = ["DraftKings", "ESPN Bet", "Bovada"];
-            for (let provider of providers) {
+            for (let provider of ["DraftKings", "ESPN Bet", "Bovada"]) {
               chosenLine = gameLines.lines.find(
                 (line) => line.provider === provider
               );
@@ -174,34 +173,37 @@ const Scoreboard = () => {
                   </span>
                 </div>
 
-                {/* Row 3: Home team */}
-                <div className="scoreboard-card-team">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="scoreboard-team-logo"
-                  />
-                  <span className="scoreboard-team-name">
-                    {getTeamAbbreviation(game.homeTeam)}
-                  </span>
-                  <span className="scoreboard-team-score">
-                    {game.homePoints ?? ""}
-                  </span>
-                </div>
-
-                {/* O/U pinned to bottom right (absolute in CSS) */}
-                {chosenLine && (
-                  <div className="scoreboard-sportsbook">
+                {/* Row 3: Home team + O/U on the right */}
+                <div className="scoreboard-home-row">
+                  {/* Home team on the left */}
+                  <div className="scoreboard-card-team scoreboard-home-team">
                     <img
-                      src={getSportsbookLogo(chosenLine.provider)}
-                      alt={chosenLine.provider}
-                      className="scoreboard-sportsbook-logo"
+                      src={getTeamLogo(game.homeTeam)}
+                      alt={game.homeTeam}
+                      className="scoreboard-team-logo"
                     />
-                    <span className="scoreboard-sportsbook-ou">
-                      O/U: {chosenLine.overUnder}
+                    <span className="scoreboard-team-name">
+                      {getTeamAbbreviation(game.homeTeam)}
+                    </span>
+                    <span className="scoreboard-team-score">
+                      {game.homePoints ?? ""}
                     </span>
                   </div>
-                )}
+
+                  {/* O/U on the right (only if chosenLine exists) */}
+                  {chosenLine && (
+                    <div className="scoreboard-sportsbook scoreboard-home-ou">
+                      <img
+                        src={getSportsbookLogo(chosenLine.provider)}
+                        alt={chosenLine.provider}
+                        className="scoreboard-sportsbook-logo"
+                      />
+                      <span className="scoreboard-sportsbook-ou">
+                        O/U: {chosenLine.overUnder}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </Link>
           );
@@ -212,4 +214,5 @@ const Scoreboard = () => {
 };
 
 export default Scoreboard;
+
 
