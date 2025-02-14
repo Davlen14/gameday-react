@@ -29,19 +29,20 @@
   max-width: 1280px;
   margin: 0 auto;
   height: 100%; /* So it fills the full 50px height */
-  padding: 0; /* Ensure no extra padding pushes the logo away */
+  padding: 0; /* Remove extra padding */
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* LOGO - Fully Left */
+/* LOGO - FULLY FORCED LEFT */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900; /* Extra bold */
   font-size: 22px; /* Larger text, similar to NCAA size */
   font-style: italic; /* Make it italic */
   color: #ffffff;
-  margin-left: 0; /* Ensure it's fully left */
-  padding-left: 15px; /* Slight space from the edge */
+  position: absolute;
+  left: 0;
+  padding-left: 10px; /* Adjust if needed */
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
