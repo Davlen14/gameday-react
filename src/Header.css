@@ -160,3 +160,36 @@
 .dropdown-menu a:hover {
   background-color: #f2f2f2;
 }
+
+/* =============================== */
+/* SEARCH BAR (Far Right, After Buttons) */
+/* =============================== */
+
+.top-bar-search {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Pushes it to the right */
+    margin-left: 10px; /* Adds a little space after the buttons */
+  }
+  
+  .search-input {
+    width: 220px; /* Moderate width */
+    padding: 6px 12px;
+    border: 1px solid #ffffff;
+    border-radius: 20px; /* Rounded corners */
+    background-color: #ffffff;
+    font-size: 0.85rem;
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  }
+  
+  .search-input::placeholder {
+    color: #888; /* Light gray placeholder text */
+  }
+  
+  .search-input:focus {
+    border-color: #bbb;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
