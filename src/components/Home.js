@@ -25,7 +25,7 @@ const Home = () => {
                 setTeams(teamsData);
                 setPolls(pollsData);
 
-                // Filter only FBS matchups
+                // Filter FBS vs. FBS matchups
                 const fbsGames = gamesData.filter(
                     (game) => game.homeClassification === "fbs" && game.awayClassification === "fbs"
                 );
@@ -40,13 +40,13 @@ const Home = () => {
         fetchHomeData();
     }, [week]);
 
-    // **Helper function to get team logos**
+    // **Get Team Logo**
     const getTeamLogo = (teamName) => {
         const team = teams.find((t) => t.school.toLowerCase() === teamName?.toLowerCase());
-        return team?.logos?.[0] || `${process.env.PUBLIC_URL}/photos/default_team.png`;
+        return team?.logos?.[0] || "/photos/default_team.png"; // ✅ Uses direct `/public/photos/` path
     };
 
-    // **Helper function to get network logos**
+    // **Get Network Logo**
     const getNetworkLogo = (network) => {
         const networks = {
             ESPN: <FaTv className="network-icon espn" />,
@@ -59,12 +59,12 @@ const Home = () => {
 
     // **Offseason News Articles**
     const newsArticles = [
-        { title: "Georgia No More?", image: `${process.env.PUBLIC_URL}/photos/Ksmart.jpg` },
-        { title: "What's Next for Sanders and Colorado?", image: `${process.env.PUBLIC_URL}/photos/CU.jpg` },
-        { title: "A Team to Look Out For: Penn State", image: `${process.env.PUBLIC_URL}/photos/Pennst.jpg` },
-        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: `${process.env.PUBLIC_URL}/photos/Oregon.jpg` },
-        { title: "The Kings of College Football: Ohio State", image: `${process.env.PUBLIC_URL}/photos/OhioChamp.jpeg` },
-        { title: "New Sheriff in Town: Arch Manning Era?", image: `${process.env.PUBLIC_URL}/photos/ArchTime.jpg` },
+        { title: "Georgia No More?", image: "/photos/Ksmart.jpg" },
+        { title: "What's Next for Sanders and Colorado?", image: "/photos/CU.jpg" },
+        { title: "A Team to Look Out For: Penn State", image: "/photos/Pennst.jpg" },
+        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "/photos/Oregon.jpg" },
+        { title: "The Kings of College Football: Ohio State", image: "/photos/OhioChamp.jpeg" },
+        { title: "New Sheriff in Town: Arch Manning Era?", image: "/photos/ArchTime.jpg" },
     ];
 
     if (isLoading) return <div className="loading-container">Loading...</div>;
@@ -110,7 +110,7 @@ const Home = () => {
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
                             <h3 className="poll-title">
-                                <img src={`${process.env.PUBLIC_URL}/photos/committee.png`} alt="Committee Logo" className="poll-logo" />
+                                <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
                                 {poll.name}
                             </h3>
                             <div className="rankings-list">
