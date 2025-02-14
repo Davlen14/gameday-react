@@ -45,28 +45,39 @@ const Scoreboard = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  if (isLoading) return <div className="loading-container">Loading...</div>;
-  if (error) return <div className="error-container">Error: {error}</div>;
+  if (isLoading)
+    return <div className="loading-container">Loading...</div>;
+  if (error)
+    return <div className="error-container">Error: {error}</div>;
 
   return (
     <div className="scoreboard-wrapper">
-      {/* Minimal Week Filter Bar */}
-      <div className="scoreboard-filter-bar">
-        <label htmlFor="weekSelect" className="week-label">
-          Week:
-        </label>
-        <select
-          id="weekSelect"
-          className="week-dropdown"
-          value={week}
-          onChange={(e) => setWeek(Number(e.target.value))}
-        >
-          {[...Array(17).keys()].map((w) => (
-            <option key={w + 1} value={w + 1}>
-              {w + 1}
-            </option>
-          ))}
-        </select>
+      {/* Top Scoreboard Filter Bar */}
+      <div className="top-scoreboard">
+        <div className="scoreboard-left">
+          {/* 
+            Optionally, you can add a conference filter here.
+            For example, you might want to list available conferences.
+            Currently, this area could display a default or selected conference.
+          */}
+          <span className="filter-label">Conference:</span>
+          <div className="conference-dropdown">FBS</div>
+        </div>
+        <div className="scoreboard-right">
+          <span className="week-label">Week:</span>
+          <select
+            id="weekSelect"
+            className="week-dropdown"
+            value={week}
+            onChange={(e) => setWeek(Number(e.target.value))}
+          >
+            {[...Array(17).keys()].map((w) => (
+              <option key={w + 1} value={w + 1}>
+                {w + 1}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Horizontal Scrolling Scoreboard Cards */}
