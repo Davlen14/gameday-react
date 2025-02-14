@@ -6,11 +6,13 @@
 .top-scoreboard {
     background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
-    height: 35px;
+    /* Slightly shorter than before */
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
+    /* Tighter horizontal padding */
+    padding: 0 0.75rem;
     font-family: "Orbitron", "Titillium Web", sans-serif;
   }
   
@@ -21,10 +23,9 @@
     gap: 0.5rem;
   }
   
-  /* Instead of .filter-label and .conference-dropdown, 
-     we'll just show "NCAAF" as a clickable label. */
+  /* The clickable "NCAAF" label */
   .ncaaf-dropdown {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #333;
     text-transform: uppercase;
@@ -40,20 +41,22 @@
   
   /* Label for the week dropdown */
   .week-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #333;
   }
   
   /* The week dropdown */
   .week-dropdown {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #333;
     cursor: pointer;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    /* ESPN is very minimal with no rounding, or very slight rounding */
+    border-radius: 2px;
     background-color: #f9f9f9;
-    padding: 0.2rem 0.4rem;
+    /* Tighter padding */
+    padding: 0.1rem 0.3rem;
   }
   
   /***********************************************************
@@ -83,33 +86,34 @@
   .scoreboard-wrapper {
     width: 100%;
     display: block;
-    padding: 0;
     margin: 0;
+    padding: 0;
     background-color: #fff;
   }
   
-  /* Container for the horizontally scrolling game cards */
+  /* Container for the horizontally scrolling games */
   .scoreboard-container {
     display: flex;
-    overflow-x: auto;  /* enables horizontal scrolling */
-    gap: 0;
-    padding: 0 1rem;
+    overflow-x: auto; /* enables horizontal scrolling */
+    gap: 0;          /* ESPN doesn't have big gaps between games */
+    padding: 0 0.75rem; /* match top scoreboard horizontal padding */
     -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
     border-bottom: 1px solid #ddd;
   }
   
-  /* Remove default link styles for scoreboard cards */
+  /* Remove default link styles for scoreboard "cards" (really just rows) */
   .scoreboard-card-link {
     text-decoration: none;
     color: inherit;
   }
   
-  /* Each individual scoreboard card */
+  /* Each scoreboard "card"/row */
   .scoreboard-card {
-    flex: 0 0 auto; /* prevents cards from shrinking, keeping them side by side */
+    flex: 0 0 auto; /* prevents shrinking, keeps them side by side */
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    /* Tighter padding so it’s not too tall */
+    padding: 0.3rem 0.5rem;
     border-right: 1px solid #ddd;
     background: none;
     transition: background-color 0.2s ease;
@@ -120,43 +124,45 @@
     border-right: none;
   }
   
-  /* Optional subtle hover effect (change background slightly) */
+  /* Subtle hover effect */
   .scoreboard-card:hover {
     background-color: #f8f8f8;
   }
   
-  /* Container for the team info within each card */
+  /* Container for home & away teams side by side */
   .teams {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1rem;
+    /* Slight gap between away & home team */
+    gap: 0.5rem;
   }
   
-  /* Each team block (for home and away teams) */
+  /* Each team block (away/home) in a row */
   .team {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
   }
   
-  /* Team logo styling (smaller for ESPN-like minimalism) */
+  /* Smaller logos for ESPN-like minimalism (approx 20px) */
   .team-logo {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
   }
   
-  /* Team name styling */
+  /* Team name styling (small, bold) */
   .team-name {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #333;
   }
   
-  /* Team record styling */
+  /* Team record styling (even smaller, lighter color) */
   .team-record {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #666;
   }
+  
   
