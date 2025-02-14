@@ -6,9 +6,9 @@
 /* =============================== */
 
 .top-bar {
-  background-color: #D4001C; /* Bright scarlet */
+  background-color: #D4001C;
   color: #ffffff;
-  height: 50px; /* Keep it slim */
+  height: 50px;
   display: flex;
   align-items: center;
   position: sticky;
@@ -41,7 +41,7 @@
   margin-left: 10px;
   padding-right: 20px;
   border-right: 1px solid #ffffff;
-  flex-shrink: 0; /* Prevents it from getting squished */
+  flex-shrink: 0;
 }
 
 /* NAV LINKS - Adjusted Position */
@@ -49,9 +49,9 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-left: 20px; /* Moves it closer to the logo */
-  flex-grow: 1; /* Ensures it adapts properly */
-  justify-content: flex-start; /* Keeps it near the left */
+  margin-left: 20px;
+  flex-grow: 1;
+  justify-content: flex-start;
 }
 
 /* DROPDOWNS */
@@ -65,7 +65,7 @@
   gap: 15px;
 }
 
-/* DROPDOWN BUTTON: White text, minimal style */
+/* DROPDOWN BUTTON */
 .dropdown-button {
   background-color: transparent;
   border: none;
@@ -110,14 +110,14 @@
   background-color: #f2f2f2;
 }
 
-/* FIXED: FORCE BUTTONS TO THE RIGHT */
+/* FORCE BUTTONS TO THE RIGHT */
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: flex-end;
   padding-right: 15px;
-  flex-shrink: 0; /* Ensures it doesn’t squeeze the rest */
+  flex-shrink: 0;
 }
 
 /* BUTTON STYLING */
@@ -174,4 +174,67 @@
 .search-input:focus {
   border-color: #bbb;
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* =============================== */
+/* RESPONSIVE FIX - Ensuring Layout Works Across All Screen Sizes */
+/* =============================== */
+
+/* Adjust layout for screens smaller than 1280px */
+@media (max-width: 1280px) {
+  .top-bar-container {
+    padding: 0 10px;
+  }
+
+  .top-bar-nav {
+    flex-grow: 0;
+    margin-left: 10px;
+  }
+
+  .top-bar-actions {
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    width: 160px;
+  }
+}
+
+/* Adjust layout for screens smaller than 1024px */
+@media (max-width: 1024px) {
+  .top-bar-nav {
+    gap: 10px;
+  }
+
+  .search-input {
+    width: 140px;
+  }
+}
+
+/* Adjust layout for screens smaller than 768px */
+@media (max-width: 768px) {
+  .top-bar-container {
+    flex-direction: column;
+    height: auto;
+    padding-bottom: 10px;
+  }
+
+  .top-bar-logo {
+    margin-bottom: 10px;
+  }
+
+  .top-bar-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0 auto;
+  }
+
+  .top-bar-actions {
+    justify-content: center;
+    padding-right: 0;
+  }
+
+  .search-input {
+    width: 120px;
+  }
 }
