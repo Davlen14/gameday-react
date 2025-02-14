@@ -57,8 +57,10 @@ const Scoreboard = () => {
         <div className="scoreboard-left">
           {/* NCAAF label/link */}
           <span className="ncaaf-dropdown">NCAAF</span>
+          {/* ESPN-like vertical divider */}
+          <div className="divider" />
         </div>
-  
+
         <div className="scoreboard-right">
           <span className="week-label">Week:</span>
           <select
@@ -75,7 +77,7 @@ const Scoreboard = () => {
           </select>
         </div>
       </div>
-  
+
       {/* Horizontal Scrolling Scoreboard Cards */}
       <div className="scoreboard-container">
         {games.map((game) => (
@@ -86,17 +88,7 @@ const Scoreboard = () => {
           >
             <div className="scoreboard-card">
               <div className="teams">
-                {/* Home Team */}
-                <div className="team">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="team-logo"
-                  />
-                  <span className="team-name">{game.homeTeam}</span>
-                  <span className="team-record">0-0</span>
-                </div>
-                {/* Away Team */}
+                {/* Away Team first */}
                 <div className="team">
                   <img
                     src={getTeamLogo(game.awayTeam)}
@@ -106,6 +98,16 @@ const Scoreboard = () => {
                   <span className="team-name">{game.awayTeam}</span>
                   <span className="team-record">0-0</span>
                 </div>
+                {/* Home Team second */}
+                <div className="team">
+                  <img
+                    src={getTeamLogo(game.homeTeam)}
+                    alt={game.homeTeam}
+                    className="team-logo"
+                  />
+                  <span className="team-name">{game.homeTeam}</span>
+                  <span className="team-record">0-0</span>
+                </div>
               </div>
             </div>
           </Link>
@@ -113,7 +115,6 @@ const Scoreboard = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Scoreboard;

@@ -20,7 +20,16 @@
   .scoreboard-left {
     display: flex;
     align-items: center;
+    /* We'll keep a small gap, but rely on .divider for the main separation */
     gap: 0.5rem;
+  }
+  
+  /* Optional: ESPN-like thin vertical divider between "NCAAF" and the next item */
+  .divider {
+    border-left: 1px solid #ccc;
+    height: 14px;
+    /* minimal horizontal spacing so it doesn't push items too far apart */
+    margin: 0 0.5rem;
   }
   
   /* The clickable "NCAAF" label */
@@ -66,7 +75,7 @@
   @media (max-width: 768px) {
     .top-scoreboard {
       flex-wrap: wrap;
-      height: auto;
+      height: auto; /* so it can expand on smaller screens */
       padding: 0.5rem;
     }
   
@@ -145,7 +154,8 @@
     gap: 0.3rem;
   }
   
-  /* Smaller logos for ESPN-like minimalism (approx 20px) */
+  /* Smaller logos for ESPN-like minimalism */
+  /* ESPN typically uses around 24–32px. You can keep 20 if you prefer extra small. */
   .team-logo {
     width: 20px;
     height: 20px;
