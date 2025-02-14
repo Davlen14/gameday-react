@@ -102,7 +102,7 @@ function App() {
               </div>
             </nav>
 
-            {/* Right side actions: Get Started, Upgrade, Login */}
+            {/* Right side actions: Get Started, Upgrade, Login, Search Bar */}
             <div className="top-bar-actions">
               <a href="/get-started" className="top-bar-button get-started">
                 <FaQrcode /> Get Started
@@ -113,6 +113,11 @@ function App() {
               <a href="/signin" className="top-bar-button login">
                 <FaUser /> Login
               </a>
+
+              {/* SEARCH BAR - Now Properly Positioned */}
+              <div className="top-bar-search">
+                <input type="text" className="search-input" placeholder="Search..." />
+              </div>
             </div>
           </div>
         </header>

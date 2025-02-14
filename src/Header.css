@@ -17,114 +17,64 @@
   z-index: 1100;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Global font for top bar */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons) */
+/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons + search) */
 .top-bar-container {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Ensures left, center, and right positioning */
+  justify-content: space-between;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  height: 100%; /* So it fills the full 50px height */
-  padding: 0; /* Remove extra padding */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  height: 100%;
+  padding: 0;
 }
 
 /* LOGO - FULLY FORCED LEFT */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-weight: 900; /* Extra bold */
-  font-size: 22px; /* Larger text, similar to NCAA size */
-  font-style: italic; /* Make it italic */
+  font-weight: 900;
+  font-size: 22px;
+  font-style: italic;
   color: #ffffff;
-  position: absolute;
-  left: 0;
-  padding-left: 10px; /* Adjust if needed */
+  margin-left: 10px;
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
 
-/* NAV LINKS - Centered */
+/* NAV LINKS - Adjusted Position */
 .top-bar-nav {
   display: flex;
   align-items: center;
-  gap: 20px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%); /* Keeps nav centered */
-}
-
-/* FIXED: FORCE BUTTONS TO THE RIGHT */
-.top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: flex-end; /* Forces buttons to the right */
-  flex-grow: 1; /* Ensures it takes up space */
-  padding-right: 40px; /* Space before the edge */
-}
-
-/* BUTTON STYLING */
-.top-bar-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  font-weight: 300; /* Slim text */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  padding: 8px 12px;
-  border-radius: 3px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.85rem;
-  background-color: #ffffff; /* White background */
-  color: #D4001C; /* Scarlet text/icons */
-  border: 1px solid #ffffff; /* Scarlet border */
-  cursor: pointer;
-}
-
-/* BUTTON HOVER EFFECT */
-.top-bar-button:hover {
-  background-color: #D4001C; /* Scarlet fill on hover */
-  color: #ffffff; /* White text/icons on hover */
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
-}
-
-/* NAV (Conferences, Lines, GamedayGPT) in the top bar */
-.top-bar-nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  gap: 15px;
+  margin-left: 20px; /* Moves it closer to the logo */
+  flex-grow: 1; /* Ensures it adapts properly */
 }
 
 /* DROPDOWNS */
 .dropdown {
   position: relative;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-group {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* DROPDOWN BUTTON: White text, minimal style, invert on hover */
+/* DROPDOWN BUTTON: White text, minimal style */
 .dropdown-button {
   background-color: transparent;
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 300; /* Slim text */
+  font-weight: 300;
   padding: 8px 12px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-button:hover {
@@ -132,7 +82,7 @@
   color: #D4001C;
 }
 
-/* DROPDOWN MENU (white background, dark text) */
+/* DROPDOWN MENU */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -144,8 +94,7 @@
   padding: 6px 0;
   min-width: 160px;
   font-size: 0.85rem;
-  font-weight: 300; /* Keep it slim inside dropdown too */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  font-weight: 300;
 }
 
 .dropdown-menu a {
@@ -154,42 +103,73 @@
   text-decoration: none;
   color: #333333;
   transition: background-color 0.3s ease;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-menu a:hover {
   background-color: #f2f2f2;
 }
 
+/* FIXED: FORCE BUTTONS TO THE RIGHT */
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-right: 15px;
+}
+
+/* BUTTON STYLING */
+.top-bar-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-weight: 300;
+  padding: 8px 12px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.85rem;
+  background-color: #ffffff;
+  color: #D4001C;
+  border: 1px solid #ffffff;
+  cursor: pointer;
+}
+
+/* BUTTON HOVER EFFECT */
+.top-bar-button:hover {
+  background-color: #D4001C;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
+}
+
 /* =============================== */
-/* SEARCH BAR (Far Right, After Buttons) */
+/* SEARCH BAR - Far Right, After Buttons */
 /* =============================== */
 
 .top-bar-search {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Pushes it to the right */
-    margin-left: 10px; /* Adds a little space after the buttons */
-  }
-  
-  .search-input {
-    width: 220px; /* Moderate width */
-    padding: 6px 12px;
-    border: 1px solid #ffffff;
-    border-radius: 20px; /* Rounded corners */
-    background-color: #ffffff;
-    font-size: 0.85rem;
-    color: #333;
-    outline: none;
-    transition: all 0.3s ease;
-    font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  }
-  
-  .search-input::placeholder {
-    color: #888; /* Light gray placeholder text */
-  }
-  
-  .search-input:focus {
-    border-color: #bbb;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-  }
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 10px;
+}
+
+.search-input {
+  width: 180px; /* Slightly smaller */
+  padding: 6px 12px;
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+.search-input:focus {
+  border-color: #bbb;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
