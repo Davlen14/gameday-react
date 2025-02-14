@@ -8,9 +8,11 @@ import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
+import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
 import "./App.css";
 import "./Navbar.css";
-import "./Header.css"; 
+import "./Header.css";
+import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
 import {
   FaHome,
   FaChartBar,
@@ -37,6 +39,9 @@ function App() {
   return (
     <Router>
       <div className="app">
+        {/* TOP SCOREBOARD BAR (Minimal ESPN-Style Filter Bar) */}
+        <Scoreboard />
+
         {/* TOP BAR (Bright Scarlet) */}
         <header className="top-bar">
           <div className="top-bar-container">
@@ -73,7 +78,7 @@ function App() {
                   {dropdownOpen === "lines" && (
                     <div className="dropdown-menu">
                       <Link to="/current-lines">Current Game Lines</Link>
-                      <Link to="/spread-analysis">Spread Analysis</Link>
+                      <Link to="/spread-analysis">Spread+Analysis</Link>
                       <Link to="/moneyline-comparisons">Moneyline Comparisons</Link>
                       <Link to="/over-under-metrics">Over/Under Metrics</Link>
                     </div>

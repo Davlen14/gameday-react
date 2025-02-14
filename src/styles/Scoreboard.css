@@ -1,0 +1,84 @@
+/***********************************************************
+ * Minimal ESPN-Style Top Scoreboard Bar
+ * Place this above your existing bars in App.js
+ ***********************************************************/
+
+/* Container for the entire thin scoreboard bar */
+.top-scoreboard {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    height: 40px; /* keep it thin */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    font-family: "Orbitron", "Titillium Web", sans-serif; /* or your chosen fonts */
+  }
+  
+  /* Left side: e.g., "Conference" filter or any label */
+  .scoreboard-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .scoreboard-left .filter-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #373737;
+  }
+  
+  /* The conference dropdown itself */
+  .conference-dropdown {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    color: #333333;
+    cursor: pointer;
+  }
+  
+  /* Right side: e.g., "Week" filter, or other minimal items */
+  .scoreboard-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  /* Label for the week dropdown */
+  .week-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333333;
+  }
+  
+  /* The week dropdown itself */
+  .week-dropdown {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    color: #333333;
+    cursor: pointer;
+  }
+  
+  /***********************************************************
+   * Responsive Adjustments
+   ***********************************************************/
+  
+  @media (max-width: 768px) {
+    .top-scoreboard {
+      flex-wrap: wrap;
+      height: auto;
+      padding: 0.5rem;
+    }
+  
+    .scoreboard-left,
+    .scoreboard-right {
+      flex: 1 1 100%;
+      justify-content: flex-start;
+      margin: 0.5rem 0;
+    }
+  }
