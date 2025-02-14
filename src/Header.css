@@ -20,45 +20,44 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons) */
+/* CONTAINER: Ensures full width with flex layout */
 .top-bar-container {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Ensures left, center, and right positioning */
+  justify-content: space-between;
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
   height: 100%;
   padding: 0 20px;
 }
 
-/* LOGO - Properly Left Aligned */
+/* LOGO - Push to the far left */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900;
   font-size: 22px;
   font-style: italic;
   color: #ffffff;
+  position: absolute;
+  left: 10px;
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
 
-/* NAV LINKS - Centered */
+/* NAVIGATION - Centered */
 .top-bar-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-grow: 1; /* Expands to fill available space */
+  flex-grow: 1; /* Allows nav to expand and center */
   gap: 20px;
 }
 
-/* BUTTONS - Right Aligned */
+/* BUTTONS - Push to the far right */
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end;
-  flex-shrink: 0; /* Prevents extra space */
+  margin-left: auto; /* Pushes buttons to the right */
 }
 
 /* BUTTON STYLING */
