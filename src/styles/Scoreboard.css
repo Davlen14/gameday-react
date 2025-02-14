@@ -8,13 +8,10 @@
     border-bottom: 1px solid #e0e0e0;
     display: flex;
     align-items: center;
-    /* If you want filters on the far left and games on the right,
-       you can use space-between. If you want them tight, you can use flex-start. */
     justify-content: space-between;
     padding: 0 0.75rem;
     font-family: "Orbitron", "Titillium Web", sans-serif;
     width: 100%;
-    /* Height is auto so it shrinks to fit. If you want a fixed height, you can set it. */
 }
 
 /* Container for NCAAF + Week filters */
@@ -53,36 +50,36 @@
     color: #333;
     cursor: pointer;
     border: 1px solid #ddd;
-    border-radius: 2px; /* ESPN is very minimal, so keep this small */
+    border-radius: 2px;
     background-color: #f9f9f9;
-    padding: 0.1rem 0.3rem; /* tight padding for a compact look */
+    padding: 0.1rem 0.3rem;
 }
 
 /* Container for the horizontally scrolling game cards */
 .scoreboard-games {
     display: flex;
-    overflow-x: auto; /* enables horizontal scrolling */
-    gap: 0;           /* ESPN typically doesn't leave big gaps */
-    -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
+    overflow-x: auto;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
     border-bottom: 1px solid #ddd;
-    /* Takes remaining horizontal space after filters */
     flex: 1;
 }
 
-/* Remove default link styles for scoreboard "cards" (the clickable areas) */
+/* Remove default link styles for scoreboard "cards" */
 .scoreboard-game-link {
     text-decoration: none;
     color: inherit;
 }
 
-/* Each scoreboard "card" (one matchup) - made a bit bigger */
+/* Each scoreboard "card" (one matchup) - made wider */
 .scoreboard-game-card {
-    flex: 0 0 auto;  /* keep them side by side horizontally without shrinking */
+    flex: 0 0 auto;
+    min-width: 150px; /* wider cards */
     display: flex;
-    flex-direction: column; /* stack away/home vertically */
+    flex-direction: column;
     align-items: flex-start; 
     padding: 0.5rem 0.75rem; /* increased padding for a larger card */
-    border-right: 1px solid #ddd;
+    border-right: 1px solid #ccc; /* thinner, lighter divider */
     background: none;
     transition: background-color 0.2s ease;
 }
@@ -102,33 +99,29 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    /* Optionally, add a divider between teams:
-       border-bottom: 1px solid #ddd; 
-       margin-bottom: 4px; 
-       padding-bottom: 4px; */
 }
 
-/* Smaller logos for ESPN-like minimalism (24px is also common) */
+/* Team logo styling */
 .scoreboard-team-logo {
     width: 20px;
     height: 20px;
     object-fit: contain;
-    border-radius: 0; /* ensure logos aren't circles */
+    border-radius: 0;
 }
 
-/* Team name styling (small, bold) */
+/* Team name styling (smaller to fit the card) */
 .scoreboard-team-name {
-    font-size: 0.7rem;
+    font-size: 0.65rem; /* reduced size */
     font-weight: 600;
     color: #333;
 }
 
-/* Team score styling (replaces team record) */
+/* Team score styling (smaller, replaces record) */
 .scoreboard-team-score {
-    font-size: 0.7rem;
+    font-size: 0.65rem; /* reduced size */
     font-weight: 600;
     color: #333;
-    margin-left: 0.25rem; /* small separation from the team name */
+    margin-left: 0.25rem;
 }
 
 /* TV info styling */
@@ -139,11 +132,11 @@
     margin-top: 0.25rem;
 }
 .scoreboard-tv-icon {
-    font-size: 0.7rem;
+    font-size: 0.65rem; /* slightly smaller */
     color: #666;
 }
 .scoreboard-tv-network {
-    font-size: 0.65rem;
+    font-size: 0.6rem; /* slightly smaller */
     color: #666;
 }
 
@@ -153,12 +146,11 @@
 @media (max-width: 768px) {
     .scoreboard-bar {
         flex-wrap: wrap;
-        /* so filters can go on top row, games on second row if space is tight */
     }
     
     .scoreboard-filters,
     .scoreboard-games {
-        width: 100%; /* each takes full width on smaller screens */
+        width: 100%;
         margin-bottom: 0.5rem;
     }
 }
