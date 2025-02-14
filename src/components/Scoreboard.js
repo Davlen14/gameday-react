@@ -53,41 +53,36 @@ const Scoreboard = () => {
     return team?.abbreviation || teamName;
   };
 
-  if (isLoading)
+  if (isLoading) {
     return <div className="loading-container">Loading...</div>;
-  if (error)
+  }
+  if (error) {
     return <div className="error-container">Error: {error}</div>;
+  }
 
   return (
-    <div className="scoreboard-main-wrapper">
-      {/* Top Scoreboard Filter Bar */}
-      <div className="scoreboard-top-bar">
-        <div className="scoreboard-top-bar-left">
-          {/* NCAAF label/link */}
-          <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
-          {/* ESPN-like vertical divider */}
-          <div className="scoreboard-divider" />
-        </div>
-
-        <div className="scoreboard-top-bar-right">
-          <span className="scoreboard-week-label">Week:</span>
-          <select
-            id="weekSelect"
-            className="scoreboard-week-dropdown"
-            value={week}
-            onChange={(e) => setWeek(Number(e.target.value))}
-          >
-            {[...Array(17).keys()].map((w) => (
-              <option key={w + 1} value={w + 1}>
-                {w + 1}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="scoreboard-bar">
+      {/* Filters (NCAAF + Week) */}
+      <div className="scoreboard-filters">
+        <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
+        <div className="scoreboard-divider" />
+        <span className="scoreboard-week-label">Week:</span>
+        <select
+          id="weekSelect"
+          className="scoreboard-week-dropdown"
+          value={week}
+          onChange={(e) => setWeek(Number(e.target.value))}
+        >
+          {[...Array(17).keys()].map((w) => (
+            <option key={w + 1} value={w + 1}>
+              {w + 1}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Horizontal Scrolling Scoreboard Cards */}
-      <div className="scoreboard-games-container">
+      {/* Horizontally scrolling games */}
+      <div className="scoreboard-games">
         {games.map((game) => (
           <Link
             to={`/games/${game.id}`}
@@ -95,31 +90,29 @@ const Scoreboard = () => {
             className="scoreboard-game-link"
           >
             <div className="scoreboard-game-card">
-              <div className="scoreboard-card-teams">
-                {/* Away Team first */}
-                <div className="scoreboard-card-team">
-                  <img
-                    src={getTeamLogo(game.awayTeam)}
-                    alt={game.awayTeam}
-                    className="scoreboard-team-logo"
-                  />
-                  <span className="scoreboard-team-name">
-                    {getTeamAbbreviation(game.awayTeam)}
-                  </span>
-                  <span className="scoreboard-team-record">0-0</span>
-                </div>
-                {/* Home Team second */}
-                <div className="scoreboard-card-team">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="scoreboard-team-logo"
-                  />
-                  <span className="scoreboard-team-name">
-                    {getTeamAbbreviation(game.homeTeam)}
-                  </span>
-                  <span className="scoreboard-team-record">0-0</span>
-                </div>
+              {/* Away team (top) */}
+              <div className="scoreboard-card-team">
+                <img
+                  src={getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="scoreboard-team-logo"
+                />
+                <span className="scoreboard-team-name">
+                  {getTeamAbbreviation(game.awayTeam)}
+                </span>
+                <span className="scoreboard-team-record">0-0</span>
+              </div>
+              {/* Home team (bottom) */}
+              <div className="scoreboard-card-team">
+                <img
+                  src={getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="scoreboard-team-logo"
+                />
+                <span className="scoreboard-team-name">
+                  {getTeamAbbreviation(game.homeTeam)}
+                </span>
+                <span className="scoreboard-team-record">0-0</span>
               </div>
             </div>
           </Link>
