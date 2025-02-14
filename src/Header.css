@@ -24,25 +24,25 @@
 .top-bar-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Ensures left, center, and right positioning */
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   height: 100%; /* So it fills the full 50px height */
-  padding: 0 20px;
+  padding: 0; /* Remove extra padding */
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* LOGO - FIXED LEFT BUT INSIDE FLEXBOX */
+/* LOGO - FULLY FORCED LEFT */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900; /* Extra bold */
   font-size: 22px; /* Larger text, similar to NCAA size */
   font-style: italic; /* Make it italic */
   color: #ffffff;
-  flex: 1; /* Makes sure it stays in flex layout */
-  text-align: left; /* Ensures it aligns left */
-  padding-left: 15px;
+  position: absolute;
+  left: 0;
+  padding-left: 10px; /* Adjust if needed */
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
@@ -52,18 +52,19 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  flex: 2; /* Allows space for centering */
-  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* Keeps nav centered */
 }
 
-/* FIXED: FORCE BUTTONS TO THE RIGHT BUT NOT FULLY RIGHT */
+/* FIXED: FORCE BUTTONS TO THE RIGHT */
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1; /* This allows proper spacing */
-  justify-content: flex-end; /* Pushes them right but not fully */
-  padding-right: 40px; /* Adjust for desired spacing */
+  justify-content: flex-end; /* Forces buttons to the right */
+  flex-grow: 1; /* Ensures it takes up space */
+  padding-right: 40px; /* Space before the edge */
 }
 
 /* BUTTON STYLING */
