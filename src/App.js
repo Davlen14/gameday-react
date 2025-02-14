@@ -8,25 +8,11 @@ import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
-import Scoreboard from "./components/Scoreboard"; // Import Scoreboard component
+import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
-import "./styles/Scoreboard.css"; // Import Scoreboard CSS
-import {
-  FaHome,
-  FaChartBar,
-  FaUsers,
-  FaFootballBall,
-  FaEllipsisH,
-  FaQrcode,
-  FaUser,
-  FaArrowUp,
-  FaNewspaper,
-  FaFilm,
-  FaChartLine,
-  FaUserGraduate
-} from "react-icons/fa";
+import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -113,7 +99,7 @@ function App() {
                   onMouseEnter={() => toggleDropdown("news")}
                   onMouseLeave={() => toggleDropdown(null)}
                 >
-                  <button className="dropdown-button"><FaNewspaper /> News</button>
+                  <button className="dropdown-button">News</button>
                   {dropdownOpen === "news" && (
                     <div className="dropdown-menu">
                       <Link to="/latest-news">Latest Updates</Link>
@@ -130,7 +116,7 @@ function App() {
                   onMouseEnter={() => toggleDropdown("metrics")}
                   onMouseLeave={() => toggleDropdown(null)}
                 >
-                  <button className="dropdown-button"><FaChartLine /> Metrics</button>
+                  <button className="dropdown-button">Metrics</button>
                   {dropdownOpen === "metrics" && (
                     <div className="dropdown-menu">
                       <Link to="/team-metrics">Team Analytics</Link>
@@ -146,7 +132,7 @@ function App() {
                   onMouseEnter={() => toggleDropdown("videos")}
                   onMouseLeave={() => toggleDropdown(null)}
                 >
-                  <button className="dropdown-button"><FaFilm /> Videos</button>
+                  <button className="dropdown-button">Videos</button>
                   {dropdownOpen === "videos" && (
                     <div className="dropdown-menu">
                       <Link to="/highlights">Game Highlights</Link>
@@ -162,7 +148,7 @@ function App() {
                   onMouseEnter={() => toggleDropdown("recruiting")}
                   onMouseLeave={() => toggleDropdown(null)}
                 >
-                  <button className="dropdown-button"><FaUserGraduate /> Recruiting</button>
+                  <button className="dropdown-button">Recruiting</button>
                   {dropdownOpen === "recruiting" && (
                     <div className="dropdown-menu">
                       <Link to="/top-prospects">Top Prospects</Link>
@@ -177,17 +163,30 @@ function App() {
             {/* Right Side Buttons */}
             <div className="top-bar-actions">
               <a href="/get-started" className="top-bar-button get-started">
-                <FaQrcode /> Get Started
+                Get Started
               </a>
               <a href="/upgrade" className="top-bar-button upgrade">
-                <FaArrowUp /> Upgrade
+                Upgrade
               </a>
               <a href="/signin" className="top-bar-button login">
-                <FaUser /> Login
+                Login
               </a>
             </div>
           </div>
         </header>
+
+        {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
+        <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
+          <div className="secondary-bar-container">
+            <Link to="/" className="nav-item" onClick={toggleMenu}>Home</Link>
+            <Link to="/teams" className="nav-item" onClick={toggleMenu}>Teams</Link>
+            <Link to="/games" className="nav-item" onClick={toggleMenu}>Games</Link>
+            <Link to="/stats" className="nav-item" onClick={toggleMenu}>Stats</Link>
+            <Link to="/more" className="nav-item" onClick={toggleMenu}>More</Link>
+            <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
+            <Link to="/channels" className="nav-item">Channels</Link>
+          </div>
+        </nav>
 
         {/* MAIN CONTENT */}
         <main className="app-content">

@@ -99,16 +99,17 @@
 
 /* DROPDOWN BUTTON */
 .dropdown-button {
-  background-color: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 300;
-  padding: 8px 12px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    background-color: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 300;
+    font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Apply your fonts */
+    padding: 8px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
 
 .dropdown-button:hover {
   background-color: #ffffff;
