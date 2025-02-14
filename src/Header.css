@@ -30,14 +30,25 @@
   height: 100%; /* So it fills the full 50px height */
 }
 
-/* LOGO (keep bold for distinction) */
+/* LOGO (Bigger, Bolder, Italic, with White Divider on the Right) */
 .top-bar-logo {
-  font-weight: 700;  /* Bold for the header logo */
-  font-size: 18px;
-  text-transform: uppercase;
-  color: #ffffff;
-  margin: 0 20px;
-}
+    font-family: 'Titillium Web', sans-serif;
+    font-weight: 900;       /* Extra bold */
+    font-size: 22px;        /* Larger text, similar to NCAA size */
+    font-style: italic;     /* Make it italic */
+    text-transform: uppercase;
+    color: #ffffff;
+    
+    /* Push it more to the left:
+       - margin-left: 40px puts extra space on the left side
+       - padding-right: 20px adds space before the divider
+    */
+    margin-left: 40px;
+    padding-right: 20px;
+    
+    /* Vertical white divider on the right of the logo */
+    border-right: 1px solid #ffffff;
+  }
 
 /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
 .top-bar-nav {
