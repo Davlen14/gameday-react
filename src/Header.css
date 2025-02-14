@@ -1,5 +1,5 @@
-/* Import Google Fonts: Orbitron and Titillium Web */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200;300;400;600;700;900&display=swap');
 
 /* =============================== */
 /* TOP BAR (Bright Scarlet) */
@@ -20,15 +20,15 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons + search) */
+/* TOP BAR CONTAINER: Limiting Max Width for Better Spacing */
 .top-bar-container {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 1280px;
+  max-width: 1100px; /* Reduced from 1280px */
   margin: 0 auto;
   height: 100%;
-  padding: 0;
+  padding: 0 10px;
 }
 
 /* LOGO - FULLY FORCED LEFT */
@@ -44,14 +44,15 @@
   flex-shrink: 0;
 }
 
-/* NAV LINKS - Adjusted Position */
+/* NAV LINKS - Keep Near Logo */
 .top-bar-nav {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-left: 20px;
+  gap: 12px; /* Reduced gap */
+  margin-left: 15px; /* Moves closer to logo */
   flex-grow: 1;
   justify-content: flex-start;
+  flex-wrap: wrap; /* Ensures better responsiveness */
 }
 
 /* DROPDOWNS */
@@ -62,7 +63,7 @@
 .dropdown-group {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px; /* Reduced space */
 }
 
 /* DROPDOWN BUTTON */
@@ -72,7 +73,7 @@
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 300;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -114,9 +115,9 @@
 .top-bar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px; /* Reduced gap */
   justify-content: flex-end;
-  padding-right: 15px;
+  padding-right: 10px;
   flex-shrink: 0;
 }
 
@@ -127,7 +128,7 @@
   gap: 5px;
   text-decoration: none;
   font-weight: 300;
-  padding: 8px 12px;
+  padding: 6px 10px; /* Reduced padding */
   border-radius: 3px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   font-size: 0.85rem;
@@ -152,12 +153,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-left: 10px;
+  margin-left: 5px; /* Reduced spacing */
 }
 
 .search-input {
-  width: 180px;
-  padding: 6px 12px;
+  width: 160px; /* Reduced width */
+  padding: 6px 10px;
   border: 1px solid #ffffff;
   border-radius: 20px;
   background-color: #ffffff;
@@ -177,13 +178,13 @@
 }
 
 /* =============================== */
-/* RESPONSIVE FIX - Ensuring Layout Works Across All Screen Sizes */
+/* RESPONSIVE FIXES */
 /* =============================== */
 
-/* Adjust layout for screens smaller than 1280px */
+/* Medium Screens (Up to 1280px) */
 @media (max-width: 1280px) {
   .top-bar-container {
-    padding: 0 10px;
+    max-width: 1000px; /* Reduce spacing further */
   }
 
   .top-bar-nav {
@@ -196,31 +197,31 @@
   }
 
   .search-input {
-    width: 160px;
-  }
-}
-
-/* Adjust layout for screens smaller than 1024px */
-@media (max-width: 1024px) {
-  .top-bar-nav {
-    gap: 10px;
-  }
-
-  .search-input {
     width: 140px;
   }
 }
 
-/* Adjust layout for screens smaller than 768px */
+/* Smaller Screens (Up to 1024px) */
+@media (max-width: 1024px) {
+  .top-bar-nav {
+    gap: 8px;
+  }
+
+  .search-input {
+    width: 130px;
+  }
+}
+
+/* Mobile Screens (Up to 768px) */
 @media (max-width: 768px) {
   .top-bar-container {
     flex-direction: column;
     height: auto;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
   }
 
   .top-bar-logo {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .top-bar-nav {
