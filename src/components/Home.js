@@ -31,7 +31,7 @@ const Home = () => {
                 );
                 setGames(fbsGames);
             } catch (err) {
-                setError(err.message);
+                setError("Failed to load data. Please try again.");
             } finally {
                 setIsLoading(false);
             }
@@ -40,10 +40,10 @@ const Home = () => {
         fetchHomeData();
     }, [week]);
 
-    // **Get Team Logo**
+    // **Get Team Logo with Fallback**
     const getTeamLogo = (teamName) => {
         const team = teams.find((t) => t.school.toLowerCase() === teamName?.toLowerCase());
-        return team?.logos?.[0] || "/photos/default_team.png"; // ✅ Uses direct `/public/photos/` path
+        return team?.logos?.[0] || "/photos/default_team.png"; // ✅ Uses default if logo is missing
     };
 
     // **Get Network Logo**
@@ -68,7 +68,7 @@ const Home = () => {
     ];
 
     if (isLoading) return <div className="loading-container">Loading...</div>;
-    if (error) return <div className="error-container">Error: {error}</div>;
+    if (error) return <div className="error-container">{error}</div>;
 
     return (
         <div className="home-container">
@@ -107,26 +107,30 @@ const Home = () => {
             <section className="polls-section">
                 <h2 className="section-title">Current Poll Rankings</h2>
                 <div className="polls-grid">
-                    {polls.map((poll) => (
-                        <div key={poll.id} className="poll-card">
-                            <h3 className="poll-title">
-                                <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
-                                {poll.name}
-                            </h3>
-                            <div className="rankings-list">
-                                {poll.rankings.slice(0, 5).map((team) => (
-                                    <div key={team.school} className="ranking-item">
-                                        <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
-                                        <div className="team-info">
-                                            <span className="rank">#{team.rank}</span>
-                                            <span className="team-name">{team.school}</span>
-                                            <span className="points">{team.points} pts</span>
+                    {polls.length === 0 ? (
+                        <p className="no-data">No rankings available.</p>
+                    ) : (
+                        polls.map((poll) => (
+                            <div key={poll.id} className="poll-card">
+                                <h3 className="poll-title">
+                                    <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
+                                    {poll.name}
+                                </h3>
+                                <div className="rankings-list">
+                                    {poll.rankings.slice(0, 5).map((team) => (
+                                        <div key={team.school} className="ranking-item">
+                                            <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                                            <div className="team-info">
+                                                <span className="rank">#{team.rank}</span>
+                                                <span className="team-name">{team.school}</span>
+                                                <span className="points">{team.points} pts</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </section>
 
@@ -134,45 +138,47 @@ const Home = () => {
             <section className="games-section">
                 <h2 className="section-title">Week {week} Matchups</h2>
                 <div className="games-slider">
-                    {games.map((game) => (
-                        <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
-                            <div className="game-card">
-                                <div className="game-header">
-                                    <div className="game-time">
-                                        {new Date(game.startDate).toLocaleDateString("en-US", {
-                                            weekday: "short",
-                                            month: "short",
-                                            day: "numeric",
-                                        })}
+                    {games.length === 0 ? (
+                        <p className="no-data">No games available.</p>
+                    ) : (
+                        games.map((game) => (
+                            <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
+                                <div className="game-card">
+                                    <div className="game-header">
+                                        <div className="game-time">
+                                            {new Date(game.startDate).toLocaleDateString("en-US", {
+                                                weekday: "short",
+                                                month: "short",
+                                                day: "numeric",
+                                            })}
+                                        </div>
+                                        <div className="network">
+                                            {getNetworkLogo(game.network || "ESPN")}
+                                            <span className="network-name">{game.network || "ESPN"}</span>
+                                        </div>
                                     </div>
-                                    <div className="network">
-                                        {getNetworkLogo(game.network || "ESPN")}
-                                        <span className="network-name">{game.network || "ESPN"}</span>
-                                    </div>
-                                </div>
 
-                                <div className="teams-container">
-                                    <div className="team home-team">
-                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                                        <div className="team-info">
-                                            <span className="team-name">{game.homeTeam}</span>
-                                            <span className="team-record">(8-2)</span>
+                                    <div className="teams-container">
+                                        <div className="team home-team">
+                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                                            <div className="team-info">
+                                                <span className="team-name">{game.homeTeam}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="vs-container">
-                                        <div className="vs-circle">VS</div>
-                                    </div>
-                                    <div className="team away-team">
-                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                                        <div className="team-info">
-                                            <span className="team-name">{game.awayTeam}</span>
-                                            <span className="team-record">(7-3)</span>
+                                        <div className="vs-container">
+                                            <div className="vs-circle">VS</div>
+                                        </div>
+                                        <div className="team away-team">
+                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                                            <div className="team-info">
+                                                <span className="team-name">{game.awayTeam}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        ))
+                    )}
                 </div>
             </section>
         </div>
