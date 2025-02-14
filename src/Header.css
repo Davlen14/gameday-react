@@ -8,7 +8,7 @@
 .top-bar {
   background-color: #D4001C; /* Bright scarlet */
   color: #ffffff;
-  height: 50px; /* Keep it slim */
+  height: 50px;
   display: flex;
   align-items: center;
   position: sticky;
@@ -17,7 +17,7 @@
   z-index: 1100;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Global font for top bar */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 /* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons) */
@@ -28,21 +28,17 @@
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  height: 100%; /* So it fills the full 50px height */
-  padding: 0; /* Remove extra padding */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  height: 100%;
+  padding: 0 20px;
 }
 
-/* LOGO - FULLY FORCED LEFT */
+/* LOGO - Properly Left Aligned */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-weight: 900; /* Extra bold */
-  font-size: 22px; /* Larger text, similar to NCAA size */
-  font-style: italic; /* Make it italic */
+  font-weight: 900;
+  font-size: 22px;
+  font-style: italic;
   color: #ffffff;
-  position: absolute;
-  left: 0;
-  padding-left: 10px; /* Adjust if needed */
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
@@ -51,20 +47,18 @@
 .top-bar-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* Expands to fill available space */
   gap: 20px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%); /* Keeps nav centered */
 }
 
-/* FIXED: FORCE BUTTONS TO THE RIGHT */
+/* BUTTONS - Right Aligned */
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end; /* Forces buttons to the right */
-  flex-grow: 1; /* Ensures it takes up space */
-  padding-right: 40px; /* Space before the edge */
+  justify-content: flex-end;
+  flex-shrink: 0; /* Prevents extra space */
 }
 
 /* BUTTON STYLING */
@@ -73,58 +67,48 @@
   align-items: center;
   gap: 5px;
   text-decoration: none;
-  font-weight: 300; /* Slim text */
+  font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 8px 12px;
   border-radius: 3px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   font-size: 0.85rem;
-  background-color: #ffffff; /* White background */
-  color: #D4001C; /* Scarlet text/icons */
-  border: 1px solid #ffffff; /* Scarlet border */
+  background-color: #ffffff;
+  color: #D4001C;
+  border: 1px solid #ffffff;
   cursor: pointer;
 }
 
 /* BUTTON HOVER EFFECT */
 .top-bar-button:hover {
-  background-color: #D4001C; /* Scarlet fill on hover */
-  color: #ffffff; /* White text/icons on hover */
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
+  background-color: #D4001C;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
 }
 
-/* NAV (Conferences, Lines, GamedayGPT) in the top bar */
-.top-bar-nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-}
-
-/* DROPDOWNS */
+/* DROPDOWN */
 .dropdown {
   position: relative;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
+/* DROPDOWN GROUP */
 .dropdown-group {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* DROPDOWN BUTTON: White text, minimal style, invert on hover */
+/* DROPDOWN BUTTON */
 .dropdown-button {
   background-color: transparent;
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 300; /* Slim text */
+  font-weight: 300;
   padding: 8px 12px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-button:hover {
@@ -132,7 +116,7 @@
   color: #D4001C;
 }
 
-/* DROPDOWN MENU (white background, dark text) */
+/* DROPDOWN MENU */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -144,8 +128,7 @@
   padding: 6px 0;
   min-width: 160px;
   font-size: 0.85rem;
-  font-weight: 300; /* Keep it slim inside dropdown too */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  font-weight: 300;
 }
 
 .dropdown-menu a {
@@ -154,7 +137,6 @@
   text-decoration: none;
   color: #333333;
   transition: background-color 0.3s ease;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-menu a:hover {
