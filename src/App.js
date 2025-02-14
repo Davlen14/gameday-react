@@ -22,7 +22,6 @@ import {
   FaQrcode,
   FaUser,
   FaArrowUp,
-  FaSearch,
 } from "react-icons/fa";
 
 function App() {
@@ -103,7 +102,7 @@ function App() {
               </div>
             </nav>
 
-            {/* Right side actions: Get Started, Upgrade, Login, Search */}
+            {/* Right side actions: Get Started, Upgrade, Login */}
             <div className="top-bar-actions">
               <a href="/get-started" className="top-bar-button get-started">
                 <FaQrcode /> Get Started
@@ -114,12 +113,6 @@ function App() {
               <a href="/signin" className="top-bar-button login">
                 <FaUser /> Login
               </a>
-
-              {/* Search bar (Added here, after buttons) */}
-              <div className="top-bar-search">
-                <input type="text" className="search-input" placeholder="Search..." />
-                <FaSearch className="search-icon" />
-              </div>
             </div>
           </div>
         </header>
