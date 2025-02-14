@@ -70,40 +70,14 @@
 /* WebKit Browsers (Chrome, Safari, Edge) */
 .scoreboard-games {
     overflow-x: auto;
-    scrollbar-gutter: stable both-edges; /* Prevents layout shift from scrollbar */
-    padding-bottom: 0px; /* Ensures no extra space below scrollbar */
+    -ms-overflow-style: none;  /* Hide scrollbar in IE/Edge */
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
 }
 
-/* Make scrollbar overlay content instead of pushing it */
+/* Completely hide scrollbar in WebKit browsers */
 .scoreboard-games::-webkit-scrollbar {
-    height: 4px; /* Thinner scrollbar */
+    display: none; 
 }
-
-.scoreboard-games::-webkit-scrollbar-track {
-    background: white; /* White background when not in use */
-}
-
-.scoreboard-games::-webkit-scrollbar-thumb {
-    background: transparent; /* Invisible when not scrolling */
-    transition: background 0.3s ease-in-out; /* Smooth transition */
-}
-
-/* Make scrollbar visible when scrolling */
-.scoreboard-games:hover::-webkit-scrollbar-thumb,
-.scoreboard-games:active::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3); /* Darker when used */
-}
-
-/* Prevent extra spacing from appearing below */
-.scoreboard-games::-webkit-scrollbar {
-    position: absolute;
-}
-  
-  /* Firefox */
-  .scoreboard-games {
-    scrollbar-width: thin; /* Always thin */
-    scrollbar-color: white transparent; /* White when idle, disappears when scrolling */
-  }
 
 /* --- End Custom Scrollbar Styling --- */
 
