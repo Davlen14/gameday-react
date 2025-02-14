@@ -45,6 +45,14 @@ const Scoreboard = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
+  // Helper to get the team abbreviation based on team name
+  const getTeamAbbreviation = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.abbreviation || teamName;
+  };
+
   if (isLoading)
     return <div className="loading-container">Loading...</div>;
   if (error)
@@ -95,7 +103,9 @@ const Scoreboard = () => {
                     alt={game.awayTeam}
                     className="scoreboard-team-logo"
                   />
-                  <span className="scoreboard-team-name">{game.awayTeam}</span>
+                  <span className="scoreboard-team-name">
+                    {getTeamAbbreviation(game.awayTeam)}
+                  </span>
                   <span className="scoreboard-team-record">0-0</span>
                 </div>
                 {/* Home Team second */}
@@ -105,7 +115,9 @@ const Scoreboard = () => {
                     alt={game.homeTeam}
                     className="scoreboard-team-logo"
                   />
-                  <span className="scoreboard-team-name">{game.homeTeam}</span>
+                  <span className="scoreboard-team-name">
+                    {getTeamAbbreviation(game.homeTeam)}
+                  </span>
                   <span className="scoreboard-team-record">0-0</span>
                 </div>
               </div>
