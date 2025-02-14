@@ -1,0 +1,89 @@
+/* =============================== */
+/* HEADER SECTION */
+/* =============================== */
+/* Header Container */
+.app-header {
+    background-color: #ffffff;
+    color: #111;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1100;
+    font-size: 0.95rem;
+  }
+  
+  /* Header Navigation */
+  .header-nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  
+  /* Header Actions */
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    margin-left: auto;
+  }
+  
+  /* Header Action Button */
+  .header-action-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: "Titillium Web", sans-serif;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  
+  /* Get Started */
+  .header-action-button.get-started {
+    background-color: rgb(149, 0, 0);
+    color: white;
+    border: 1px solid rgb(149, 0, 0);
+  }
+  
+  .header-action-button.get-started:hover {
+    background-color: rgb(120, 0, 0);
+    box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
+  }
+  
+  /* Upgrade */
+  .header-action-button.upgrade {
+    background-color: rgb(149, 0, 0);
+    color: white;
+    border: 1px solid rgb(149, 0, 0);
+  }
+  
+  .header-action-button.upgrade:hover {
+    background-color: rgb(120, 0, 0);
+    box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
+  }
+  
+  /* Login */
+  .header-action-button.login {
+    background-color: rgb(230, 230, 230);
+    color: rgb(80, 80, 80);
+    border: 1px solid rgb(200, 200, 200);
+  }
+  
+  .header-action-button.login:hover {
+    background-color: rgb(210, 210, 210);
+    box-shadow: 0px 3px 8px rgba(180, 180, 180, 0.3);
+  }
