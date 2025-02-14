@@ -29,18 +29,19 @@
   max-width: 1280px;
   margin: 0 auto;
   height: 100%; /* So it fills the full 50px height */
-  padding: 0 20px; /* Provide horizontal padding for all items */
+  padding: 0; /* Ensure no extra padding pushes the logo away */
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* LOGO - Fixed Left */
+/* LOGO - Fully Left */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900; /* Extra bold */
   font-size: 22px; /* Larger text, similar to NCAA size */
   font-style: italic; /* Make it italic */
   color: #ffffff;
-  margin-right: auto; /* Pushes everything else to the right */
+  margin-left: 0; /* Ensure it's fully left */
+  padding-left: 15px; /* Slight space from the edge */
   padding-right: 20px;
   border-right: 1px solid #ffffff;
 }
@@ -55,7 +56,7 @@
   transform: translateX(-50%); /* Keeps nav centered */
 }
 
-/* RIGHT-SIDE BUTTONS: PURE WHITE with SCARLET TEXT & ICONS */
+/* RIGHT-SIDE BUTTONS */
 .top-bar-actions {
   display: flex;
   align-items: center;
