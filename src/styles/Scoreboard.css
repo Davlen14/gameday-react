@@ -209,7 +209,7 @@
 
 /* O/U text: smaller & gray */
 .scoreboard-sportsbook-ou {
-    font-size: 0.6rem;   /* smaller text */
+    font-size: 0.4rem;   /* smaller text */
     font-weight: 600;
     color: #888;         /* gray to stand out less */
 }
