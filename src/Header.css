@@ -1,14 +1,14 @@
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200;300;400;600;700;900&display=swap');
+/* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
 /* =============================== */
 /* TOP BAR (Bright Scarlet) */
 /* =============================== */
 
 .top-bar {
-  background-color: #D4001C;
+  background-color: #D4001C; /* Bright scarlet */
   color: #ffffff;
-  height: 50px;
+  height: 50px; /* Keep it slim */
   display: flex;
   align-items: center;
   position: sticky;
@@ -17,66 +17,114 @@
   z-index: 1100;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Global font for top bar */
 }
 
-/* TOP BAR CONTAINER: Limiting Max Width for Better Spacing */
+/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons) */
 .top-bar-container {
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Ensures left, center, and right positioning */
   width: 100%;
-  max-width: 1100px; /* Reduced from 1280px */
+  max-width: 1280px;
   margin: 0 auto;
-  height: 100%;
-  padding: 0 10px;
+  height: 100%; /* So it fills the full 50px height */
+  padding: 0; /* Remove extra padding */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 /* LOGO - FULLY FORCED LEFT */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-weight: 900;
-  font-size: 22px;
-  font-style: italic;
+  font-weight: 900; /* Extra bold */
+  font-size: 22px; /* Larger text, similar to NCAA size */
+  font-style: italic; /* Make it italic */
   color: #ffffff;
-  margin-left: 10px;
+  position: absolute;
+  left: 0;
+  padding-left: 10px; /* Adjust if needed */
   padding-right: 20px;
   border-right: 1px solid #ffffff;
-  flex-shrink: 0;
 }
 
-/* NAV LINKS - Keep Near Logo */
+/* NAV LINKS - Centered */
 .top-bar-nav {
   display: flex;
   align-items: center;
-  gap: 12px; /* Reduced gap */
-  margin-left: 15px; /* Moves closer to logo */
-  flex-grow: 1;
-  justify-content: flex-start;
-  flex-wrap: wrap; /* Ensures better responsiveness */
+  gap: 20px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* Keeps nav centered */
+}
+
+/* FIXED: FORCE BUTTONS TO THE RIGHT */
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end; /* Forces buttons to the right */
+  flex-grow: 1; /* Ensures it takes up space */
+  padding-right: 40px; /* Space before the edge */
+}
+
+/* BUTTON STYLING */
+.top-bar-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-weight: 300; /* Slim text */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  padding: 8px 12px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.85rem;
+  background-color: #ffffff; /* White background */
+  color: #D4001C; /* Scarlet text/icons */
+  border: 1px solid #ffffff; /* Scarlet border */
+  cursor: pointer;
+}
+
+/* BUTTON HOVER EFFECT */
+.top-bar-button:hover {
+  background-color: #D4001C; /* Scarlet fill on hover */
+  color: #ffffff; /* White text/icons on hover */
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
+}
+
+/* NAV (Conferences, Lines, GamedayGPT) in the top bar */
+.top-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 /* DROPDOWNS */
 .dropdown {
   position: relative;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-group {
   display: flex;
   align-items: center;
-  gap: 10px; /* Reduced space */
+  gap: 15px;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* DROPDOWN BUTTON */
+/* DROPDOWN BUTTON: White text, minimal style, invert on hover */
 .dropdown-button {
   background-color: transparent;
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 300;
-  padding: 6px 10px;
+  font-weight: 300; /* Slim text */
+  padding: 8px 12px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-button:hover {
@@ -84,7 +132,7 @@
   color: #D4001C;
 }
 
-/* DROPDOWN MENU */
+/* DROPDOWN MENU (white background, dark text) */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -96,7 +144,8 @@
   padding: 6px 0;
   min-width: 160px;
   font-size: 0.85rem;
-  font-weight: 300;
+  font-weight: 300; /* Keep it slim inside dropdown too */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-menu a {
@@ -105,137 +154,10 @@
   text-decoration: none;
   color: #333333;
   transition: background-color 0.3s ease;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .dropdown-menu a:hover {
   background-color: #f2f2f2;
 }
 
-/* FORCE BUTTONS TO THE RIGHT */
-.top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Reduced gap */
-  justify-content: flex-end;
-  padding-right: 10px;
-  flex-shrink: 0;
-}
-
-/* BUTTON STYLING */
-.top-bar-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  font-weight: 300;
-  padding: 6px 10px; /* Reduced padding */
-  border-radius: 3px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.85rem;
-  background-color: #ffffff;
-  color: #D4001C;
-  border: 1px solid #ffffff;
-  cursor: pointer;
-}
-
-/* BUTTON HOVER EFFECT */
-.top-bar-button:hover {
-  background-color: #D4001C;
-  color: #ffffff;
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
-}
-
-/* =============================== */
-/* SEARCH BAR - Far Right, After Buttons */
-/* =============================== */
-
-.top-bar-search {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: 5px; /* Reduced spacing */
-}
-
-.search-input {
-  width: 160px; /* Reduced width */
-  padding: 6px 10px;
-  border: 1px solid #ffffff;
-  border-radius: 20px;
-  background-color: #ffffff;
-  font-size: 0.85rem;
-  color: #333;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-  color: #888;
-}
-
-.search-input:focus {
-  border-color: #bbb;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-}
-
-/* =============================== */
-/* RESPONSIVE FIXES */
-/* =============================== */
-
-/* Medium Screens (Up to 1280px) */
-@media (max-width: 1280px) {
-  .top-bar-container {
-    max-width: 1000px; /* Reduce spacing further */
-  }
-
-  .top-bar-nav {
-    flex-grow: 0;
-    margin-left: 10px;
-  }
-
-  .top-bar-actions {
-    flex-wrap: wrap;
-  }
-
-  .search-input {
-    width: 140px;
-  }
-}
-
-/* Smaller Screens (Up to 1024px) */
-@media (max-width: 1024px) {
-  .top-bar-nav {
-    gap: 8px;
-  }
-
-  .search-input {
-    width: 130px;
-  }
-}
-
-/* Mobile Screens (Up to 768px) */
-@media (max-width: 768px) {
-  .top-bar-container {
-    flex-direction: column;
-    height: auto;
-    padding-bottom: 8px;
-  }
-
-  .top-bar-logo {
-    margin-bottom: 8px;
-  }
-
-  .top-bar-nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 0 auto;
-  }
-
-  .top-bar-actions {
-    justify-content: center;
-    padding-right: 0;
-  }
-
-  .search-input {
-    width: 120px;
-  }
-}
