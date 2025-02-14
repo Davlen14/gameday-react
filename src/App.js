@@ -8,11 +8,11 @@ import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
-import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
+import Scoreboard from "./components/Scoreboard"; // Make sure this component uses the new CSS classes!
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
-import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
+import "./styles/Scoreboard.css"; // Import your new scoreboard CSS
 import {
   FaHome,
   FaChartBar,
@@ -38,19 +38,25 @@ function App() {
 
   return (
     <Router>
-      <div className="app">
-        {/* TOP SCOREBOARD BAR (Minimal ESPN-Style Filter Bar) */}
+      <div className="gameday-app">
+        {/* TOP SCOREBOARD BAR 
+            Ensure your Scoreboard component's JSX uses:
+              - A wrapper with class "scoreboard-wrapper"
+              - A top bar with class "top-scoreboard" that includes:
+                  * .scoreboard-left (with .filter-label and .conference-dropdown)
+                  * .scoreboard-right (with .week-label and .week-dropdown)
+              - Below that, a container with class "scoreboard-container" for game cards */}
         <Scoreboard />
 
-        {/* TOP BAR (Bright Scarlet) */}
-        <header className="top-bar">
-          <div className="top-bar-container">
+        {/* MAIN HEADER */}
+        <header className="main-header">
+          <div className="header-container">
             {/* Logo on the left */}
-            <h1 className="top-bar-logo">GAMEDAY</h1>
+            <h1 className="header-logo">GAMEDAY</h1>
 
-            {/* Middle nav: Conferences, Lines, GamedayGPT */}
-            <nav className="top-bar-nav">
-              <div className="dropdown-group">
+            {/* Center Navigation: Conferences, Lines, GamedayGPT */}
+            <nav className="header-nav">
+              <div className="header-dropdown-group">
                 <div
                   className="dropdown"
                   onMouseEnter={() => toggleDropdown("conferences")}
@@ -102,24 +108,24 @@ function App() {
               </div>
             </nav>
 
-            {/* Right side actions: Get Started, Upgrade, Login */}
-            <div className="top-bar-actions">
-              <a href="/get-started" className="top-bar-button get-started">
+            {/* Right Side Actions */}
+            <div className="header-actions">
+              <a href="/get-started" className="header-button get-started">
                 <FaQrcode /> Get Started
               </a>
-              <a href="/upgrade" className="top-bar-button upgrade">
+              <a href="/upgrade" className="header-button upgrade">
                 <FaArrowUp /> Upgrade
               </a>
-              <a href="/signin" className="top-bar-button login">
+              <a href="/signin" className="header-button login">
                 <FaUser /> Login
               </a>
             </div>
           </div>
         </header>
 
-        {/* SECOND BAR (White) */}
-        <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
-          <div className="secondary-bar-container">
+        {/* SECONDARY NAVBAR */}
+        <nav className={`secondary-navbar ${menuOpen ? "active" : ""}`}>
+          <div className="navbar-container">
             <Link to="/" className="nav-item" onClick={toggleMenu}>
               <FaHome /> Home
             </Link>
@@ -144,7 +150,7 @@ function App() {
           </div>
         </nav>
 
-        {/* MAIN CONTENT */}
+        {/* MAIN CONTENT AREA */}
         <main className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -155,8 +161,14 @@ function App() {
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
             <Route path="/games/:gameId" element={<GameDetailView />} />
-            <Route path="/predict-outcomes" element={<div>Predict Outcomes Page</div>} />
-            <Route path="/betting-suggestions" element={<div>Betting Suggestions Page</div>} />
+            <Route
+              path="/predict-outcomes"
+              element={<div>Predict Outcomes Page</div>}
+            />
+            <Route
+              path="/betting-suggestions"
+              element={<div>Betting Suggestions Page</div>}
+            />
           </Routes>
         </main>
       </div>
@@ -165,6 +177,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

@@ -1,36 +1,35 @@
 /***********************************************************
- * Minimal ESPN-Style Top Scoreboard Bar
- * Thinner & Smaller Text for an Even More Compact Look
+ * Minimal ESPN-Style Top Scoreboard Bar (Filter Bar)
  ***********************************************************/
 
-/* Container for the entire thin scoreboard bar */
+/* Container for the entire thin scoreboard filter bar */
 .top-scoreboard {
     background-color: #ffffff;
     border-bottom: 1px solid #e0e0e0;
-    height: 35px; /* reduced from 40px to 35px */
+    height: 35px; /* reduced from 40px to 35px for extra slim look */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0.5rem; /* less horizontal padding for a slimmer bar */
-    font-family: "Orbitron", "Titillium Web", sans-serif; 
+    padding: 0 0.5rem; /* less horizontal padding */
+    font-family: "Orbitron", "Titillium Web", sans-serif;
   }
   
-  /* Left side: e.g., "Conference" filter or any label */
+  /* Left side: e.g., "Conference" filter */
   .scoreboard-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem; /* slightly smaller gap */
+    gap: 0.75rem;
   }
   
   .scoreboard-left .filter-label {
-    font-size: 0.75rem; /* smaller text */
+    font-size: 0.75rem;
     font-weight: 600;
     color: #373737;
   }
   
-  /* The conference dropdown itself */
+  /* The conference dropdown */
   .conference-dropdown {
-    padding: 0.2rem 0.4rem; /* reduced padding for smaller dropdown */
+    padding: 0.2rem 0.4rem;
     font-size: 0.75rem;
     border: 1px solid #dddddd;
     border-radius: 4px;
@@ -39,21 +38,21 @@
     cursor: pointer;
   }
   
-  /* Right side: e.g., "Week" filter, or other minimal items */
+  /* Right side: e.g., "Week" filter */
   .scoreboard-right {
     display: flex;
     align-items: center;
-    gap: 0.75rem; /* match left side */
+    gap: 0.75rem;
   }
   
   /* Label for the week dropdown */
   .week-label {
-    font-size: 0.75rem; /* smaller text */
+    font-size: 0.75rem;
     font-weight: 600;
     color: #333333;
   }
   
-  /* The week dropdown itself */
+  /* The week dropdown */
   .week-dropdown {
     padding: 0.2rem 0.4rem;
     font-size: 0.75rem;
@@ -65,20 +64,100 @@
   }
   
   /***********************************************************
-   * Responsive Adjustments
+   * Responsive Adjustments for the Filter Bar
    ***********************************************************/
   
   @media (max-width: 768px) {
     .top-scoreboard {
       flex-wrap: wrap;
-      height: auto; /* allow it to expand if needed */
+      height: auto;
       padding: 0.5rem;
     }
-  
+    
     .scoreboard-left,
     .scoreboard-right {
       flex: 1 1 100%;
       justify-content: flex-start;
       margin: 0.25rem 0;
     }
+  }
+  
+  /***********************************************************
+   * Horizontal Scoreboard Ticker for Games
+   ***********************************************************/
+  
+   .scoreboard-wrapper {
+    width: 100%;
+    display: block;
+    padding: 0;
+    margin: 0;
+    /* Optional: set a background color if desired */
+    background-color: #ffffff;
+  }
+  
+  /* Container for the horizontally scrolling game cards */
+  .scoreboard-container {
+    display: flex;
+    overflow-x: auto;  /* enables horizontal scrolling */
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
+  }
+  
+  /* Remove default link styles for scoreboard cards */
+  .scoreboard-card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Each individual scoreboard card */
+  .scoreboard-card {
+    flex: 0 0 auto; /* prevents cards from shrinking, keeping them side by side */
+    width: 160px;   /* fixed width for each card */
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+  
+  .scoreboard-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  /* Container for the team info within each card */
+  .teams {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Each team block (for home and away teams) */
+  .team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Team logo styling */
+  .team-logo {
+    width: 40px;  
+    height: 40px;
+    object-fit: contain;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Team name styling */
+  .team-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  
+  /* Team record styling */
+  .team-record {
+    font-size: 0.75rem;
+    color: #666666;
   }
