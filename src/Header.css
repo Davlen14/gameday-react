@@ -5,6 +5,13 @@
 /* TOP BAR (Bright Scarlet) */
 /* =============================== */
 
+/* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
+/* =============================== */
+/* TOP BAR (Bright Scarlet) */
+/* =============================== */
+
 .top-bar {
   background-color: #D4001C; /* Bright scarlet */
   color: #ffffff;
@@ -17,7 +24,7 @@
   z-index: 1100;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
-  font-family: 'Titillium Web', sans-serif; /* Global font for top bar */
+  font-family: 'Titillium Web', sans-serif; /* Global font for top bar elements (except logo) */
 }
 
 .top-bar-container {
@@ -28,27 +35,26 @@
   max-width: 1280px;
   margin: 0 auto;
   height: 100%; /* So it fills the full 50px height */
+  padding: 0 20px; /* Provide horizontal padding for all items */
 }
 
 /* LOGO (Bigger, Bolder, Italic, with White Divider on the Right) */
+/* Using Orbitron as primary font, with Titillium Web as fallback */
 .top-bar-logo {
-    font-family: 'Titillium Web', sans-serif;
-    font-weight: 900;       /* Extra bold */
-    font-size: 22px;        /* Larger text, similar to NCAA size */
-    font-style: italic;     /* Make it italic */
-    text-transform: uppercase;
-    color: #ffffff;
-    
-    /* Push it more to the left:
-       - margin-left: 40px puts extra space on the left side
-       - padding-right: 20px adds space before the divider
-    */
-    margin-left: 40px;
-    padding-right: 20px;
-    
-    /* Vertical white divider on the right of the logo */
-    border-right: 1px solid #ffffff;
-  }
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  font-weight: 900;       /* Extra bold */
+  font-size: 22px;        /* Larger text, similar to NCAA size */
+  font-style: italic;     /* Make it italic */
+  text-transform: uppercase;
+  color: #ffffff;
+  
+  /* Remove extra left margin; container's padding handles spacing */
+  margin-left: 0;
+  padding-right: 20px;    /* Space before the divider */
+  
+  /* Vertical white divider on the right of the logo */
+  border-right: 1px solid #ffffff;
+}
 
 /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
 .top-bar-nav {
@@ -119,10 +125,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-right: 20px; /* small horizontal padding on the right */
+  margin-right: 20px; /* Small horizontal padding on the right */
 }
 
-/* All top-bar-button share same base style, then we override as needed */
+/* All top-bar-button share the same base style */
 .top-bar-button {
   display: flex;
   align-items: center;
