@@ -15,40 +15,40 @@
     font-family: "Orbitron", "Titillium Web", sans-serif;
     width: 100%;
     /* Height is auto so it shrinks to fit. If you want a fixed height, you can set it. */
-  }
-  
-  /* Container for NCAAF + Week filters */
-  .scoreboard-filters {
+}
+
+/* Container for NCAAF + Week filters */
+.scoreboard-filters {
     display: flex;
     align-items: center;
     gap: 0.5rem; /* minimal spacing between elements */
-  }
-  
-  /* ESPN-like thin vertical divider between "NCAAF" and the next item */
-  .scoreboard-divider {
+}
+
+/* ESPN-like thin vertical divider between "NCAAF" and the next item */
+.scoreboard-divider {
     border-left: 1px solid #ccc;
     height: 14px;
     margin: 0 0.5rem; /* small horizontal spacing */
-  }
-  
-  /* The clickable "NCAAF" label */
-  .scoreboard-ncaaf-dropdown {
+}
+
+/* The clickable "NCAAF" label */
+.scoreboard-ncaaf-dropdown {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
     text-transform: uppercase;
     cursor: pointer;
-  }
-  
-  /* Label for the week dropdown */
-  .scoreboard-week-label {
+}
+
+/* Label for the week dropdown */
+.scoreboard-week-label {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
-  }
-  
-  /* The week dropdown */
-  .scoreboard-week-dropdown {
+}
+
+/* The week dropdown */
+.scoreboard-week-dropdown {
     font-size: 0.7rem;
     color: #333;
     cursor: pointer;
@@ -56,94 +56,111 @@
     border-radius: 2px; /* ESPN is very minimal, so keep this small */
     background-color: #f9f9f9;
     padding: 0.1rem 0.3rem; /* tight padding for a compact look */
-  }
-  
-  /* Container for the horizontally scrolling game cards */
-  .scoreboard-games {
+}
+
+/* Container for the horizontally scrolling game cards */
+.scoreboard-games {
     display: flex;
     overflow-x: auto; /* enables horizontal scrolling */
     gap: 0;           /* ESPN typically doesn't leave big gaps */
     -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
     border-bottom: 1px solid #ddd;
-    /* If you want it to take remaining horizontal space after filters,
-       you can do something like flex: 1; */
+    /* Takes remaining horizontal space after filters */
     flex: 1;
-  }
-  
-  /* Remove default link styles for scoreboard "cards" (the clickable areas) */
-  .scoreboard-game-link {
+}
+
+/* Remove default link styles for scoreboard "cards" (the clickable areas) */
+.scoreboard-game-link {
     text-decoration: none;
     color: inherit;
-  }
-  
-  /* Each scoreboard "card" (one matchup) */
-  .scoreboard-game-card {
+}
+
+/* Each scoreboard "card" (one matchup) - made a bit bigger */
+.scoreboard-game-card {
     flex: 0 0 auto;  /* keep them side by side horizontally without shrinking */
     display: flex;
     flex-direction: column; /* stack away/home vertically */
     align-items: flex-start; 
-    padding: 0.3rem 0.5rem; /* tight vertical/horizontal padding */
+    padding: 0.5rem 0.75rem; /* increased padding for a larger card */
     border-right: 1px solid #ddd;
     background: none;
     transition: background-color 0.2s ease;
-  }
-  
-  /* Remove border on last card to match ESPN style */
-  .scoreboard-game-card:last-child {
+}
+
+/* Remove border on last card to match ESPN style */
+.scoreboard-game-card:last-child {
     border-right: none;
-  }
-  
-  /* Subtle hover effect on each card */
-  .scoreboard-game-card:hover {
+}
+
+/* Subtle hover effect on each card */
+.scoreboard-game-card:hover {
     background-color: #f8f8f8;
-  }
-  
-  /* Each team block (away/home) in a vertical stack */
-  .scoreboard-card-team {
+}
+
+/* Each team block (away/home) in a vertical stack */
+.scoreboard-card-team {
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    /* If you want a faint divider between away & home inside the card:
+    /* Optionally, add a divider between teams:
        border-bottom: 1px solid #ddd; 
        margin-bottom: 4px; 
        padding-bottom: 4px; */
-  }
-  
-  /* Smaller logos for ESPN-like minimalism (24px is also common) */
-  .scoreboard-team-logo {
+}
+
+/* Smaller logos for ESPN-like minimalism (24px is also common) */
+.scoreboard-team-logo {
     width: 20px;
     height: 20px;
     object-fit: contain;
     border-radius: 0; /* ensure logos aren't circles */
-  }
-  
-  /* Team name styling (small, bold) */
-  .scoreboard-team-name {
+}
+
+/* Team name styling (small, bold) */
+.scoreboard-team-name {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
-  }
-  
-  /* Team record styling (even smaller, lighter color) */
-  .scoreboard-team-record {
+}
+
+/* Team score styling (replaces team record) */
+.scoreboard-team-score {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #333;
+    margin-left: 0.25rem; /* small separation from the team name */
+}
+
+/* TV info styling */
+.scoreboard-tv {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+}
+.scoreboard-tv-icon {
+    font-size: 0.7rem;
+    color: #666;
+}
+.scoreboard-tv-network {
     font-size: 0.65rem;
     color: #666;
-  }
-  
-  /***********************************************************
-   * Responsive Adjustments (Optional)
-   ***********************************************************/
-  @media (max-width: 768px) {
+}
+
+/***********************************************************
+ * Responsive Adjustments (Optional)
+ ***********************************************************/
+@media (max-width: 768px) {
     .scoreboard-bar {
-      flex-wrap: wrap;
-      /* so filters can go on top row, games on second row if space is tight */
+        flex-wrap: wrap;
+        /* so filters can go on top row, games on second row if space is tight */
     }
     
     .scoreboard-filters,
     .scoreboard-games {
-      width: 100%; /* each takes full width on smaller screens */
-      margin-bottom: 0.5rem;
+        width: 100%; /* each takes full width on smaller screens */
+        margin-bottom: 0.5rem;
     }
-  }
+}
   
   

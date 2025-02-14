@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
+import { FaTv } from "react-icons/fa";
 
 const Scoreboard = () => {
   const [games, setGames] = useState([]);
@@ -100,7 +101,9 @@ const Scoreboard = () => {
                 <span className="scoreboard-team-name">
                   {getTeamAbbreviation(game.awayTeam)}
                 </span>
-                <span className="scoreboard-team-record">0-0</span>
+                <span className="scoreboard-team-score">
+                  {game.awayPoints !== undefined ? game.awayPoints : ""}
+                </span>
               </div>
               {/* Home team (bottom) */}
               <div className="scoreboard-card-team">
@@ -112,8 +115,17 @@ const Scoreboard = () => {
                 <span className="scoreboard-team-name">
                   {getTeamAbbreviation(game.homeTeam)}
                 </span>
-                <span className="scoreboard-team-record">0-0</span>
+                <span className="scoreboard-team-score">
+                  {game.homePoints !== undefined ? game.homePoints : ""}
+                </span>
               </div>
+              {/* TV info with TV logo */}
+              {game.tv && (
+                <div className="scoreboard-tv">
+                  <FaTv className="scoreboard-tv-icon" />
+                  <span className="scoreboard-tv-network">{game.tv}</span>
+                </div>
+              )}
             </div>
           </Link>
         ))}
