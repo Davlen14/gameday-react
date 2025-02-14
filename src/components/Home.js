@@ -68,7 +68,7 @@ const Home = () => {
         { title: "What's Next for Sanders and Colorado?", image: "CU.jpg" },
         { title: "A Team to Look Out For: Penn State", image: "Pennst.jpg" },
         { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "Oregon.jpg" },
-        { title: "The Kings of College Football: Ohio State", image: "OhioChamp.jpeg" },
+        { title: "The Kings of College Football: Ohio State", image: "Oregon.jpg" },
         { title: "New Sheriff in Town: Arch Manning Era?", image: "ArchTime.jpg" },
     ];
 
