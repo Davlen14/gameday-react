@@ -1,61 +1,59 @@
-/* Navbar Wrapper */
-.navbar-container {
+/* =============================== */
+/* SECONDARY BAR (White) */
+/* =============================== */
+
+.secondary-bar {
+  background-color: #ffffff;
+  color: #666666;
+  height: 50px; /* match the top bar's slim height */
   display: flex;
-  justify-content: space-between; /* Adjusts spacing inside navbar */
+  align-items: center;
+  position: sticky;
+  top: 50px; /* so it sticks right below the top bar */
+  width: 100%;
+  z-index: 999;
+  border-bottom: 1px solid #e0e0e0; /* subtle divider */
+}
+
+.secondary-bar-container {
+  display: flex;
+  justify-content: center; /* or space-between if you want */
   align-items: center;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
+  height: 100%; /* fill the full 50px */
 }
 
-/* Navbar */
-.app-nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 10px 20px;
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 999;
-  flex-wrap: wrap;
-  margin: 0;
-}
-
-/* Navbar Items */
+/* Nav Items: Home, Teams, Games, etc. */
 .nav-item {
   text-decoration: none;
-  color: #333;
-  font-size: 0.95rem;
+  color: #666666;
+  font-size: 0.85rem;
   font-weight: 600;
   margin: 0 12px;
   position: relative;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: "Exo 2", sans-serif;
-  padding: 8px 10px;
-  border-radius: 5px;
-  white-space: nowrap;
+  gap: 4px;
+  font-family: Arial, sans-serif;
+  padding: 6px 0; /* minimal vertical padding */
 }
 
 .nav-item:hover {
-  color: #ffffff;
-  background-color: #870000;
+  color: #D4001C; /* text turns scarlet on hover */
 }
 
+/* OPTIONAL Underline on hover */
 .nav-item::after {
   content: "";
-  display: block;
-  width: 0%;
-  height: 3px;
-  background-color: #690000;
   position: absolute;
-  bottom: -4px;
   left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background-color: #D4001C;
   transition: width 0.3s ease;
 }
 
@@ -63,29 +61,20 @@
   width: 100%;
 }
 
-/* Navbar Buttons */
-.navbar-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
+/* 
+   If you prefer a fill background on hover instead of just color change, 
+   you can add: background-color: #f2f2f2; to .nav-item:hover
+   or remove the ::after lines. 
+*/
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .app-nav {
-    flex-direction: column;
-    align-items: center;
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .secondary-bar-container {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  .navbar-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .navbar-buttons {
-    flex-direction: column;
-    align-items: center;
+  .nav-item {
+    margin: 5px;
   }
 }

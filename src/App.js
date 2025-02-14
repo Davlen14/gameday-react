@@ -10,8 +10,17 @@ import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
 import "./App.css";
 import "./Navbar.css";
-import "./Header.css";  // ✅ Now includes header styles
-import { FaHome, FaChartBar, FaUsers, FaFootballBall, FaEllipsisH, FaQrcode, FaUser, FaArrowUp } from "react-icons/fa";
+import "./Header.css"; 
+import {
+  FaHome,
+  FaChartBar,
+  FaUsers,
+  FaFootballBall,
+  FaEllipsisH,
+  FaQrcode,
+  FaUser,
+  FaArrowUp,
+} from "react-icons/fa";
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,15 +37,20 @@ function App() {
   return (
     <Router>
       <div className="app">
-        {/* Header Section */}
-        <header className="app-header">
-          <div className="header-nav-container">
-            <h1 className="header-logo">GAMEDAY</h1>
-            <nav className="header-nav"> {/* ✅ This now ensures dropdowns are in a row */}
-              
-              {/* ✅ Dropdown buttons now side by side */}
+        {/* TOP BAR (Bright Scarlet) */}
+        <header className="top-bar">
+          <div className="top-bar-container">
+            {/* Logo on the left */}
+            <h1 className="top-bar-logo">GAMEDAY</h1>
+
+            {/* Middle nav: Conferences, Lines, GamedayGPT */}
+            <nav className="top-bar-nav">
               <div className="dropdown-group">
-                <div className="dropdown" onMouseEnter={() => toggleDropdown("conferences")} onMouseLeave={() => toggleDropdown(null)}>
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("conferences")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
                   <button className="dropdown-button">Conferences</button>
                   {dropdownOpen === "conferences" && (
                     <div className="dropdown-menu">
@@ -50,7 +64,11 @@ function App() {
                   )}
                 </div>
 
-                <div className="dropdown" onMouseEnter={() => toggleDropdown("lines")} onMouseLeave={() => toggleDropdown(null)}>
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("lines")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
                   <button className="dropdown-button">Lines</button>
                   {dropdownOpen === "lines" && (
                     <div className="dropdown-menu">
@@ -62,7 +80,11 @@ function App() {
                   )}
                 </div>
 
-                <div className="dropdown" onMouseEnter={() => toggleDropdown("gamedaygpt")} onMouseLeave={() => toggleDropdown(null)}>
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("gamedaygpt")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
                   <button className="dropdown-button">GamedayGPT</button>
                   {dropdownOpen === "gamedaygpt" && (
                     <div className="dropdown-menu">
@@ -75,35 +97,49 @@ function App() {
               </div>
             </nav>
 
-            {/* Header Buttons */}
-            <div className="header-actions">
-              <a href="/get-started" className="header-action-button get-started">
+            {/* Right side actions: Get Started, Upgrade, Login */}
+            <div className="top-bar-actions">
+              <a href="/get-started" className="top-bar-button get-started">
                 <FaQrcode /> Get Started
               </a>
-              <a href="/upgrade" className="header-action-button upgrade">
+              <a href="/upgrade" className="top-bar-button upgrade">
                 <FaArrowUp /> Upgrade
               </a>
-              <a href="/signin" className="header-action-button login">
+              <a href="/signin" className="top-bar-button login">
                 <FaUser /> Login
               </a>
             </div>
           </div>
         </header>
 
-        {/* Navbar Section */}
-        <nav className={`app-nav ${menuOpen ? "active" : ""}`}>
-          <div className="navbar-container">
-            <Link to="/" className="nav-item" onClick={toggleMenu}><FaHome /> Home</Link>
-            <Link to="/teams" className="nav-item" onClick={toggleMenu}><FaUsers /> Teams</Link>
-            <Link to="/games" className="nav-item" onClick={toggleMenu}><FaFootballBall /> Games</Link>
-            <Link to="/stats" className="nav-item" onClick={toggleMenu}><FaChartBar /> Stats</Link>
-            <Link to="/more" className="nav-item" onClick={toggleMenu}><FaEllipsisH /> More</Link>
-            <Link to="/pickem-predictions" className="nav-item">Pick'em & Predictions</Link>
-            <Link to="/channels" className="nav-item">Channels</Link>
+        {/* SECOND BAR (White) */}
+        <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
+          <div className="secondary-bar-container">
+            <Link to="/" className="nav-item" onClick={toggleMenu}>
+              <FaHome /> Home
+            </Link>
+            <Link to="/teams" className="nav-item" onClick={toggleMenu}>
+              <FaUsers /> Teams
+            </Link>
+            <Link to="/games" className="nav-item" onClick={toggleMenu}>
+              <FaFootballBall /> Games
+            </Link>
+            <Link to="/stats" className="nav-item" onClick={toggleMenu}>
+              <FaChartBar /> Stats
+            </Link>
+            <Link to="/more" className="nav-item" onClick={toggleMenu}>
+              <FaEllipsisH /> More
+            </Link>
+            <Link to="/pickem-predictions" className="nav-item">
+              Pick'em & Predictions
+            </Link>
+            <Link to="/channels" className="nav-item">
+              Channels
+            </Link>
           </div>
         </nav>
 
-        {/* Main Content */}
+        {/* MAIN CONTENT */}
         <main className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
