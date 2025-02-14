@@ -12,7 +12,7 @@ import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard compo
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
-import "../styles/Scoreboard.css"; // Import the Scoreboard CSS
+import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
 import {
   FaHome,
   FaChartBar,
