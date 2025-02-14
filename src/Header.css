@@ -1,56 +1,119 @@
 /* =============================== */
-/* HEADER SECTION */
+/* TOP BAR SECTION (Scarlet) */
 /* =============================== */
 
-/* Header Container */
-.app-header {
-    background-color: #ffffff;
-    color: #111;
-    padding: 10px 20px;
+.top-bar {
+    background-color: #870000; /* Scarlet background */
+    color: #ffffff;            /* White text */
+    padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     width: 100%;
     z-index: 1100;
     font-size: 0.95rem;
-}
-
-/* Header Navigation */
-.header-nav-container {
+    border-bottom: 1px solid #e0e0e0; /* Thin divider line */
+    box-sizing: border-box;
+  }
+  
+  .top-bar-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     max-width: 1280px;
     margin: 0 auto;
-}
-
-/* Header Logo */
-.header-logo {
+  }
+  
+  /* Logo in Top Bar */
+  .top-bar-logo {
     font-family: 'Titillium Web', sans-serif;
     font-weight: 700;
     font-size: 22px;
-    color: #870000;
     text-transform: uppercase;
     font-style: italic;
+    color: #ffffff; /* Ensure the text stays white */
     margin-right: auto; /* Pushes everything else to the right */
-}
-
-/* Header Actions (Fixing Button Issues) */
-.header-actions {
+  }
+  
+  /* Dropdown Nav in Top Bar */
+  .top-bar-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Space between dropdowns */
+  }
+  
+  /* Dropdown Container */
+  .dropdown {
+    position: relative;
+  }
+  
+  /* Grouping multiple dropdowns in a row */
+  .dropdown-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  /* Dropdown Button (Scarlet bar style: white text, white border on hover) */
+  .dropdown-button {
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  /* Hover: invert colors (white -> scarlet background) */
+  .dropdown-button:hover {
+    background-color: #ffffff;
+    color: #870000;
+  }
+  
+  /* Dropdown Menu (white background, dark text) */
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    z-index: 2000;
+    padding: 8px 0;
+    min-width: 180px;
+    font-size: 0.85rem;
+  }
+  
+  .dropdown-menu a {
+    display: block;
+    padding: 8px 15px;
+    text-decoration: none;
+    color: #111111;
+    transition: background-color 0.3s ease;
+  }
+  
+  .dropdown-menu a:hover {
+    background-color: rgba(135, 0, 0, 0.1); /* Light scarlet tint on hover */
+  }
+  
+  /* =============================== */
+  /* TOP BAR ACTIONS (Get Started, Upgrade, Login) */
+  /* =============================== */
+  .top-bar-actions {
     display: flex;
     gap: 10px;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
     align-items: center;
     margin-left: auto;
-}
-
-/* Header Action Buttons */
-.header-action-button {
+  }
+  
+  /* Buttons in the Top Bar */
+  .top-bar-button {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -62,118 +125,34 @@
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     font-size: 0.85rem;
     white-space: nowrap;
-}
-
-/* Get Started Button (Restored Correct Styling) */
-.header-action-button.get-started {
-    background-color: rgb(149, 0, 0);
-    color: white;
-    border: 1px solid rgb(149, 0, 0);
-}
-
-.header-action-button.get-started:hover {
-    background-color: rgb(120, 0, 0);
-    box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
-}
-
-/* Upgrade Button */
-.header-action-button.upgrade {
-    background-color: rgb(149, 0, 0);
-    color: white;
-    border: 1px solid rgb(149, 0, 0);
-}
-
-.header-action-button.upgrade:hover {
-    background-color: rgb(120, 0, 0);
-    box-shadow: 0px 3px 8px rgba(149, 0, 0, 0.3);
-}
-
-/* Login Button */
-.header-action-button.login {
-    background-color: rgb(230, 230, 230);
-    color: rgb(80, 80, 80);
-    border: 1px solid rgb(200, 200, 200);
-}
-
-.header-action-button.login:hover {
-    background-color: rgb(210, 210, 210);
-    box-shadow: 0px 3px 8px rgba(180, 180, 180, 0.3);
-}
-
-/* =============================== */
-/* DROPDOWN MENU (Fixed Styles) */
-/* =============================== */
-.dropdown {
-    position: relative;
-}
-
-/* ✅ FIX: Ensure Dropdown Buttons Stay in a Row */
-.header-nav {
-    display: flex;
-    gap: 15px; /* Space between buttons */
-    flex-grow: 1;
-    justify-content: center;
-    flex-wrap: nowrap;
-    align-items: center;
-}
-
-/* Ensuring Buttons Stay Side by Side */
-.header-nav .dropdown {
-    display: flex;
-    align-items: center;
-}
-
-.header-nav .dropdown + .dropdown {
-    margin-left: 10px; /* Adds spacing between buttons */
-}
-
-/* Dropdown Button Styles */
-.dropdown-button {
     background-color: transparent;
-    border: 1px solid rgb(149, 0, 0);
-    color: rgb(149, 0, 0);
-    font-size: 0.9rem;
-    font-weight: bold;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.dropdown-button:hover {
-    background-color: rgb(149, 0, 0);
-    color: white;
-}
-
-/* Dropdown Menu */
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    z-index: 2000; /* Ensure dropdown appears above navbar */
-    padding: 8px 0;
-    min-width: 180px;
-    font-size: 0.85rem;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 8px 15px;
-    text-decoration: none;
-    color: #111;
-    transition: background-color 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: rgba(149, 0, 0, 0.1);
-}
-
-.dropdown-group {
-    display: flex;            /* put them in a row */
-    justify-content: center;  /* center them horizontally */
-    align-items: center;      /* vertically center if needed */
-    gap: 20px;                /* space between them */
+    border: 1px solid #ffffff;
+    color: #ffffff;
   }
+  
+  /* Hover: invert colors */
+  .top-bar-button:hover {
+    background-color: #ffffff;
+    color: #870000;
+    box-shadow: 0 3px 8px rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Example variations if you want them distinct:
+     You can override them by adding additional classes, e.g.:
+     .top-bar-button.get-started, .top-bar-button.upgrade, etc. 
+     But the base styling above should suffice for all. 
+  */
+  
+  /* 
+  .top-bar-button.get-started {
+    ...
+  }
+  
+  .top-bar-button.upgrade {
+    ...
+  }
+  
+  .top-bar-button.login {
+    ...
+  }
+  */

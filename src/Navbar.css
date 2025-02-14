@@ -13,21 +13,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   padding: 10px 20px;
   position: sticky;
-  top: 0;
+  top: 60px; /* Adjust this if your top bar height changes */
   width: 100%;
   z-index: 999;
   flex-wrap: wrap;
   margin: 0;
+  border-bottom: 1px solid #e0e0e0; /* Thin divider for a clean look */
 }
 
 /* Navbar Items */
 .nav-item {
   text-decoration: none;
-  color: #333;
+  color: #666666; /* Light gray text */
   font-size: 0.95rem;
   font-weight: 600;
   margin: 0 12px;
@@ -52,7 +53,7 @@
   display: block;
   width: 0%;
   height: 3px;
-  background-color: #690000;
+  background-color: #870000;
   position: absolute;
   bottom: -4px;
   left: 0;
@@ -63,7 +64,7 @@
   width: 100%;
 }
 
-/* Navbar Buttons */
+/* Navbar Buttons (if any additional buttons exist) */
 .navbar-buttons {
   display: flex;
   flex-wrap: nowrap;
