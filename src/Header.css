@@ -107,6 +107,27 @@
     position: relative;
 }
 
+/* ✅ FIX: Ensure Dropdown Buttons Stay in a Row */
+.header-nav {
+    display: flex;
+    gap: 15px; /* Space between buttons */
+    flex-grow: 1;
+    justify-content: center;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+/* Ensuring Buttons Stay Side by Side */
+.header-nav .dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.header-nav .dropdown + .dropdown {
+    margin-left: 10px; /* Adds spacing between buttons */
+}
+
+/* Dropdown Button Styles */
 .dropdown-button {
     background-color: transparent;
     border: 1px solid rgb(149, 0, 0);
