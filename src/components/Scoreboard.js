@@ -6,8 +6,8 @@ import { FaTv } from "react-icons/fa";
 const Scoreboard = () => {
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [media, setMedia] = useState([]); // For TV network info
-  const [lines, setLines] = useState([]); // For betting lines
+  const [media, setMedia] = useState([]);
+  const [lines, setLines] = useState([]);
   const [week, setWeek] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,7 +27,7 @@ const Scoreboard = () => {
 
         setTeams(teamsData);
 
-        // Filter games to include only FBS teams
+        // Filter games to include only FBS vs. FBS
         const fbsGames = gamesData.filter(
           (game) =>
             game.homeClassification === "fbs" &&
@@ -73,9 +73,9 @@ const Scoreboard = () => {
   // Helper to get sportsbook logo based on provider
   const getSportsbookLogo = (provider) => {
     const logos = {
-      "DraftKings": "/photos/draftkings.png",
+      DraftKings: "/photos/draftkings.png",
       "ESPN Bet": "/photos/espnbet.png",
-      "Bovada": "/photos/bovada.png",
+      Bovada: "/photos/bovada.png",
     };
     return logos[provider] || "/photos/default_sportsbook.png";
   };
@@ -136,7 +136,9 @@ const Scoreboard = () => {
           if (gameLines && gameLines.lines) {
             const providers = ["DraftKings", "ESPN Bet", "Bovada"];
             for (let provider of providers) {
-              chosenLine = gameLines.lines.find(line => line.provider === provider);
+              chosenLine = gameLines.lines.find(
+                (line) => line.provider === provider
+              );
               if (chosenLine) break;
             }
           }
@@ -150,9 +152,7 @@ const Scoreboard = () => {
               <div className="scoreboard-game-card">
                 {/* Row 1: Time (left) & TV (right) */}
                 <div className="scoreboard-game-header">
-                  <div className="scoreboard-game-time">
-                    {formatGameTime(game)}
-                  </div>
+                  <div className="scoreboard-game-time">{formatGameTime(game)}</div>
                   <div className="scoreboard-game-network">
                     <FaTv className="scoreboard-tv-icon" />
                     {tvNetwork && <span>{tvNetwork}</span>}
@@ -189,7 +189,7 @@ const Scoreboard = () => {
                   </span>
                 </div>
 
-                {/* Row 4: Sportsbook OU */}
+                {/* O/U pinned to bottom right (absolute in CSS) */}
                 {chosenLine && (
                   <div className="scoreboard-sportsbook">
                     <img
@@ -212,3 +212,4 @@ const Scoreboard = () => {
 };
 
 export default Scoreboard;
+

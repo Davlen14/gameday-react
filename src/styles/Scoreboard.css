@@ -105,20 +105,21 @@
     color: inherit;
 }
 
-/* Each scoreboard "card" (one matchup) - made wider */
+/* Each scoreboard "card" (one matchup) */
 .scoreboard-game-card {
+    position: relative;          /* Needed for absolute positioning of O/U */
     flex: 0 0 auto;
-    min-width: 150px; /* wider cards */
+    min-width: 150px;            /* wider cards */
     display: flex;
     flex-direction: column;
-    align-items: flex-start; 
-    padding: 0.5rem 0.75rem; /* increased padding for a larger card */
-    border-right: 1px solid #ccc; /* thinner, lighter divider */
+    align-items: flex-start;
+    padding: 0.5rem 0.75rem 2rem; /* extra bottom padding for O/U */
+    border-right: 1px solid #ccc;
     background: none;
     transition: background-color 0.2s ease;
 }
 
-/* Remove border on last card to match ESPN style */
+/* Remove border on the last card to match ESPN style */
 .scoreboard-game-card:last-child {
     border-right: none;
 }
@@ -150,7 +151,7 @@
     color: #333;
 }
 
-/* Team score styling (smaller, replaces team record) */
+/* Team score styling (smaller) */
 .scoreboard-team-score {
     font-size: 0.65rem; /* reduced size */
     font-weight: 600;
@@ -166,13 +167,13 @@
     margin-top: 0.25rem;
 }
 .scoreboard-tv-icon {
-    font-size: 1.2rem;           /* Increase the size */
-    color: #e53935;              /* Modern red tone */
-    opacity: 0.9;                /* Slight transparency for a modern feel */
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2); /* Optional subtle glow */
+    font-size: 1.2rem;
+    color: #e53935;
+    opacity: 0.9;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 }
 .scoreboard-tv-network {
-    font-size: 0.6rem; /* slightly smaller */
+    font-size: 0.6rem;
     color: #666;
 }
 
@@ -186,13 +187,15 @@
 }
 
 /***********************************************************
- * New Sportsbook OU Block Styling
+ * New Sportsbook OU Block: pinned bottom-right
  ***********************************************************/
 .scoreboard-sportsbook {
+    position: absolute;   /* pinned to bottom-right */
+    bottom: 0.5rem;
+    right: 0.5rem;
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    margin-top: 0.25rem; /* spacing from the teams' rows */
 }
 
 .scoreboard-sportsbook-logo {
@@ -214,10 +217,11 @@
     .scoreboard-bar {
         flex-wrap: wrap;
     }
-    
+
     .scoreboard-filters,
     .scoreboard-games {
         width: 100%;
         margin-bottom: 0.5rem;
     }
 }
+
