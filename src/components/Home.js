@@ -46,7 +46,7 @@ const Home = () => {
         const team = teams.find(
             (t) => t.school.toLowerCase() === teamName?.toLowerCase()
         );
-        return team?.logos?.[0] || "/photos/default_team.png";
+        return team?.logos?.[0] || `${process.env.PUBLIC_URL}/photos/default_team.png`;
     };
 
     const getNetworkLogo = (network) => {
@@ -62,9 +62,19 @@ const Home = () => {
     if (isLoading) return <div className="loading-container">Loading...</div>;
     if (error) return <div className="error-container">Error: {error}</div>;
 
+    // **News Articles Section**
+    const newsArticles = [
+        { title: "Georgia No More?", image: `${process.env.PUBLIC_URL}/photos/Ksmart.jpeg` },
+        { title: "What's Next for Sanders and Colorado?", image: `${process.env.PUBLIC_URL}/photos/CU.jpeg` },
+        { title: "A Team to Look Out For: Penn State", image: `${process.env.PUBLIC_URL}/photos/Pennst.jpeg` },
+        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: `${process.env.PUBLIC_URL}/photos/Oregon.jpeg` },
+        { title: "The Kings of College Football: Ohio State", image: `${process.env.PUBLIC_URL}/photos/OhioChamp.jpeg` },
+        { title: "New Sheriff in Town: Arch Manning Era?", image: `${process.env.PUBLIC_URL}/photos/ArchTime.jpeg` },
+    ];
+
     return (
         <div className="home-container">
-            {/* Header Section */}
+            {/* Hero Section */}
             <header className="hero-header">
                 <h1>Welcome to Gameday</h1>
                 <div className="week-selector">
@@ -88,14 +98,7 @@ const Home = () => {
             <section className="news-recap">
                 <h2 className="section-title">Offseason Headlines</h2>
                 <div className="news-grid">
-                    {[
-                        { title: "Georgia No More?", image: "/photos/Ksmart.jpg" },
-                        { title: "What's Next for Sanders and Colorado?", image: "/photos/CU.jpg" },
-                        { title: "A Team to Look Out For: Penn State", image: "/photos/Pennst.jpg" },
-                        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "/photos/Oregon.jpg" },
-                        { title: "The Kings of College Football: Ohio State", image: "/photos/OhioChamp.jpeg" },
-                        { title: "New Sheriff in Town: Arch Manning Era?", image: "/photos/ArchTime.jpg" },
-                    ].map((article, index) => (
+                    {newsArticles.map((article, index) => (
                         <div key={index} className="news-card">
                             <img src={article.image} alt={article.title} className="news-image" />
                             <h3>{article.title}</h3>
@@ -112,7 +115,7 @@ const Home = () => {
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
                             <h3 className="poll-title">
-                                <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
+                                <img src={`${process.env.PUBLIC_URL}/photos/committee.png`} alt="Committee Logo" className="poll-logo" />
                                 {poll.name}
                             </h3>
                             <div className="rankings-list">
