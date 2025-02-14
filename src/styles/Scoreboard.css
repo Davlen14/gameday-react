@@ -67,28 +67,30 @@
 
 /* --- Custom Scrollbar Styling --- */
 
-/* --- Custom Scrollbar Styling --- */
-
-/* WebKit Browsers (Chrome, Safari, Opera) */
+/* WebKit Browsers (Chrome, Safari, Edge) */
 .scoreboard-games::-webkit-scrollbar {
-    height: 6px; /* Fixed thin height */
-    scrollbar-gutter: stable; /* Reserves space for scrollbar */
+    height: 4px; /* Thinner scrollbar */
   }
   
   .scoreboard-games::-webkit-scrollbar-track {
-    background: transparent; /* Minimal styling */
+    background: white; /* White background when not in use */
   }
   
   .scoreboard-games::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3); /* Minimal dark thumb */
-    border-radius: 3px; /* Rounded edges */
+    background: transparent; /* Invisible when not scrolling */
+    transition: background 0.3s ease-in-out; /* Smooth transition */
+  }
+  
+  /* Make scrollbar visible when scrolling */
+  .scoreboard-games:hover::-webkit-scrollbar-thumb,
+  .scoreboard-games:active::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3); /* Darker when used */
   }
   
   /* Firefox */
   .scoreboard-games {
-    scrollbar-width: thin; /* Always show a thin scrollbar */
-    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-    scrollbar-gutter: stable; /* Reserves space to prevent layout shifts */
+    scrollbar-width: thin; /* Always thin */
+    scrollbar-color: white transparent; /* White when idle, disappears when scrolling */
   }
 
 /* --- End Custom Scrollbar Styling --- */
