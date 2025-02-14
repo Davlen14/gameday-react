@@ -65,6 +65,40 @@
     flex: 1;
 }
 
+/* --- Custom Scrollbar Styling --- */
+
+/* WebKit Browsers (Chrome, Safari, Opera) */
+.scoreboard-games::-webkit-scrollbar {
+  height: 6px;             /* Thinner scrollbar */
+  opacity: 0;              /* Hidden by default */
+  transition: opacity 0.3s;
+}
+
+.scoreboard-games:hover::-webkit-scrollbar {
+  opacity: 1;              /* Show scrollbar on hover */
+}
+
+.scoreboard-games::-webkit-scrollbar-track {
+  background: transparent; /* Minimal styling */
+}
+
+.scoreboard-games::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3); /* Light dark thumb */
+  border-radius: 3px;             /* Rounded edges */
+}
+
+/* Firefox */
+.scoreboard-games {
+  scrollbar-width: none; /* Hide scrollbar by default */
+}
+
+.scoreboard-games:hover {
+  scrollbar-width: thin; /* Show thin scrollbar on hover */
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+/* --- End Custom Scrollbar Styling --- */
+
 /* Remove default link styles for scoreboard "cards" */
 .scoreboard-game-link {
     text-decoration: none;
@@ -136,10 +170,19 @@
     color: #e53935;              /* Modern red tone */
     opacity: 0.9;                /* Slight transparency for a modern feel */
     text-shadow: 0 0 1px rgba(0, 0, 0, 0.2); /* Optional subtle glow */
-  }
+}
 .scoreboard-tv-network {
     font-size: 0.6rem; /* slightly smaller */
     color: #666;
+}
+
+/* Game header (Time & TV icon) */
+.scoreboard-game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.25rem; /* optional spacing */
 }
 
 /***********************************************************
@@ -156,11 +199,3 @@
         margin-bottom: 0.5rem;
     }
 }
-  
-.scoreboard-game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 0.25rem; /* optional spacing */
-  }
