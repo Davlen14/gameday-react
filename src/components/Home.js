@@ -93,7 +93,7 @@ const Home = () => {
                         { title: "What's Next for Sanders and Colorado?", image: "/photos/CU.jpg" },
                         { title: "A Team to Look Out For: Penn State", image: "/photos/Pennst.jpg" },
                         { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "/photos/Oregon.jpg" },
-                        { title: "The Kings of College Football: Ohio State", image: "/photos/OhioChamp.jpg" },
+                        { title: "The Kings of College Football: Ohio State", image: "/photos/OhioChamp.jpeg" },
                         { title: "New Sheriff in Town: Arch Manning Era?", image: "/photos/ArchTime.jpg" },
                     ].map((article, index) => (
                         <div key={index} className="news-card">
