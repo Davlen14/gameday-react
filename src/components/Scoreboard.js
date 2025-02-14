@@ -116,7 +116,7 @@ const Scoreboard = () => {
       <div className="scoreboard-games">
         {games.map((game) => {
           const gameMedia = getMediaForGame(game.id);
-          const tvNetwork = gameMedia?.network || ""; // or "TBD" if you want a fallback
+          const tvNetwork = gameMedia?.network || "";
 
           return (
             <Link
@@ -131,12 +131,8 @@ const Scoreboard = () => {
                     {formatGameTime(game)}
                   </div>
                   <div className="scoreboard-game-network">
-                    {tvNetwork && (
-                      <>
-                        <FaTv className="scoreboard-tv-icon" />
-                        <span>{tvNetwork}</span>
-                      </>
-                    )}
+                    <FaTv className="scoreboard-tv-icon" />
+                    {tvNetwork && <span>{tvNetwork}</span>}
                   </div>
                 </div>
 

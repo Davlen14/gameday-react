@@ -116,7 +116,7 @@
     color: #333;
 }
 
-/* Team score styling (smaller, replaces record) */
+/* Team score styling (smaller, replaces team record) */
 .scoreboard-team-score {
     font-size: 0.65rem; /* reduced size */
     font-weight: 600;
@@ -133,7 +133,7 @@
 }
 .scoreboard-tv-icon {
     font-size: 0.65rem; /* slightly smaller */
-    color: #666;
+    color: red; /* red TV icon as requested */
 }
 .scoreboard-tv-network {
     font-size: 0.6rem; /* slightly smaller */
