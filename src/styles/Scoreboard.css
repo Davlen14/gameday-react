@@ -67,35 +67,29 @@
 
 /* --- Custom Scrollbar Styling --- */
 
+/* --- Custom Scrollbar Styling --- */
+
 /* WebKit Browsers (Chrome, Safari, Opera) */
 .scoreboard-games::-webkit-scrollbar {
-  height: 6px;             /* Thinner scrollbar */
-  opacity: 0;              /* Hidden by default */
-  transition: opacity 0.3s;
-}
-
-.scoreboard-games:hover::-webkit-scrollbar {
-  opacity: 1;              /* Show scrollbar on hover */
-}
-
-.scoreboard-games::-webkit-scrollbar-track {
-  background: transparent; /* Minimal styling */
-}
-
-.scoreboard-games::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3); /* Light dark thumb */
-  border-radius: 3px;             /* Rounded edges */
-}
-
-/* Firefox */
-.scoreboard-games {
-  scrollbar-width: none; /* Hide scrollbar by default */
-}
-
-.scoreboard-games:hover {
-  scrollbar-width: thin; /* Show thin scrollbar on hover */
-  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-}
+    height: 6px; /* Fixed thin height */
+    scrollbar-gutter: stable; /* Reserves space for scrollbar */
+  }
+  
+  .scoreboard-games::-webkit-scrollbar-track {
+    background: transparent; /* Minimal styling */
+  }
+  
+  .scoreboard-games::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3); /* Minimal dark thumb */
+    border-radius: 3px; /* Rounded edges */
+  }
+  
+  /* Firefox */
+  .scoreboard-games {
+    scrollbar-width: thin; /* Always show a thin scrollbar */
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    scrollbar-gutter: stable; /* Reserves space to prevent layout shifts */
+  }
 
 /* --- End Custom Scrollbar Styling --- */
 
