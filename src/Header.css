@@ -20,10 +20,11 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Global font for top bar */
 }
 
+/* FLEX LAYOUT: Left (logo) | Center (nav) | Right (buttons) */
 .top-bar-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between; /* Ensures left, center, and right positioning */
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
@@ -32,22 +33,59 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* LOGO (Bigger, Bolder, Italic, with White Divider on the Right) */
-/* Using Orbitron as primary font, with Titillium Web as fallback */
+/* LOGO - Fixed Left */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-weight: 900;       /* Extra bold */
-  font-size: 22px;        /* Larger text, similar to NCAA size */
-  font-style: italic;     /* Make it italic */
-  /* Removed text-transform so you control capitalization manually */
+  font-weight: 900; /* Extra bold */
+  font-size: 22px; /* Larger text, similar to NCAA size */
+  font-style: italic; /* Make it italic */
   color: #ffffff;
-  
-  /* Rely on container padding; no extra margin needed */
-  margin-left: 0;
-  padding-right: 20px;    /* Space before the divider */
-  
-  /* Vertical white divider on the right of the logo */
+  margin-right: auto; /* Pushes everything else to the right */
+  padding-right: 20px;
   border-right: 1px solid #ffffff;
+}
+
+/* NAV LINKS - Centered */
+.top-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* Keeps nav centered */
+}
+
+/* RIGHT-SIDE BUTTONS: PURE WHITE with SCARLET TEXT & ICONS */
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto; /* Pushes buttons to the right */
+  margin-right: 20px; /* Adds some spacing from the edge */
+}
+
+/* All top-bar-button share the same base style */
+.top-bar-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-weight: 300; /* Slim text */
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  padding: 8px 12px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.85rem;
+  background-color: #ffffff; /* White background */
+  color: #D4001C; /* Scarlet text/icons */
+  border: 1px solid #D4001C; /* Scarlet border */
+  cursor: pointer;
+}
+
+.top-bar-button:hover {
+  background-color: #D4001C; /* Scarlet fill on hover */
+  color: #ffffff; /* White text/icons on hover */
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
 }
 
 /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
@@ -72,13 +110,12 @@
 }
 
 /* DROPDOWN BUTTON: White text, minimal style, invert on hover */
-/* Slim text (light weight) */
 .dropdown-button {
   background-color: transparent;
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 300;  /* Slim text */
+  font-weight: 300; /* Slim text */
   padding: 8px 12px;
   border-radius: 3px;
   cursor: pointer;
@@ -118,37 +155,4 @@
 
 .dropdown-menu a:hover {
   background-color: #f2f2f2;
-}
-
-/* RIGHT-SIDE BUTTONS: PURE WHITE with SCARLET TEXT & ICONS */
-.top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-right: 20px; /* Small horizontal padding on the right */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-}
-
-/* All top-bar-button share the same base style */
-.top-bar-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  font-weight: 300; /* Slim text */
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  padding: 8px 12px;
-  border-radius: 3px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.85rem;
-  background-color: #ffffff; /* White background */
-  color: #D4001C;            /* Scarlet text/icons */
-  border: 1px solid #D4001C; /* Scarlet border */
-  cursor: pointer;
-}
-
-.top-bar-button:hover {
-  background-color: #D4001C; /* Scarlet fill on hover */
-  color: #ffffff;            /* White text/icons on hover */
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
 }
