@@ -170,3 +170,10 @@
 .dropdown-menu a:hover {
     background-color: rgba(149, 0, 0, 0.1);
 }
+
+.dropdown-group {
+    display: flex;            /* put them in a row */
+    justify-content: center;  /* center them horizontally */
+    align-items: center;      /* vertically center if needed */
+    gap: 20px;                /* space between them */
+  }
