@@ -3,7 +3,7 @@
  ***********************************************************/
 
 /* Container for the entire thin scoreboard filter bar */
-.top-scoreboard {
+.scoreboard-top-bar {
     background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
     /* Slightly shorter than before */
@@ -17,15 +17,15 @@
   }
   
   /* Left side: "NCAAF" filter label */
-  .scoreboard-left {
+  .scoreboard-top-bar-left {
     display: flex;
     align-items: center;
-    /* We'll keep a small gap, but rely on .divider for the main separation */
+    /* We'll keep a small gap, but rely on .scoreboard-divider for the main separation */
     gap: 0.5rem;
   }
   
-  /* Optional: ESPN-like thin vertical divider between "NCAAF" and the next item */
-  .divider {
+  /* ESPN-like thin vertical divider between "NCAAF" and the next item */
+  .scoreboard-divider {
     border-left: 1px solid #ccc;
     height: 14px;
     /* minimal horizontal spacing so it doesn't push items too far apart */
@@ -33,7 +33,7 @@
   }
   
   /* The clickable "NCAAF" label */
-  .ncaaf-dropdown {
+  .scoreboard-ncaaf-dropdown {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
@@ -42,21 +42,21 @@
   }
   
   /* Right side: "Week" filter */
-  .scoreboard-right {
+  .scoreboard-top-bar-right {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
   
   /* Label for the week dropdown */
-  .week-label {
+  .scoreboard-week-label {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
   }
   
   /* The week dropdown */
-  .week-dropdown {
+  .scoreboard-week-dropdown {
     font-size: 0.7rem;
     color: #333;
     cursor: pointer;
@@ -73,14 +73,14 @@
    ***********************************************************/
   
   @media (max-width: 768px) {
-    .top-scoreboard {
+    .scoreboard-top-bar {
       flex-wrap: wrap;
       height: auto; /* so it can expand on smaller screens */
       padding: 0.5rem;
     }
   
-    .scoreboard-left,
-    .scoreboard-right {
+    .scoreboard-top-bar-left,
+    .scoreboard-top-bar-right {
       flex: 1 1 100%;
       justify-content: flex-start;
       margin: 0.25rem 0;
@@ -92,7 +92,7 @@
    ***********************************************************/
   
   /* Outer wrapper */
-  .scoreboard-wrapper {
+  .scoreboard-main-wrapper {
     width: 100%;
     display: block;
     margin: 0;
@@ -101,23 +101,23 @@
   }
   
   /* Container for the horizontally scrolling games */
-  .scoreboard-container {
+  .scoreboard-games-container {
     display: flex;
     overflow-x: auto; /* enables horizontal scrolling */
-    gap: 0;          /* ESPN doesn't have big gaps between games */
+    gap: 0;           /* ESPN doesn't have big gaps between games */
     padding: 0 0.75rem; /* match top scoreboard horizontal padding */
     -webkit-overflow-scrolling: touch; /* smoother scrolling on iOS */
     border-bottom: 1px solid #ddd;
   }
   
   /* Remove default link styles for scoreboard "cards" (really just rows) */
-  .scoreboard-card-link {
+  .scoreboard-game-link {
     text-decoration: none;
     color: inherit;
   }
   
   /* Each scoreboard "card"/row */
-  .scoreboard-card {
+  .scoreboard-game-card {
     flex: 0 0 auto; /* prevents shrinking, keeps them side by side */
     display: flex;
     align-items: center;
@@ -129,17 +129,17 @@
   }
   
   /* Remove border on last card to match ESPN style */
-  .scoreboard-card:last-child {
+  .scoreboard-game-card:last-child {
     border-right: none;
   }
   
   /* Subtle hover effect */
-  .scoreboard-card:hover {
+  .scoreboard-game-card:hover {
     background-color: #f8f8f8;
   }
   
   /* Container for home & away teams side by side */
-  .teams {
+  .scoreboard-card-teams {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -148,29 +148,30 @@
   }
   
   /* Each team block (away/home) in a row */
-  .team {
+  .scoreboard-card-team {
     display: flex;
     align-items: center;
     gap: 0.3rem;
   }
   
   /* Smaller logos for ESPN-like minimalism */
-  /* ESPN typically uses around 24–32px. You can keep 20 if you prefer extra small. */
-  .team-logo {
+  .scoreboard-team-logo {
     width: 20px;
     height: 20px;
     object-fit: contain;
+    /* remove border-radius if you want to ensure they aren't circles */
+    border-radius: 0;
   }
   
   /* Team name styling (small, bold) */
-  .team-name {
+  .scoreboard-team-name {
     font-size: 0.7rem;
     font-weight: 600;
     color: #333;
   }
   
   /* Team record styling (even smaller, lighter color) */
-  .team-record {
+  .scoreboard-team-record {
     font-size: 0.65rem;
     color: #666;
   }

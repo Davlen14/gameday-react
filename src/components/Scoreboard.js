@@ -51,21 +51,21 @@ const Scoreboard = () => {
     return <div className="error-container">Error: {error}</div>;
 
   return (
-    <div className="scoreboard-wrapper">
+    <div className="scoreboard-main-wrapper">
       {/* Top Scoreboard Filter Bar */}
-      <div className="top-scoreboard">
-        <div className="scoreboard-left">
+      <div className="scoreboard-top-bar">
+        <div className="scoreboard-top-bar-left">
           {/* NCAAF label/link */}
-          <span className="ncaaf-dropdown">NCAAF</span>
+          <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
           {/* ESPN-like vertical divider */}
-          <div className="divider" />
+          <div className="scoreboard-divider" />
         </div>
 
-        <div className="scoreboard-right">
-          <span className="week-label">Week:</span>
+        <div className="scoreboard-top-bar-right">
+          <span className="scoreboard-week-label">Week:</span>
           <select
             id="weekSelect"
-            className="week-dropdown"
+            className="scoreboard-week-dropdown"
             value={week}
             onChange={(e) => setWeek(Number(e.target.value))}
           >
@@ -79,34 +79,34 @@ const Scoreboard = () => {
       </div>
 
       {/* Horizontal Scrolling Scoreboard Cards */}
-      <div className="scoreboard-container">
+      <div className="scoreboard-games-container">
         {games.map((game) => (
           <Link
             to={`/games/${game.id}`}
             key={game.id}
-            className="scoreboard-card-link"
+            className="scoreboard-game-link"
           >
-            <div className="scoreboard-card">
-              <div className="teams">
+            <div className="scoreboard-game-card">
+              <div className="scoreboard-card-teams">
                 {/* Away Team first */}
-                <div className="team">
+                <div className="scoreboard-card-team">
                   <img
                     src={getTeamLogo(game.awayTeam)}
                     alt={game.awayTeam}
-                    className="team-logo"
+                    className="scoreboard-team-logo"
                   />
-                  <span className="team-name">{game.awayTeam}</span>
-                  <span className="team-record">0-0</span>
+                  <span className="scoreboard-team-name">{game.awayTeam}</span>
+                  <span className="scoreboard-team-record">0-0</span>
                 </div>
                 {/* Home Team second */}
-                <div className="team">
+                <div className="scoreboard-card-team">
                   <img
                     src={getTeamLogo(game.homeTeam)}
                     alt={game.homeTeam}
-                    className="team-logo"
+                    className="scoreboard-team-logo"
                   />
-                  <span className="team-name">{game.homeTeam}</span>
-                  <span className="team-record">0-0</span>
+                  <span className="scoreboard-team-name">{game.homeTeam}</span>
+                  <span className="scoreboard-team-record">0-0</span>
                 </div>
               </div>
             </div>
