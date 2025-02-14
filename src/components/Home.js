@@ -64,6 +64,7 @@ const Home = () => {
 
     return (
         <div className="home-container">
+            {/* Header Section */}
             <header className="hero-header">
                 <h1>Welcome to Gameday</h1>
                 <div className="week-selector">
@@ -83,27 +84,41 @@ const Home = () => {
                 </div>
             </header>
 
+            {/* News Recap Section */}
+            <section className="news-recap">
+                <h2 className="section-title">Offseason Headlines</h2>
+                <div className="news-grid">
+                    {[
+                        { title: "Georgia No More?", image: "/photos/Ksmart.jpg" },
+                        { title: "What's Next for Sanders and Colorado?", image: "/photos/CU.jpg" },
+                        { title: "A Team to Look Out For: Penn State", image: "/photos/Pennst.jpg" },
+                        { title: "Dan Lanning & Oregon Prepping for Year 2 in the B1G", image: "/photos/Oregon.jpg" },
+                        { title: "The Kings of College Football: Ohio State", image: "/photos/OhioChamp.jpg" },
+                        { title: "New Sheriff in Town: Arch Manning Era?", image: "/photos/ArchTime.jpg" },
+                    ].map((article, index) => (
+                        <div key={index} className="news-card">
+                            <img src={article.image} alt={article.title} className="news-image" />
+                            <h3>{article.title}</h3>
+                            <p>Read more about this topic in our latest analysis.</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             {/* Polls Section */}
             <section className="polls-section">
+                <h2 className="section-title">Current Poll Rankings</h2>
                 <div className="polls-grid">
                     {polls.map((poll) => (
                         <div key={poll.id} className="poll-card">
                             <h3 className="poll-title">
-                                <img
-                                    src="/photos/committee.png"
-                                    alt="Committee Logo"
-                                    className="poll-logo"
-                                />
+                                <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
                                 {poll.name}
                             </h3>
                             <div className="rankings-list">
                                 {poll.rankings.slice(0, 5).map((team) => (
                                     <div key={team.school} className="ranking-item">
-                                        <img
-                                            src={getTeamLogo(team.school)}
-                                            alt={team.school}
-                                            className="team-logo"
-                                        />
+                                        <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
                                         <div className="team-info">
                                             <span className="rank">#{team.rank}</span>
                                             <span className="team-name">{team.school}</span>
@@ -122,82 +137,39 @@ const Home = () => {
                 <h2 className="section-title">Week {week} Matchups</h2>
                 <div className="games-slider">
                     {games.map((game) => (
-                        <Link
-                            to={`/games/${game.id}`}
-                            key={game.id}
-                            className="game-card-link"
-                        >
+                        <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
                             <div className="game-card">
                                 <div className="game-header">
                                     <div className="game-time">
-                                        {new Date(
-                                            game.startDate
-                                        ).toLocaleDateString("en-US", {
+                                        {new Date(game.startDate).toLocaleDateString("en-US", {
                                             weekday: "short",
                                             month: "short",
                                             day: "numeric",
                                         })}
                                     </div>
                                     <div className="network">
-                                        {getNetworkLogo(
-                                            game.network || "ESPN"
-                                        )}
-                                        <span className="network-name">
-                                            {game.network || "ESPN"}
-                                        </span>
+                                        {getNetworkLogo(game.network || "ESPN")}
+                                        <span className="network-name">{game.network || "ESPN"}</span>
                                     </div>
                                 </div>
 
                                 <div className="teams-container">
                                     <div className="team home-team">
-                                        <img
-                                            src={getTeamLogo(game.homeTeam)}
-                                            alt={game.homeTeam}
-                                        />
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
                                         <div className="team-info">
-                                            <span className="team-name">
-                                                {game.homeTeam}
-                                            </span>
-                                            <span className="team-record">
-                                                (8-2)
-                                            </span>
+                                            <span className="team-name">{game.homeTeam}</span>
+                                            <span className="team-record">(8-2)</span>
                                         </div>
                                     </div>
-
                                     <div className="vs-container">
                                         <div className="vs-circle">VS</div>
-                                        <div className="score-container">
-                                            <span className="score">
-                                                {game.homePoints || "-"}
-                                            </span>
-                                            <span className="score-divider">
-                                                -
-                                            </span>
-                                            <span className="score">
-                                                {game.awayPoints || "-"}
-                                            </span>
-                                        </div>
                                     </div>
-
                                     <div className="team away-team">
-                                        <img
-                                            src={getTeamLogo(game.awayTeam)}
-                                            alt={game.awayTeam}
-                                        />
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
                                         <div className="team-info">
-                                            <span className="team-name">
-                                                {game.awayTeam}
-                                            </span>
-                                            <span className="team-record">
-                                                (7-3)
-                                            </span>
+                                            <span className="team-name">{game.awayTeam}</span>
+                                            <span className="team-record">(7-3)</span>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="game-footer">
-                                    <div className="game-venue">
-                                        <span>🏟️ {game.venue}</span>
                                     </div>
                                 </div>
                             </div>
@@ -209,5 +181,4 @@ const Home = () => {
     );
 };
 
-// Export Home Component
 export default Home;
