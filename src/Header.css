@@ -1,131 +1,136 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700;900&display=swap');
+
 /* =============================== */
 /* TOP BAR (Bright Scarlet) */
 /* =============================== */
 
 .top-bar {
-    background-color: #D4001C; /* Bright scarlet, not maroon */
-    color: #ffffff;
-    height: 50px; /* Keep it slim */
-    display: flex;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    width: 100%;
-    z-index: 1100;
-    /* Minimal or no box shadow; just a thin bottom border */
-    border-bottom: 1px solid #e0e0e0;
-    box-sizing: border-box;
-  }
-  
-  .top-bar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
-    height: 100%; /* So it fills the full 50px height */
-  }
-  
-  /* LOGO */
-  .top-bar-logo {
-    font-family: Arial, sans-serif; /* or your choice */
-    font-weight: 700;
-    font-size: 18px;
-    text-transform: uppercase;
-    color: #ffffff;
-    margin: 0 20px; /* small horizontal padding */
-  }
-  
-  /* NAV (Conferences, Lines, GamedayGPT) in the top bar */
-  .top-bar-nav {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  /* DROPDOWNS */
-  .dropdown {
-    position: relative;
-  }
-  
-  .dropdown-group {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  /* DROPDOWN BUTTON: White text, minimal style, invert on hover */
-  .dropdown-button {
-    background-color: transparent;
-    border: none; /* or 1px solid #ffffff if you want a border */
-    color: #ffffff;
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 8px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .dropdown-button:hover {
-    background-color: #ffffff;
-    color: #D4001C;
-  }
-  
-  /* DROPDOWN MENU (white background, dark text) */
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-    z-index: 2000;
-    padding: 6px 0;
-    min-width: 160px;
-    font-size: 0.85rem;
-  }
-  
-  .dropdown-menu a {
-    display: block;
-    padding: 6px 10px;
-    text-decoration: none;
-    color: #333333;
-    transition: background-color 0.3s ease;
-  }
-  
-  .dropdown-menu a:hover {
-    background-color: #f2f2f2;
-  }
-  
-  /* RIGHT-SIDE BUTTONS: Get Started, Upgrade, Login */
-  .top-bar-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-right: 20px; /* small horizontal padding on the right */
-  }
-  
-  .top-bar-button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    font-family: Arial, sans-serif;
-    padding: 8px 12px;
-    border-radius: 3px;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    font-size: 0.85rem;
-    color: #ffffff;
-    background-color: transparent;
-    border: 1px solid #ffffff; /* if you want a border, else remove it */
-    cursor: pointer;
-  }
-  
-  .top-bar-button:hover {
-    background-color: #ffffff;
-    color: #D4001C;
-    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.3);
-  }
+  background-color: #D4001C; /* Bright scarlet */
+  color: #ffffff;
+  height: 50px; /* Keep it slim */
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1100;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+  font-family: 'Titillium Web', sans-serif; /* Global font for top bar */
+}
+
+.top-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  height: 100%; /* So it fills the full 50px height */
+}
+
+/* LOGO (keep bold for distinction) */
+.top-bar-logo {
+  font-weight: 700;  /* Bold for the header logo */
+  font-size: 18px;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0 20px;
+}
+
+/* NAV (Conferences, Lines, GamedayGPT) in the top bar */
+.top-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* DROPDOWNS */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* DROPDOWN BUTTON: White text, minimal style, invert on hover */
+/* Slim text (light weight) */
+.dropdown-button {
+  background-color: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 300;  /* Slim text */
+  padding: 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dropdown-button:hover {
+  background-color: #ffffff;
+  color: #D4001C;
+}
+
+/* DROPDOWN MENU (white background, dark text) */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  z-index: 2000;
+  padding: 6px 0;
+  min-width: 160px;
+  font-size: 0.85rem;
+  font-weight: 300; /* Keep it slim inside dropdown too */
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: #333333;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f2f2f2;
+}
+
+/* RIGHT-SIDE BUTTONS: PURE WHITE with SCARLET TEXT & ICONS */
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 20px; /* small horizontal padding on the right */
+}
+
+/* All top-bar-button share same base style, then we override as needed */
+.top-bar-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-weight: 300; /* Slim text */
+  font-family: 'Titillium Web', sans-serif;
+  padding: 8px 12px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.85rem;
+  background-color: #ffffff; /* White background */
+  color: #D4001C;            /* Scarlet text/icons */
+  border: 1px solid #D4001C; /* Scarlet border */
+  cursor: pointer;
+}
+
+.top-bar-button:hover {
+  background-color: #D4001C; /* Scarlet fill on hover */
+  color: #ffffff;            /* White text/icons on hover */
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3); /* Slight scarlet shadow */
+}
