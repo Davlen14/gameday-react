@@ -8,11 +8,11 @@ import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
-import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
+import Scoreboard from "./components/Scoreboard"; // Import Scoreboard component
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
-import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
+import "./styles/Scoreboard.css"; // Import Scoreboard CSS
 import {
   FaHome,
   FaChartBar,
@@ -22,6 +22,10 @@ import {
   FaQrcode,
   FaUser,
   FaArrowUp,
+  FaNewspaper,
+  FaFilm,
+  FaChartLine,
+  FaUserGraduate
 } from "react-icons/fa";
 
 function App() {
@@ -39,18 +43,19 @@ function App() {
   return (
     <Router>
       <div className="app">
-        {/* TOP SCOREBOARD BAR (Minimal ESPN-Style Filter Bar) */}
+        {/* TOP SCOREBOARD BAR */}
         <Scoreboard />
 
-        {/* TOP BAR (Bright Scarlet) */}
+        {/* TOP NAVBAR */}
         <header className="top-bar">
           <div className="top-bar-container">
-            {/* Logo on the left */}
+            {/* Logo on the Left */}
             <h1 className="top-bar-logo">GAMEDAY</h1>
 
-            {/* Middle nav: Conferences, Lines, GamedayGPT */}
+            {/* Navigation with Multiple Dropdowns */}
             <nav className="top-bar-nav">
               <div className="dropdown-group">
+                {/* Conferences Dropdown */}
                 <div
                   className="dropdown"
                   onMouseEnter={() => toggleDropdown("conferences")}
@@ -69,6 +74,7 @@ function App() {
                   )}
                 </div>
 
+                {/* Lines Dropdown */}
                 <div
                   className="dropdown"
                   onMouseEnter={() => toggleDropdown("lines")}
@@ -78,13 +84,14 @@ function App() {
                   {dropdownOpen === "lines" && (
                     <div className="dropdown-menu">
                       <Link to="/current-lines">Current Game Lines</Link>
-                      <Link to="/spread-analysis">Spread+Analysis</Link>
+                      <Link to="/spread-analysis">Spread + Analysis</Link>
                       <Link to="/moneyline-comparisons">Moneyline Comparisons</Link>
                       <Link to="/over-under-metrics">Over/Under Metrics</Link>
                     </div>
                   )}
                 </div>
 
+                {/* GamedayGPT Dropdown */}
                 <div
                   className="dropdown"
                   onMouseEnter={() => toggleDropdown("gamedaygpt")}
@@ -99,10 +106,75 @@ function App() {
                     </div>
                   )}
                 </div>
+
+                {/* News Dropdown */}
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("news")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
+                  <button className="dropdown-button"><FaNewspaper /> News</button>
+                  {dropdownOpen === "news" && (
+                    <div className="dropdown-menu">
+                      <Link to="/latest-news">Latest Updates</Link>
+                      <Link to="/injury-reports">Injury Reports</Link>
+                      <Link to="/rankings">Rankings</Link>
+                      <Link to="/coaching-changes">Coaching Changes</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Metrics Dropdown */}
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("metrics")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
+                  <button className="dropdown-button"><FaChartLine /> Metrics</button>
+                  {dropdownOpen === "metrics" && (
+                    <div className="dropdown-menu">
+                      <Link to="/team-metrics">Team Analytics</Link>
+                      <Link to="/player-metrics">Player Stats</Link>
+                      <Link to="/betting-models">Betting Models</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Videos Dropdown */}
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("videos")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
+                  <button className="dropdown-button"><FaFilm /> Videos</button>
+                  {dropdownOpen === "videos" && (
+                    <div className="dropdown-menu">
+                      <Link to="/highlights">Game Highlights</Link>
+                      <Link to="/analysis">Game Analysis</Link>
+                      <Link to="/press-conferences">Press Conferences</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recruiting Dropdown */}
+                <div
+                  className="dropdown"
+                  onMouseEnter={() => toggleDropdown("recruiting")}
+                  onMouseLeave={() => toggleDropdown(null)}
+                >
+                  <button className="dropdown-button"><FaUserGraduate /> Recruiting</button>
+                  {dropdownOpen === "recruiting" && (
+                    <div className="dropdown-menu">
+                      <Link to="/top-prospects">Top Prospects</Link>
+                      <Link to="/commitments">Commitments</Link>
+                      <Link to="/transfer-portal">Transfer Portal</Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </nav>
 
-            {/* Right side actions: Get Started, Upgrade, Login */}
+            {/* Right Side Buttons */}
             <div className="top-bar-actions">
               <a href="/get-started" className="top-bar-button get-started">
                 <FaQrcode /> Get Started
@@ -117,33 +189,6 @@ function App() {
           </div>
         </header>
 
-        {/* SECOND BAR (White) */}
-        <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
-          <div className="secondary-bar-container">
-            <Link to="/" className="nav-item" onClick={toggleMenu}>
-              <FaHome /> Home
-            </Link>
-            <Link to="/teams" className="nav-item" onClick={toggleMenu}>
-              <FaUsers /> Teams
-            </Link>
-            <Link to="/games" className="nav-item" onClick={toggleMenu}>
-              <FaFootballBall /> Games
-            </Link>
-            <Link to="/stats" className="nav-item" onClick={toggleMenu}>
-              <FaChartBar /> Stats
-            </Link>
-            <Link to="/more" className="nav-item" onClick={toggleMenu}>
-              <FaEllipsisH /> More
-            </Link>
-            <Link to="/pickem-predictions" className="nav-item">
-              Pick'em & Predictions
-            </Link>
-            <Link to="/channels" className="nav-item">
-              Channels
-            </Link>
-          </div>
-        </nav>
-
         {/* MAIN CONTENT */}
         <main className="app-content">
           <Routes>
@@ -155,8 +200,6 @@ function App() {
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
             <Route path="/games/:gameId" element={<GameDetailView />} />
-            <Route path="/predict-outcomes" element={<div>Predict Outcomes Page</div>} />
-            <Route path="/betting-suggestions" element={<div>Betting Suggestions Page</div>} />
           </Routes>
         </main>
       </div>
