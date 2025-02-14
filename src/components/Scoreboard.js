@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaTv } from "react-icons/fa";
 import teamsService from "../services/teamsService";
 
 const Scoreboard = () => {
   const [games, setGames] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [week, setWeek] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch teams and games data for the selected week
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const gamesData = await teamsService.getGames(week);
-        // Filter to include only FBS teams
+        const [teamsData, gamesData] = await Promise.all([
+          teamsService.getTeams(),
+          teamsService.getGames(week),
+        ]);
+        setTeams(teamsData);
+
+        // Filter games to include only FBS teams
         const fbsGames = gamesData.filter(
           (game) =>
             game.homeClassification === "fbs" &&
@@ -28,18 +34,15 @@ const Scoreboard = () => {
       }
     };
 
-    fetchGames();
+    fetchData();
   }, [week]);
 
-  // Simple helper to create abbreviations from team names
-  const abbreviateTeamName = (name) => {
-    if (!name) return "";
-    // e.g., take the first letter of each word
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
+  // Helper to get the team logo based on team name
+  const getTeamLogo = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.logos?.[0] || "/photos/default_team.png";
   };
 
   if (isLoading) return <div className="loading-container">Loading...</div>;
@@ -47,9 +50,11 @@ const Scoreboard = () => {
 
   return (
     <div className="scoreboard-wrapper">
-      {/* Minimal top bar for changing the week */}
+      {/* Minimal Week Filter Bar */}
       <div className="scoreboard-filter-bar">
-        <label htmlFor="weekSelect" className="week-label">Week:</label>
+        <label htmlFor="weekSelect" className="week-label">
+          Week:
+        </label>
         <select
           id="weekSelect"
           className="week-dropdown"
@@ -64,7 +69,7 @@ const Scoreboard = () => {
         </select>
       </div>
 
-      {/* Scrollable container for scoreboard cards */}
+      {/* Horizontal Scrolling Scoreboard Cards */}
       <div className="scoreboard-container">
         {games.map((game) => (
           <Link
@@ -73,33 +78,25 @@ const Scoreboard = () => {
             className="scoreboard-card-link"
           >
             <div className="scoreboard-card">
-              <div className="scoreboard-header">
-                {/* Display the date on the left */}
-                <div className="game-date">
-                  {new Date(game.startDate).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-                {/* TV icon at the top right */}
-                <div className="network">
-                  <FaTv className="network-icon" />
-                </div>
-              </div>
               <div className="teams">
-                {/* Home team */}
+                {/* Home Team */}
                 <div className="team">
-                  <span className="team-abbr">
-                    {abbreviateTeamName(game.homeTeam)}
-                  </span>
+                  <img
+                    src={getTeamLogo(game.homeTeam)}
+                    alt={game.homeTeam}
+                    className="team-logo"
+                  />
+                  <span className="team-name">{game.homeTeam}</span>
                   <span className="team-record">0-0</span>
                 </div>
-                {/* Away team */}
+                {/* Away Team */}
                 <div className="team">
-                  <span className="team-abbr">
-                    {abbreviateTeamName(game.awayTeam)}
-                  </span>
+                  <img
+                    src={getTeamLogo(game.awayTeam)}
+                    alt={game.awayTeam}
+                    className="team-logo"
+                  />
+                  <span className="team-name">{game.awayTeam}</span>
                   <span className="team-record">0-0</span>
                 </div>
               </div>
