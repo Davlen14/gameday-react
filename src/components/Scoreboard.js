@@ -6,21 +6,23 @@ import { FaTv } from "react-icons/fa";
 const Scoreboard = () => {
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [media, setMedia] = useState([]); // <-- For TV network info
+  const [media, setMedia] = useState([]); // For TV network info
+  const [lines, setLines] = useState([]); // For betting lines
   const [week, setWeek] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch teams, games, and media data for the selected week
+  // Fetch teams, games, media, and lines data for the selected week
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         // Fetch all relevant data in parallel
-        const [teamsData, gamesData, mediaData] = await Promise.all([
+        const [teamsData, gamesData, mediaData, linesData] = await Promise.all([
           teamsService.getTeams(),
           teamsService.getGames(week),
-          teamsService.getGameMedia(2024, week) // or adapt if your API differs
+          teamsService.getGameMedia(2024, week),
+          teamsService.getGameLines(2024)
         ]);
 
         setTeams(teamsData);
@@ -33,8 +35,8 @@ const Scoreboard = () => {
         );
         setGames(fbsGames);
 
-        // Store the media data (for TV network, etc.)
         setMedia(mediaData);
+        setLines(linesData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -60,21 +62,31 @@ const Scoreboard = () => {
     return team?.abbreviation || teamName;
   };
 
-  // Helper to find media info for a given game
   const getMediaForGame = (gameId) => {
     return media.find((m) => m.id === gameId) || null;
   };
 
+  const getLinesForGame = (gameId) => {
+    return lines.find((l) => l.id === gameId) || null;
+  };
+
+  // Helper to get sportsbook logo based on provider
+  const getSportsbookLogo = (provider) => {
+    const logos = {
+      "DraftKings": "/photos/draftkings.png",
+      "ESPN Bet": "/photos/espnbet.png",
+      "Bovada": "/photos/bovada.png",
+    };
+    return logos[provider] || "/photos/default_sportsbook.png";
+  };
+
   // Format the game time
   const formatGameTime = (game) => {
-    // If game is final, you can show "Final"
     if (game.completed) {
       return "Final";
     }
-    // Otherwise, format start date/time if available
     if (game.startDate) {
       const dateObj = new Date(game.startDate);
-      // Example: "Sat 3:30 PM"
       return dateObj.toLocaleString([], {
         weekday: "short",
         hour: "2-digit",
@@ -118,6 +130,17 @@ const Scoreboard = () => {
           const gameMedia = getMediaForGame(game.id);
           const tvNetwork = gameMedia?.network || "";
 
+          // Determine sportsbook line: DraftKings > ESPN Bet > Bovada
+          const gameLines = getLinesForGame(game.id);
+          let chosenLine = null;
+          if (gameLines && gameLines.lines) {
+            const providers = ["DraftKings", "ESPN Bet", "Bovada"];
+            for (let provider of providers) {
+              chosenLine = gameLines.lines.find(line => line.provider === provider);
+              if (chosenLine) break;
+            }
+          }
+
           return (
             <Link
               to={`/games/${game.id}`}
@@ -136,7 +159,7 @@ const Scoreboard = () => {
                   </div>
                 </div>
 
-                {/* Row 2: Away/Home teams stacked */}
+                {/* Row 2: Away team */}
                 <div className="scoreboard-card-team">
                   <img
                     src={getTeamLogo(game.awayTeam)}
@@ -151,6 +174,7 @@ const Scoreboard = () => {
                   </span>
                 </div>
 
+                {/* Row 3: Home team */}
                 <div className="scoreboard-card-team">
                   <img
                     src={getTeamLogo(game.homeTeam)}
@@ -164,6 +188,20 @@ const Scoreboard = () => {
                     {game.homePoints ?? ""}
                   </span>
                 </div>
+
+                {/* Row 4: Sportsbook OU */}
+                {chosenLine && (
+                  <div className="scoreboard-sportsbook">
+                    <img
+                      src={getSportsbookLogo(chosenLine.provider)}
+                      alt={chosenLine.provider}
+                      className="scoreboard-sportsbook-logo"
+                    />
+                    <span className="scoreboard-sportsbook-ou">
+                      O/U: {chosenLine.overUnder}
+                    </span>
+                  </div>
+                )}
               </div>
             </Link>
           );

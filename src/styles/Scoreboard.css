@@ -186,6 +186,28 @@
 }
 
 /***********************************************************
+ * New Sportsbook OU Block Styling
+ ***********************************************************/
+.scoreboard-sportsbook {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem; /* spacing from the teams' rows */
+}
+
+.scoreboard-sportsbook-logo {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.scoreboard-sportsbook-ou {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/***********************************************************
  * Responsive Adjustments (Optional)
  ***********************************************************/
 @media (max-width: 768px) {
