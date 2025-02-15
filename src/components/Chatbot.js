@@ -20,7 +20,7 @@ const Chatbot = () => {
   ];
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const userMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -28,16 +28,10 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      // Your existing API logic
       const response = await fetch("/api/proxy", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          endpoint: "/gemini",
-          prompt: input,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: "/gemini", prompt: input }),
       });
 
       if (!response.ok) {
@@ -45,37 +39,35 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
-
       const botMessage = {
         sender: "bot",
-        text: data.message || "I'm not sure about that. Please try asking differently.",
+        text: data.message || "I'm not sure about that. Try rewording your question.",
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
         ...prev,
-        {
-          sender: "bot",
-          text: "Something went wrong. Please try again later.",
-        },
+        { sender: "bot", text: "Something went wrong. Try again later." },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExampleClick = async (example) => {
+  const handleExampleClick = (example) => {
     setInput(example);
-    await handleSend();
+    handleSend();
   };
 
   return (
     <div className="chatbot-container">
-      <div className="chatbot-sidebar">
+      {/* Sidebar */}
+      <aside className="chatbot-sidebar">
         <h1 className="chatbot-brand">GamedayGPT</h1>
-        
-        <div className="chatbot-section">
+
+        {/* Example Questions */}
+        <section className="chatbot-section">
           <h3>Examples</h3>
           <ul className="examples-list">
             {examples.map((example, idx) => (
@@ -85,58 +77,52 @@ const Chatbot = () => {
               </li>
             ))}
           </ul>
-        </div>
+        </section>
 
-        <div className="chatbot-section">
+        {/* Capabilities List */}
+        <section className="chatbot-section">
           <h3>Capabilities</h3>
           <ul className="capabilities-list">
             {capabilities.map((capability, idx) => (
               <li key={idx}>{capability}</li>
             ))}
           </ul>
-        </div>
+        </section>
 
-        <button className="pro-mode-button">
-          🔒 Pro Mode
-        </button>
-      </div>
+        {/* Upgrade Button */}
+        <button className="pro-mode-button">🔒 Upgrade to Pro</button>
+      </aside>
 
-      <div className="chatbot-main">
+      {/* Chat Main Section */}
+      <main className="chatbot-main">
+        {/* Status Bar */}
         <div className="status-bar">
           <div className="connection-status">
-            <div className="status-indicator"></div>
-            Live Session
+            <div className="status-indicator"></div> Live Session
           </div>
           <div className="version-info">
-            <span>v2.4.1</span>
-            <span className="status-dot">●</span>
-            Connected
+            <span>v2.4.1</span> <span className="status-dot">●</span> Connected
           </div>
         </div>
 
+        {/* Chat Messages */}
         <div className="chat-area">
           {messages.map((message, index) => (
-            <div 
-              key={index} 
-              className={`message ${message.sender === "user" ? "user" : "bot"}`}
-            >
+            <div key={index} className={`message ${message.sender === "user" ? "user" : "bot"}`}>
               {message.text}
             </div>
           ))}
-          {loading && (
-            <div className="loading-message">
-              <i>Fetching response...</i>
-            </div>
-          )}
+          {loading && <div className="loading-message"><i>Analyzing...</i></div>}
         </div>
 
+        {/* Input Box */}
         <div className="input-container">
           <input
             type="text"
-            placeholder="Ask about player formations, stats, or strategies..."
+            placeholder="Ask about player stats, strategies..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
             disabled={loading}
           />
           <button onClick={handleSend} disabled={loading}>
@@ -144,10 +130,9 @@ const Chatbot = () => {
           </button>
         </div>
 
-        <div className="chat-footer">
-          GamedayGPT System | Secure Session 🔐
-        </div>
-      </div>
+        {/* Footer */}
+        <footer className="chat-footer">GamedayGPT System | Secure Session 🔐</footer>
+      </main>
     </div>
   );
 };
