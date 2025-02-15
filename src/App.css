@@ -16,7 +16,8 @@
   padding: 20px;
   position: relative;
   z-index: 1;
-  max-width: 1280px;
+  max-width: 100%; /* 🔥 Allow it to take the full width */
+  width: 100%; /* Ensures full width */
   margin: 0 auto;
   overflow: visible;
 }
