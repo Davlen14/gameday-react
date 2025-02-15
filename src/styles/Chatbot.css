@@ -1,8 +1,8 @@
 :root {
-  --primary: #d4001c; /* Bright Red - Matches Navbar */
+  --primary: #d4001c; /* Matches Navbar */
   --secondary: #b30000;
   --status-green: #22c55e;
-  --background: #ffffff; /* White Background */
+  --background: #ffffff;
   --surface: #f5f5f5;
   --text-primary: #111;
   --text-secondary: #444;
@@ -10,20 +10,21 @@
   --shadow: rgba(0, 0, 0, 0.1);
 }
 
-/* 🔥 Chatbot Full-Screen Modern Layout */
+/* Full-Screen Chatbot Layout */
 .chatbot-container {
   display: flex;
-  height: calc(100vh - 80px); /* Fits almost whole screen */
+  height: calc(100vh - 60px); /* Ensures it fits almost the whole screen */
   margin-top: 10px;
   background: var(--background);
-  font-family: "Orbitron", "Titillium Web", sans-serif; /* Matches Navbar */
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  width: 100%;
 }
 
-/* 🟥 Sidebar - Matches Navbar Styling */
+/* Sidebar */
 .chatbot-sidebar {
-  width: 320px; /* Wider for better balance */
+  width: 360px; /* Adjusted for better layout balance */
   background: var(--background);
-  padding: 32px;
+  padding: 36px;
   border-right: 1px solid var(--border);
   box-shadow: 8px 0 15px var(--shadow);
   display: flex;
@@ -38,9 +39,9 @@
   text-transform: uppercase;
 }
 
-/* 🔹 Sidebar Sections */
+/* Sidebar Sections */
 .chatbot-section {
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .chatbot-section h3 {
@@ -51,7 +52,7 @@
   margin: 24px 0 16px;
 }
 
-/* 🎯 Example Questions & Capabilities */
+/* Example Questions & Capabilities */
 .examples-list, .capabilities-list {
   list-style: none;
   padding: 0;
@@ -78,7 +79,7 @@
   box-shadow: 0 4px 12px var(--shadow);
 }
 
-/* 🚀 Pro Mode Button */
+/* Pro Mode Button */
 .pro-mode-button {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
@@ -96,14 +97,15 @@
   transform: scale(1.05);
 }
 
-/* 🔥 Main Chat Section */
+/* Main Chat Section */
 .chatbot-main {
   flex: 1;
   padding: 40px;
   position: relative;
+  width: 100%;
 }
 
-/* ✅ Connection Status */
+/* Connection Status */
 .status-bar {
   display: flex;
   justify-content: space-between;
@@ -116,7 +118,7 @@
   color: var(--text-primary);
 }
 
-/* 🟢 Live Status */
+/* Live Status */
 .connection-status {
   display: flex;
   align-items: center;
@@ -141,19 +143,19 @@
   border-radius: 50%;
 }
 
-/* 💬 Chat Area */
+/* Chat Area */
 .chat-area {
   background: var(--surface);
   border-radius: 20px;
   padding: 24px;
-  min-height: 400px;
+  min-height: 500px;
   box-shadow: inset 0 2px 4px var(--shadow);
-  max-height: 65vh;
+  max-height: 70vh;
   overflow-y: auto;
   font-size: 1.1rem;
 }
 
-/* 📩 Messages */
+/* Messages */
 .message {
   margin: 12px 0;
   padding: 16px;
@@ -174,7 +176,7 @@
   margin-right: auto;
 }
 
-/* ✍️ Input Box */
+/* Input Box */
 .input-container {
   display: flex;
   gap: 14px;
@@ -207,7 +209,7 @@
   transform: scale(1.05);
 }
 
-/* ⚡ Footer */
+/* Footer */
 .chat-footer {
   position: absolute;
   bottom: 24px;
@@ -219,7 +221,7 @@
   border-radius: 10px;
 }
 
-/* 🔄 Loading Animation */
+/* Loading Animation */
 .loading-message {
   color: var(--primary);
   animation: pulse 1.5s infinite;
@@ -231,11 +233,11 @@
   100% { opacity: 0.5; }
 }
 
-/* 📱 Responsive Fixes */
-@media (max-width: 1024px) {
+/* Responsive Fixes */
+@media (max-width: 1200px) {
   .chatbot-sidebar {
-    width: 260px;
-    padding: 24px;
+    width: 300px;
+    padding: 30px;
   }
 
   .chatbot-main {
@@ -243,7 +245,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .chatbot-container {
     flex-direction: column;
     height: auto;
