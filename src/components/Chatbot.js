@@ -6,17 +6,16 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Example questions with icons
   const examples = [
     { text: "Who has the best rushing yards?", icon: "🏈" },
     { text: "Show me today's spread analysis", icon: "📊" },
-    { text: "What are the betting suggestions?", icon: "💰" }
+    { text: "What are the betting suggestions?", icon: "💰" },
   ];
 
   const capabilities = [
     "Real-time predictions",
     "Injury risk assessment",
-    "Opponent analysis"
+    "Opponent analysis",
   ];
 
   const handleSend = async () => {
@@ -41,7 +40,8 @@ const Chatbot = () => {
       const data = await response.json();
       const botMessage = {
         sender: "bot",
-        text: data.message || "I'm not sure about that. Try rewording your question.",
+        text:
+          data.message || "I'm not sure about that. Try rewording your question.",
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
@@ -62,7 +62,7 @@ const Chatbot = () => {
 
   return (
     <div className="chatbot-container">
-      {/* Sidebar */}
+      {/* Sidebar - Now Glassy & Modern */}
       <aside className="chatbot-sidebar">
         <h1 className="chatbot-brand">GamedayGPT</h1>
 
@@ -90,12 +90,12 @@ const Chatbot = () => {
         </section>
 
         {/* Upgrade Button */}
-        <button className="pro-mode-button">🔒 Upgrade to Pro</button>
+        <button className="pro-mode-button">Upgrade to Pro</button>
       </aside>
 
-      {/* Chat Main Section */}
+      {/* Chat Main Section - Adjusted for New Layout */}
       <main className="chatbot-main">
-        {/* Status Bar */}
+        {/* Status Bar - Now More Compact */}
         <div className="status-bar">
           <div className="connection-status">
             <div className="status-indicator"></div> Live Session
@@ -105,17 +105,24 @@ const Chatbot = () => {
           </div>
         </div>
 
-        {/* Chat Messages */}
+        {/* Chat Messages - Updated to Fit the New Size */}
         <div className="chat-area">
           {messages.map((message, index) => (
-            <div key={index} className={`message ${message.sender === "user" ? "user" : "bot"}`}>
+            <div
+              key={index}
+              className={`message ${message.sender === "user" ? "user" : "bot"}`}
+            >
               {message.text}
             </div>
           ))}
-          {loading && <div className="loading-message"><i>Analyzing...</i></div>}
+          {loading && (
+            <div className="loading-message">
+              <i>Analyzing...</i>
+            </div>
+          )}
         </div>
 
-        {/* Input Box */}
+        {/* Input Box - Now Compact & Sharper */}
         <div className="input-container">
           <input
             type="text"
@@ -130,8 +137,10 @@ const Chatbot = () => {
           </button>
         </div>
 
-        {/* Footer */}
-        <footer className="chat-footer">GamedayGPT System | Secure Session 🔐</footer>
+        {/* Footer - Now More Modern & Transparent */}
+        <footer className="chat-footer">
+          GamedayGPT System | Secure Session
+        </footer>
       </main>
     </div>
   );
