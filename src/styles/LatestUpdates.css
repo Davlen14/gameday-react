@@ -174,7 +174,7 @@
 
 .best-of-gameday,
 .trending-news,
-.top-teams,
+.latest-poll-section,
 .cfb-highlights {
     background: #fff;
     padding: 20px;
@@ -189,50 +189,48 @@
     margin-bottom: 15px;
 }
 
-/* 🔹 Sidebar Lists */
-.latest-news-sidebar ul {
+/* 🔹 Latest Poll Rankings */
+.latest-poll-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.polls-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.poll-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+/* 🔹 AP Poll Rankings List */
+.poll-rankings {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.latest-news-sidebar li {
-    margin-bottom: 10px;
-}
-
-/* 🔹 Sidebar Links */
-.latest-news-sidebar a {
-    color: var(--text-color);
-    font-size: 1rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.latest-news-sidebar a:hover {
-    color: var(--accent-color);
-}
-
-/* 🔹 Top Teams Section */
-.top-teams {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-}
-
-.top-teams ul {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.top-team {
+.poll-team {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
+    gap: 12px;
+    padding: 12px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.poll-team:last-child {
+    border-bottom: none;
 }
 
 .team-logo {
@@ -244,7 +242,7 @@
 .rank {
     font-weight: bold;
     color: var(--accent-color);
-    font-size: 1.1rem;
+    font-size: 1.2rem;
 }
 
 .team-name {
@@ -271,6 +269,28 @@
 }
 
 @media (max-width: 768px) {
+    .polls-header {
+        font-size: 1.2rem;
+    }
+
+    .poll-logo {
+        width: 30px;
+        height: 30px;
+    }
+
+    .team-logo {
+        width: 35px;
+        height: 35px;
+    }
+
+    .rank {
+        font-size: 1.1rem;
+    }
+
+    .team-name {
+        font-size: 0.9rem;
+    }
+
     .featured-image {
         height: 300px;
     }
@@ -287,3 +307,4 @@
         flex: 0 0 250px;
     }
 }
+

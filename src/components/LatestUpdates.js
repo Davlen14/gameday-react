@@ -157,16 +157,23 @@ const LatestUpdates = () => {
                         </ul>
                     </div>
 
-                    {/* 🏆 Top 5 Teams - Dynamically Loaded */}
-                    <div className="top-teams">
-                        <h2>📊 Top 5 Teams</h2>
+                    {/* 🏆 Latest AP Poll Rankings */}
+                    <div className="latest-poll-section">
+                        <h2 className="polls-header">
+                            <img 
+                                src="/photos/committee.png" 
+                                alt="Committee Logo" 
+                                className="poll-logo"
+                            />
+                            Latest AP Poll Rankings
+                        </h2>
                         {loadingPolls ? (
                             <p className="loading-text">Loading rankings...</p>
                         ) : (
-                            <ul>
+                            <ul className="poll-rankings">
                                 {polls.length > 0 && polls[0].rankings ? (
                                     polls[0].rankings.slice(0, 5).map((team, index) => (
-                                        <li key={index} className="top-team">
+                                        <li key={index} className="poll-team">
                                             <img 
                                                 src={getTeamLogo(team.school)} 
                                                 alt={team.school} 
@@ -181,18 +188,6 @@ const LatestUpdates = () => {
                                 )}
                             </ul>
                         )}
-                    </div>
-
-                    {/* Committee Logo Above Polls */}
-                    <div className="polls-section">
-                        <h2 className="polls-header">
-                            <img 
-                                src="/photos/committee.png" 
-                                alt="Committee Logo" 
-                                className="poll-logo"
-                            />
-                            Latest AP Poll Rankings
-                        </h2>
                     </div>
 
                     {/* CFB Video Highlights */}
