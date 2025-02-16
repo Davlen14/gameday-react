@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar, Legend } from "recharts";
-// Updated CSS import to use your custom stylesheet
-import "../styles/TeamDetail.css";
+import "../styles/TeamDetail.css"; // We'll handle layout via CSS
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -76,92 +75,113 @@ const TeamDetail = () => {
     { name: "Defense", value: ratings.defense || 0, fill: "#ff7300" },
   ];
 
-  if (isLoading.team) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-  if (!team) return <div className="error-message">Team not found</div>;
+  if (isLoading.team) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!team) return <div>Team not found</div>;
 
   return (
-    <div className="team-detail-container">
-      <Link to="/teams" className="back-link">
-        ← Back to All Teams
-      </Link>
+    <div className="team-dashboard">
+      {/* Sidebar / Header area */}
+      <aside className="team-sidebar">
+        <Link to="/teams" className="back-to-teams">← Back to All Teams</Link>
 
-      {/* Team Header */}
-      <div className="team-header">
+        {/* Team Logo */}
         <img
           src={team.logos?.[0] || "/photos/default_team.png"}
           alt={team.school}
-          className="team-logo"
+          className="team-logo-large"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/photos/default_team.png";
+          }}
         />
-        <h1>{team.school}</h1>
-        <p>{team.mascot}</p>
-      </div>
 
-      {/* Ratings Section with Charts */}
-      <div className="ratings-section">
-        <h2>Ratings</h2>
-        <RadialBarChart
-          width={300}
-          height={300}
-          cx={150}
-          cy={150}
-          innerRadius={20}
-          outerRadius={140}
-          barSize={10}
-          data={ratingData}
-        >
-          <RadialBar minAngle={15} label background clockWise dataKey="value" />
-          <Legend
-            iconSize={10}
-            layout="horizontal"
-            verticalAlign="bottom"
-            align="center"
-          />
-        </RadialBarChart>
-      </div>
+        {/* Basic Team Info */}
+        <h1 className="team-name">{team.school}</h1>
+        <p className="team-mascot">{team.mascot}</p>
+      </aside>
 
-      {/* Schedule Section */}
-      <div className="schedule-section">
-        <h2>Schedule</h2>
-        {schedule.map((game, index) => (
-          <div key={index} className="schedule-card">
-            <p>
-              <img
-                src={game.homeLogo || "/photos/default_team.png"}
-                alt={game.homeTeam}
-                className="team-small-logo"
-              />
-              {game.homeTeam} vs. {game.awayTeam}
-              <img
-                src={game.awayLogo || "/photos/default_team.png"}
-                alt={game.awayTeam}
-                className="team-small-logo"
-              />
-            </p>
-            <p>
-              Score: {game.homePoints} - {game.awayPoints}
-            </p>
-            <p>Venue: {game.venue || "TBD"}</p>
-          </div>
-        ))}
-      </div>
+      {/* Main content area */}
+      <main className="team-main-content">
 
-      {/* Roster Section */}
-      <div className="roster-section">
-        <h2>Roster</h2>
-        <ul className="roster-list">
-          {roster.map((player, index) => (
-            <li key={index} className="roster-item">
-              {player.fullName} - {player.position || "N/A"} - Height:{" "}
-              {player.height} - Year: {player.year || "N/A"}
-            </li>
+        {/* Ratings Section */}
+        <section className="team-ratings">
+          <h2>Ratings</h2>
+          <RadialBarChart
+            width={200}
+            height={200}
+            cx={100}
+            cy={100}
+            innerRadius={20}
+            outerRadius={80}
+            barSize={10}
+            data={ratingData}
+          >
+            <RadialBar
+              minAngle={15}
+              label={{ fill: "#333", position: "insideStart" }}
+              background
+              clockWise
+              dataKey="value"
+            />
+            <Legend
+              iconSize={10}
+              layout="horizontal"
+              verticalAlign="bottom"
+              align="center"
+            />
+          </RadialBarChart>
+        </section>
+
+        {/* Schedule Section */}
+        <section className="team-schedule">
+          <h2>Schedule</h2>
+          {schedule.map((game, index) => (
+            <div key={index} className="schedule-item">
+              <div className="teams-playing">
+                <img
+                  src={game.homeLogo || "/photos/default_team.png"}
+                  alt={game.homeTeam}
+                  className="schedule-team-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/photos/default_team.png";
+                  }}
+                />
+                <span>{game.homeTeam} vs. {game.awayTeam}</span>
+                <img
+                  src={game.awayLogo || "/photos/default_team.png"}
+                  alt={game.awayTeam}
+                  className="schedule-team-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/photos/default_team.png";
+                  }}
+                />
+              </div>
+              <p>Score: {game.homePoints} - {game.awayPoints}</p>
+              <p>Venue: {game.venue || "TBD"}</p>
+            </div>
           ))}
-        </ul>
-      </div>
+        </section>
+
+        {/* Roster Section */}
+        <section className="team-roster">
+          <h2>Roster</h2>
+          <ul>
+            {roster.map((player, index) => (
+              <li key={index}>
+                {player.fullName} — {player.position || "N/A"} — Height: {player.height} — Year: {player.year || "N/A"}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </main>
     </div>
   );
 };
 
 export default TeamDetail;
+
 
 
