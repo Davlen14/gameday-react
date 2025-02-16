@@ -27,7 +27,7 @@ const LatestUpdates = () => {
                 // Fetch teams first to get logos properly
                 const [teamsData, pollData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, "ap", 17), // Fetch poll for Week 15
+                    teamsService.getPolls(2024, "ap", 16), // Fetch poll for Week 15
                 ]);
 
                 setTeams(teamsData);
@@ -196,7 +196,7 @@ const LatestUpdates = () => {
                         <iframe 
                             width="100%" 
                             height="200" 
-                            src="https://www.youtube.com/watch?v=GlasApZ1130&pp=ygUTb2hpbyBzdGF0ZSBmb290YmFsbA%3D%3D" 
+                            src="https://www.youtube.com/embed/your-highlight-video-id" 
                             title="CFB Highlights"
                             frameBorder="0"
                             allowFullScreen
