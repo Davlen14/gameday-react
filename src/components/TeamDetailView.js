@@ -6,6 +6,7 @@ import "../styles/TeamDetail.css"; // We'll handle layout via CSS
 
 const TeamDetail = () => {
   const { teamId } = useParams();
+  const [allTeams, setAllTeams] = useState([]); // For logo lookup
   const [team, setTeam] = useState(null);
   const [ratings, setRatings] = useState({});
   const [roster, setRoster] = useState([]);
@@ -18,12 +19,23 @@ const TeamDetail = () => {
   });
   const [error, setError] = useState(null);
 
+  // Helper to lookup team logo using the fetched teams list.
+  const getTeamLogo = (teamName) => {
+    const foundTeam = allTeams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return foundTeam?.logos?.[0] || "/photos/default_team.png";
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading((prev) => ({ ...prev, team: true }));
         const teamsData = await teamsService.getTeams();
-        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId, 10));
+        setAllTeams(teamsData);
+        const foundTeam = teamsData.find(
+          (t) => t.id === parseInt(teamId, 10)
+        );
         if (!foundTeam) throw new Error("Team not found");
         setTeam(foundTeam);
 
@@ -83,7 +95,9 @@ const TeamDetail = () => {
     <div className="team-dashboard">
       {/* Sidebar / Header area */}
       <aside className="team-sidebar">
-        <Link to="/teams" className="back-to-teams">← Back to All Teams</Link>
+        <Link to="/teams" className="back-to-teams">
+          ← Back to All Teams
+        </Link>
 
         {/* Team Logo */}
         <img
@@ -103,7 +117,6 @@ const TeamDetail = () => {
 
       {/* Main content area */}
       <main className="team-main-content">
-
         {/* Ratings Section */}
         <section className="team-ratings">
           <h2>Ratings</h2>
@@ -140,7 +153,7 @@ const TeamDetail = () => {
             <div key={index} className="schedule-item">
               <div className="teams-playing">
                 <img
-                  src={game.homeLogo || "/photos/default_team.png"}
+                  src={game.homeLogo || getTeamLogo(game.homeTeam)}
                   alt={game.homeTeam}
                   className="schedule-team-logo"
                   onError={(e) => {
@@ -148,9 +161,11 @@ const TeamDetail = () => {
                     e.target.src = "/photos/default_team.png";
                   }}
                 />
-                <span>{game.homeTeam} vs. {game.awayTeam}</span>
+                <span>
+                  {game.homeTeam} vs. {game.awayTeam}
+                </span>
                 <img
-                  src={game.awayLogo || "/photos/default_team.png"}
+                  src={game.awayLogo || getTeamLogo(game.awayTeam)}
                   alt={game.awayTeam}
                   className="schedule-team-logo"
                   onError={(e) => {
@@ -159,7 +174,9 @@ const TeamDetail = () => {
                   }}
                 />
               </div>
-              <p>Score: {game.homePoints} - {game.awayPoints}</p>
+              <p>
+                Score: {game.homePoints} - {game.awayPoints}
+              </p>
               <p>Venue: {game.venue || "TBD"}</p>
             </div>
           ))}
@@ -171,7 +188,8 @@ const TeamDetail = () => {
           <ul>
             {roster.map((player, index) => (
               <li key={index}>
-                {player.fullName} — {player.position || "N/A"} — Height: {player.height} — Year: {player.year || "N/A"}
+                {player.fullName} — {player.position || "N/A"} — Height:{" "}
+                {player.height} — Year: {player.year || "N/A"}
               </li>
             ))}
           </ul>
@@ -182,6 +200,7 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
 
 
 
