@@ -4,26 +4,35 @@ import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css"; // Update/add styles as needed
 
-// A reusable Gauge component that renders an arc from -5..50
-// with red, yellow, green segments, black needle, and custom tick marks.
+// Define static thresholds based on SP+ ratings research
+const THRESHOLDS = {
+  overall: { min: -5, max: 50 },
+  offense: { min: 20, max: 45 },
+  defense: { min: 5, max: 35 },
+};
+
+// A reusable Gauge component that renders an arc with red, yellow, green segments,
+// black needle, custom tick marks for the domain [min..max], and a numeric label in red.
 const Gauge = ({ label, value, min, max, fill }) => {
   // 1) Clamp the raw SP+ rating between min and max
   const clampedValue = Math.max(min, Math.min(value, max));
   
-  // 2) Map [min..max] → [0..100]
-  const totalRange = max - min;      // e.g. 50 - (-5) = 55
-  const gaugeRange = 100;           // We'll treat 0..100 as our "internal" gauge scale
+  // 2) Map [min..max] → [0..100] for internal "gauge" space
+  const totalRange = max - min;  // e.g., 50 - (-5) = 55 for Overall
+  const gaugeRange = 100;       
   const normalizedValue = ((clampedValue - min) / totalRange) * gaugeRange;
 
-  // 3) Hard-code data for color segments in the gauge's "internal" 0..100 scale
+  // 3) Hard-code data for color segments in the gauge's internal 0..100 scale.
+  //    Red:   0..20
+  //    Yellow:20..60
+  //    Green: 60..100
   const gaugeData = [
     { name: "Red", value: 20, fill: "#ff0000" },
     { name: "Yellow", value: 40, fill: "#fdbf00" },
     { name: "Green", value: 40, fill: "#00b300" },
   ];
 
-  // 4) Needle calculation:
-  //    The arc goes from 180° (left) to 0° (right).
+  // 4) Needle calculation (the arc goes 180° to 0°).
   //    0 => angle=180°, 100 => angle=0°.
   const centerX = 75;
   const centerY = 75;
@@ -34,11 +43,11 @@ const Gauge = ({ label, value, min, max, fill }) => {
   const needleY = centerY - needleLength * Math.sin(rad);
 
   // 5) Tick marks at [-5, 0, 10, 20, 30, 40, 50].
-  //    Each tick is mapped from [-5..50] to [0..100] for the angle calculation.
+  //    Each tick is mapped to [0..100] for angle calculation.
   const tickValues = [-5, 0, 10, 20, 30, 40, 50];
   const ticks = tickValues.map((tickVal) => {
-    // Map this tickVal into the same 0..100 gauge space:
-    const tickPercent = ((tickVal - min) / totalRange) * gaugeRange; 
+    // Map tickVal to [0..100]
+    const tickPercent = ((tickVal - min) / totalRange) * gaugeRange;
     const tickAngle = 180 - (tickPercent * 180) / 100;
     const tickRad = (tickAngle * Math.PI) / 180;
     const tickX = centerX + 65 * Math.cos(tickRad);
@@ -57,7 +66,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
         height={150}
         cx={centerX}
         cy={centerY}
-        innerRadius={50} 
+        innerRadius={50}
         outerRadius={70}
         startAngle={180}
         endAngle={0}
@@ -65,7 +74,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
         data={gaugeData}
       >
         <RadialBar dataKey="value" cornerRadius={0} clockWise stackId="gauge" />
-        
+
         {/* Needle */}
         <line
           x1={centerX}
@@ -75,10 +84,10 @@ const Gauge = ({ label, value, min, max, fill }) => {
           stroke="#000"
           strokeWidth={4}
         />
-        {/* Pivot */}
+        {/* Needle pivot */}
         <circle cx={centerX} cy={centerY} r={4} fill="#000" />
         
-        {/* Tick marks */}
+        {/* Tick marks & labels */}
         {ticks.map((tick, i) => (
           <React.Fragment key={i}>
             <circle cx={tick.x} cy={tick.y} r={2} fill="#000" />
@@ -113,8 +122,6 @@ const Gauge = ({ label, value, min, max, fill }) => {
     </div>
   );
 };
-
-
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -328,3 +335,4 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
