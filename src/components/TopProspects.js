@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { getAllRecruits, getTeams } from "../services/teamsService"; // Import getTeams for team logos
+import { getAllRecruits, getTeams } from "../services/teamsService"; // Import getTeams for logos
 import "../styles/TopProspects.css";
 
 const TopProspects = () => {
   const [prospects, setProspects] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Track errors
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,10 +17,15 @@ const TopProspects = () => {
           getTeams(),
         ]);
 
+        if (!prospectData || !teamData) {
+          throw new Error("Failed to fetch data");
+        }
+
         setProspects(prospectData.sort((a, b) => a.ranking - b.ranking));
         setTeams(teamData);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(error.message); // Set error state
       } finally {
         setLoading(false);
       }
@@ -31,15 +37,22 @@ const TopProspects = () => {
   // Function to get the team logo dynamically
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/logos/default.png"; // Default logo for undecided players
-    const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
+    const team = teams.find(
+      (t) => t.school.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
+    );
     return team?.logos?.[0] || "/logos/default.png"; // Return team logo if found, otherwise default
   };
 
   return (
     <div className="top-prospects-container">
       <h1>Top Prospects - 2025 Class</h1>
+
       {loading ? (
         <p>Loading prospects...</p>
+      ) : error ? (
+        <p className="error-message">⚠️ {error}</p> // Show error if fetch fails
+      ) : prospects.length === 0 ? (
+        <p>No prospects available at the moment.</p> // Handle empty data
       ) : (
         <div className="prospect-grid">
           {prospects.map((prospect) => (
