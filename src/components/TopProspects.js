@@ -1,32 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { getAllRecruits } from "../services/teamsService"; // Import API function
+import { getAllRecruits, getTeams } from "../services/teamsService"; // Import getTeams for team logos
 import "../styles/TopProspects.css";
-
-// Function to fetch team logos (adjust based on how you're storing them)
-const getTeamLogo = (teamName) => {
-  return teamName
-    ? `/logos/${teamName.replace(/\s+/g, "-").toLowerCase()}.png`
-    : "/logos/default.png";
-};
 
 const TopProspects = () => {
   const [prospects, setProspects] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProspects = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getAllRecruits(2025);
-        setProspects(data.sort((a, b) => a.ranking - b.ranking)); // Sort by ranking
+        // Fetch recruits and teams concurrently
+        const [prospectData, teamData] = await Promise.all([
+          getAllRecruits(2025),
+          getTeams(),
+        ]);
+
+        setProspects(prospectData.sort((a, b) => a.ranking - b.ranking));
+        setTeams(teamData);
       } catch (error) {
-        console.error("Error fetching prospects:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProspects();
+    fetchData();
   }, []);
+
+  // Function to get the team logo dynamically
+  const getTeamLogo = (teamName) => {
+    if (!teamName) return "/logos/default.png"; // Default logo for undecided players
+    const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
+    return team?.logos?.[0] || "/logos/default.png"; // Return team logo if found, otherwise default
+  };
 
   return (
     <div className="top-prospects-container">
@@ -37,6 +44,7 @@ const TopProspects = () => {
         <div className="prospect-grid">
           {prospects.map((prospect) => (
             <div key={prospect.id} className="prospect-card">
+              {/* Team Logo */}
               <img
                 src={getTeamLogo(prospect.committedTo)}
                 alt={`${prospect.committedTo} Logo`}
