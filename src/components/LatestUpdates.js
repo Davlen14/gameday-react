@@ -6,7 +6,7 @@ const LatestUpdates = () => {
   return (
     <div className="latest-updates-container">
       <h1>Latest Updates</h1>
-      <p>This page is under construction. Stay tuned for the latest college football news!</p>
+      <p>This page is under construction. Stay tuned for the latest college football news! thank you</p>
       <img src="/photos/under-construction.png" alt="Under Construction" className="under-construction-img" />
     </div>
   );
