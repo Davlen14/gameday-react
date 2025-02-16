@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import newsService from "../services/newsService"; // Import API service
-import teamsService from "../services/teamsService"; // Import teams API service
+import newsService from "../services/newsService"; // API service for news
+import teamsService from "../services/teamsService"; // API service for teams
 import "../styles/LatestUpdates.css"; // Import updated styles
 
 const LatestUpdates = () => {
@@ -8,7 +8,7 @@ const LatestUpdates = () => {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingPolls, setLoadingPolls] = useState(true);
-    const [error, setError] = useState(null);
+    const [teams, setTeams] = useState([]);
 
     useEffect(() => {
         const fetchLatestNews = async () => {
@@ -17,27 +17,38 @@ const LatestUpdates = () => {
                 setNews(newsData.articles || []);
             } catch (error) {
                 console.error("Error fetching news:", error);
-                setError("Failed to load news.");
             } finally {
                 setLoading(false);
             }
         };
 
-        const fetchPolls = async () => {
+        const fetchPollsAndTeams = async () => {
             try {
-                const pollData = await teamsService.getPolls(2024, "ap", 15); // Fetching latest rankings (Week 15)
-                setPolls(pollData?.rankings || []);
+                // Fetch teams first to get logos properly
+                const [teamsData, pollData] = await Promise.all([
+                    teamsService.getTeams(),
+                    teamsService.getPolls(2024, "ap", 15), // Fetch poll for Week 15
+                ]);
+
+                setTeams(teamsData);
+                setPolls(pollData || []);
             } catch (error) {
                 console.error("Error fetching poll rankings:", error);
-                setError("Failed to load rankings.");
             } finally {
                 setLoadingPolls(false);
             }
         };
 
         fetchLatestNews();
-        fetchPolls();
+        fetchPollsAndTeams();
     }, []);
+
+    const getTeamLogo = (teamName) => {
+        const team = teams.find(
+            (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+        );
+        return team?.logos?.[0] || "/photos/default_team.png";
+    };
 
     return (
         <div className="latest-updates-container">
@@ -49,13 +60,10 @@ const LatestUpdates = () => {
 
             {/* 🔹 Main Layout - Grid + Sidebar */}
             <div className="latest-news-layout">
-                
                 {/* 🔹 Left Column - Featured News */}
                 <div className="latest-news-main">
                     {loading ? (
                         <p className="loading-text">Loading news...</p>
-                    ) : error ? (
-                        <p className="error-text">⚠️ {error}</p>
                     ) : news.length > 0 ? (
                         <>
                             {/* Featured Story */}
@@ -156,11 +164,11 @@ const LatestUpdates = () => {
                             <p className="loading-text">Loading rankings...</p>
                         ) : (
                             <ul>
-                                {polls.length > 0 ? (
-                                    polls.slice(0, 5).map((team, index) => (
+                                {polls.length > 0 && polls[0].rankings ? (
+                                    polls[0].rankings.slice(0, 5).map((team, index) => (
                                         <li key={index} className="top-team">
                                             <img 
-                                                src={team.logo || "/photos/default_team.png"} 
+                                                src={getTeamLogo(team.school)} 
                                                 alt={team.school} 
                                                 className="team-logo"
                                             />
@@ -173,6 +181,18 @@ const LatestUpdates = () => {
                                 )}
                             </ul>
                         )}
+                    </div>
+
+                    {/* Committee Logo Above Polls */}
+                    <div className="polls-section">
+                        <h2 className="polls-header">
+                            <img 
+                                src="/photos/committee.png" 
+                                alt="Committee Logo" 
+                                className="poll-logo"
+                            />
+                            Latest AP Poll Rankings
+                        </h2>
                     </div>
 
                     {/* CFB Video Highlights */}
@@ -194,8 +214,3 @@ const LatestUpdates = () => {
 };
 
 export default LatestUpdates;
-
-
-
-
-
