@@ -275,6 +275,12 @@ export const fetchScoreboard = async (year, week) => {
     return await fetchData(endpoint, params);
 };
 
+export const getAllRecruits = async (year = 2025) => {
+    const endpoint = "/recruiting/players";
+    const params = { year };
+    return await fetchData(endpoint, params);
+};
+
 // Export all functions
 const teamsService = {
     getGameById,
