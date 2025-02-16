@@ -10,6 +10,7 @@ import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
 import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
+import LatestUpdates from "./components/LatestUpdates"; // ✅ Import the Latest Updates page
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -115,7 +116,7 @@ function App() {
                     <button className="dropdown-button">News</button>
                     {dropdownOpen === "news" && (
                       <div className="dropdown-menu">
-                        <Link to="/latest-news">Latest Updates</Link>
+                        <Link to="/latest-news">Latest Updates</Link> {/* ✅ New Route */}
                         <Link to="/injury-reports">Injury Reports</Link>
                         <Link to="/rankings">Rankings</Link>
                         <Link to="/coaching-changes">
@@ -230,6 +231,7 @@ function App() {
               <Route path="/more" element={<More />} />
               <Route path="/ask-questions" element={<Chatbot />} />
               <Route path="/games/:gameId" element={<GameDetailView />} />
+              <Route path="/latest-news" element={<LatestUpdates />} />
 
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
