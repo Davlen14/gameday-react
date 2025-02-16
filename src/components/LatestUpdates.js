@@ -24,15 +24,15 @@ const LatestUpdates = () => {
     return (
         <div className="latest-updates-container">
             {/* 🔹 Hero Section */}
-            <div className="hero">
+            <div className="latest-hero">
                 <h1>Latest College Football News</h1>
                 <p>Stay updated with the most recent headlines and stories.</p>
             </div>
 
             {/* 🔹 Main Layout - Grid + Sidebar */}
-            <div className="news-layout">
+            <div className="latest-news-layout">
                 {/* Left Column - Interactive News Grid */}
-                <div className="news-grid">
+                <div className="latest-news-grid">
                     {loading ? (
                         <p className="loading-text">Loading news...</p>
                     ) : news.length > 0 ? (
@@ -42,13 +42,19 @@ const LatestUpdates = () => {
                                 href={article.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className={`news-card ${index === 0 ? "big-card" : index < 3 ? "medium-card" : "small-card"}`}
+                                className={`latest-news-card ${
+                                    index === 0 
+                                    ? "latest-big-card" 
+                                    : index < 3 
+                                    ? "latest-medium-card" 
+                                    : "latest-small-card"
+                                }`}
                             >
-                                {article.image && <img src={article.image} alt={article.title} className="news-image" />}
-                                <div className="news-overlay">
+                                {article.image && <img src={article.image} alt={article.title} className="latest-news-image" />}
+                                <div className="latest-news-overlay">
                                     <h3>{article.title}</h3>
                                     <p>{article.description}</p>
-                                    <span className="news-source">{article.source.name}</span>
+                                    <span className="latest-news-source">{article.source.name}</span>
                                 </div>
                             </a>
                         ))
@@ -58,7 +64,7 @@ const LatestUpdates = () => {
                 </div>
 
                 {/* 🔹 Right Column - Sidebar */}
-                <div className="news-sidebar">
+                <div className="latest-news-sidebar">
                     <h2>Top Headlines</h2>
                     <ul>
                         {news.slice(6, 12).map((article, index) => (
@@ -66,7 +72,7 @@ const LatestUpdates = () => {
                                 <a href={article.url} target="_blank" rel="noopener noreferrer">
                                     {article.title}
                                 </a>
-                                <span className="news-source">{article.source.name}</span>
+                                <span className="latest-news-source">{article.source.name}</span>
                             </li>
                         ))}
                     </ul>
@@ -77,4 +83,5 @@ const LatestUpdates = () => {
 };
 
 export default LatestUpdates;
+
 
