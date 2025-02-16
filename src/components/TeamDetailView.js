@@ -5,46 +5,51 @@ import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css"; // Update/add styles as needed
 
 //
-// Unified gauge domain: [1..45]
-// - Red: 1–15   (14 units)
-// - Yellow: 15–30 (15 units)
-// - Green: 30–45  (15 units)
-// Total range = 44
+// 1) We'll unify all gauges to the domain [1..45].
+//    Red:   1..15   => 14 units
+//    Yellow:15..30  => 15 units
+//    Green: 30..45  => 15 units
+//    Total range = 44
 //
+// 2) We'll convert [1..45] => [0..100] internally, and
+//    define arcs so that ~32% is Red, ~34% is Yellow, ~34% is Green.
+//
+
+// For convenience, define a single domain for all metrics:
 const GAUGE_MIN = 1;
 const GAUGE_MAX = 45;
 const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN; // 44
 
-// Calculate percentage lengths for each segment
-const RED_LENGTH = 15 - GAUGE_MIN;     // 14
-const YELLOW_LENGTH = 30 - 15;           // 15
-const GREEN_LENGTH = GAUGE_MAX - 30;     // 15
+// Calculate the exact fraction of the domain for each color segment:
+const RED_LENGTH = 15 - 1;    // => 14
+const YELLOW_LENGTH = 30 - 15; // => 15
+const GREEN_LENGTH = 45 - 30;  // => 15
 
-const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;      // ~31.82%
-const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100;  // ~34.09%
-const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;    // ~34.09%
+// Convert each segment length to a percentage of [0..100]
+const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;     // ~31.82
+const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100; // ~34.09
+const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;  // ~34.09
 
-// Color segments for the internal 0..100 gauge space
+// Hard-code data for the color segments in "gauge space" 0..100
 const gaugeData = [
   { name: "Red", value: redPercent, fill: "#ff0000" },
   { name: "Yellow", value: yellowPercent, fill: "#fdbf00" },
   { name: "Green", value: greenPercent, fill: "#00b300" },
 ];
 
-// Tick marks at our domain breakpoints: [1, 15, 30, 45]
+// We'll place ticks exactly at [1, 15, 30, 45].
 const TICK_VALUES = [1, 15, 30, 45];
 
-//
-// Gauge Component
-//
+// A reusable Gauge component
 const Gauge = ({ label, rawValue }) => {
-  // Clamp raw value to [1..45]
+  // 1) Clamp the raw rating to [1..45]
   const clampedValue = Math.max(GAUGE_MIN, Math.min(rawValue, GAUGE_MAX));
 
-  // Convert [1..45] -> [0..100] for internal gauge calculation
+  // 2) Convert [1..45] => [0..100]
   const normalizedValue = ((clampedValue - GAUGE_MIN) / GAUGE_RANGE) * 100;
 
-  // Needle calculation: the arc goes from 180° (left) to 0° (right)
+  // 3) Needle calculation
+  //    0 => angle=180°, 100 => angle=0°
   const centerX = 75;
   const centerY = 75;
   const needleLength = 60;
@@ -53,14 +58,19 @@ const Gauge = ({ label, rawValue }) => {
   const needleX = centerX + needleLength * Math.cos(rad);
   const needleY = centerY - needleLength * Math.sin(rad);
 
-  // Compute tick positions for TICK_VALUES, mapping our domain to [0..100]
+  // 4) Tick marks at [1, 15, 30, 45]
+  //    Each mapped into [0..100] for angle calc
   const ticks = TICK_VALUES.map((tickVal) => {
     const tickPercent = ((tickVal - GAUGE_MIN) / GAUGE_RANGE) * 100;
     const tickAngle = 180 - (tickPercent * 180) / 100;
     const tickRad = (tickAngle * Math.PI) / 180;
     const tickX = centerX + 65 * Math.cos(tickRad);
     const tickY = centerY - 65 * Math.sin(tickRad);
-    return { label: tickVal, x: tickX, y: tickY };
+    return {
+      label: tickVal,
+      x: tickX,
+      y: tickY,
+    };
   });
 
   return (
@@ -108,7 +118,7 @@ const Gauge = ({ label, rawValue }) => {
         ))}
       </RadialBarChart>
 
-      {/* Display the raw rating in red below the gauge */}
+      {/* Value in red below the gauge center */}
       <text
         x={centerX}
         y={centerY + 100}
@@ -128,15 +138,13 @@ const Gauge = ({ label, rawValue }) => {
 };
 
 //
-// TeamDetail Component
+// TeamDetail component
 //
 const TeamDetail = () => {
   const { teamId } = useParams();
-  const [allTeams, setAllTeams] = useState([]);
+  const [allTeams, setAllTeams] = useState([]); 
   const [team, setTeam] = useState(null);
-  // We'll store team ratings and national averages separately
   const [ratings, setRatings] = useState({});
-  const [nationalAverages, setNationalAverages] = useState({});
   const [roster, setRoster] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [isLoading, setIsLoading] = useState({
@@ -168,19 +176,8 @@ const TeamDetail = () => {
         if (!foundTeam) throw new Error("Team not found");
         setTeam(foundTeam);
 
-        const ratingsData = await teamsService.getTeamRatings(foundTeam.school, 2024);
-        // Assume ratingsData is an array with two objects:
-        // one for the team and one for national averages (team === "nationalAverages")
-        if (Array.isArray(ratingsData)) {
-          const teamRating = ratingsData.find((d) => d.team !== "nationalAverages");
-          const nationalRating = ratingsData.find((d) => d.team === "nationalAverages");
-          setRatings(teamRating || {});
-          setNationalAverages(nationalRating || {});
-        } else {
-          setRatings(ratingsData);
-        }
-
         await Promise.all([
+          fetchRatings(foundTeam.school),
           fetchRoster(foundTeam.school),
           fetchSchedule(foundTeam.school),
         ]);
@@ -188,6 +185,15 @@ const TeamDetail = () => {
         setError(`Error: ${err.message}`);
       } finally {
         setIsLoading((prev) => ({ ...prev, team: false }));
+      }
+    };
+
+    const fetchRatings = async (teamName) => {
+      try {
+        const data = await teamsService.getTeamRatings(teamName, 2024);
+        setRatings(data);
+      } catch (err) {
+        console.error("Error fetching ratings:", err.message);
       }
     };
 
@@ -216,46 +222,19 @@ const TeamDetail = () => {
   if (error) return <div>{error}</div>;
   if (!team) return <div>Team not found</div>;
 
-  // Compute performance notes relative to national averages.
-  // For Overall and Offense, higher is better.
-  // For Defense, lower is better.
-  const overallNote =
-    ratings.rating > (nationalAverages.rating || 0)
-      ? "Above Average"
-      : "Below Average";
-  const offenseNote =
-    ratings.offense && ratings.offense.rating > (nationalAverages.offense && nationalAverages.offense.rating)
-      ? "Above Average"
-      : "Below Average";
-  const defenseNote =
-    ratings.defense && ratings.defense.rating < (nationalAverages.defense && nationalAverages.defense.rating)
-      ? "Above Average"
-      : "Below Average";
-
-  // We'll display the national averages in a small note box.
-  const nationalNote = (
-    <div className="performance-note">
-      <h4>National Averages (2024)</h4>
-      <p>
-        Overall: {nationalAverages.rating || "N/A"}<br />
-        Offense: {nationalAverages.offense && nationalAverages.offense.rating ? nationalAverages.offense.rating.toFixed(1) : "N/A"}<br />
-        Defense: {nationalAverages.defense && nationalAverages.defense.rating ? nationalAverages.defense.rating.toFixed(1) : "N/A"}
-      </p>
-    </div>
-  );
-
-  // Sidebar remains unchanged
+  // Use the team's color if available; fallback to neutral
   const sidebarStyle = {
     backgroundColor: team.color || "#f0f0f0",
   };
 
   return (
     <div className="team-dashboard">
-      {/* Sidebar / Header */}
+      {/* Sidebar / Header area */}
       <aside className="team-sidebar" style={sidebarStyle}>
         <Link to="/teams" className="back-to-teams">
           ← Back to All Teams
         </Link>
+        {/* Team Logo */}
         <img
           src={team.logos?.[0] || "/photos/default_team.png"}
           alt={team.school}
@@ -265,31 +244,26 @@ const TeamDetail = () => {
             e.target.src = "/photos/default_team.png";
           }}
         />
+        {/* Basic Team Info */}
         <h1 className="team-name">{team.school}</h1>
         <p className="team-mascot">{team.mascot}</p>
       </aside>
 
-      {/* Main Content */}
+      {/* Main content area */}
       <main className="team-main-content">
-        {/* Performance Note Box (Top Right) */}
-        <div className="performance-notes">
-          <h4>Performance Compared to National Averages</h4>
-          <p>
-            <strong>Overall:</strong> {overallNote}<br />
-            <strong>Offense:</strong> {offenseNote}<br />
-            <strong>Defense:</strong> {defenseNote}
-          </p>
-          {nationalNote}
-        </div>
-
         {/* Ratings Section */}
         <section className="team-ratings">
           <h2>SP+ Ratings</h2>
           <div className="gauges-container">
-            <Gauge label="Overall" rawValue={ratings.rating || 1} />
-            <Gauge label="Offense" rawValue={ratings.offense && ratings.offense.rating ? ratings.offense.rating : 1} />
-            <Gauge label="Defense" rawValue={ratings.defense && ratings.defense.rating ? ratings.defense.rating : 1} />
+            {/* 
+              We now pass the raw rating from 1..45 (if the API returns something else,
+              it will be clamped to 1..45).
+            */}
+            <Gauge label="Overall" rawValue={ratings.overall || 1} />
+            <Gauge label="Offense" rawValue={ratings.offense || 1} />
+            <Gauge label="Defense" rawValue={ratings.defense || 1} />
           </div>
+          {/* Explanation Section */}
           <div className="ratings-explanation">
             <h3>How SP+ Ratings Work</h3>
             <p>
@@ -362,6 +336,5 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
-
 
 
