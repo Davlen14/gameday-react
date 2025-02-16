@@ -1,21 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import { RadialBarChart, RadialBar, Legend } from "recharts";
+import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css"; // Update/add styles as needed
 
-// A reusable Gauge component
+// Define static thresholds based on SP+ ratings research
+const THRESHOLDS = {
+  overall: { min: -5, max: 35 },
+  offense: { min: 20, max: 45 },
+  defense: { min: 5, max: 35 },
+};
+
+// A reusable Gauge component with markers and a pointer arrow
 const Gauge = ({ label, value, min, max, fill }) => {
-  // For a gauge effect, we use a RadialBarChart that spans 180° (from 180 to 0)
-  // We'll transform the value to a percentage relative to the provided min/max.
-  const normalizedValue = Math.max(min, Math.min(value, max));
-  const percent = ((normalizedValue - min) / (max - min)) * 100;
+  // Clamp value between min and max and compute percentage for the gauge (0-100)
+  const clampedValue = Math.max(min, Math.min(value, max));
+  const percent = ((clampedValue - min) / (max - min)) * 100;
   
-  // Create data that the chart will render.
+  // For the gauge, we use a RadialBarChart spanning 180° (from 180 to 0)
+  const centerX = 75;
+  const centerY = 75;
+  // Pointer length (roughly at the middle of the arc)
+  const pointerLength = 50;
+  // Compute the pointer angle (180 deg corresponds to min; 0 deg is max)
+  const pointerAngle = 180 - (percent / 100) * 180; // in degrees
+  const pointerX = centerX + pointerLength * Math.cos((pointerAngle * Math.PI) / 180);
+  const pointerY = centerY - pointerLength * Math.sin((pointerAngle * Math.PI) / 180);
+
+  // Markers positions at min (180°), mid (90°), and max (0°)
+  const markerRadius = 5;
+  const markers = [
+    {
+      angle: 180,
+      color: "#FF0000", // bright red for min
+    },
+    {
+      angle: 90,
+      color: "#FFFF00", // bright yellow for mid
+    },
+    {
+      angle: 0,
+      color: "#39FF14", // neon green for max
+    },
+  ];
+
+  // Calculate marker positions (using same pointerLength for consistency)
+  const markerPositions = markers.map((marker) => {
+    const x = centerX + pointerLength * Math.cos((marker.angle * Math.PI) / 180);
+    const y = centerY - pointerLength * Math.sin((marker.angle * Math.PI) / 180);
+    return { x, y, color: marker.color };
+  });
+
+  // Data for the gauge (only one segment representing the percent filled)
   const data = [
     {
       name: label,
-      // For the gauge, use the percentage value.
       value: percent,
     },
   ];
@@ -25,14 +64,27 @@ const Gauge = ({ label, value, min, max, fill }) => {
       <RadialBarChart
         width={150}
         height={150}
-        cx={75}
-        cy={75}
+        cx={centerX}
+        cy={centerY}
         innerRadius={30}
         outerRadius={70}
         startAngle={180}
         endAngle={0}
         data={data}
       >
+        {/* Define an arrow marker for the pointer */}
+        <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="10"
+            markerHeight="7"
+            refX="0"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+          </marker>
+        </defs>
         <RadialBar
           minAngle={15}
           background
@@ -40,10 +92,30 @@ const Gauge = ({ label, value, min, max, fill }) => {
           dataKey="value"
           fill={fill}
         />
-        {/* Center text showing the raw value */}
+        {/* Render pointer arrow */}
+        <line
+          x1={centerX}
+          y1={centerY}
+          x2={pointerX}
+          y2={pointerY}
+          stroke="black"
+          strokeWidth={2}
+          markerEnd="url(#arrowhead)"
+        />
+        {/* Render markers for min, mid, and max */}
+        {markerPositions.map((marker, idx) => (
+          <circle
+            key={idx}
+            cx={marker.x}
+            cy={marker.y}
+            r={markerRadius}
+            fill={marker.color}
+          />
+        ))}
+        {/* Center text showing the raw rating value */}
         <text
-          x={75}
-          y={75}
+          x={centerX}
+          y={centerY}
           textAnchor="middle"
           dominantBaseline="middle"
           className="gauge-label"
@@ -138,7 +210,7 @@ const TeamDetail = () => {
   if (error) return <div>{error}</div>;
   if (!team) return <div>Team not found</div>;
 
-  // Use the team's color if available; fallback to something neutral
+  // Use the team's color if available; fallback to neutral
   const sidebarStyle = {
     backgroundColor: team.color || "#f0f0f0",
   };
@@ -150,7 +222,6 @@ const TeamDetail = () => {
         <Link to="/teams" className="back-to-teams">
           ← Back to All Teams
         </Link>
-
         {/* Team Logo */}
         <img
           src={team.logos?.[0] || "/photos/default_team.png"}
@@ -161,7 +232,6 @@ const TeamDetail = () => {
             e.target.src = "/photos/default_team.png";
           }}
         />
-
         {/* Basic Team Info */}
         <h1 className="team-name">{team.school}</h1>
         <p className="team-mascot">{team.mascot}</p>
@@ -171,33 +241,49 @@ const TeamDetail = () => {
       <main className="team-main-content">
         {/* Ratings Section */}
         <section className="team-ratings">
-          <h2>Ratings</h2>
+          <h2>SP+ Ratings</h2>
           <div className="gauges-container">
-            {/* Using the thresholds we discussed:
-                - Overall: scale -5 to 35
-                - Offense: scale 20 to 45
-                - Defense: scale 5 to 35 */}
+            {/* Overall gauge: scale -5 to 35 */}
             <Gauge
               label="Overall"
               value={ratings.overall || 0}
-              min={-5}
-              max={35}
+              min={THRESHOLDS.overall.min}
+              max={THRESHOLDS.overall.max}
               fill="#8884d8"
             />
+            {/* Offense gauge: scale 20 to 45 */}
             <Gauge
               label="Offense"
               value={ratings.offense || 0}
-              min={20}
-              max={45}
+              min={THRESHOLDS.offense.min}
+              max={THRESHOLDS.offense.max}
               fill="#82ca9d"
             />
+            {/* Defense gauge: scale 5 to 35 */}
             <Gauge
               label="Defense"
               value={ratings.defense || 0}
-              min={5}
-              max={35}
+              min={THRESHOLDS.defense.min}
+              max={THRESHOLDS.defense.max}
               fill="#ff7300"
             />
+          </div>
+          {/* Explanation Section */}
+          <div className="ratings-explanation">
+            <h3>How SP+ Ratings Work</h3>
+            <p>
+              The SP+ ratings combine multiple aspects of team performance into a single composite metric.
+              <br />
+              <strong>Overall:</strong> Combines offense, defense, and special teams.
+              <br />
+              <strong>Offense:</strong> Measures scoring efficiency and ball movement.
+              <br />
+              <strong>Defense:</strong> Lower values indicate a stronger defense.
+            </p>
+            <p>
+              The markers on each gauge indicate the minimum (bright red), mid-range (bright yellow),
+              and maximum (neon green) expected ratings.
+            </p>
           </div>
         </section>
 
@@ -243,8 +329,7 @@ const TeamDetail = () => {
           <ul>
             {roster.map((player, index) => (
               <li key={index}>
-                {player.fullName} — {player.position || "N/A"} — Height:{" "}
-                {player.height} — Year: {player.year || "N/A"}
+                {player.fullName} — {player.position || "N/A"} — Height: {player.height} — Year: {player.year || "N/A"}
               </li>
             ))}
           </ul>
@@ -255,3 +340,4 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
