@@ -22,21 +22,20 @@ const TeamDetail = () => {
   const categories = ["Rankings", "Roster", "Statistics", "Schedule", "News"];
   const sortOptions = ["Name", "Position", "Height", "Year"];
 
-  // Updated font-family to use "Titillium Web" for the whole component
   const styles = {
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
       padding: "2rem",
       fontFamily: "'Titillium Web', sans-serif",
-      backgroundColor: "#f5f5f5", // Home background color
+      backgroundColor: "var(--background-color)",
       minHeight: "100vh",
     },
     backLink: {
       display: "block",
       marginBottom: "1rem",
       textDecoration: "none",
-      color: "rgb(142, 0, 0)", // Accent color from Home
+      color: "var(--accent-color)",
       fontWeight: "bold",
     },
     header: {
@@ -54,16 +53,16 @@ const TeamDetail = () => {
     categoryButton: (selected) => ({
       marginRight: "0.5rem",
       padding: "0.5rem 1rem",
-      border: "1px solid #dddddd",
-      background: selected ? "rgb(142, 0, 0)" : "#ffffff",
-      color: selected ? "#fff" : "#333333",
+      border: `1px solid var(--border-color)`,
+      background: selected ? "var(--accent-color)" : "var(--primary-color)",
+      color: selected ? "var(--primary-color)" : "var(--text-color)",
       borderRadius: "20px",
       cursor: "pointer",
       transition: "background 0.3s, color 0.3s",
       outline: "none",
     }),
     card: {
-      background: "#fff",
+      background: "var(--primary-color)",
       padding: "1.5rem",
       borderRadius: "8px",
       boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
@@ -73,7 +72,7 @@ const TeamDetail = () => {
       display: "flex",
       alignItems: "center",
       padding: "0.75rem 0",
-      borderBottom: "1px solid #dddddd",
+      borderBottom: `1px solid var(--border-color)`,
     },
     rosterItemDetails: {
       display: "flex",
@@ -86,7 +85,7 @@ const TeamDetail = () => {
     select: {
       padding: "0.5rem",
       marginBottom: "1rem",
-      border: "1px solid #dddddd",
+      border: `1px solid var(--border-color)`,
       borderRadius: "4px",
       outline: "none",
     },
@@ -96,7 +95,7 @@ const TeamDetail = () => {
       justifyContent: "space-between",
       padding: "1rem",
       borderRadius: "8px",
-      background: "#fff",
+      background: "var(--primary-color)",
       boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
       marginBottom: "1rem",
     },
@@ -104,7 +103,6 @@ const TeamDetail = () => {
       display: "flex",
       alignItems: "center",
     },
-    // Used for header logos (circular)
     teamLogoSmall: {
       width: "50px",
       height: "50px",
@@ -112,7 +110,6 @@ const TeamDetail = () => {
       objectFit: "cover",
       marginRight: "0.5rem",
     },
-    // For schedule logos: rounded square style
     scheduleTeamLogo: {
       width: "50px",
       height: "50px",
@@ -120,7 +117,6 @@ const TeamDetail = () => {
       objectFit: "cover",
       marginRight: "0.5rem",
     },
-    // New style for team logos in the roster (using team logo)
     teamLogoForRoster: {
       width: "40px",
       height: "40px",
@@ -138,7 +134,7 @@ const TeamDetail = () => {
     }),
   };
 
-  // Helper function (like in Home) to get a team's logo based on its name
+  // Helper function to get a team's logo
   const getTeamLogo = (teamName) => {
     const found = allTeams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -151,15 +147,15 @@ const TeamDetail = () => {
     const fetchData = async () => {
       try {
         setIsLoading((prev) => ({ ...prev, team: true }));
-
-        // Fetch teams data and set allTeams state
         const teamsData = await teamsService.getTeams();
         setAllTeams(teamsData);
-        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId));
+        const foundTeam = teamsData.find(
+          (t) => t.id === parseInt(teamId, 10)
+        );
         if (!foundTeam) throw new Error("Team not found");
         setTeam(foundTeam);
 
-        // Fetch related data
+        // Fetch related data concurrently
         await Promise.all([
           fetchRatings(foundTeam.school),
           fetchRoster(foundTeam.school),
@@ -215,7 +211,9 @@ const TeamDetail = () => {
   const sortedRoster = useMemo(() => {
     switch (sortOption) {
       case "Name":
-        return [...roster].sort((a, b) => a.fullName.localeCompare(b.fullName));
+        return [...roster].sort((a, b) =>
+          a.fullName.localeCompare(b.fullName)
+        );
       case "Position":
         return [...roster].sort((a, b) =>
           (a.position || "").localeCompare(b.position || "")
@@ -229,7 +227,15 @@ const TeamDetail = () => {
     }
   }, [roster, sortOption]);
 
-  // Render category-specific content
+  // Format player height from inches to feet and inches
+  const formatHeight = (inches) => {
+    if (!inches) return "N/A";
+    const feet = Math.floor(inches / 12);
+    const remainderInches = inches % 12;
+    return `${feet}'${remainderInches}"`;
+  };
+
+  // Render content based on the selected category
   const renderCategoryContent = () => {
     switch (selectedCategory) {
       case "Rankings":
@@ -276,7 +282,6 @@ const TeamDetail = () => {
                 {sortedRoster.length > 0 ? (
                   sortedRoster.map((player, index) => (
                     <div key={index} style={styles.rosterItem}>
-                      {/* Using the team logo for each roster item */}
                       <img
                         src={getTeamLogo(team.school)}
                         alt={team.school}
@@ -320,7 +325,9 @@ const TeamDetail = () => {
                   <div style={{ flex: 1, textAlign: "center" }}>
                     <span
                       style={{
-                        ...styles.scoreText(game.homePoints > game.awayPoints),
+                        ...styles.scoreText(
+                          game.homePoints > game.awayPoints
+                        ),
                         marginRight: "0.5rem",
                       }}
                     >
@@ -329,7 +336,11 @@ const TeamDetail = () => {
                     <span style={{ margin: "0 0.5rem", fontWeight: "bold" }}>
                       -
                     </span>
-                    <span style={styles.scoreText(game.awayPoints > game.homePoints)}>
+                    <span
+                      style={styles.scoreText(
+                        game.awayPoints > game.homePoints
+                      )}
+                    >
                       {game.awayPoints}
                     </span>
                     <div style={{ fontSize: "0.8rem", color: "#666" }}>
@@ -361,13 +372,6 @@ const TeamDetail = () => {
       default:
         return null;
     }
-  };
-
-  const formatHeight = (inches) => {
-    if (!inches) return "N/A";
-    const feet = Math.floor(inches / 12);
-    const remainderInches = inches % 12;
-    return `${feet}'${remainderInches}"`;
   };
 
   if (isLoading.team)
@@ -407,3 +411,4 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
