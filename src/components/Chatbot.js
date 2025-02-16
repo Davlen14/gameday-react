@@ -107,18 +107,14 @@ const Chatbot = () => {
 
         {/* Chat Messages - Updated to Fit the New Size */}
         <div className="chat-area">
-          {messages.length === 0 ? (
-            <p className="empty-chat">Ask me anything about college football!</p>
-          ) : (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`message ${message.sender === "user" ? "user" : "bot"}`}
-              >
-                {message.text}
-              </div>
-            ))
-          )}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`message ${message.sender === "user" ? "user" : "bot"}`}
+            >
+              {message.text}
+            </div>
+          ))}
           {loading && (
             <div className="loading-message">
               <i>Analyzing...</i>
