@@ -6,7 +6,7 @@ import "../styles/TeamDetail.css"; // We'll handle layout via CSS
 
 const TeamDetail = () => {
   const { teamId } = useParams();
-  const [allTeams, setAllTeams] = useState([]); // For logo lookup
+  const [allTeams, setAllTeams] = useState([]); 
   const [team, setTeam] = useState(null);
   const [ratings, setRatings] = useState({});
   const [roster, setRoster] = useState([]);
@@ -19,7 +19,7 @@ const TeamDetail = () => {
   });
   const [error, setError] = useState(null);
 
-  // Helper to lookup team logo using the fetched teams list.
+  // Helper to lookup team logo
   const getTeamLogo = (teamName) => {
     const foundTeam = allTeams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -33,6 +33,7 @@ const TeamDetail = () => {
         setIsLoading((prev) => ({ ...prev, team: true }));
         const teamsData = await teamsService.getTeams();
         setAllTeams(teamsData);
+
         const foundTeam = teamsData.find(
           (t) => t.id === parseInt(teamId, 10)
         );
@@ -91,10 +92,15 @@ const TeamDetail = () => {
   if (error) return <div>{error}</div>;
   if (!team) return <div>Team not found</div>;
 
+  // Use the team's color if available; fallback to something neutral
+  const sidebarStyle = {
+    backgroundColor: team.color || "#f0f0f0",
+  };
+
   return (
     <div className="team-dashboard">
       {/* Sidebar / Header area */}
-      <aside className="team-sidebar">
+      <aside className="team-sidebar" style={sidebarStyle}>
         <Link to="/teams" className="back-to-teams">
           ← Back to All Teams
         </Link>
@@ -200,6 +206,7 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
 
 
 
