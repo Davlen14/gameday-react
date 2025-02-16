@@ -31,7 +31,7 @@
 /* 🔹 News Layout - Grid + Sidebar */
 .latest-news-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Main news + Sidebar */
+    grid-template-columns: 2fr 1fr;
     gap: 30px;
     align-items: flex-start;
 }
@@ -174,7 +174,7 @@
 
 .best-of-gameday,
 .trending-news,
-.trending-teams,
+.top-teams,
 .cfb-highlights {
     background: #fff;
     padding: 20px;
@@ -182,12 +182,14 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* 🔹 Sidebar Titles */
 .latest-news-sidebar h2 {
     font-size: 1.4rem;
     font-weight: bold;
     margin-bottom: 15px;
 }
 
+/* 🔹 Sidebar Lists */
 .latest-news-sidebar ul {
     list-style: none;
     padding: 0;
@@ -198,6 +200,7 @@
     margin-bottom: 10px;
 }
 
+/* 🔹 Sidebar Links */
 .latest-news-sidebar a {
     color: var(--text-color);
     font-size: 1rem;
@@ -210,13 +213,43 @@
     color: var(--accent-color);
 }
 
-/* 🔹 Trending Teams */
-.trending-teams ul {
+/* 🔹 Top Teams Section */
+.top-teams {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.top-teams ul {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    font-size: 1rem;
+    gap: 10px;
+}
+
+.top-team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.team-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.rank {
     font-weight: bold;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.team-name {
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 /* 🔹 CFB Video Highlights */
@@ -254,4 +287,3 @@
         flex: 0 0 250px;
     }
 }
-

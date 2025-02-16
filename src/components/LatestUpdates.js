@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import newsService from "../services/newsService"; // Import API service
+import teamsService from "../services/teamsService"; // Import teams API service
 import "../styles/LatestUpdates.css"; // Import updated styles
 
 const LatestUpdates = () => {
     const [news, setNews] = useState([]);
+    const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingPolls, setLoadingPolls] = useState(true);
 
     useEffect(() => {
         const fetchLatestNews = async () => {
@@ -18,7 +21,19 @@ const LatestUpdates = () => {
             }
         };
 
+        const fetchPolls = async () => {
+            try {
+                const pollData = await teamsService.getPolls(2024, "ap", 1); // Assuming week 1 rankings
+                setPolls(pollData || []);
+            } catch (error) {
+                console.error("Error fetching poll rankings:", error);
+            } finally {
+                setLoadingPolls(false);
+            }
+        };
+
         fetchLatestNews();
+        fetchPolls();
     }, []);
 
     return (
@@ -129,16 +144,30 @@ const LatestUpdates = () => {
                         </ul>
                     </div>
 
-                    {/* Trending Teams */}
-                    <div className="trending-teams">
-                        <h2>📈 Trending Teams</h2>
-                        <ul>
-                            <li>🏈 Alabama Crimson Tide</li>
-                            <li>🏈 Ohio State Buckeyes</li>
-                            <li>🏈 Georgia Bulldogs</li>
-                            <li>🏈 Michigan Wolverines</li>
-                            <li>🏈 Texas Longhorns</li>
-                        </ul>
+                    {/* 🏆 Top 5 Teams - Dynamically Loaded */}
+                    <div className="top-teams">
+                        <h2>📊 Top 5 Teams</h2>
+                        {loadingPolls ? (
+                            <p className="loading-text">Loading rankings...</p>
+                        ) : (
+                            <ul>
+                                {polls.length > 0 ? (
+                                    polls.slice(0, 5).map((team, index) => (
+                                        <li key={index} className="top-team">
+                                            <img 
+                                                src={team.logos?.[0] || "/photos/default_team.png"} 
+                                                alt={team.school} 
+                                                className="team-logo"
+                                            />
+                                            <span className="rank">#{team.rank}</span>
+                                            <span className="team-name">{team.school}</span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p>No rankings available.</p>
+                                )}
+                            </ul>
+                        )}
                     </div>
 
                     {/* CFB Video Highlights */}
@@ -160,6 +189,7 @@ const LatestUpdates = () => {
 };
 
 export default LatestUpdates;
+
 
 
 
