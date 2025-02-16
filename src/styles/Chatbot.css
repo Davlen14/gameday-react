@@ -6,41 +6,42 @@
   --surface: rgba(255, 255, 255, 0.2); /* Glass Effect */
   --text-primary: #111;
   --text-secondary: #444;
-  --border: rgba(255, 255, 255, 0.3);
+  --border: rgba(200, 200, 200, 0.5); /* More visible border */
   --shadow: rgba(0, 0, 0, 0.2);
 }
 
-/* 🔥 Full-Screen Chatbot Layout - Reduced Height */
+/* 🔥 Full-Screen Chatbot Layout - Improved Design */
 .chatbot-container {
   display: flex;
-  height: calc(80vh - 60px); /* Shrunk by 20% */
+  height: calc(85vh - 60px); /* Slightly larger */
   margin-top: 10px;
   background: var(--background);
   font-family: "Orbitron", "Titillium Web", sans-serif;
   width: 100%;
-  backdrop-filter: blur(15px); /* Glass Effect */
-  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 /* 🟥 Sidebar */
 .chatbot-sidebar {
-  width: 300px; /* Adjusted for balance */
+  width: 320px; /* Slightly wider */
   background: var(--surface);
   padding: 28px;
   border-right: 1px solid var(--border);
   box-shadow: 6px 0 12px var(--shadow);
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(20px); /* Glass Effect */
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 .chatbot-brand {
   color: var(--primary);
   margin-bottom: 30px;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
   text-transform: uppercase;
+  text-align: center;
 }
 
 /* 🔹 Sidebar Sections */
@@ -50,7 +51,7 @@
 
 .chatbot-section h3 {
   color: var(--primary);
-  font-size: 0.9rem;
+  font-size: 1rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin: 20px 0 12px;
@@ -64,23 +65,24 @@
 }
 
 .examples-list li, .capabilities-list li {
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px; /* Sharp corners */
-  margin: 6px 0;
+  border-radius: 8px;
+  margin: 8px 0;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 500;
   color: var(--text-secondary);
   backdrop-filter: blur(10px);
+  border: 1px solid var(--border); /* Added thin border */
 }
 
 .examples-list li:hover, .capabilities-list li:hover {
   background: rgba(255, 255, 255, 0.25);
-  transform: translateX(4px);
+  transform: translateX(6px);
   box-shadow: 0 4px 12px var(--shadow);
 }
 
@@ -89,13 +91,14 @@
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 14px 28px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   margin-top: auto;
   box-shadow: 0 4px 8px var(--shadow);
   transition: transform 0.2s ease;
+  font-size: 1rem;
 }
 
 .pro-mode-button:hover {
@@ -115,72 +118,71 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 14px 20px;
   background: var(--surface);
-  border-radius: 6px; /* Sharp corners */
+  border-radius: 8px;
   margin-bottom: 24px;
   font-weight: 600;
   color: var(--text-primary);
   backdrop-filter: blur(10px);
 }
 
-/* 🟢 Live Status */
+/* 🔴 Blinking Live Status */
 .connection-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--status-green);
+  color: var(--primary);
+  font-weight: bold;
 }
 
-.connection-status span {
-  animation: blink 1.5s infinite;
+.status-dot {
+  animation: blink-red 1.2s infinite;
+  font-size: 1rem;
 }
 
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-  100% { opacity: 1; }
-}
-
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  background: var(--status-green);
-  border-radius: 50%;
+@keyframes blink-red {
+  0% { color: var(--primary); opacity: 1; }
+  50% { color: var(--secondary); opacity: 0.5; }
+  100% { color: var(--primary); opacity: 1; }
 }
 
 /* 💬 Chat Area */
 .chat-area {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px; /* Sharp corners */
-  padding: 20px;
-  min-height: 400px; /* Reduced height */
-  box-shadow: inset 0 2px 4px var(--shadow);
-  max-height: 60vh; /* Adjusted for smaller design */
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 450px;
+  box-shadow: inset 0 2px 6px var(--shadow);
+  max-height: 65vh;
   overflow-y: auto;
-  font-size: 1rem;
+  font-size: 1.05rem;
   backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
 }
 
 /* 📩 Messages */
 .message {
   margin: 10px 0;
-  padding: 14px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 16px;
+  border-radius: 8px;
   max-width: 80%;
   font-weight: 500;
+  font-size: 1rem;
 }
 
 .message.user {
   background: var(--primary);
   color: white;
   margin-left: auto;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .message.bot {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
   border: 1px solid var(--border);
   margin-right: auto;
+  box-shadow: 0 2px 4px var(--shadow);
 }
 
 /* ✍️ Input Box */
@@ -192,10 +194,10 @@
 
 .input-container input {
   flex: 1;
-  padding: 14px 20px;
+  padding: 16px 22px;
   border: 1px solid var(--border);
-  border-radius: 6px; /* Sharp corners */
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 1rem;
   background: white;
   box-shadow: 0 2px 4px var(--shadow);
 }
@@ -204,12 +206,13 @@
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 14px 28px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   box-shadow: 0 3px 8px var(--shadow);
   transition: transform 0.2s ease;
+  font-size: 1rem;
 }
 
 .input-container button:hover {
@@ -222,10 +225,10 @@
   bottom: 18px;
   right: 18px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   background: var(--surface);
-  padding: 8px 14px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 10px 16px;
+  border-radius: 8px;
   backdrop-filter: blur(8px);
 }
 
