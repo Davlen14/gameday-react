@@ -1,5 +1,6 @@
 import React from "react";
-import "./LatestUpdates.css"; // Import CSS for styling
+import "../styles/LatestUpdates.css"; // ✅ Corrected path
+
 
 const LatestUpdates = () => {
   return (
