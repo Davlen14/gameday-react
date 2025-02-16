@@ -8,6 +8,7 @@ const LatestUpdates = () => {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingPolls, setLoadingPolls] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchLatestNews = async () => {
@@ -16,6 +17,7 @@ const LatestUpdates = () => {
                 setNews(newsData.articles || []);
             } catch (error) {
                 console.error("Error fetching news:", error);
+                setError("Failed to load news.");
             } finally {
                 setLoading(false);
             }
@@ -23,10 +25,11 @@ const LatestUpdates = () => {
 
         const fetchPolls = async () => {
             try {
-                const pollData = await teamsService.getPolls(2024, "ap", 1); // Assuming week 1 rankings
-                setPolls(pollData || []);
+                const pollData = await teamsService.getPolls(2024, "ap", 15); // Fetching latest rankings (Week 15)
+                setPolls(pollData?.rankings || []);
             } catch (error) {
                 console.error("Error fetching poll rankings:", error);
+                setError("Failed to load rankings.");
             } finally {
                 setLoadingPolls(false);
             }
@@ -51,6 +54,8 @@ const LatestUpdates = () => {
                 <div className="latest-news-main">
                     {loading ? (
                         <p className="loading-text">Loading news...</p>
+                    ) : error ? (
+                        <p className="error-text">⚠️ {error}</p>
                     ) : news.length > 0 ? (
                         <>
                             {/* Featured Story */}
@@ -155,7 +160,7 @@ const LatestUpdates = () => {
                                     polls.slice(0, 5).map((team, index) => (
                                         <li key={index} className="top-team">
                                             <img 
-                                                src={team.logos?.[0] || "/photos/default_team.png"} 
+                                                src={team.logo || "/photos/default_team.png"} 
                                                 alt={team.school} 
                                                 className="team-logo"
                                             />
@@ -189,6 +194,7 @@ const LatestUpdates = () => {
 };
 
 export default LatestUpdates;
+
 
 
 
