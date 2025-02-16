@@ -69,7 +69,7 @@ const Home = () => {
     return (
         <div className="home-container">
             <header className="hero-header">
-                <h1>Welcome to Gameday</h1>
+                <h1>GAMEDAY+</h1>
                 {/*
                 The week selector has been removed because the global week state is now managed elsewhere.
                 <div className="week-selector">

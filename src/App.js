@@ -43,7 +43,7 @@ function App() {
           <header className="top-bar">
             <div className="top-bar-container">
               {/* Logo on the Left */}
-              <h1 className="top-bar-logo">GAMEDAY</h1>
+              <h1 className="top-bar-logo">GAMEDAY+</h1>
 
               {/* Navigation with Multiple Dropdowns */}
               <nav className="top-bar-nav">
