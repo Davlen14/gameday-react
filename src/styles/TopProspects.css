@@ -1,5 +1,5 @@
 .top-prospects-container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: auto;
     padding: 20px;
     text-align: center;
@@ -12,66 +12,131 @@
     margin-bottom: 20px;
 }
 
-.prospect-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+/* List format for players */
+.prospect-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.prospect-card {
-    background: #f7f7f7; /* Light gray for modern clean look */
-    color: #333; /* Dark gray text for contrast */
-    border-radius: 12px;
-    padding: 20px;
+/* Each prospect row */
+.prospect-item {
     display: flex;
     align-items: center;
-    gap: 15px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    justify-content: space-between;
+    background: #ffffff; /* Clean white background */
+    border-radius: 8px;
+    padding: 12px 18px;
+    border: 1px solid #ddd;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-.prospect-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.18);
+.prospect-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Rank Number */
+.prospect-rank {
+    font-size: 20px;
+    font-weight: bold;
+    color: #444;
+    width: 40px;
+    text-align: center;
+}
+
+/* Player Headshot Placeholder */
+.prospect-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-icon {
+    font-size: 40px;
+    color: #555;
+}
+
+/* Player Info Section */
+.prospect-info {
+    flex: 1;
+    text-align: left;
+    padding: 0 15px;
+}
+
+.prospect-info h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+.prospect-details {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Stars & Ratings */
+.stars-rating {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.star-icon {
+    color: #FFD700; /* Gold color for stars */
+    margin-right: 2px;
+}
+
+/* Committed Team Section */
+.prospect-commit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .team-logo {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     border-radius: 50%;
     background: #fff;
-    padding: 8px;
+    padding: 5px;
     border: 1px solid #ddd;
 }
 
-.prospect-info {
-    text-align: left;
-}
-
-h2 {
-    margin: 5px 0;
-    font-size: 20px;
+.committed-team {
     font-weight: 600;
-    color: #222; /* Make text stand out */
+    font-size: 14px;
+    color: #222;
 }
 
-p {
+.uncommitted {
+    font-weight: 600;
     font-size: 14px;
-    margin: 2px 0;
-    color: #555; /* Slightly lighter text for readability */
+    color: #999;
 }
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    .prospect-card {
+    .prospect-item {
         flex-direction: column;
         text-align: center;
     }
 
+    .prospect-info {
+        padding: 10px 0;
+    }
+
     .team-logo {
-        width: 50px;
-        height: 50px;
+        width: 35px;
+        height: 35px;
     }
 }
