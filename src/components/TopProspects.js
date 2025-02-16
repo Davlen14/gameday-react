@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAllRecruits, getTeams } from "../services/teamsService";
-import { FaUserCircle, FaStar, FaCheckCircle, FaSearch } from "react-icons/fa"; // Icons
+import { FaUserCircle, FaStar, FaCheckCircle, FaSearch, FaSort } from "react-icons/fa"; // Icons
 import "../styles/TopProspects.css";
 
 const TopProspects = () => {
@@ -9,6 +9,8 @@ const TopProspects = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ position: "All", team: "" });
+  const [sortField, setSortField] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +53,20 @@ const TopProspects = () => {
         ))}
       </div>
     );
+  };
+
+  const handleSort = (field) => {
+    const order = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(order);
+
+    const sortedProspects = [...prospects].sort((a, b) => {
+      if (a[field] < b[field]) return order === "asc" ? -1 : 1;
+      if (a[field] > b[field]) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setProspects(sortedProspects);
   };
 
   const handleFilterChange = (event) => {
@@ -100,14 +116,14 @@ const TopProspects = () => {
         <table className="prospects-table">
           <thead>
             <tr>
-              <th>Rank</th>
+              <th onClick={() => handleSort("ranking")}>Rank <FaSort /></th>
               <th>Player</th>
-              <th>Position</th>
-              <th>Height</th>
-              <th>Weight</th>
-              <th>Stars</th>
-              <th>Rating</th>
-              <th>Committed</th>
+              <th onClick={() => handleSort("position")}>Position <FaSort /></th>
+              <th onClick={() => handleSort("height")}>Height <FaSort /></th>
+              <th onClick={() => handleSort("weight")}>Weight <FaSort /></th>
+              <th onClick={() => handleSort("stars")}>Stars <FaSort /></th>
+              <th onClick={() => handleSort("rating")}>Rating <FaSort /></th>
+              <th onClick={() => handleSort("committedTo")}>Committed <FaSort /></th>
             </tr>
           </thead>
           <tbody>
@@ -152,6 +168,7 @@ const TopProspects = () => {
 };
 
 export default TopProspects;
+
 
 
 
