@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { FaTv } from "react-icons/fa";
 import teamsService from "../services/teamsService";
 import "../styles/Home.css";
+import { WeekContext } from "../contexts/WeekContext"; // Import your WeekContext
 
 const Home = () => {
+    // Use the global week state instead of local state
+    const { week } = useContext(WeekContext);
+
     const [polls, setPolls] = useState([]);
     const [games, setGames] = useState([]);
     const [teams, setTeams] = useState([]);
-    const [week, setWeek] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -66,97 +69,81 @@ const Home = () => {
         <div className="home-container">
             <header className="hero-header">
                 <h1>Welcome to Gameday</h1>
-                <div className="week-selector">
-                    <label>
-                        Week:
-                        <select
-                            value={week}
-                            onChange={(e) => setWeek(Number(e.target.value))}
-                        >
-                            {[...Array(17).keys()].map((w) => (
-                                <option key={w + 1} value={w + 1}>
-                                    Week {w + 1}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
+                {/* Week selector removed since week is now managed globally */}
             </header>
 
-{/* NEW FEATURED SECTION */}
-<section className="featured-section">
-    <div className="featured-grid">
-        {/* Big Hero Card - Ohio State */}
-        <div className="featured-card big-card">
-            <img src="/photos/Ostate.webp" alt="Ohio State Celebration" />
-            <div className="featured-overlay">
-                <h2>Ohio State Triumph</h2>
-                <p>
-                    Discover how Ohio State clinched the championship in a thrilling matchup. 
-                    Read more
-                </p>
-            </div>
-        </div>
+            {/* NEW FEATURED SECTION */}
+            <section className="featured-section">
+                <div className="featured-grid">
+                    {/* Big Hero Card - Ohio State */}
+                    <div className="featured-card big-card">
+                        <img src="/photos/Ostate.webp" alt="Ohio State Celebration" />
+                        <div className="featured-overlay">
+                            <h2>Ohio State Triumph</h2>
+                            <p>
+                                Discover how Ohio State clinched the championship in a thrilling matchup. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
 
-        {/* Five Smaller Cards */}
-        <div className="featured-card small-card">
-            <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
-            <div className="featured-overlay">
-                <h3>Arch Manning Buzz</h3>
-                <p>
-                    Arch Manning is poised for a breakout season as excitement builds around his potential. 
-                    Read more
-                </p>
-            </div>
-        </div>
+                    {/* Five Smaller Cards */}
+                    <div className="featured-card small-card">
+                        <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
+                        <div className="featured-overlay">
+                            <h3>Arch Manning Buzz</h3>
+                            <p>
+                                Arch Manning is poised for a breakout season as excitement builds around his potential. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
 
-        <div className="featured-card small-card">
-            <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
-            <div className="featured-overlay">
-                <h3>Oregon's Next Move</h3>
-                <p>
-                    Get the latest on Oregon's strategic decisions that could reshape the program’s future. 
-                    Read more
-                </p>
-            </div>
-        </div>
+                    <div className="featured-card small-card">
+                        <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
+                        <div className="featured-overlay">
+                            <h3>Oregon's Next Move</h3>
+                            <p>
+                                Get the latest on Oregon's strategic decisions that could reshape the program’s future. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
 
-        <div className="featured-card small-card">
-            <img src="/photos/CU.jpg" alt="Colorado" />
-            <div className="featured-overlay">
-                <h3>Colorado on the Rise</h3>
-                <p>
-                    A detailed look into Colorado's evolving game plan and the rising expectations this season. 
-                    Read more
-                </p>
-            </div>
-        </div>
+                    <div className="featured-card small-card">
+                        <img src="/photos/CU.jpg" alt="Colorado" />
+                        <div className="featured-overlay">
+                            <h3>Colorado on the Rise</h3>
+                            <p>
+                                A detailed look into Colorado's evolving game plan and the rising expectations this season. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
 
-        <div className="featured-card small-card">
-            <img src="/photos/Pennst.jpg" alt="Penn State" />
-            <div className="featured-overlay">
-                <h3>Penn State Prospects</h3>
-                <p>
-                    Explore early roster insights and what they mean for the future of the Nittany Lions. 
-                    Read more
-                </p>
-            </div>
-        </div>
+                    <div className="featured-card small-card">
+                        <img src="/photos/Pennst.jpg" alt="Penn State" />
+                        <div className="featured-overlay">
+                            <h3>Penn State Prospects</h3>
+                            <p>
+                                Explore early roster insights and what they mean for the future of the Nittany Lions. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
 
-        <div className="featured-card small-card">
-            <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
-            <div className="featured-overlay">
-                <h3>Georgia's Offseason</h3>
-                <p>
-                    An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. 
-                    Read more
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
-
-            {/* END FEATURED SECTION */}
+                    <div className="featured-card small-card">
+                        <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
+                        <div className="featured-overlay">
+                            <h3>Georgia's Offseason</h3>
+                            <p>
+                                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. 
+                                Read more
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Polls Section */}
             <section className="polls-section">

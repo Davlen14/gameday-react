@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { FaTv } from "react-icons/fa";
+import { useWeek } from "../context/WeekContext"; // ✅ Import global week state
 
 const Scoreboard = () => {
+  const { week, setWeek } = useWeek(); // ✅ Use global week state
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [media, setMedia] = useState([]);
   const [lines, setLines] = useState([]);
-  const [week, setWeek] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,7 +18,6 @@ const Scoreboard = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        // Fetch all relevant data in parallel
         const [teamsData, gamesData, mediaData, linesData] = await Promise.all([
           teamsService.getTeams(),
           teamsService.getGames(week),
@@ -45,7 +45,7 @@ const Scoreboard = () => {
     };
 
     fetchData();
-  }, [week]);
+  }, [week]); // ✅ Uses global week state
 
   // Helpers
   const getTeamLogo = (teamName) => {
@@ -113,8 +113,8 @@ const Scoreboard = () => {
         <select
           id="weekSelect"
           className="scoreboard-week-dropdown"
-          value={week}
-          onChange={(e) => setWeek(Number(e.target.value))}
+          value={week} // ✅ Now using global week state
+          onChange={(e) => setWeek(Number(e.target.value))} // ✅ Updates global state
         >
           {[...Array(17).keys()].map((w) => (
             <option key={w + 1} value={w + 1}>
@@ -214,5 +214,6 @@ const Scoreboard = () => {
 };
 
 export default Scoreboard;
+
 
 
