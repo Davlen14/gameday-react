@@ -125,7 +125,10 @@
     display: flex;
     align-items: center;
     gap: 3px;
+    flex-wrap: nowrap;  /* Prevents the stars from wrapping */
+    min-width: 80px;    /* Adjust this value if needed */
 }
+
 
 .star-icon {
     color: #FFD700;
