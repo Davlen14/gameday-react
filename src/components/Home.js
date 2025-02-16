@@ -88,7 +88,7 @@ const Home = () => {
                 <div className="featured-grid">
                     {/* Big Hero Card - Ohio State */}
                     <div className="featured-card big-card">
-                        <img src="/photos/OhioChamp.jepg" alt="Ohio State Celebration" />
+                        <img src="/photos/Ostate.webp" alt="Ohio State Celebration" />
                         <div className="featured-overlay">
                             <h2>Ohio State Triumph</h2>
                             <p>Random text about their epic success.</p>
