@@ -117,7 +117,7 @@ function App() {
                     {dropdownOpen === "news" && (
                       <div className="dropdown-menu">
                         <Link to="/latest-news">Latest Updates</Link> {/* ✅ New Route */}
-                        <Link to="/injury-reports">Injury Reports</Link>
+                        <Link to="/injury-reports">Injury Report</Link>
                         <Link to="/rankings">Rankings</Link>
                         <Link to="/coaching-changes">
                           Coaching Changes
