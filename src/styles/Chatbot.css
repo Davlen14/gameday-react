@@ -1,100 +1,99 @@
 :root {
-  --primary: #d4001c; /* Matches Navbar */
+  --primary: #d4001c;
   --secondary: #b30000;
   --status-green: #22c55e;
   --background: #ffffff;
-  --surface: rgba(255, 255, 255, 0.2); /* Glass Effect */
+  --surface: #f5f5f5;
   --text-primary: #111;
   --text-secondary: #444;
-  --border: rgba(255, 255, 255, 0.3);
-  --shadow: rgba(0, 0, 0, 0.2);
+  --border: #ddd;
+  --shadow: rgba(0, 0, 0, 0.1);
 }
 
-/* 🔥 Full-Screen Chatbot Layout - Reduced Height */
+/* Full-Screen Chatbot Layout */
 .chatbot-container {
   display: flex;
-  height: calc(80vh - 60px); /* Shrunk by 20% */
+  height: calc(100vh - 60px);
   margin-top: 10px;
   background: var(--background);
   font-family: "Orbitron", "Titillium Web", sans-serif;
   width: 100%;
-  backdrop-filter: blur(15px); /* Glass Effect */
-  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px; /* ✅ Softer rounded edges */
+  overflow: hidden; /* Ensures clean edges */
 }
 
-/* 🟥 Sidebar */
+/* Sidebar */
 .chatbot-sidebar {
-  width: 300px; /* Adjusted for balance */
-  background: var(--surface);
-  padding: 28px;
+  width: 360px;
+  background: var(--background);
+  padding: 36px;
   border-right: 1px solid var(--border);
-  box-shadow: 6px 0 12px var(--shadow);
+  box-shadow: 8px 0 15px var(--shadow);
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(20px); /* Glass Effect */
-  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px 0 0 20px; /* ✅ Rounded on the left */
 }
 
 .chatbot-brand {
   color: var(--primary);
-  margin-bottom: 30px;
-  font-size: 1.6rem;
+  margin-bottom: 40px;
+  font-size: 2rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-/* 🔹 Sidebar Sections */
+/* Sidebar Sections */
 .chatbot-section {
-  margin-bottom: 28px;
+  margin-bottom: 36px;
 }
 
 .chatbot-section h3 {
   color: var(--primary);
-  font-size: 0.9rem;
+  font-size: 1rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  margin: 20px 0 12px;
+  margin: 24px 0 16px;
 }
 
-/* 🎯 Example Questions & Capabilities */
+/* Example Questions & Capabilities */
 .examples-list, .capabilities-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.examples-list li, .capabilities-list li {
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px; /* Sharp corners */
-  margin: 6px 0;
+.examples-list li {
+  padding: 14px 16px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0); /* ✅ Subtle gradient */
+  border-radius: 12px;
+  margin: 8px 0;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 500;
   color: var(--text-secondary);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 3px 6px var(--shadow); /* ✅ Standout effect */
 }
 
-.examples-list li:hover, .capabilities-list li:hover {
-  background: rgba(255, 255, 255, 0.25);
+.examples-list li:hover {
+  background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
   transform: translateX(4px);
-  box-shadow: 0 4px 12px var(--shadow);
+  box-shadow: 0 5px 12px var(--shadow);
 }
 
-/* 🚀 Pro Mode Button */
+/* Pro Mode Button */
 .pro-mode-button {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 14px 28px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
   margin-top: auto;
-  box-shadow: 0 4px 8px var(--shadow);
+  box-shadow: 0 6px 12px var(--shadow);
   transition: transform 0.2s ease;
 }
 
@@ -102,72 +101,59 @@
   transform: scale(1.05);
 }
 
-/* 🔥 Main Chat Section */
+/* Main Chat Section */
 .chatbot-main {
   flex: 1;
-  padding: 28px;
+  padding: 40px;
   position: relative;
   width: 100%;
+  border-radius: 0 20px 20px 0; /* ✅ Rounded edges on the right */
 }
 
-/* ✅ Connection Status */
+/* Connection Status */
 .status-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 14px 22px;
   background: var(--surface);
-  border-radius: 6px; /* Sharp corners */
-  margin-bottom: 24px;
+  border-radius: 14px;
+  margin-bottom: 32px;
   font-weight: 600;
   color: var(--text-primary);
-  backdrop-filter: blur(10px);
 }
 
-/* 🟢 Live Status */
+/* Live Status */
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--status-green);
+  gap: 10px;
+  color: var(--status-green); /* ✅ Now Green */
+  font-weight: 600;
 }
 
-.connection-status span {
-  animation: blink 1.5s infinite;
+.version-info {
+  color: var(--status-green); /* ✅ Now Green */
 }
 
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-  100% { opacity: 1; }
-}
-
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  background: var(--status-green);
-  border-radius: 50%;
-}
-
-/* 💬 Chat Area */
+/* Chat Area */
 .chat-area {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px; /* Sharp corners */
-  padding: 20px;
-  min-height: 400px; /* Reduced height */
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 500px;
   box-shadow: inset 0 2px 4px var(--shadow);
-  max-height: 60vh; /* Adjusted for smaller design */
+  max-height: 70vh;
   overflow-y: auto;
-  font-size: 1rem;
-  backdrop-filter: blur(12px);
+  font-size: 1.1rem;
 }
 
-/* 📩 Messages */
+/* Messages */
 .message {
-  margin: 10px 0;
-  padding: 14px;
-  border-radius: 6px; /* Sharp corners */
-  max-width: 80%;
+  margin: 12px 0;
+  padding: 16px;
+  border-radius: 14px;
+  max-width: 85%;
   font-weight: 500;
 }
 
@@ -175,40 +161,42 @@
   background: var(--primary);
   color: white;
   margin-left: auto;
+  border-radius: 20px 20px 4px 20px; /* ✅ Custom rounded shape */
 }
 
 .message.bot {
-  background: rgba(255, 255, 255, 0.2);
+  background: white;
   border: 1px solid var(--border);
   margin-right: auto;
+  border-radius: 20px 20px 20px 4px; /* ✅ Custom rounded shape */
 }
 
-/* ✍️ Input Box */
+/* Input Box */
 .input-container {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 14px;
+  margin-top: 24px;
 }
 
 .input-container input {
   flex: 1;
-  padding: 14px 20px;
+  padding: 16px 24px;
   border: 1px solid var(--border);
-  border-radius: 6px; /* Sharp corners */
-  font-size: 0.9rem;
+  border-radius: 14px;
+  font-size: 1rem;
   background: white;
-  box-shadow: 0 2px 4px var(--shadow);
+  box-shadow: 0 2px 6px var(--shadow);
 }
 
 .input-container button {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px; /* Sharp corners */
+  padding: 14px 28px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 3px 8px var(--shadow);
+  box-shadow: 0 4px 10px var(--shadow);
   transition: transform 0.2s ease;
 }
 
@@ -216,20 +204,19 @@
   transform: scale(1.05);
 }
 
-/* ⚡ Footer */
+/* Footer */
 .chat-footer {
   position: absolute;
-  bottom: 18px;
-  right: 18px;
+  bottom: 24px;
+  right: 24px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   background: var(--surface);
-  padding: 8px 14px;
-  border-radius: 6px; /* Sharp corners */
-  backdrop-filter: blur(8px);
+  padding: 10px 18px;
+  border-radius: 10px;
 }
 
-/* 🔄 Loading Animation */
+/* Loading Animation */
 .loading-message {
   color: var(--primary);
   animation: pulse 1.5s infinite;
@@ -241,19 +228,19 @@
   100% { opacity: 0.5; }
 }
 
-/* 📱 Responsive Fixes */
-@media (max-width: 1024px) {
+/* Responsive Fixes */
+@media (max-width: 1200px) {
   .chatbot-sidebar {
-    width: 280px;
-    padding: 24px;
+    width: 300px;
+    padding: 30px;
   }
 
   .chatbot-main {
-    padding: 24px;
+    padding: 30px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .chatbot-container {
     flex-direction: column;
     height: auto;
@@ -265,10 +252,12 @@
     border-right: none;
     border-bottom: 1px solid var(--border);
     box-shadow: none;
-    padding: 16px;
+    padding: 20px;
+    border-radius: 20px 20px 0 0; /* ✅ Keeps it rounded at the top */
   }
 
   .chatbot-main {
-    padding: 16px;
+    padding: 20px;
+    border-radius: 0 0 20px 20px; /* ✅ Keeps it rounded at the bottom */
   }
 }
