@@ -1,0 +1,79 @@
+/* Team Detail Page Styles */
+
+.team-detail-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #004c8c;
+  }
+  
+  /* Team Header */
+  .team-header {
+    background-color: #004c8c;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+  }
+  
+  .team-logo {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 10px;
+  }
+  
+  /* Ratings Section */
+  .ratings-section {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 10px;
+  }
+  
+  /* Schedule Section */
+  .schedule-section {
+    margin-top: 30px;
+  }
+  
+  .schedule-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .team-small-logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 10px;
+    object-fit: contain;
+  }
+  
+  /* Roster Section */
+  .roster-section {
+    margin-top: 30px;
+  }
+  
+  .roster-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .roster-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+  }
+  
