@@ -12,12 +12,7 @@
     padding: 0 0.75rem;
     font-family: "Orbitron", "Titillium Web", sans-serif;
     width: 100%;
-    position: fixed;   /* Fixes the bar to the viewport */
-    top: 0;            /* Positions it at the top */
-    left: 0;           /* Ensures it starts from the left edge */
-    z-index: 1000;     /* Places it above other content */
 }
-
 
 /* Container for NCAAF + Week filters */
 .scoreboard-filters {
