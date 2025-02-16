@@ -8,7 +8,7 @@
 
 .home-container {
 font-family: "Orbitron", "Titillium Web", sans-serif; 
-padding: 2rem;
+padding: 1rem 2rem; /* Reduce top padding */
 background-color: var(--background-color);
 color: var(--text-color);
 min-height: 100vh;
@@ -16,16 +16,19 @@ min-height: 100vh;
 
 .hero-header {
     text-align: center;
-    margin-top: 50px; /* Increased vertical spacing */
+    margin-top: 10px; /* Reduce from 50px */
     margin-bottom: 3rem;
     position: relative;
 }
 
+
 .hero-header h1 {
-    color: red;
-    font-size: 3rem; /* Adjust size as needed */
+    margin-top: 0;
+    color: #D4001C;
+    font-size: 3rem;
     font-style: italic;
 }
+
 
 
 .week-selector {
