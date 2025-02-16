@@ -74,9 +74,10 @@
 
 /* Straight Dividers */
 .prospects-table td {
-    padding: 12px;
+    padding: 14px 12px; /* Ensures uniform height */
     font-size: 14px;
     border-bottom: 1px solid #ddd;
+    vertical-align: middle; /* Aligns all content */
 }
 
 /* Even/Odd Row Styling */
@@ -104,6 +105,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    white-space: nowrap; /* Prevents wrapping */
+}
+
+.player-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .player-icon {
@@ -112,16 +121,16 @@
 }
 
 /* Stars & Rating */
-.stars-rating {
+.stars-wrapper {
     display: flex;
     align-items: center;
     gap: 3px;
-    font-weight: bold;
 }
 
 .star-icon {
     color: #FFD700;
-    font-size: 14px; /* Slightly smaller to align better */
+    font-size: 12px; /* Slightly smaller for better alignment */
+    margin-right: 2px;
 }
 
 /* Team Commitment */
@@ -136,12 +145,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 10px;
+    padding: 6px 12px;
     background: #f4f4f4;
     border-radius: 6px;
     border: 1px solid #ddd;
-    min-width: 120px;
-    justify-content: center;
+    min-width: 140px;
+    justify-content: space-between;
 }
 
 /* Adjusted Team Logo */
@@ -151,7 +160,7 @@
     object-fit: contain;
     background: #fff;
     padding: 5px;
-    border-radius: 6px; /* Now rectangular */
+    border-radius: 6px;
     border: 1px solid #ddd;
 }
 
@@ -189,5 +198,3 @@
         text-align: center;
     }
 }
-
-

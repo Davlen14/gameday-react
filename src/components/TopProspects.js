@@ -44,11 +44,14 @@ const TopProspects = () => {
   };
 
   const renderStars = (stars) => {
-    return [...Array(stars)].map((_, index) => (
-      <FaStar key={index} className="star-icon small-star" />
-    ));
+    return (
+      <div className="stars-container">
+        {[...Array(stars)].map((_, index) => (
+          <FaStar key={index} className="star-icon small-star" />
+        ))}
+      </div>
+    );
   };
-  
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
@@ -112,13 +115,17 @@ const TopProspects = () => {
               <tr key={prospect.id} className={`prospect-row ${index % 2 === 0 ? "even" : "odd"}`}>
                 <td>#{prospect.ranking}</td>
                 <td className="player-cell">
-                  <FaUserCircle className="player-icon" />
-                  <span>{prospect.name}</span>
+                  <div className="player-wrapper">
+                    <FaUserCircle className="player-icon" />
+                    <span className="player-name">{prospect.name}</span>
+                  </div>
                 </td>
                 <td>{prospect.position}</td>
                 <td>{prospect.height} in</td>
                 <td>{prospect.weight} lbs</td>
-                <td>{renderStars(prospect.stars)}</td>
+                <td className="stars-cell">
+                  <div className="stars-wrapper">{renderStars(prospect.stars)}</div>
+                </td>
                 <td>{prospect.rating.toFixed(4)}</td>
                 <td className="committed-cell">
                   {prospect.committedTo ? (
@@ -145,6 +152,7 @@ const TopProspects = () => {
 };
 
 export default TopProspects;
+
 
 
 
