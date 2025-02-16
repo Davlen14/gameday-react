@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaTv } from "react-icons/fa";
 import teamsService from "../services/teamsService";
 import "../styles/Home.css";
-import { WeekContext } from "../contexts/WeekContext"; // Import your WeekContext
+import { WeekContext } from "../context/WeekContext"; // Import your WeekContext
 
 const Home = () => {
     // Use the global week state instead of local state
