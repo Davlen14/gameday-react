@@ -4,50 +4,64 @@ import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css"; // Update/add styles as needed
 
-// Define static thresholds based on SP+ ratings research
-const THRESHOLDS = {
-  overall: { min: -5, max: 50 },
-  offense: { min: 20, max: 45 },
-  defense: { min: 5, max: 35 },
-};
+//
+// 1) We'll unify all gauges to the domain [1..45].
+//    Red:   1..15   => 14 units
+//    Yellow:15..30  => 15 units
+//    Green: 30..45  => 15 units
+//    Total range = 44
+//
+// 2) We'll convert [1..45] => [0..100] internally, and
+//    define arcs so that ~32% is Red, ~34% is Yellow, ~34% is Green.
+//
 
-// A reusable Gauge component that renders an arc with red, yellow, green segments,
-// black needle, custom tick marks for the domain [min..max], and a numeric label in red.
-const Gauge = ({ label, value, min, max, fill }) => {
-  // 1) Clamp the raw SP+ rating between min and max
-  const clampedValue = Math.max(min, Math.min(value, max));
-  
-  // 2) Map [min..max] → [0..100] for internal "gauge" space
-  const totalRange = max - min;  // e.g., 50 - (-5) = 55 for Overall
-  const gaugeRange = 100;       
-  const normalizedValue = ((clampedValue - min) / totalRange) * gaugeRange;
+// For convenience, define a single domain for all metrics:
+const GAUGE_MIN = 1;
+const GAUGE_MAX = 45;
+const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN; // 44
 
-  // 3) Hard-code data for color segments in the gauge's internal 0..100 scale.
-  //    Red:   0..20
-  //    Yellow:20..60
-  //    Green: 60..100
-  const gaugeData = [
-    { name: "Red", value: 20, fill: "#ff0000" },
-    { name: "Yellow", value: 40, fill: "#fdbf00" },
-    { name: "Green", value: 40, fill: "#00b300" },
-  ];
+// Calculate the exact fraction of the domain for each color segment:
+const RED_LENGTH = 15 - 1;    // => 14
+const YELLOW_LENGTH = 30 - 15; // => 15
+const GREEN_LENGTH = 45 - 30;  // => 15
 
-  // 4) Needle calculation (the arc goes 180° to 0°).
-  //    0 => angle=180°, 100 => angle=0°.
+// Convert each segment length to a percentage of [0..100]
+const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;     // ~31.82
+const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100; // ~34.09
+const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;  // ~34.09
+
+// Hard-code data for the color segments in "gauge space" 0..100
+const gaugeData = [
+  { name: "Red", value: redPercent, fill: "#ff0000" },
+  { name: "Yellow", value: yellowPercent, fill: "#fdbf00" },
+  { name: "Green", value: greenPercent, fill: "#00b300" },
+];
+
+// We'll place ticks exactly at [1, 15, 30, 45].
+const TICK_VALUES = [1, 15, 30, 45];
+
+// A reusable Gauge component
+const Gauge = ({ label, rawValue }) => {
+  // 1) Clamp the raw rating to [1..45]
+  const clampedValue = Math.max(GAUGE_MIN, Math.min(rawValue, GAUGE_MAX));
+
+  // 2) Convert [1..45] => [0..100]
+  const normalizedValue = ((clampedValue - GAUGE_MIN) / GAUGE_RANGE) * 100;
+
+  // 3) Needle calculation
+  //    0 => angle=180°, 100 => angle=0°
   const centerX = 75;
   const centerY = 75;
   const needleLength = 60;
-  const angle = 180 - (normalizedValue * 180) / 100; // in degrees
+  const angle = 180 - (normalizedValue * 180) / 100;
   const rad = (angle * Math.PI) / 180;
   const needleX = centerX + needleLength * Math.cos(rad);
   const needleY = centerY - needleLength * Math.sin(rad);
 
-  // 5) Tick marks at [-5, 0, 10, 20, 30, 40, 50].
-  //    Each tick is mapped to [0..100] for angle calculation.
-  const tickValues = [-5, 0, 10, 20, 30, 40, 50];
-  const ticks = tickValues.map((tickVal) => {
-    // Map tickVal to [0..100]
-    const tickPercent = ((tickVal - min) / totalRange) * gaugeRange;
+  // 4) Tick marks at [1, 15, 30, 45]
+  //    Each mapped into [0..100] for angle calc
+  const ticks = TICK_VALUES.map((tickVal) => {
+    const tickPercent = ((tickVal - GAUGE_MIN) / GAUGE_RANGE) * 100;
     const tickAngle = 180 - (tickPercent * 180) / 100;
     const tickRad = (tickAngle * Math.PI) / 180;
     const tickX = centerX + 65 * Math.cos(tickRad);
@@ -86,7 +100,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
         />
         {/* Needle pivot */}
         <circle cx={centerX} cy={centerY} r={4} fill="#000" />
-        
+
         {/* Tick marks & labels */}
         {ticks.map((tick, i) => (
           <React.Fragment key={i}>
@@ -103,7 +117,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
           </React.Fragment>
         ))}
       </RadialBarChart>
-      
+
       {/* Value in red below the gauge center */}
       <text
         x={centerX}
@@ -114,7 +128,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
       >
         {Math.round(clampedValue)}
       </text>
-      
+
       {/* Gauge label */}
       <div className="gauge-title" style={{ marginTop: "1rem", fontSize: "14px" }}>
         {label}
@@ -123,6 +137,9 @@ const Gauge = ({ label, value, min, max, fill }) => {
   );
 };
 
+//
+// TeamDetail component
+//
 const TeamDetail = () => {
   const { teamId } = useParams();
   const [allTeams, setAllTeams] = useState([]); 
@@ -238,30 +255,13 @@ const TeamDetail = () => {
         <section className="team-ratings">
           <h2>SP+ Ratings</h2>
           <div className="gauges-container">
-            {/* Overall gauge: scale -5 to 50 */}
-            <Gauge
-              label="Overall"
-              value={ratings.overall || 0}
-              min={THRESHOLDS.overall.min}
-              max={THRESHOLDS.overall.max}
-              fill="#8884d8"
-            />
-            {/* Offense gauge: scale 20 to 45 */}
-            <Gauge
-              label="Offense"
-              value={ratings.offense || 0}
-              min={THRESHOLDS.offense.min}
-              max={THRESHOLDS.offense.max}
-              fill="#82ca9d"
-            />
-            {/* Defense gauge: scale 5 to 35 */}
-            <Gauge
-              label="Defense"
-              value={ratings.defense || 0}
-              min={THRESHOLDS.defense.min}
-              max={THRESHOLDS.defense.max}
-              fill="#ff7300"
-            />
+            {/* 
+              We now pass the raw rating from 1..45 (if the API returns something else,
+              it will be clamped to 1..45).
+            */}
+            <Gauge label="Overall" rawValue={ratings.overall || 1} />
+            <Gauge label="Offense" rawValue={ratings.offense || 1} />
+            <Gauge label="Defense" rawValue={ratings.defense || 1} />
           </div>
           {/* Explanation Section */}
           <div className="ratings-explanation">
@@ -276,8 +276,9 @@ const TeamDetail = () => {
               <strong>Defense:</strong> Lower values indicate a stronger defense.
             </p>
             <p>
-              The markers on each gauge indicate the minimum (bright red), mid-range (bright yellow),
-              and maximum (neon green) expected ratings.
+              Here, each gauge is scaled from 1 to 45:
+              <br />
+              <strong>Red:</strong> 1–15, <strong>Yellow:</strong> 15–30, <strong>Green:</strong> 30–45
             </p>
           </div>
         </section>
@@ -335,4 +336,5 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
+
 

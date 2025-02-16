@@ -1,20 +1,20 @@
 /* DASHBOARD LAYOUT WRAPPER */
 .team-dashboard {
-    display: flex;             /* Side-by-side layout: sidebar + main content */
-    min-height: 100vh;         /* Full viewport height */
+    display: flex; /* Side-by-side layout: sidebar + main content */
+    min-height: 100vh; /* Full viewport height */
     font-family: 'Arial', sans-serif;
     background-color: #f5f5f5; /* Slight background to distinguish from sidebar */
   }
   
   /* SIDEBAR */
   .team-sidebar {
-    width: 280px;              /* Fixed width for sidebar */
+    width: 280px; /* Fixed width for sidebar */
     background-color: #004c8c; /* Primary color (example) */
     color: #fff;
     padding: 20px;
     display: flex;
-    flex-direction: column;    /* Stack elements vertically */
-    align-items: center;       /* Center content horizontally */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center content horizontally */
   }
   
   /* BACK LINK */
@@ -23,7 +23,7 @@
     text-decoration: none;
     margin-bottom: 20px;
     font-weight: bold;
-    align-self: flex-start;    /* Align link to the left inside sidebar */
+    align-self: flex-start; /* Align link to the left inside sidebar */
   }
   
   /* TEAM LOGO IN SIDEBAR */
@@ -50,9 +50,9 @@
   
   /* MAIN CONTENT AREA */
   .team-main-content {
-    flex: 1;                   /* Fills remaining width */
+    flex: 1; /* Fills remaining width */
     padding: 20px;
-    overflow-y: auto;          /* Scrollable if content is tall */
+    overflow-y: auto; /* Scrollable if content is tall */
   }
   
   /* SECTION WRAPPERS (Ratings, Schedule, Roster) */
@@ -93,10 +93,18 @@
   
   /* Style each gauge */
   .gauge {
-    text-align: center;
     position: relative;
-    /* Optional: Add some padding so the gauge doesn't feel cramped */
+    text-align: center;
     padding: 0.5rem;
+    /* Optionally fix a width to keep gauges uniform */
+    width: 180px; 
+    margin: 0 auto; /* Center the gauge container */
+  }
+  
+  /* Ensure the SVG is centered */
+  .gauge svg {
+    display: block;
+    margin: 0 auto;
   }
   
   /* Center label within the gauge (if used inside SVG) */
@@ -110,6 +118,7 @@
     margin-top: 0.5rem;
     font-size: 16px;
     font-weight: 600;
+    text-align: center;
   }
   
   /* Tick labels inside the gauge (if not overridden inline) */
@@ -167,6 +176,7 @@
   .team-roster li:last-child {
     border-bottom: none;
   }
+  
   
   
   
