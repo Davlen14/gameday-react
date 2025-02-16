@@ -95,9 +95,11 @@
   .gauge {
     text-align: center;
     position: relative;
+    /* Optional: Add some padding so the gauge doesn't feel cramped */
+    padding: 0.5rem;
   }
   
-  /* Center label within the gauge */
+  /* Center label within the gauge (if used inside SVG) */
   .gauge-label {
     font-size: 20px;
     font-weight: bold;
@@ -108,6 +110,11 @@
     margin-top: 0.5rem;
     font-size: 16px;
     font-weight: 600;
+  }
+  
+  /* Tick labels inside the gauge (if not overridden inline) */
+  .gauge svg text {
+    font-family: Arial, sans-serif;
   }
   
   /* RATINGS EXPLANATION SECTION */
@@ -160,6 +167,7 @@
   .team-roster li:last-child {
     border-bottom: none;
   }
+  
   
   
   
