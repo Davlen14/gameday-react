@@ -4,31 +4,18 @@ import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css"; // Update/add styles as needed
 
-// Define static thresholds based on SP+ ratings research
-// Now Overall max is set to 50.
-const THRESHOLDS = {
-  overall: { min: -5, max: 50 },
-  offense: { min: 20, max: 45 },
-  defense: { min: 5, max: 35 },
-};
-
-// A reusable Gauge component that renders an arc from 0-100
-// with red, yellow, green segments, black needle, and tick marks.
+// A reusable Gauge component that renders an arc from -5..50
+// with red, yellow, green segments, black needle, and custom tick marks.
 const Gauge = ({ label, value, min, max, fill }) => {
   // 1) Clamp the raw SP+ rating between min and max
   const clampedValue = Math.max(min, Math.min(value, max));
   
   // 2) Map [min..max] → [0..100]
-  const totalRange = max - min;
-  const gaugeRange = 100; // We’ll treat 0-100 as the gauge range
+  const totalRange = max - min;      // e.g. 50 - (-5) = 55
+  const gaugeRange = 100;           // We'll treat 0..100 as our "internal" gauge scale
   const normalizedValue = ((clampedValue - min) / totalRange) * gaugeRange;
 
-  // 3) Hard-code data for the colored segments:
-  //    - Red segment covers 0 to 20
-  //    - Yellow segment covers 20 to 60
-  //    - Green segment covers 60 to 100
-  // Each "value" below is the width of that segment in the 0-100 scale.
-  // We'll stack them in a single chart using stackId.
+  // 3) Hard-code data for color segments in the gauge's "internal" 0..100 scale
   const gaugeData = [
     { name: "Red", value: 20, fill: "#ff0000" },
     { name: "Yellow", value: 40, fill: "#fdbf00" },
@@ -37,7 +24,7 @@ const Gauge = ({ label, value, min, max, fill }) => {
 
   // 4) Needle calculation:
   //    The arc goes from 180° (left) to 0° (right).
-  //    A value of 0 → angle=180°, value of 100 → angle=0°.
+  //    0 => angle=180°, 100 => angle=0°.
   const centerX = 75;
   const centerY = 75;
   const needleLength = 60;
@@ -46,15 +33,18 @@ const Gauge = ({ label, value, min, max, fill }) => {
   const needleX = centerX + needleLength * Math.cos(rad);
   const needleY = centerY - needleLength * Math.sin(rad);
 
-  // 5) Tick marks at 0, 20, 40, 60, 80, 100
-  //    We position them along the same half-circle.
-  const ticks = [0, 20, 40, 60, 80, 100].map((tickValue) => {
-    const tickAngle = 180 - (tickValue * 180) / 100;
+  // 5) Tick marks at [-5, 0, 10, 20, 30, 40, 50].
+  //    Each tick is mapped from [-5..50] to [0..100] for the angle calculation.
+  const tickValues = [-5, 0, 10, 20, 30, 40, 50];
+  const ticks = tickValues.map((tickVal) => {
+    // Map this tickVal into the same 0..100 gauge space:
+    const tickPercent = ((tickVal - min) / totalRange) * gaugeRange; 
+    const tickAngle = 180 - (tickPercent * 180) / 100;
     const tickRad = (tickAngle * Math.PI) / 180;
-    const tickX = centerX + 65 * Math.cos(tickRad); // slightly shorter than needle
+    const tickX = centerX + 65 * Math.cos(tickRad);
     const tickY = centerY - 65 * Math.sin(tickRad);
     return {
-      value: tickValue,
+      label: tickVal,
       x: tickX,
       y: tickY,
     };
@@ -62,28 +52,21 @@ const Gauge = ({ label, value, min, max, fill }) => {
 
   return (
     <div className="gauge">
-      {/* The main chart for the arcs */}
       <RadialBarChart
         width={150}
         height={150}
         cx={centerX}
         cy={centerY}
-        innerRadius={50} // Adjust thickness
+        innerRadius={50} 
         outerRadius={70}
         startAngle={180}
         endAngle={0}
-        barSize={20} // Arc thickness
+        barSize={20}
         data={gaugeData}
       >
-        <RadialBar
-          dataKey="value"
-          cornerRadius={0}
-          clockWise
-          stackId="gauge"
-        />
-        {/* Additional arcs are automatically stacked via stackId */}
+        <RadialBar dataKey="value" cornerRadius={0} clockWise stackId="gauge" />
         
-        {/* Needle (black) */}
+        {/* Needle */}
         <line
           x1={centerX}
           y1={centerY}
@@ -92,16 +75,13 @@ const Gauge = ({ label, value, min, max, fill }) => {
           stroke="#000"
           strokeWidth={4}
         />
-        
-        {/* Needle pivot point (optional small circle in black) */}
+        {/* Pivot */}
         <circle cx={centerX} cy={centerY} r={4} fill="#000" />
         
-        {/* Tick labels */}
+        {/* Tick marks */}
         {ticks.map((tick, i) => (
           <React.Fragment key={i}>
-            {/* Small line or circle for the tick mark itself (optional) */}
             <circle cx={tick.x} cy={tick.y} r={2} fill="#000" />
-            {/* Numeric label slightly below each tick */}
             <text
               x={tick.x}
               y={tick.y + 12}
@@ -109,16 +89,16 @@ const Gauge = ({ label, value, min, max, fill }) => {
               fontSize="10"
               fill="#000"
             >
-              {tick.value}
+              {tick.label}
             </text>
           </React.Fragment>
         ))}
       </RadialBarChart>
       
-      {/* Value in red, just below the gauge center */}
+      {/* Value in red below the gauge center */}
       <text
         x={centerX}
-        y={centerY + 100} // push down below chart
+        y={centerY + 100}
         textAnchor="middle"
         fontSize="18"
         fill="red"
@@ -126,13 +106,14 @@ const Gauge = ({ label, value, min, max, fill }) => {
         {Math.round(clampedValue)}
       </text>
       
-      {/* Gauge label below the numeric value */}
+      {/* Gauge label */}
       <div className="gauge-title" style={{ marginTop: "1rem", fontSize: "14px" }}>
         {label}
       </div>
     </div>
   );
 };
+
 
 
 const TeamDetail = () => {
