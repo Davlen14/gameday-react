@@ -83,6 +83,62 @@ const Home = () => {
                 </div>
             </header>
 
+            {/* NEW FEATURED SECTION */}
+            <section className="featured-section">
+                <div className="featured-grid">
+                    {/* Big Hero Card - Ohio State */}
+                    <div className="featured-card big-card">
+                        <img src="/photos/OhioChamp.jpg" alt="Ohio State Celebration" />
+                        <div className="featured-overlay">
+                            <h2>Ohio State Triumph</h2>
+                            <p>Random text about their epic success.</p>
+                        </div>
+                    </div>
+
+                    {/* Five Smaller Cards */}
+                    <div className="featured-card small-card">
+                        <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
+                        <div className="featured-overlay">
+                            <h3>Arch Manning Buzz</h3>
+                            <p>Some quick snippet here.</p>
+                        </div>
+                    </div>
+
+                    <div className="featured-card small-card">
+                        <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
+                        <div className="featured-overlay">
+                            <h3>Oregon's Next Move</h3>
+                            <p>Random placeholder text.</p>
+                        </div>
+                    </div>
+
+                    <div className="featured-card small-card">
+                        <img src="/photos/CU.jpg" alt="Colorado" />
+                        <div className="featured-overlay">
+                            <h3>Colorado on the Rise</h3>
+                            <p>Random snippet text here.</p>
+                        </div>
+                    </div>
+
+                    <div className="featured-card small-card">
+                        <img src="/photos/Pennst.jpg" alt="Penn State" />
+                        <div className="featured-overlay">
+                            <h3>Penn State Prospects</h3>
+                            <p>More placeholder text.</p>
+                        </div>
+                    </div>
+
+                    <div className="featured-card small-card">
+                        <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
+                        <div className="featured-overlay">
+                            <h3>Georgia's Offseason</h3>
+                            <p>Random snippet about the Bulldogs.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {/* END FEATURED SECTION */}
+
             {/* Polls Section */}
             <section className="polls-section">
                 <div className="polls-grid">
@@ -130,18 +186,14 @@ const Home = () => {
                             <div className="game-card">
                                 <div className="game-header">
                                     <div className="game-time">
-                                        {new Date(
-                                            game.startDate
-                                        ).toLocaleDateString("en-US", {
+                                        {new Date(game.startDate).toLocaleDateString("en-US", {
                                             weekday: "short",
                                             month: "short",
                                             day: "numeric",
                                         })}
                                     </div>
                                     <div className="network">
-                                        {getNetworkLogo(
-                                            game.network || "ESPN"
-                                        )}
+                                        {getNetworkLogo(game.network || "ESPN")}
                                         <span className="network-name">
                                             {game.network || "ESPN"}
                                         </span>
@@ -209,5 +261,4 @@ const Home = () => {
     );
 };
 
-// Export Home Component
 export default Home;

@@ -284,3 +284,125 @@ select {
             font-size: 1.2rem;
         }
     }
+    /* FEATURED SECTION */
+.featured-section {
+    margin-bottom: 3rem; /* Spacing before next section */
+  }
+  
+  /* 
+    We'll create a 3x3 grid:
+      Row 1: [big, big, small1]
+      Row 2: [big, big, small2]
+      Row 3: [small3, small4, small5]
+    The first child in the .featured-grid is the "big" Ohio State card;
+    the next five are small cards.
+  */
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, auto);
+    grid-gap: 1rem;
+    grid-template-areas:
+      "big big small1"
+      "big big small2"
+      "small3 small4 small5";
+  }
+  
+  /* Assign each grid area by the element’s order */
+  .featured-grid > :nth-child(1) {
+    grid-area: big;
+    position: relative;
+  }
+  .featured-grid > :nth-child(2) {
+    grid-area: small1;
+    position: relative;
+  }
+  .featured-grid > :nth-child(3) {
+    grid-area: small2;
+    position: relative;
+  }
+  .featured-grid > :nth-child(4) {
+    grid-area: small3;
+    position: relative;
+  }
+  .featured-grid > :nth-child(5) {
+    grid-area: small4;
+    position: relative;
+  }
+  .featured-grid > :nth-child(6) {
+    grid-area: small5;
+    position: relative;
+  }
+  
+  /* Card Styles */
+  .featured-card {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .featured-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Slight zoom on hover */
+  .featured-card:hover img {
+    transform: scale(1.03);
+  }
+  
+  /* Text Overlay at Bottom */
+  .featured-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(212, 0, 28, 0.85); /* uses your accent color with opacity */
+    color: #fff;
+    padding: 1rem;
+  }
+  
+  .featured-overlay h2,
+  .featured-overlay h3 {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+  }
+  
+  .featured-overlay p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  /* 
+    Responsive Tweaks:
+    Adjust the grid layout on smaller screens so everything stacks nicely.
+  */
+  @media (max-width: 992px) {
+    .featured-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(3, auto);
+      grid-template-areas:
+        "big big"
+        "small1 small2"
+        "small3 small4"
+        "small5 small5";
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .featured-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      grid-template-areas:
+        "big"
+        "small1"
+        "small2"
+        "small3"
+        "small4"
+        "small5";
+    }
+  }
+  
