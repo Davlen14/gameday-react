@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAllRecruits, getTeams } from "../services/teamsService";
-import { FaUserCircle, FaStar, FaCheckCircle } from "react-icons/fa"; // Icons
+import { FaUserCircle, FaStar, FaCheckCircle, FaSearch } from "react-icons/fa"; // Icons
 import "../styles/TopProspects.css";
 
 const TopProspects = () => {
@@ -8,7 +8,7 @@ const TopProspects = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({ position: "All", team: "All" });
+  const [filters, setFilters] = useState({ position: "All", team: "" });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,9 +45,10 @@ const TopProspects = () => {
 
   const renderStars = (stars) => {
     return [...Array(stars)].map((_, index) => (
-      <FaStar key={index} className="star-icon" />
+      <FaStar key={index} className="star-icon small-star" />
     ));
   };
+  
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
@@ -57,7 +58,7 @@ const TopProspects = () => {
   const filteredProspects = prospects.filter((prospect) => {
     return (
       (filters.position === "All" || prospect.position === filters.position) &&
-      (filters.team === "All" || prospect.committedTo === filters.team)
+      (filters.team === "" || prospect.committedTo?.toLowerCase().includes(filters.team.toLowerCase()))
     );
   });
 
@@ -74,12 +75,16 @@ const TopProspects = () => {
           ))}
         </select>
 
-        <select name="team" value={filters.team} onChange={handleFilterChange}>
-          <option value="All">All Teams</option>
-          {[...new Set(prospects.map((p) => p.committedTo).filter(Boolean))].map((team) => (
-            <option key={team} value={team}>{team}</option>
-          ))}
-        </select>
+        <div className="team-search">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            name="team"
+            value={filters.team}
+            onChange={handleFilterChange}
+            placeholder="Search team..."
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -103,8 +108,8 @@ const TopProspects = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProspects.map((prospect) => (
-              <tr key={prospect.id} className="prospect-row">
+            {filteredProspects.map((prospect, index) => (
+              <tr key={prospect.id} className={`prospect-row ${index % 2 === 0 ? "even" : "odd"}`}>
                 <td>#{prospect.ranking}</td>
                 <td className="player-cell">
                   <FaUserCircle className="player-icon" />
@@ -140,5 +145,7 @@ const TopProspects = () => {
 };
 
 export default TopProspects;
+
+
 
 
