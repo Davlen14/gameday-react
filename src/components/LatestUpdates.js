@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import newsService from "../services/newsService"; // Import API service
-import "../styles/LatestUpdates.css"; // Import the updated styles
+import "../styles/LatestUpdates.css"; // Import updated styles
 
 const LatestUpdates = () => {
     const [news, setNews] = useState([]);
@@ -23,15 +23,15 @@ const LatestUpdates = () => {
 
     return (
         <div className="latest-updates-container">
-            {/* Hero Section */}
+            {/* 🔹 Hero Section */}
             <div className="hero">
                 <h1>Latest College Football News</h1>
                 <p>Stay updated with the most recent headlines and stories.</p>
             </div>
 
-            {/* Main Layout */}
+            {/* 🔹 Main Layout - Grid + Sidebar */}
             <div className="news-layout">
-                {/* Left Column - Featured News Grid */}
+                {/* Left Column - Interactive News Grid */}
                 <div className="news-grid">
                     {loading ? (
                         <p className="loading-text">Loading news...</p>
@@ -42,7 +42,7 @@ const LatestUpdates = () => {
                                 href={article.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="news-card"
+                                className={`news-card ${index === 0 ? "big-card" : index < 3 ? "medium-card" : "small-card"}`}
                             >
                                 {article.image && <img src={article.image} alt={article.title} className="news-image" />}
                                 <div className="news-overlay">
@@ -57,7 +57,7 @@ const LatestUpdates = () => {
                     )}
                 </div>
 
-                {/* Right Column - Sidebar */}
+                {/* 🔹 Right Column - Sidebar */}
                 <div className="news-sidebar">
                     <h2>Top Headlines</h2>
                     <ul>
@@ -77,3 +77,4 @@ const LatestUpdates = () => {
 };
 
 export default LatestUpdates;
+
