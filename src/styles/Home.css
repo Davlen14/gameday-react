@@ -16,9 +16,17 @@ min-height: 100vh;
 
 .hero-header {
     text-align: center;
+    margin-top: 50px; /* Increased vertical spacing */
     margin-bottom: 3rem;
     position: relative;
 }
+
+.hero-header h1 {
+    color: red;
+    font-size: 3rem; /* Adjust size as needed */
+    font-style: italic;
+}
+
 
 .week-selector {
     margin-top: 1rem;
