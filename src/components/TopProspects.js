@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAllRecruits, getTeams } from "../services/teamsService";
-import { FaUserCircle, FaStar } from "react-icons/fa"; // Player Icon & Star Rating
+import { FaUserCircle, FaStar, FaCheckCircle } from "react-icons/fa"; // Icons
 import "../styles/TopProspects.css";
 
 const TopProspects = () => {
@@ -8,6 +8,7 @@ const TopProspects = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({ position: "All", team: "All" });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,9 +49,38 @@ const TopProspects = () => {
     ));
   };
 
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  const filteredProspects = prospects.filter((prospect) => {
+    return (
+      (filters.position === "All" || prospect.position === filters.position) &&
+      (filters.team === "All" || prospect.committedTo === filters.team)
+    );
+  });
+
   return (
     <div className="top-prospects-container">
       <h1>Top Prospects - 2025 Class</h1>
+
+      {/* Filtering Options */}
+      <div className="filters-container">
+        <select name="position" value={filters.position} onChange={handleFilterChange}>
+          <option value="All">All Positions</option>
+          {[...new Set(prospects.map((p) => p.position))].map((pos) => (
+            <option key={pos} value={pos}>{pos}</option>
+          ))}
+        </select>
+
+        <select name="team" value={filters.team} onChange={handleFilterChange}>
+          <option value="All">All Teams</option>
+          {[...new Set(prospects.map((p) => p.committedTo).filter(Boolean))].map((team) => (
+            <option key={team} value={team}>{team}</option>
+          ))}
+        </select>
+      </div>
 
       {loading ? (
         <p>Loading prospects...</p>
@@ -59,50 +89,56 @@ const TopProspects = () => {
       ) : prospects.length === 0 ? (
         <p>No prospects available at the moment.</p>
       ) : (
-        <div className="prospect-list">
-          {prospects.map((prospect) => (
-            <div key={prospect.id} className="prospect-item">
-              {/* Rank Number */}
-              <div className="prospect-rank">#{prospect.ranking}</div>
-
-              {/* Player Headshot (Placeholder) */}
-              <div className="prospect-photo">
-                <FaUserCircle className="player-icon" />
-              </div>
-
-              {/* Player Details */}
-              <div className="prospect-info">
-                <h2>{prospect.name}</h2>
-                <p className="prospect-details">
-                  <span className="position">{prospect.position}</span> | {prospect.height} in | {prospect.weight} lbs
-                </p>
-                <p className="stars-rating">
-                  {renderStars(prospect.stars)} {prospect.rating.toFixed(4)}
-                </p>
-              </div>
-
-              {/* Committed Team */}
-              <div className="prospect-commit">
-                {prospect.committedTo ? (
-                  <>
-                    <img
-                      src={getTeamLogo(prospect.committedTo)}
-                      alt={`${prospect.committedTo} Logo`}
-                      className="team-logo"
-                    />
-                    <span className="committed-team">{prospect.committedTo}</span>
-                  </>
-                ) : (
-                  <span className="uncommitted">Undecided</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <table className="prospects-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Position</th>
+              <th>Height</th>
+              <th>Weight</th>
+              <th>Stars</th>
+              <th>Rating</th>
+              <th>Committed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProspects.map((prospect) => (
+              <tr key={prospect.id} className="prospect-row">
+                <td>#{prospect.ranking}</td>
+                <td className="player-cell">
+                  <FaUserCircle className="player-icon" />
+                  <span>{prospect.name}</span>
+                </td>
+                <td>{prospect.position}</td>
+                <td>{prospect.height} in</td>
+                <td>{prospect.weight} lbs</td>
+                <td>{renderStars(prospect.stars)}</td>
+                <td>{prospect.rating.toFixed(4)}</td>
+                <td className="committed-cell">
+                  {prospect.committedTo ? (
+                    <div className="commit-box">
+                      <img
+                        src={getTeamLogo(prospect.committedTo)}
+                        alt={`${prospect.committedTo} Logo`}
+                        className="team-logo"
+                      />
+                      <span>{prospect.committedTo}</span>
+                      <FaCheckCircle className="commit-check" />
+                    </div>
+                  ) : (
+                    <span className="uncommitted">Undecided</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
 };
 
 export default TopProspects;
+
 

@@ -8,135 +8,144 @@
 .top-prospects-container h1 {
     font-size: 28px;
     font-weight: bold;
-    color: #222; /* Darker color for contrast */
+    color: #222;
     margin-bottom: 20px;
 }
 
-/* List format for players */
-.prospect-list {
+/* Filter Container */
+.filters-container {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     gap: 15px;
+    margin-bottom: 20px;
 }
 
-/* Each prospect row */
-.prospect-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #ffffff; /* Clean white background */
-    border-radius: 8px;
-    padding: 12px 18px;
+.filters-container select {
+    padding: 8px 12px;
+    font-size: 14px;
     border: 1px solid #ddd;
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 5px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
 }
 
-.prospect-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+/* Table Styling */
+.prospects-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Rank Number */
-.prospect-rank {
-    font-size: 20px;
+.prospects-table th {
+    background: #f4f4f4;
+    font-size: 14px;
     font-weight: bold;
-    color: #444;
-    width: 40px;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+}
+
+.prospects-table td {
+    padding: 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Player Row Hover Effect */
+.prospect-row:hover {
+    background: #f9f9f9;
+}
+
+/* Player Rank */
+.prospect-row td:first-child {
+    font-weight: bold;
     text-align: center;
 }
 
-/* Player Headshot Placeholder */
-.prospect-photo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #e0e0e0;
+/* Player Name & Icon */
+.player-cell {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
 }
 
 .player-icon {
-    font-size: 40px;
+    font-size: 38px;
     color: #555;
 }
 
-/* Player Info Section */
-.prospect-info {
-    flex: 1;
-    text-align: left;
-    padding: 0 15px;
-}
-
-.prospect-info h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #222;
-    margin: 0;
-}
-
-.prospect-details {
-    font-size: 14px;
-    color: #666;
-}
-
-/* Stars & Ratings */
+/* Stars & Rating */
 .stars-rating {
     display: flex;
     align-items: center;
-    font-size: 14px;
+    gap: 3px;
     font-weight: bold;
-    color: #333;
 }
 
 .star-icon {
-    color: #FFD700; /* Gold color for stars */
-    margin-right: 2px;
+    color: #FFD700;
 }
 
-/* Committed Team Section */
-.prospect-commit {
+/* Team Commitment */
+.committed-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.commit-box {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.team-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    border-radius: 50%;
-    background: #fff;
-    padding: 5px;
+    padding: 5px 10px;
+    background: #f4f4f4;
+    border-radius: 6px;
     border: 1px solid #ddd;
 }
 
-.committed-team {
-    font-weight: 600;
-    font-size: 14px;
-    color: #222;
+.team-logo {
+    width: 50px;
+    height: 40px;
+    object-fit: contain;
+    background: #fff;
+    padding: 5px;
+    border-radius: 6px; /* Now rectangular */
+    border: 1px solid #ddd;
 }
 
+.commit-check {
+    font-size: 16px;
+    color: green;
+}
+
+/* Uncommitted Players */
 .uncommitted {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: bold;
     color: #999;
 }
 
-/* Responsive Styles */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .prospect-item {
+    .filters-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filters-container select {
+        width: 80%;
+    }
+
+    .player-cell {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .committed-cell {
         flex-direction: column;
         text-align: center;
     }
-
-    .prospect-info {
-        padding: 10px 0;
-    }
-
-    .team-logo {
-        width: 35px;
-        height: 35px;
-    }
 }
+
