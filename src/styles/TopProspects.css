@@ -1,0 +1,16 @@
+.top-prospects-container {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  
+  .top-prospects-container h1 {
+    color: #d4001c;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  
+  .top-prospects-container p {
+    font-size: 1.3rem;
+    color: #666;
+  }

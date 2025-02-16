@@ -14,6 +14,11 @@ import "./Navbar.css";
 import "./Header.css";
 import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
 
+// Recruiting Imports (excluding the Recruiting component)
+import TopProspects from "./components/TopProspects";
+import Commitments from "./components/Commitments";
+import TransferPortal from "./components/TransferPortal";
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -199,6 +204,11 @@ function App() {
             <Route path="/more" element={<More />} />
             <Route path="/ask-questions" element={<Chatbot />} />
             <Route path="/games/:gameId" element={<GameDetailView />} />
+            
+            {/* New Recruiting Routes */}
+            <Route path="/top-prospects" element={<TopProspects />} />
+            <Route path="/commitments" element={<Commitments />} />
+            <Route path="/transfer-portal" element={<TransferPortal />} />
           </Routes>
         </main>
       </div>
