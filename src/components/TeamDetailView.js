@@ -2,7 +2,59 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar, Legend } from "recharts";
-import "../styles/TeamDetail.css"; // We'll handle layout via CSS
+import "../styles/TeamDetail.css"; // Update/add styles as needed
+
+// A reusable Gauge component
+const Gauge = ({ label, value, min, max, fill }) => {
+  // For a gauge effect, we use a RadialBarChart that spans 180° (from 180 to 0)
+  // We'll transform the value to a percentage relative to the provided min/max.
+  const normalizedValue = Math.max(min, Math.min(value, max));
+  const percent = ((normalizedValue - min) / (max - min)) * 100;
+  
+  // Create data that the chart will render.
+  const data = [
+    {
+      name: label,
+      // For the gauge, use the percentage value.
+      value: percent,
+    },
+  ];
+
+  return (
+    <div className="gauge">
+      <RadialBarChart
+        width={150}
+        height={150}
+        cx={75}
+        cy={75}
+        innerRadius={30}
+        outerRadius={70}
+        startAngle={180}
+        endAngle={0}
+        data={data}
+      >
+        <RadialBar
+          minAngle={15}
+          background
+          clockWise
+          dataKey="value"
+          fill={fill}
+        />
+        {/* Center text showing the raw value */}
+        <text
+          x={75}
+          y={75}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="gauge-label"
+        >
+          {value}
+        </text>
+      </RadialBarChart>
+      <div className="gauge-title">{label}</div>
+    </div>
+  );
+};
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -82,12 +134,6 @@ const TeamDetail = () => {
     fetchData();
   }, [teamId]);
 
-  const ratingData = [
-    { name: "Overall", value: ratings.overall || 0, fill: "#8884d8" },
-    { name: "Offense", value: ratings.offense || 0, fill: "#82ca9d" },
-    { name: "Defense", value: ratings.defense || 0, fill: "#ff7300" },
-  ];
-
   if (isLoading.team) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!team) return <div>Team not found</div>;
@@ -126,30 +172,33 @@ const TeamDetail = () => {
         {/* Ratings Section */}
         <section className="team-ratings">
           <h2>Ratings</h2>
-          <RadialBarChart
-            width={200}
-            height={200}
-            cx={100}
-            cy={100}
-            innerRadius={20}
-            outerRadius={80}
-            barSize={10}
-            data={ratingData}
-          >
-            <RadialBar
-              minAngle={15}
-              label={{ fill: "#333", position: "insideStart" }}
-              background
-              clockWise
-              dataKey="value"
+          <div className="gauges-container">
+            {/* Using the thresholds we discussed:
+                - Overall: scale -5 to 35
+                - Offense: scale 20 to 45
+                - Defense: scale 5 to 35 */}
+            <Gauge
+              label="Overall"
+              value={ratings.overall || 0}
+              min={-5}
+              max={35}
+              fill="#8884d8"
             />
-            <Legend
-              iconSize={10}
-              layout="horizontal"
-              verticalAlign="bottom"
-              align="center"
+            <Gauge
+              label="Offense"
+              value={ratings.offense || 0}
+              min={20}
+              max={45}
+              fill="#82ca9d"
             />
-          </RadialBarChart>
+            <Gauge
+              label="Defense"
+              value={ratings.defense || 0}
+              min={5}
+              max={35}
+              fill="#ff7300"
+            />
+          </div>
         </section>
 
         {/* Schedule Section */}
@@ -206,8 +255,3 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
-
-
-
-
-

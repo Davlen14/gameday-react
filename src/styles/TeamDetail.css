@@ -120,5 +120,30 @@
   .team-roster li:last-child {
     border-bottom: none;
   }
+  /* Layout for the gauges container */
+.gauges-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  /* Style each gauge */
+  .gauge {
+    text-align: center;
+  }
+  
+  /* Center label within the gauge */
+  .gauge-label {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* Title below the gauge */
+  .gauge-title {
+    margin-top: 0.5rem;
+    font-size: 14px;
+    font-weight: 600;
+  }
   
   
