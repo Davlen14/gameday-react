@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import newsService from "../services/newsService"; // Import the news API service
+import newsService from "../services/newsService"; // Import API service
 import "../styles/LatestUpdates.css"; // Import the updated styles
 
 const LatestUpdates = () => {
@@ -29,13 +29,14 @@ const LatestUpdates = () => {
                 <p>Stay updated with the most recent headlines and stories.</p>
             </div>
 
-            {/* News Grid */}
-            {loading ? (
-                <p className="loading-text">Loading news...</p>
-            ) : (
+            {/* Main Layout */}
+            <div className="news-layout">
+                {/* Left Column - Featured News Grid */}
                 <div className="news-grid">
-                    {news.length > 0 ? (
-                        news.map((article, index) => (
+                    {loading ? (
+                        <p className="loading-text">Loading news...</p>
+                    ) : news.length > 0 ? (
+                        news.slice(0, 6).map((article, index) => (
                             <a 
                                 key={index} 
                                 href={article.url} 
@@ -44,7 +45,7 @@ const LatestUpdates = () => {
                                 className="news-card"
                             >
                                 {article.image && <img src={article.image} alt={article.title} className="news-image" />}
-                                <div className="news-content">
+                                <div className="news-overlay">
                                     <h3>{article.title}</h3>
                                     <p>{article.description}</p>
                                     <span className="news-source">{article.source.name}</span>
@@ -55,10 +56,24 @@ const LatestUpdates = () => {
                         <p className="no-news">No news found.</p>
                     )}
                 </div>
-            )}
+
+                {/* Right Column - Sidebar */}
+                <div className="news-sidebar">
+                    <h2>Top Headlines</h2>
+                    <ul>
+                        {news.slice(6, 12).map((article, index) => (
+                            <li key={index}>
+                                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                                    {article.title}
+                                </a>
+                                <span className="news-source">{article.source.name}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </div>
     );
 };
 
 export default LatestUpdates;
-
