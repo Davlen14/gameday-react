@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaTv } from "react-icons/fa";
 import teamsService from "../services/teamsService";
 import "../styles/Home.css";
-import { WeekContext } from "../context/WeekContext"; // Import your WeekContext
+import { useWeek } from "../context/WeekContext"; // Added import for global week state
 
 const Home = () => {
-    // Use the global week state instead of local state
-    const { week } = useContext(WeekContext);
+    // Removed local week state; now using the global week from context
+    // const [week, setWeek] = useState(1);
+    const { week } = useWeek();
 
     const [polls, setPolls] = useState([]);
     const [games, setGames] = useState([]);
@@ -69,7 +70,24 @@ const Home = () => {
         <div className="home-container">
             <header className="hero-header">
                 <h1>Welcome to Gameday</h1>
-                {/* Week selector removed since week is now managed globally */}
+                {/*
+                The week selector has been removed because the global week state is now managed elsewhere.
+                <div className="week-selector">
+                    <label>
+                        Week:
+                        <select
+                            value={week}
+                            onChange={(e) => setWeek(Number(e.target.value))}
+                        >
+                            {[...Array(17).keys()].map((w) => (
+                                <option key={w + 1} value={w + 1}>
+                                    Week {w + 1}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+                */}
             </header>
 
             {/* NEW FEATURED SECTION */}
@@ -144,6 +162,8 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            {/* END FEATURED SECTION */}
 
             {/* Polls Section */}
             <section className="polls-section">
