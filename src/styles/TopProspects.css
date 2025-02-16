@@ -77,7 +77,8 @@
     padding: 14px 12px; /* Ensures uniform height */
     font-size: 14px;
     border-bottom: 1px solid #ddd;
-    vertical-align: middle; /* Aligns all content */
+    /* Changed from middle to top to avoid staggered appearance */
+    vertical-align: top; 
 }
 
 /* Even/Odd Row Styling */
@@ -103,7 +104,8 @@
 /* Player Name & Icon */
 .player-cell {
     display: flex;
-    align-items: center;
+    /* Changed from align-items: center to flex-start */
+    align-items: flex-start; 
     gap: 10px;
     white-space: nowrap; /* Prevents wrapping */
 }
@@ -128,7 +130,6 @@
     flex-wrap: nowrap;  /* Prevents the stars from wrapping */
     min-width: 80px;    /* Adjust this value if needed */
 }
-
 
 .star-icon {
     color: #FFD700;
@@ -193,7 +194,7 @@
 
     .player-cell {
         flex-direction: column;
-        align-items: center;
+        align-items: center; /* For mobile, you can keep center alignment */
     }
 
     .committed-cell {
@@ -201,3 +202,4 @@
         text-align: center;
     }
 }
+
