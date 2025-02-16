@@ -36,78 +36,44 @@
     align-items: flex-start;
 }
 
-/* 🔹 News Grid */
-.latest-news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-/* 🔹 Different Card Sizes */
-.latest-news-card {
-    position: relative;
-    overflow: hidden;
+/* 🔹 Featured Story */
+.featured-story-card {
+    display: flex;
+    flex-direction: column;
     border-radius: 12px;
+    overflow: hidden;
     background: #fff;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-decoration: none;
     color: inherit;
 }
 
-.latest-news-card:hover {
+.featured-story-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Large Card */
-.latest-big-card {
-    grid-column: span 2;
-    height: 350px;
-}
-
-/* Medium Card */
-.latest-medium-card {
-    height: 280px;
-}
-
-/* Small Card */
-.latest-small-card {
-    height: 220px;
-}
-
-/* 🔹 News Image */
-.latest-news-image {
+.featured-image {
     width: 100%;
-    height: 100%;
+    height: 350px;
     object-fit: cover;
 }
 
-/* 🔹 News Overlay */
-.latest-news-overlay {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
-    color: #fff;
-    transition: opacity 0.3s ease-in-out;
+.featured-details {
+    padding: 20px;
 }
 
-.latest-news-card:hover .latest-news-overlay {
-    opacity: 1;
-}
-
-.latest-news-overlay h3 {
-    font-size: 1.3rem;
+.featured-details h2 {
+    font-size: 1.6rem;
     font-weight: bold;
     margin-bottom: 5px;
 }
 
-.latest-news-overlay p {
+.featured-details p {
     font-size: 1rem;
     opacity: 0.8;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .latest-news-source {
@@ -116,21 +82,110 @@
     color: var(--accent-color);
 }
 
-/* 🔹 Sidebar */
+/* 🔹 Dual Story Row */
+.dual-story-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.dual-story-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.dual-story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dual-story-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.dual-story-details {
+    padding: 15px;
+}
+
+.dual-story-details h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* 🔹 Scrollable News Feed */
+.scrollable-news {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 20px;
+    padding-bottom: 20px;
+    margin-top: 20px;
+}
+
+.scrollable-news-card {
+    flex: 0 0 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.scrollable-news-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.scrollable-news-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.scrollable-news-details {
+    padding: 15px;
+}
+
+.scrollable-news-details h4 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* 🔹 Sidebar Sections */
 .latest-news-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.best-of-gameday,
+.trending-news,
+.trending-teams,
+.cfb-highlights {
     background: #fff;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid var(--accent-color);
 }
 
 .latest-news-sidebar h2 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color: var(--text-color);
-    text-transform: uppercase;
+    font-size: 1.4rem;
     font-weight: bold;
+    margin-bottom: 15px;
 }
 
 .latest-news-sidebar ul {
@@ -140,9 +195,7 @@
 }
 
 .latest-news-sidebar li {
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
 }
 
 .latest-news-sidebar a {
@@ -157,45 +210,20 @@
     color: var(--accent-color);
 }
 
-/* 🔹 Loading & No News */
-.loading-text,
-.no-news {
-    text-align: center;
-    font-size: 1.2rem;
-    opacity: 0.8;
-    margin-top: 20px;
-}
-
-/* 🔹 Scroll Effect for News Cards */
-.latest-news-grid {
+/* 🔹 Trending Teams */
+.trending-teams ul {
     display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 20px;
-    padding-bottom: 20px;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 1rem;
+    font-weight: bold;
 }
 
-.latest-news-card {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-}
-
-/* 🔹 Scrollbar Styling */
-.latest-news-grid::-webkit-scrollbar {
-    height: 6px;
-}
-
-.latest-news-grid::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.latest-news-grid::-webkit-scrollbar-thumb {
-    background: rgba(212, 0, 28, 0.7);
-    border-radius: 4px;
-}
-
-.latest-news-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 0, 28, 0.9);
+/* 🔹 CFB Video Highlights */
+.cfb-highlights iframe {
+    border-radius: 12px;
+    width: 100%;
+    height: 200px;
 }
 
 /* 🔹 Responsive */
@@ -205,22 +233,25 @@
     }
 
     .latest-news-sidebar {
-        border-left: none;
         margin-top: 30px;
     }
 }
 
 @media (max-width: 768px) {
-    .latest-big-card {
-        grid-column: span 1;
+    .featured-image {
         height: 300px;
     }
 
-    .latest-medium-card {
-        height: 250px;
+    .dual-story-row {
+        grid-template-columns: 1fr;
     }
 
-    .latest-small-card {
+    .dual-story-image {
         height: 200px;
     }
+
+    .scrollable-news-card {
+        flex: 0 0 250px;
+    }
 }
+
