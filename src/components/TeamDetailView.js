@@ -28,7 +28,7 @@ const TeamDetail = () => {
       margin: "0 auto",
       padding: "2rem",
       fontFamily: "'Titillium Web', sans-serif",
-      backgroundColor: "var(--background-color)",
+      background: "linear-gradient(135deg, var(--background-color), var(--primary-color))",
       minHeight: "100vh",
     },
     backLink: {
@@ -37,36 +37,45 @@ const TeamDetail = () => {
       textDecoration: "none",
       color: "var(--accent-color)",
       fontWeight: "bold",
+      textTransform: "uppercase",
     },
     header: {
       textAlign: "center",
       marginBottom: "2rem",
+      borderBottom: "2px solid var(--border-color)",
+      paddingBottom: "1rem",
     },
     logo: {
       width: "150px",
       height: "150px",
-      borderRadius: "50%",
       objectFit: "cover",
       marginBottom: "1rem",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+      borderRadius: "0",
     },
     categoryButton: (selected) => ({
       marginRight: "0.5rem",
       padding: "0.5rem 1rem",
-      border: `1px solid var(--border-color)`,
-      background: selected ? "var(--accent-color)" : "var(--primary-color)",
+      border: `2px solid var(--accent-color)`,
+      background: selected ? "var(--accent-color)" : "transparent",
       color: selected ? "var(--primary-color)" : "var(--text-color)",
-      borderRadius: "20px",
       cursor: "pointer",
-      transition: "background 0.3s, color 0.3s",
+      transition: "all 0.3s ease",
       outline: "none",
+      borderRadius: "0",
+      fontWeight: "bold",
     }),
     card: {
       background: "var(--primary-color)",
       padding: "1.5rem",
-      borderRadius: "8px",
-      boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
       marginBottom: "1.5rem",
+      borderRadius: "0",
+      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    },
+    cardHover: {
+      transform: "translateY(-5px)",
+      boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
     },
     rosterItem: {
       display: "flex",
@@ -77,27 +86,33 @@ const TeamDetail = () => {
     rosterItemDetails: {
       display: "flex",
       flexDirection: "column",
+      marginLeft: "1rem",
     },
     rosterItemName: {
       fontWeight: "bold",
       fontSize: "1rem",
+      marginBottom: "0.25rem",
     },
     select: {
       padding: "0.5rem",
       marginBottom: "1rem",
       border: `1px solid var(--border-color)`,
-      borderRadius: "4px",
       outline: "none",
+      borderRadius: "0",
+      background: "var(--primary-color)",
+      color: "var(--text-color)",
+      fontFamily: "'Titillium Web', sans-serif",
     },
     scheduleCard: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       padding: "1rem",
-      borderRadius: "8px",
       background: "var(--primary-color)",
-      boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
       marginBottom: "1rem",
+      borderRadius: "0",
+      transition: "transform 0.3s ease, box-shadow 0.3s ease",
     },
     teamInfo: {
       display: "flex",
@@ -106,33 +121,36 @@ const TeamDetail = () => {
     teamLogoSmall: {
       width: "50px",
       height: "50px",
-      borderRadius: "50%",
       objectFit: "cover",
       marginRight: "0.5rem",
+      borderRadius: "0",
     },
     scheduleTeamLogo: {
       width: "50px",
       height: "50px",
-      borderRadius: "8px",
       objectFit: "cover",
       marginRight: "0.5rem",
+      borderRadius: "0",
     },
     teamLogoForRoster: {
       width: "40px",
       height: "40px",
-      borderRadius: "50%",
       objectFit: "cover",
       marginRight: "1rem",
+      borderRadius: "0",
     },
     vsText: {
       margin: "0 1rem",
       fontWeight: "bold",
     },
     scoreText: (isWinner) => ({
-      color: isWinner ? "green" : "red",
+      color: isWinner ? "#009900" : "#CC0000",
       fontWeight: "bold",
     }),
   };
+
+  // Hover effect for cards
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   // Helper function to get a team's logo
   const getTeamLogo = (teamName) => {
@@ -240,7 +258,14 @@ const TeamDetail = () => {
     switch (selectedCategory) {
       case "Rankings":
         return (
-          <div style={styles.card}>
+          <div
+            style={{
+              ...styles.card,
+              ...(hoveredCard === "rankings" ? styles.cardHover : {}),
+            }}
+            onMouseEnter={() => setHoveredCard("rankings")}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
             <h2 style={{ marginBottom: "1rem" }}>Ratings</h2>
             {isLoading.ratings ? (
               <p>Loading ratings...</p>
@@ -249,10 +274,10 @@ const TeamDetail = () => {
                 <p style={{ fontSize: "1.2rem" }}>
                   Overall Rating: {ratings?.overall || "N/A"}
                 </p>
-                <p style={{ fontSize: "1.2rem", color: "green" }}>
+                <p style={{ fontSize: "1.2rem", color: "#009900" }}>
                   Offense Rating: {ratings?.offense || "N/A"}
                 </p>
-                <p style={{ fontSize: "1.2rem", color: "red" }}>
+                <p style={{ fontSize: "1.2rem", color: "#CC0000" }}>
                   Defense Rating: {ratings?.defense || "N/A"}
                 </p>
               </>
@@ -262,7 +287,14 @@ const TeamDetail = () => {
 
       case "Roster":
         return (
-          <div style={styles.card}>
+          <div
+            style={{
+              ...styles.card,
+              ...(hoveredCard === "roster" ? styles.cardHover : {}),
+            }}
+            onMouseEnter={() => setHoveredCard("roster")}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
             <h2 style={{ marginBottom: "1rem" }}>Roster</h2>
             {isLoading.roster ? (
               <p>Loading roster...</p>
@@ -307,7 +339,14 @@ const TeamDetail = () => {
 
       case "Schedule":
         return (
-          <div style={styles.card}>
+          <div
+            style={{
+              ...styles.card,
+              ...(hoveredCard === "schedule" ? styles.cardHover : {}),
+            }}
+            onMouseEnter={() => setHoveredCard("schedule")}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
             <h2 style={{ marginBottom: "1rem" }}>Schedule</h2>
             {isLoading.schedule ? (
               <p>Loading schedule...</p>
@@ -325,9 +364,7 @@ const TeamDetail = () => {
                   <div style={{ flex: 1, textAlign: "center" }}>
                     <span
                       style={{
-                        ...styles.scoreText(
-                          game.homePoints > game.awayPoints
-                        ),
+                        ...styles.scoreText(game.homePoints > game.awayPoints),
                         marginRight: "0.5rem",
                       }}
                     >
@@ -343,7 +380,7 @@ const TeamDetail = () => {
                     >
                       {game.awayPoints}
                     </span>
-                    <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-color)" }}>
                       {game.venue || "TBD"}
                     </div>
                   </div>
@@ -363,7 +400,14 @@ const TeamDetail = () => {
 
       case "News":
         return (
-          <div style={styles.card}>
+          <div
+            style={{
+              ...styles.card,
+              ...(hoveredCard === "news" ? styles.cardHover : {}),
+            }}
+            onMouseEnter={() => setHoveredCard("news")}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
             <h2 style={{ marginBottom: "1rem" }}>News</h2>
             <p>Coming soon...</p>
           </div>
@@ -411,4 +455,3 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
-
