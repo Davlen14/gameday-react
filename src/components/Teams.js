@@ -286,11 +286,13 @@ const Teams = () => {
           margin: 0 auto;
           padding: 2rem;
         }
+        /* Make the teams list take up less space */
         .teams-list-section {
-          flex: 3;
-        }
-        .comparison-section {
           flex: 1;
+        }
+        /* Expand the comparison panel */
+        .comparison-section {
+          flex: 3;
           background: #f5f5f5;
           border-radius: 10px;
           padding: 1.5rem;
@@ -340,52 +342,54 @@ const Teams = () => {
           flex-direction: column;
           gap: 2rem;
         }
+        /* Slim down conference sections */
         .conference-section {
           background: white;
-          border-radius: 10px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 0.75rem;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
           text-align: left;
           width: 100%;
         }
         .conference-header {
           display: flex;
           align-items: center;
-          gap: 12px;
-          border-bottom: 2px solid #ddd;
-          padding-bottom: 0.75rem;
-          margin-bottom: 1rem;
+          gap: 8px;
+          border-bottom: 1px solid #ddd;
+          padding-bottom: 0.5rem;
+          margin-bottom: 0.5rem;
         }
         .conference-logo {
-          height: 50px;
+          height: 30px;
           width: auto;
         }
         .conference-title {
-          font-size: 1.6rem;
+          font-size: 1.2rem;
           color: #333;
           margin: 0;
           font-weight: bold;
         }
+        /* Compact team cards */
         .teams-table {
           display: flex;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 10px;
           justify-content: flex-start;
-          padding: 20px;
+          padding: 10px;
         }
         .team-card-container {
           display: flex;
           flex-direction: column;
           align-items: stretch;
-          min-width: 220px;
-          max-width: 240px;
+          min-width: 150px;
+          max-width: 170px;
         }
         .team-card {
           text-decoration: none;
           color: inherit;
           background: white;
           border-radius: 10px;
-          padding: 1rem;
+          padding: 0.5rem;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -403,12 +407,12 @@ const Teams = () => {
           gap: 12px;
         }
         .team-logo {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
           object-fit: contain;
         }
         .team-name {
-          font-size: 1rem;
+          font-size: 0.9rem;
           font-weight: bold;
           color: #333;
         }
