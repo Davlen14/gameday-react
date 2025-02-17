@@ -304,7 +304,7 @@ const Teams = () => {
         }
         .clear-button {
           margin-bottom: 1rem;
-          background-color: #ff6961;
+          background-color: #D4001C;
           color: #fff;
           border: none;
           padding: 0.5rem 1rem;
@@ -418,7 +418,7 @@ const Teams = () => {
         }
         .compare-button {
           margin-top: 0.5rem;
-          background-color: #007bff;
+          background-color: #D4001C;
           color: #fff;
           border: none;
           padding: 0.5rem;
@@ -426,7 +426,7 @@ const Teams = () => {
           cursor: pointer;
         }
         .compare-button:hover {
-          background-color: #0056b3;
+          background-color:rgb(179, 0, 0);
         }
         @media (max-width: 1024px) {
           .teams-table {
