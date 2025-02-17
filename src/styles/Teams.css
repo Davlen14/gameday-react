@@ -6,14 +6,14 @@
     padding: 2rem;
   }
   
-  /* Make the teams list take up less space */
+  /* Make the teams list take up more space */
   .teams-list-section {
-    flex: 1;
+    flex: 2; /* Increase the flex value to make it larger */
   }
   
-  /* Expand the comparison panel */
+  /* Reduce the comparison panel size */
   .comparison-section {
-    flex: 3;
+    flex: 1; /* Reduce the flex value to make it smaller */
     background: #f5f5f5;
     border-radius: 10px;
     padding: 1.5rem;
@@ -125,7 +125,7 @@
     color: inherit;
     background: white;
     border-radius: 10px;
-    padding: 1rem;
+    padding: 1.5rem; /* Increase padding */
     display: flex;
     flex-direction: column;
     align-items: center;
