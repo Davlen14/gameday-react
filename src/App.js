@@ -216,7 +216,7 @@ function App() {
                 Pick'em & Predictions
               </Link>
               <Link to="/fan-hub" className="nav-item">
-                Channels
+                Fan Hub
               </Link>
             </div>
           </nav>
