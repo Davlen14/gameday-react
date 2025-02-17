@@ -1,206 +1,206 @@
 :root {
-    --primary-color: #ffffff;
-    --accent-color: #D4001C;
-    --text-color: #333333;
-    --background-color: #f5f5f5;
-    --border-color: #dddddd;
-  }
-  
-  * {
-    box-sizing: border-box;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    color: var(--text-color);
-    background-color: var(--background-color);
-  }
-  
-  /* --------------------------
-     LEFT SIDEBAR (Navigation)
-  ----------------------------- */
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --border-color: #dddddd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+/* --------------------------
+   LEFT SIDEBAR (Navigation)
+----------------------------- */
+.left-sidebar {
+  /* Changed from fixed to sticky, removed bottom: 0, left: 0 */
+  position: sticky;
+  top: 100px; /* Adjust this to the combined height of your top + secondary nav */
+  width: 60px; /* Collapsed width */
+  background-color: var(--primary-color);
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  z-index: 1000; /* You can remove or adjust if needed */
+}
+
+.left-sidebar.expanded {
+  width: 200px;
+}
+
+.left-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.left-sidebar li {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.left-sidebar li:hover {
+  background-color: var(--background-color);
+}
+
+.left-sidebar li .icon {
+  font-size: 1.5em;
+  width: 30px;
+  text-align: center;
+}
+
+.left-sidebar li .label {
+  margin-left: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.left-sidebar.expanded li .label {
+  opacity: 1;
+}
+
+/* --------------------------
+      MAIN CONTENT
+----------------------------- */
+.main-content {
+  margin-left: 60px;
+  margin-right: 300px; /* Space for right sidebar */
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.left-sidebar.expanded ~ .main-content {
+  margin-left: 200px;
+}
+
+/* Sticky Header for Home / Team Selector */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background-color: var(--primary-color);
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 500;
+}
+
+.team-selector {
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* Section Styles */
+.section {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* --------------------------
+    RIGHT SIDEBAR (Live Chat)
+----------------------------- */
+.right-sidebar {
+  /* Changed from fixed to sticky, removed bottom: 0, right: 0 */
+  position: sticky;
+  top: 100px; /* Match the left sidebar offset for consistency */
+  width: 300px;
+  background-color: var(--primary-color);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000; /* You can remove or adjust if needed */
+}
+
+.chat-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.chat-input {
+  border-top: 1px solid var(--border-color);
+  padding: 10px;
+}
+
+.chat-input input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* Mini Feed for Latest Messages */
+.mini-feed {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  font-size: 0.9em;
+}
+
+/* --------------------------
+     Chat Rooms Tabs
+----------------------------- */
+.chat-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 15px;
+}
+
+.chat-tabs button {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.chat-tabs button.active {
+  border-bottom: 2px solid var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* --------------------------
+         RESPONSIVE
+----------------------------- */
+@media (max-width: 768px) {
   .left-sidebar {
-    /* Changed from fixed to sticky, removed bottom: 0, left: 0 */
-    position: sticky;
-    top: 100px; /* Adjust this to the combined height of your top + secondary nav */
-    width: 60px; /* Collapsed width */
-    background-color: var(--primary-color);
-    border-right: 1px solid var(--border-color);
-    transition: width 0.3s ease;
-    overflow: hidden;
-    z-index: 1000; /* You can remove or adjust if needed */
+    display: none;
   }
-  
-  .left-sidebar.expanded {
-    width: 200px;
-  }
-  
-  .left-sidebar ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .left-sidebar li {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .left-sidebar li:hover {
-    background-color: var(--background-color);
-  }
-  
-  .left-sidebar li .icon {
-    font-size: 1.5em;
-    width: 30px;
-    text-align: center;
-  }
-  
-  .left-sidebar li .label {
-    margin-left: 10px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    white-space: nowrap;
-  }
-  
-  .left-sidebar.expanded li .label {
-    opacity: 1;
-  }
-  
-  /* --------------------------
-        MAIN CONTENT
-  ----------------------------- */
   .main-content {
-    margin-left: 60px;
-    margin-right: 300px; /* Space for right sidebar */
-    padding: 20px;
-    transition: margin-left 0.3s ease;
+    margin-left: 0;
+    margin-right: 0;
   }
-  
-  .left-sidebar.expanded ~ .main-content {
-    margin-left: 200px;
-  }
-  
-  /* Sticky Header for Home / Team Selector */
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    background-color: var(--primary-color);
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 500;
-  }
-  
-  .team-selector {
-    padding: 5px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-  }
-  
-  /* Section Styles */
-  .section {
-    margin-top: 40px;
-    padding: 20px;
-    background-color: var(--primary-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-  }
-  
-  /* --------------------------
-      RIGHT SIDEBAR (Live Chat)
-  ----------------------------- */
   .right-sidebar {
-    /* Changed from fixed to sticky, removed bottom: 0, right: 0 */
-    position: sticky;
-    top: 100px; /* Match the left sidebar offset for consistency */
-    width: 300px;
-    background-color: var(--primary-color);
-    border-left: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    z-index: 1000; /* You can remove or adjust if needed */
+    display: none;
   }
-  
-  .chat-header {
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color);
-    font-weight: bold;
-  }
-  
-  .chat-messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-  }
-  
-  .chat-input {
-    border-top: 1px solid var(--border-color);
-    padding: 10px;
-  }
-  
-  .chat-input input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-  }
-  
-  /* Mini Feed for Latest Messages */
-  .mini-feed {
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--background-color);
-    font-size: 0.9em;
-  }
-  
-  /* --------------------------
-       Chat Rooms Tabs
-  ----------------------------- */
-  .chat-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 15px;
-  }
-  
-  .chat-tabs button {
-    flex: 1;
-    padding: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1em;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.3s ease;
-  }
-  
-  .chat-tabs button.active {
-    border-bottom: 2px solid var(--accent-color);
-    color: var(--accent-color);
-  }
-  
-  /* --------------------------
-           RESPONSIVE
-  ----------------------------- */
-  @media (max-width: 768px) {
-    .left-sidebar {
-      display: none;
-    }
-    .main-content {
-      margin-left: 0;
-      margin-right: 0;
-    }
-    .right-sidebar {
-      display: none;
-    }
-  }
+}
