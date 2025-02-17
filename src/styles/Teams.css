@@ -1,3 +1,7 @@
+/* 
+  Container that holds both the sidebar (teams-list-section) 
+  and the comparison panel (comparison-section).
+*/
 .teams-comparison-container {
     display: flex;
     gap: 1rem;
@@ -6,60 +10,26 @@
     padding: 2rem;
   }
   
-  /* Make the teams list take up less space */
+  /* 
+    SIDEBAR STYLES 
+    (teams-list-section + inside elements)
+  */
   .teams-list-section {
+    /* Make it look like a modern sidebar */
     flex: 1;
-  }
-  
-  /* Expand the comparison panel */
-  .comparison-section {
-    flex: 3;
-    background: #f5f5f5;
+    background: linear-gradient(to bottom right, #ffffff, #f7f7f7);
     border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    height: fit-content;
-  }
-  
-  .comparison-section h2 {
-    margin-top: 0;
-  }
-  
-  .clear-button {
-    margin-bottom: 1rem;
-    background-color: #D4001C;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .comparison-table {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .comparison-card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   
-  .comparison-team-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-  }
-  
-  .comparison-info h3 {
-    margin: 0;
-    font-size: 1.2rem;
+    /* 
+      Sticky positioning so it remains in place 
+      while the comparison panel can scroll (if needed). 
+    */
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
   }
   
   .teams-container {
@@ -72,28 +42,38 @@
     gap: 2rem;
   }
   
-  /* Slim down conference sections */
+  /* 
+    Each conference block 
+  */
   .conference-section {
-    background: white;
+    /* 
+      Make the conference blocks blend with the sidebar background, 
+      but still define a subtle boundary 
+    */
+    background: transparent;
     border-radius: 8px;
     padding: 0.75rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    width: 100%;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
   }
   
   .conference-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 0.5rem;
     margin-bottom: 0.5rem;
   }
   
   .conference-logo {
     height: 30px;
     width: auto;
+    /* Slight transparency and hover fade-in */
+    opacity: 0.8;
+    transition: opacity 0.3s;
+  }
+  
+  .conference-logo:hover {
+    opacity: 1;
   }
   
   .conference-title {
@@ -103,7 +83,9 @@
     font-weight: bold;
   }
   
-  /* Compact team cards */
+  /* 
+    Teams "table" layout
+  */
   .teams-table {
     display: flex;
     flex-wrap: wrap;
@@ -112,33 +94,49 @@
     padding: 10px;
   }
   
+  /* 
+    Each team card container 
+  */
   .team-card-container {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     flex: 1 1 calc(50% - 20px); /* Two cards per row */
-    max-width: calc(50% - 20px); /* Ensure two cards per row */
+    max-width: calc(50% - 20px);
   }
   
+  /* 
+    Actual team card 
+  */
   .team-card {
     text-decoration: none;
     color: inherit;
-    background: white;
+    /* Subtle "glass-like" background */
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
     border-radius: 10px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: 
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      background 0.3s ease;
     flex: 1;
+    cursor: pointer;
   }
   
   .team-card:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.85);
   }
   
+  /* 
+    Inside the team card 
+  */
   .team-content {
     display: flex;
     flex-direction: column;
@@ -146,13 +144,29 @@
     gap: 12px;
   }
   
+  /* 
+    Team logos 
+    - Start slightly transparent
+    - Scale and become fully opaque on card hover 
+  */
   .team-logo {
     width: 60px;
     height: 60px;
     object-fit: contain;
-    cursor: pointer; /* Make the logo clickable */
+    opacity: 0.8;
+    transition: 
+      transform 0.3s ease,
+      opacity 0.3s ease;
   }
   
+  .team-card:hover .team-logo {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  
+  /* 
+    Team name 
+  */
   .team-name {
     font-size: 1rem;
     font-weight: bold;
@@ -164,6 +178,9 @@
     max-width: 100%;
   }
   
+  /* 
+    Compare button 
+  */
   .compare-button {
     margin-top: 0.5rem;
     background-color: #D4001C;
@@ -172,26 +189,30 @@
     padding: 0.5rem;
     border-radius: 5px;
     cursor: pointer;
+    transition: background 0.3s ease;
   }
   
   .compare-button:hover {
-    background-color:rgb(179, 0, 0);
+    background-color: rgb(179, 0, 0);
   }
   
+  /* 
+    RESPONSIVE QUERIES 
+  */
   @media (max-width: 1024px) {
     .teams-table {
       justify-content: center;
     }
     .team-card-container {
-      flex: 1 1 calc(50% - 20px); /* Two cards per row */
-      max-width: calc(50% - 20px); /* Ensure two cards per row */
+      flex: 1 1 calc(50% - 20px);
+      max-width: calc(50% - 20px);
     }
   }
   
   @media (max-width: 768px) {
     .team-card-container {
-      flex: 1 1 calc(100% - 20px); /* One card per row on smaller screens */
-      max-width: calc(100% - 20px); /* Ensure one card per row */
+      flex: 1 1 calc(100% - 20px);
+      max-width: calc(100% - 20px);
     }
     .conference-title {
       font-size: 1.4rem;
@@ -200,13 +221,16 @@
   
   @media (max-width: 480px) {
     .team-card-container {
-      flex: 1 1 100%; /* One card per row on very small screens */
-      max-width: 100%; /* Ensure one card per row */
+      flex: 1 1 100%;
+      max-width: 100%;
     }
     .teams-comparison-container {
       flex-direction: column;
     }
-    .comparison-section {
-      margin-top: 1rem;
+    .teams-list-section {
+      position: static;
+      max-height: none;
+      margin-bottom: 1rem;
     }
   }
+  

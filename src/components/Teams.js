@@ -38,7 +38,7 @@ const Teams = () => {
     "Mountain West",
     "Conference USA",
     "Mid-American",
-    "FBS Independents"
+    "FBS Independents",
   ];
 
   // Group teams by conference and sort by popularity
@@ -99,7 +99,6 @@ const Teams = () => {
   }, []);
 
   // Whenever the user selects (or deselects) teams, fetch their ratings.
-  // Note: The dependency array is now [selectedTeams] only.
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
@@ -211,8 +210,8 @@ const Teams = () => {
 
   return (
     <div className="teams-comparison-container">
-      {/* Left Column: Teams */}
-      <div className="teams-list-section">
+      {/* Left Column: Teams (modern sidebar) */}
+      <div className="teams-list-section modern-sidebar">
         <div className="teams-container">
           <div className="conferences-list">
             {Object.entries(groupedTeams).map(([conference, teams]) => (
@@ -242,7 +241,9 @@ const Teams = () => {
                               className="team-logo"
                             />
                           </Link>
-                          <span className="team-name">{getTeamAbbreviation(team.school)}</span>
+                          <span className="team-name">
+                            {getTeamAbbreviation(team.school)}
+                          </span>
                         </div>
                       </div>
                       {/* Compare Button */}
@@ -263,7 +264,7 @@ const Teams = () => {
         </div>
       </div>
 
-      {/* Right Column: Comparison Panel */}
+      {/* Right Column: Comparison Panel (unchanged) */}
       <div className="comparison-section">
         <h2>Team Comparison</h2>
         {selectedTeams.length === 0 && (
