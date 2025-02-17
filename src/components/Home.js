@@ -21,11 +21,8 @@ const Home = () => {
             try {
                 setIsLoading(true);
                 
-                // For polls, if week is postseason, return an empty array
-                const pollsPromise =
-                  week === "postseason"
-                    ? Promise.resolve([])
-                    : teamsService.getPolls(2024, "ap", week);
+                // Always fetch polls (even for postseason) so that getPolls can handle the query.
+                const pollsPromise = teamsService.getPolls(2024, "ap", week);
 
                 // For games, pass the week as a number if regular, or as an object for postseason
                 // MODIFIED: convert week string to number when not "postseason"
@@ -288,4 +285,5 @@ const Home = () => {
 };
 
 export default Home;
+
 
