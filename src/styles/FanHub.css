@@ -25,16 +25,15 @@
      LEFT SIDEBAR (Navigation)
   ----------------------------- */
   .left-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    /* Changed from fixed to sticky, removed bottom: 0, left: 0 */
+    position: sticky;
+    top: 100px; /* Adjust this to the combined height of your top + secondary nav */
     width: 60px; /* Collapsed width */
     background-color: var(--primary-color);
     border-right: 1px solid var(--border-color);
     transition: width 0.3s ease;
     overflow: hidden;
-    z-index: 1000;
+    z-index: 1000; /* You can remove or adjust if needed */
   }
   
   .left-sidebar.expanded {
@@ -122,16 +121,15 @@
       RIGHT SIDEBAR (Live Chat)
   ----------------------------- */
   .right-sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    /* Changed from fixed to sticky, removed bottom: 0, right: 0 */
+    position: sticky;
+    top: 100px; /* Match the left sidebar offset for consistency */
     width: 300px;
     background-color: var(--primary-color);
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    z-index: 1000;
+    z-index: 1000; /* You can remove or adjust if needed */
   }
   
   .chat-header {
