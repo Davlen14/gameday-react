@@ -28,7 +28,6 @@ const LatestUpdates = () => {
                 const [teamsData, pollData] = await Promise.all([
                     teamsService.getTeams(),
                     teamsService.getPolls(2024, "ap", "postseason"), // Fetch postseason rankings
-
                 ]);
 
                 setTeams(teamsData);
@@ -158,7 +157,7 @@ const LatestUpdates = () => {
                         </ul>
                     </div>
 
-                    {/* 🏆 Latest AP Poll Rankings */}
+                    {/* 🏆 Postseason Rankings */}
                     <div className="latest-poll-section">
                         <h2 className="polls-header">
                             <img 
@@ -166,28 +165,30 @@ const LatestUpdates = () => {
                                 alt="Committee Logo" 
                                 className="poll-logo"
                             />
-                            Latest Rankings
+                            Postseason Rankings
                         </h2>
                         {loadingPolls ? (
-                            <p className="loading-text">Loading rankings...</p>
+                            <p className="loading-text">Loading postseason rankings...</p>
                         ) : (
                             <ul className="poll-rankings">
-                    {polls.length > 0 && polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll")?.rankings ? (
-                        polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll").rankings.slice(0, 5).map((team, index) => (
-
-                                        <li key={index} className="poll-team">
-                                            <img 
-                                                src={getTeamLogo(team.school)} 
-                                                alt={team.school} 
-                                                className="team-logo"
-                                            />
-                                            <span className="rank">#{team.rank}</span>
-                                            <span className="team-name">{team.school}</span>
-                                        </li>
-                                    ))
-                                ) : (
-                                    <p>No rankings available.</p>
-                                )}
+                                {(() => {
+                                    const fbsPoll = polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll");
+                                    return fbsPoll && fbsPoll.rankings ? (
+                                        fbsPoll.rankings.slice(0, 5).map((team, index) => (
+                                            <li key={index} className="poll-team">
+                                                <img 
+                                                    src={getTeamLogo(team.school)} 
+                                                    alt={team.school} 
+                                                    className="team-logo"
+                                                />
+                                                <span className="rank">#{team.rank}</span>
+                                                <span className="team-name">{team.school}</span>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <p>No postseason rankings available.</p>
+                                    );
+                                })()}
                             </ul>
                         )}
                     </div>
