@@ -27,7 +27,8 @@ const LatestUpdates = () => {
                 // Fetch teams first to get logos properly
                 const [teamsData, pollData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, "ap", 16), // Fetch poll for Week 15
+                    teamsService.getPolls(2024, "ap", "postseason"), // Fetch postseason rankings
+
                 ]);
 
                 setTeams(teamsData);
@@ -171,8 +172,9 @@ const LatestUpdates = () => {
                             <p className="loading-text">Loading rankings...</p>
                         ) : (
                             <ul className="poll-rankings">
-                                {polls.length > 0 && polls[0].rankings ? (
-                                    polls[0].rankings.slice(0, 5).map((team, index) => (
+                    {polls.length > 0 && polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll")?.rankings ? (
+                        polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll").rankings.slice(0, 5).map((team, index) => (
+
                                         <li key={index} className="poll-team">
                                             <img 
                                                 src={getTeamLogo(team.school)} 
