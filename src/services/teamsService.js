@@ -36,15 +36,27 @@ export const getTeams = async () => {
     return await fetchData(endpoint, params);
 };
 
-export const getGameMedia = async (year, week) => {
+// UPDATED: Added postseason support
+export const getGameMedia = async (year, query) => {
     const endpoint = "/games/media";
-    const params = { year, week };
+    let params;
+    if (typeof query === "object" && query.seasonType === "postseason") {
+        params = { year, seasonType: "postseason" };
+    } else {
+        params = { year, week: query };
+    }
     return await fetchData(endpoint, params);
 };
 
-export const getGameWeather = async (year, week) => {
+// UPDATED: Added postseason support
+export const getGameWeather = async (year, query) => {
     const endpoint = "/games/weather";
-    const params = { year, week };
+    let params;
+    if (typeof query === "object" && query.seasonType === "postseason") {
+        params = { year, seasonType: "postseason" };
+    } else {
+        params = { year, week: query };
+    }
     return await fetchData(endpoint, params);
 };
 
@@ -71,8 +83,7 @@ export const getGames = async (query) => {
     }
   
     return await fetchData(endpoint, params);
-  };
-  
+};
 
 export const getAdvancedBoxScore = async (gameId, week, team, seasonType = "regular") => {
     const endpoint = "/game/box/advanced";
@@ -179,30 +190,15 @@ export const getTeamById = async (teamId) => {
     return foundTeam;
 };
 
-export const getTeamRoster = async (team, year = 2024) => {
-    const endpoint = "/roster";
-    const params = { year, team }; // Ensure `team` is the team name (e.g., "Michigan")
-    const response = await fetchData(endpoint, params);
-
-    if (!response || response.length === 0) {
-        throw new Error("No roster data found");
-    }
-
-    return response.map((player) => ({
-        id: player.id || null,
-        fullName: `${player.firstName || ""} ${player.lastName || ""}`.trim() || "Unknown Player",
-        position: player.position || "N/A",
-        height: player.height || "N/A",
-        weight: player.weight || "N/A",
-        year: player.year || "N/A",
-        homeCity: player.homeCity || "N/A",
-        homeState: player.homeState || "N/A",
-    }));
-};
-
-export const getTeamSchedule = async (team, year = 2024) => {
+// UPDATED: Added postseason support if needed (using query parameter)
+export const getTeamSchedule = async (team, year = 2024, query = 1) => {
     const endpoint = "/games";
-    const params = { year, team, seasonType: "regular", division: "fbs" };
+    let params;
+    if (typeof query === "object" && query.seasonType === "postseason") {
+        params = { year, team, seasonType: "postseason", division: "fbs" };
+    } else {
+        params = { year, team, seasonType: "regular", division: "fbs", week: query };
+    }
     const response = await fetchData(endpoint, params);
 
     if (!response || response.length === 0) {
@@ -284,9 +280,15 @@ export const getPlayerGameStats = async (gameId, year, week, seasonType, team, c
     return await fetchData(endpoint, params);
 };
 
-export const fetchScoreboard = async (year, week) => {
+// UPDATED: Added postseason support for fetchScoreboard
+export const fetchScoreboard = async (year, query) => {
     const endpoint = "/games";
-    const params = { year, week };
+    let params;
+    if (typeof query === "object" && query.seasonType === "postseason") {
+        params = { year, seasonType: "postseason" };
+    } else {
+        params = { year, week: query };
+    }
     return await fetchData(endpoint, params);
 };
 
@@ -320,6 +322,7 @@ const teamsService = {
     getPlayerSeasonStats,
     getPlayerGameStats,
     fetchScoreboard,
+    getAllRecruits,
 };
 
 export default teamsService;
