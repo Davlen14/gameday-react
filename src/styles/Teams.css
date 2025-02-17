@@ -130,7 +130,6 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    border: 1px solid #ddd;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     flex: 1;
   }
@@ -151,6 +150,7 @@
     width: 60px;
     height: 60px;
     object-fit: contain;
+    cursor: pointer; /* Make the logo clickable */
   }
   
   .team-name {

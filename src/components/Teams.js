@@ -194,16 +194,18 @@ const Teams = () => {
                 <div className="teams-table">
                   {teams.map((team) => (
                     <div key={team.id} className="team-card-container">
-                      <Link to={`/teams/${team.id}`} className="team-card">
+                      <div className="team-card">
                         <div className="team-content">
-                          <img
-                            src={team.logos?.[0] || "/photos/default-team.png"}
-                            alt={team.school}
-                            className="team-logo"
-                          />
+                          <Link to={`/teams/${team.id}`}>
+                            <img
+                              src={team.logos?.[0] || "/photos/default-team.png"}
+                              alt={team.school}
+                              className="team-logo"
+                            />
+                          </Link>
                           <span className="team-name">{team.school}</span>
                         </div>
-                      </Link>
+                      </div>
                       {/* Compare Button */}
                       <button
                         className="compare-button"
