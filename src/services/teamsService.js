@@ -48,16 +48,31 @@ export const getGameWeather = async (year, week) => {
     return await fetchData(endpoint, params);
 };
 
-export const getGames = async (week) => {
+export const getGames = async (query) => {
     const endpoint = "/games";
-    const params = {
+    let params;
+  
+    // If query is an object (for example, { seasonType: "postseason" })
+    if (typeof query === "object" && query.seasonType === "postseason") {
+      params = {
+        year: 2024,
+        seasonType: "postseason",
+        division: "fbs",
+        // No week parameter for postseason games
+      };
+    } else {
+      // Otherwise, assume it's a regular season week number
+      params = {
         year: 2024,
         seasonType: "regular",
         division: "fbs",
-        week,
-    };
+        week: query,
+      };
+    }
+  
     return await fetchData(endpoint, params);
-};
+  };
+  
 
 export const getAdvancedBoxScore = async (gameId, week, team, seasonType = "regular") => {
     const endpoint = "/game/box/advanced";
