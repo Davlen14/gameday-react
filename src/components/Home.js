@@ -20,10 +20,22 @@ const Home = () => {
         const fetchHomeData = async () => {
             try {
                 setIsLoading(true);
+                
+                // For polls, if week is postseason, return an empty array
+                const pollsPromise =
+                  week === "postseason"
+                    ? Promise.resolve([])
+                    : teamsService.getPolls(2024, "ap", week);
+
+                // For games, pass the week as a number if regular, or as an object for postseason
+                const queryParam = week === "postseason" 
+                  ? { seasonType: "postseason" } 
+                  : parseInt(week, 10);
+
                 const [teamsData, pollsData, gamesData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, "ap", week),
-                    teamsService.getGames(week),
+                    pollsPromise,
+                    teamsService.getGames(queryParam),
                 ]);
 
                 setTeams(teamsData);
@@ -72,21 +84,6 @@ const Home = () => {
                 <h1>GAMEDAY+</h1>
                 {/*
                 The week selector has been removed because the global week state is now managed elsewhere.
-                <div className="week-selector">
-                    <label>
-                        Week:
-                        <select
-                            value={week}
-                            onChange={(e) => setWeek(Number(e.target.value))}
-                        >
-                            {[...Array(17).keys()].map((w) => (
-                                <option key={w + 1} value={w + 1}>
-                                    Week {w + 1}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
                 */}
             </header>
 
@@ -201,7 +198,9 @@ const Home = () => {
 
             {/* Games Section */}
             <section className="games-section">
-                <h2 className="section-title">Week {week} Matchups</h2>
+                <h2 className="section-title">
+                  {week === "postseason" ? "Postseason Matchups" : `Week ${week} Matchups`}
+                </h2>
                 <div className="games-slider">
                     {games.map((game) => (
                         <Link
