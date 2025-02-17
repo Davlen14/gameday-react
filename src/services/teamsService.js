@@ -137,15 +137,18 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     return data.map(pollGroup => ({
         id: `${pollGroup.season}-${pollGroup.week || 'postseason'}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
-        rankings: pollGroup.polls[0].ranks.map(team => ({
-            school: team.school,
-            conference: team.conference,
-            rank: team.rank,
-            points: team.points,
-            firstPlaceVotes: team.firstPlaceVotes
-        }))
+        rankings: pollGroup.polls[0].ranks
+            .filter(team => team.conference) // Ensure only FBS teams with a valid conference
+            .map(team => ({
+                school: team.school,
+                conference: team.conference,
+                rank: team.rank,
+                points: team.points,
+                firstPlaceVotes: team.firstPlaceVotes
+            }))
     }));
 };
+
 
 
 export const getPlayByPlay = async (gameId) => {
