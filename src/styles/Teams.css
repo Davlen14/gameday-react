@@ -3,234 +3,233 @@
   and the comparison panel (comparison-section).
 */
 .teams-comparison-container {
-    display: flex;
-    gap: 1rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
+  display: flex;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* 
+  SIDEBAR STYLES 
+  (teams-list-section + inside elements)
+*/
+.teams-list-section {
+  /* Make it look like a modern sidebar */
+  flex: 1;
+  background: linear-gradient(to bottom right, #ffffff, #f7f7f7);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
   /* 
-    SIDEBAR STYLES 
-    (teams-list-section + inside elements)
+    Sticky positioning so it remains in place 
+    while the comparison panel can scroll (if needed). 
   */
-  .teams-list-section {
-    /* Make it look like a modern sidebar */
-    flex: 1;
-    background: linear-gradient(to bottom right, #ffffff, #f7f7f7);
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  
-    /* 
-      Sticky positioning so it remains in place 
-      while the comparison panel can scroll (if needed). 
-    */
-    position: sticky;
-    top: 2rem;
-    max-height: calc(100vh - 4rem);
-    overflow-y: auto;
-  }
-  
-  .teams-container {
-    padding: 1rem 0;
-  }
-  
-  .conferences-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.teams-container {
+  padding: 1rem 0;
+}
+
+.conferences-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* 
+  Each conference block 
+*/
+.conference-section {
   /* 
-    Each conference block 
+    Make the conference blocks blend with the sidebar background, 
+    but still define a subtle boundary 
   */
-  .conference-section {
-    /* 
-      Make the conference blocks blend with the sidebar background, 
-      but still define a subtle boundary 
-    */
-    background: transparent;
-    border-radius: 8px;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-  }
-  
-  .conference-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 0.5rem;
-  }
-  
-  .conference-logo {
-    height: 30px;
-    width: auto;
-    /* Slight transparency and hover fade-in */
-    opacity: 0.8;
-    transition: opacity 0.3s;
-  }
-  
-  .conference-logo:hover {
-    opacity: 1;
-  }
-  
-  .conference-title {
-    font-size: 1.2rem;
-    color: #333;
-    margin: 0;
-    font-weight: bold;
-  }
-  
-  /* 
-    Teams "table" layout
-  */
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+}
+
+.conference-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.conference-logo {
+  height: 30px;
+  width: auto;
+  /* Slight transparency and hover fade-in */
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.conference-logo:hover {
+  opacity: 1;
+}
+
+.conference-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0;
+  font-weight: bold;
+}
+
+/* 
+  Teams "table" layout
+*/
+.teams-table {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+  padding: 10px;
+}
+
+/* 
+  Each team card container 
+*/
+.team-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 calc(50% - 20px); /* Two cards per row */
+  max-width: calc(50% - 20px);
+}
+
+/* 
+  Actual team card 
+*/
+.team-card {
+  text-decoration: none;
+  color: inherit;
+  /* Subtle "glass-like" background */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: 
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+  flex: 1;
+  cursor: pointer;
+}
+
+.team-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* 
+  Inside the team card 
+*/
+.team-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 
+  Team logos 
+  - Start slightly transparent
+  - Scale and become fully opaque on card hover 
+*/
+.team-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  opacity: 0.8;
+  transition: 
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.team-card:hover .team-logo {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* 
+  Team name 
+*/
+.team-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* 
+  Compare button 
+*/
+.compare-button {
+  margin-top: 0.5rem;
+  background-color: #D4001C;
+  color: #fff;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.compare-button:hover {
+  background-color: rgb(179, 0, 0);
+}
+
+/* 
+  RESPONSIVE QUERIES 
+*/
+@media (max-width: 1024px) {
   .teams-table {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: flex-start;
-    padding: 10px;
+    justify-content: center;
   }
-  
-  /* 
-    Each team card container 
-  */
   .team-card-container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex: 1 1 calc(50% - 20px); /* Two cards per row */
+    flex: 1 1 calc(50% - 20px);
     max-width: calc(50% - 20px);
   }
-  
-  /* 
-    Actual team card 
-  */
-  .team-card {
-    text-decoration: none;
-    color: inherit;
-    /* Subtle "glass-like" background */
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(5px);
-    border-radius: 10px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: 
-      transform 0.3s ease,
-      box-shadow 0.3s ease,
-      background 0.3s ease;
-    flex: 1;
-    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .team-card-container {
+    flex: 1 1 calc(100% - 20px);
+    max-width: calc(100% - 20px);
   }
-  
-  .team-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.85);
+  .conference-title {
+    font-size: 1.4rem;
   }
-  
-  /* 
-    Inside the team card 
-  */
-  .team-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  /* 
-    Team logos 
-    - Start slightly transparent
-    - Scale and become fully opaque on card hover 
-  */
-  .team-logo {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-    opacity: 0.8;
-    transition: 
-      transform 0.3s ease,
-      opacity 0.3s ease;
-  }
-  
-  .team-card:hover .team-logo {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-  
-  /* 
-    Team name 
-  */
-  .team-name {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .team-card-container {
+    flex: 1 1 100%;
     max-width: 100%;
   }
-  
-  /* 
-    Compare button 
-  */
-  .compare-button {
-    margin-top: 0.5rem;
-    background-color: #D4001C;
-    color: #fff;
-    border: none;
-    padding: 0.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  .teams-comparison-container {
+    flex-direction: column;
   }
-  
-  .compare-button:hover {
-    background-color: rgb(179, 0, 0);
+  .teams-list-section {
+    position: static;
+    max-height: none;
+    margin-bottom: 1rem;
   }
-  
-  /* 
-    RESPONSIVE QUERIES 
-  */
-  @media (max-width: 1024px) {
-    .teams-table {
-      justify-content: center;
-    }
-    .team-card-container {
-      flex: 1 1 calc(50% - 20px);
-      max-width: calc(50% - 20px);
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .team-card-container {
-      flex: 1 1 calc(100% - 20px);
-      max-width: calc(100% - 20px);
-    }
-    .conference-title {
-      font-size: 1.4rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .team-card-container {
-      flex: 1 1 100%;
-      max-width: 100%;
-    }
-    .teams-comparison-container {
-      flex-direction: column;
-    }
-    .teams-list-section {
-      position: static;
-      max-height: none;
-      margin-bottom: 1rem;
-    }
-  }
-  
+}
