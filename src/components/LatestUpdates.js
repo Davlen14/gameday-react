@@ -27,7 +27,7 @@ const LatestUpdates = () => {
                 // Fetch teams first to get logos properly
                 const [teamsData, pollData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, "ap", "postseason"), // Fetch postseason rankings
+                    teamsService.getPolls(2024, "ap", 16), // Fetch poll for Week 15
                 ]);
 
                 setTeams(teamsData);
@@ -157,7 +157,7 @@ const LatestUpdates = () => {
                         </ul>
                     </div>
 
-                    {/* 🏆 Postseason Rankings */}
+                    {/* 🏆 Latest AP Poll Rankings */}
                     <div className="latest-poll-section">
                         <h2 className="polls-header">
                             <img 
@@ -165,30 +165,27 @@ const LatestUpdates = () => {
                                 alt="Committee Logo" 
                                 className="poll-logo"
                             />
-                            Postseason Rankings
+                            Latest Rankings
                         </h2>
                         {loadingPolls ? (
-                            <p className="loading-text">Loading postseason rankings...</p>
+                            <p className="loading-text">Loading rankings...</p>
                         ) : (
                             <ul className="poll-rankings">
-                                {(() => {
-                                    const fbsPoll = polls.find(poll => poll.name === "AP Top 25" || poll.name === "Coaches Poll");
-                                    return fbsPoll && fbsPoll.rankings ? (
-                                        fbsPoll.rankings.slice(0, 5).map((team, index) => (
-                                            <li key={index} className="poll-team">
-                                                <img 
-                                                    src={getTeamLogo(team.school)} 
-                                                    alt={team.school} 
-                                                    className="team-logo"
-                                                />
-                                                <span className="rank">#{team.rank}</span>
-                                                <span className="team-name">{team.school}</span>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <p>No postseason rankings available.</p>
-                                    );
-                                })()}
+                                {polls.length > 0 && polls[0].rankings ? (
+                                    polls[0].rankings.slice(0, 5).map((team, index) => (
+                                        <li key={index} className="poll-team">
+                                            <img 
+                                                src={getTeamLogo(team.school)} 
+                                                alt={team.school} 
+                                                className="team-logo"
+                                            />
+                                            <span className="rank">#{team.rank}</span>
+                                            <span className="team-name">{team.school}</span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p>No rankings available.</p>
+                                )}
                             </ul>
                         )}
                     </div>

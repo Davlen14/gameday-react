@@ -127,31 +127,25 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     const params = { 
         year, 
         pollType, 
-        seasonType: "postseason" // Fetch postseason rankings
+        seasonType: "regular" 
     };
 
-    if (week) params.week = week; // Ensure week is passed when needed
+    if (week) params.week = week;
 
     const data = await fetchData(endpoint, params);
 
-    return data
-        .map(pollGroup => ({
-            id: `${pollGroup.season}-${pollGroup.week || 'postseason'}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
-            name: pollGroup.polls[0].poll,
-            rankings: pollGroup.polls
-                .filter(poll => poll.poll === "AP Top 25" || poll.poll === "Coaches Poll") // Keep only FBS rankings
-                .flatMap(poll => poll.ranks) // Flatten rankings from multiple polls
-                .map(team => ({
-                    school: team.school,
-                    conference: team.conference,
-                    rank: team.rank,
-                    points: team.points,
-                    firstPlaceVotes: team.firstPlaceVotes
-                }))
+    return data.map(pollGroup => ({
+        id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
+        name: pollGroup.polls[0].poll,
+        rankings: pollGroup.polls[0].ranks.map(team => ({
+            school: team.school,
+            conference: team.conference,
+            rank: team.rank,
+            points: team.points,
+            firstPlaceVotes: team.firstPlaceVotes
         }))
-        .filter(poll => poll.rankings.length > 0); // Remove any empty rankings
+    }));
 };
-
 
 export const getPlayByPlay = async (gameId) => {
     const endpoint = "/live/plays";
@@ -281,11 +275,7 @@ export const fetchScoreboard = async (year, week) => {
     return await fetchData(endpoint, params);
 };
 
-export const getAllRecruits = async (year = 2025) => {
-    const endpoint = "/recruiting/players";
-    const params = { year };
-    return await fetchData(endpoint, params);
-};
+
 
 // Export all functions
 const teamsService = {
