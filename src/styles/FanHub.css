@@ -24,18 +24,19 @@
   /* --------------------------
      LEFT SIDEBAR (Navigation)
   ----------------------------- */
-  .left-sidebar {
+/* LEFT SIDEBAR */
+.left-sidebar {
     position: fixed;
-    top: 0;
+    top: 100px; /* 50px (top bar) + 50px (secondary navbar) */
     left: 0;
     bottom: 0;
-    width: 60px; /* Collapsed width */
+    width: 60px;
     background-color: var(--primary-color);
     border-right: 1px solid var(--border-color);
     transition: width 0.3s ease;
     overflow: hidden;
     z-index: 1000;
-  }
+}
   
   .left-sidebar.expanded {
     width: 200px;
@@ -79,12 +80,14 @@
   /* --------------------------
         MAIN CONTENT
   ----------------------------- */
-  .main-content {
+
+.main-content {
+    margin-top: 100px; /* Push content below both bars */
     margin-left: 60px;
-    margin-right: 300px; /* Space for right sidebar */
+    margin-right: 300px;
     padding: 20px;
     transition: margin-left 0.3s ease;
-  }
+}
   
   .left-sidebar.expanded ~ .main-content {
     margin-left: 200px;
@@ -121,9 +124,10 @@
   /* --------------------------
       RIGHT SIDEBAR (Live Chat)
   ----------------------------- */
-  .right-sidebar {
+/* RIGHT SIDEBAR (Chat Container) */
+.right-sidebar {
     position: fixed;
-    top: 0;
+    top: 100px; /* 50px (top bar) + 50px (secondary navbar) */
     right: 0;
     bottom: 0;
     width: 300px;
@@ -132,7 +136,7 @@
     display: flex;
     flex-direction: column;
     z-index: 1000;
-  }
+}
   
   .chat-header {
     padding: 15px;
