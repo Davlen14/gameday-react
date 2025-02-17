@@ -127,15 +127,15 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     const params = { 
         year, 
         pollType, 
-        seasonType: "regular" 
+        seasonType: "postseason" // Fetch postseason rankings
     };
 
-    if (week) params.week = week;
+    if (week && params.seasonType !== "postseason") params.week = week;
 
     const data = await fetchData(endpoint, params);
 
     return data.map(pollGroup => ({
-        id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
+        id: `${pollGroup.season}-${pollGroup.week || 'postseason'}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
         rankings: pollGroup.polls[0].ranks.map(team => ({
             school: team.school,
@@ -146,6 +146,7 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
         }))
     }));
 };
+
 
 export const getPlayByPlay = async (gameId) => {
     const endpoint = "/live/plays";
