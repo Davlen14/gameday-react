@@ -27,8 +27,7 @@ const LatestUpdates = () => {
                 // Fetch teams first to get logos properly
                 const [teamsData, pollData] = await Promise.all([
                     teamsService.getTeams(),
-                    teamsService.getPolls(2024, "ap", "postseason"), // Fetch postseason rankings
-
+                    teamsService.getPolls(2024, "ap", 16), // Fetch poll for Week 15
                 ]);
 
                 setTeams(teamsData);
