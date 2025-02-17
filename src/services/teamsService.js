@@ -160,12 +160,12 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     }
     const data = await fetchData(endpoint, params);
 
-    // Filter out polls that are not FBS (e.g., those containing "FCS", "Division II", or "Division III")
+    // Filter out polls that are not FBS by doing a case-insensitive check.
     const fbsPollData = data.filter(pollGroup => {
-      const pollName = pollGroup.polls[0].poll;
-      return !pollName.includes("FCS") && 
-             !pollName.includes("Division II") && 
-             !pollName.includes("Division III");
+      const pollName = pollGroup.polls[0].poll.toLowerCase();
+      return !pollName.includes("fcs") &&
+             !pollName.includes("division ii") &&
+             !pollName.includes("division iii");
     });
 
     return fbsPollData.map(pollGroup => ({
@@ -180,6 +180,7 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
         }))
     }));
 };
+
 
 
 
