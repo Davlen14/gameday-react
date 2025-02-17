@@ -118,6 +118,14 @@ const Teams = () => {
     setSelectedTeams([]);
   };
 
+  // Helper to get team abbreviation
+  const getTeamAbbreviation = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.abbreviation || teamName;
+  };
+
   // ------------------------------
   // BUILD THE COMPARISON CHART DATA
   // ------------------------------
@@ -203,7 +211,7 @@ const Teams = () => {
                               className="team-logo"
                             />
                           </Link>
-                          <span className="team-name">{team.school}</span>
+                          <span className="team-name">{getTeamAbbreviation(team.school)}</span>
                         </div>
                       </div>
                       {/* Compare Button */}
