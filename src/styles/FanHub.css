@@ -24,8 +24,8 @@
   /* --------------------------
      LEFT SIDEBAR (Navigation)
   ----------------------------- */
-/* LEFT SIDEBAR */
-.left-sidebar {
+  /* LEFT SIDEBAR */
+  .left-sidebar {
     position: fixed;
     top: 100px; /* 50px (top bar) + 50px (secondary navbar) */
     left: 0;
@@ -33,10 +33,10 @@
     width: 60px;
     background-color: var(--primary-color);
     border-right: 1px solid var(--border-color);
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, top 0.3s ease;
     overflow: hidden;
     z-index: 1000;
-}
+  }
   
   .left-sidebar.expanded {
     width: 200px;
@@ -80,14 +80,14 @@
   /* --------------------------
         MAIN CONTENT
   ----------------------------- */
-
-.main-content {
+  
+  .main-content {
     margin-top: 100px; /* Push content below both bars */
     margin-left: 60px;
     margin-right: 300px;
     padding: 20px;
     transition: margin-left 0.3s ease;
-}
+  }
   
   .left-sidebar.expanded ~ .main-content {
     margin-left: 200px;
@@ -124,8 +124,8 @@
   /* --------------------------
       RIGHT SIDEBAR (Live Chat)
   ----------------------------- */
-/* RIGHT SIDEBAR (Chat Container) */
-.right-sidebar {
+  /* RIGHT SIDEBAR (Chat Container) */
+  .right-sidebar {
     position: fixed;
     top: 100px; /* 50px (top bar) + 50px (secondary navbar) */
     right: 0;
@@ -136,7 +136,8 @@
     display: flex;
     flex-direction: column;
     z-index: 1000;
-}
+    transition: top 0.3s ease;
+  }
   
   .chat-header {
     padding: 15px;
@@ -209,4 +210,12 @@
     .right-sidebar {
       display: none;
     }
-  } 
+  }
+  
+  /* --------------------------
+     SIDEBARS ADJUSTMENT WHEN SCOREBOARD IS HIDDEN
+  ----------------------------- */
+  .scoreboard-hidden .left-sidebar,
+  .scoreboard-hidden .right-sidebar {
+    top: 50px; /* Moves sidebars upward by 50px for a smooth transition */
+  }

@@ -5,7 +5,7 @@ import "../styles/FanHub.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faCommentAlt, faUsers, faLocationDot, faChartBar, faFire } from "@fortawesome/free-solid-svg-icons";
 
-function FanHub() {
+function FanHub({ scoreboardVisible }) {
   // State for left sidebar expansion (default collapsed)
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
@@ -70,7 +70,7 @@ function FanHub() {
   };
 
   return (
-    <div className="fan-hub-container">
+    <div className={`fan-hub-container ${!scoreboardVisible ? "scoreboard-hidden" : ""}`}>
       {/* LEFT SIDEBAR */}
       <nav
         className={`left-sidebar ${sidebarExpanded ? "expanded" : ""}`}

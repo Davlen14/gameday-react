@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { FaTv } from "react-icons/fa";
 import { useWeek } from "../context/WeekContext"; // ✅ Import global week state
 
-const Scoreboard = () => {
-  const { week, setWeek } = useWeek(); // ✅ Use global week state
+const Scoreboard = ({ setScoreboardVisible }) => {
+  const { week, setWeek } = useWeek();
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [media, setMedia] = useState([]);
   const [lines, setLines] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const scoreboardRef = useRef(null); // ✅ Track visibility
 
   // Fetch teams, games, media, and lines data for the selected week
   useEffect(() => {
@@ -47,6 +48,26 @@ const Scoreboard = () => {
     fetchData();
   }, [week]); // ✅ Uses global week state
 
+  // ✅ Track Scoreboard visibility
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setScoreboardVisible(entry.isIntersecting); // Update visibility state
+      },
+      { root: null, threshold: 0 }
+    );
+
+    if (scoreboardRef.current) {
+      observer.observe(scoreboardRef.current);
+    }
+
+    return () => {
+      if (scoreboardRef.current) {
+        observer.unobserve(scoreboardRef.current);
+      }
+    };
+  }, []);
+
   // Helpers
   const getTeamLogo = (teamName) => {
     const team = teams.find(
@@ -70,7 +91,6 @@ const Scoreboard = () => {
     return lines.find((l) => l.id === gameId) || null;
   };
 
-  // Helper to get sportsbook logo based on provider
   const getSportsbookLogo = (provider) => {
     const logos = {
       DraftKings: "/photos/draftkings.png",
@@ -80,7 +100,6 @@ const Scoreboard = () => {
     return logos[provider] || "/photos/default_sportsbook.png";
   };
 
-  // Format the game time
   const formatGameTime = (game) => {
     if (game.completed) {
       return "Final";
@@ -104,7 +123,7 @@ const Scoreboard = () => {
   }
 
   return (
-    <div className="scoreboard-bar">
+    <div className="scoreboard-bar" ref={scoreboardRef}>
       {/* Filters (NCAAF + Week) */}
       <div className="scoreboard-filters">
         <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
@@ -175,7 +194,6 @@ const Scoreboard = () => {
 
                 {/* Row 3: Home team + O/U on the right */}
                 <div className="scoreboard-home-row">
-                  {/* Home team on the left */}
                   <div className="scoreboard-card-team scoreboard-home-team">
                     <img
                       src={getTeamLogo(game.homeTeam)}
@@ -190,7 +208,6 @@ const Scoreboard = () => {
                     </span>
                   </div>
 
-                  {/* O/U on the right (only if chosenLine exists) */}
                   {chosenLine && (
                     <div className="scoreboard-sportsbook scoreboard-home-ou">
                       <img

@@ -25,6 +25,7 @@ import TransferPortal from "./components/TransferPortal";
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [scoreboardVisible, setScoreboardVisible] = useState(true);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -39,7 +40,7 @@ function App() {
       <Router>
         <div className="app">
           {/* TOP SCOREBOARD BAR */}
-          <Scoreboard />
+          <Scoreboard setScoreboardVisible={setScoreboardVisible} />
 
           {/* TOP NAVBAR */}
           <header className="top-bar">
@@ -195,7 +196,13 @@ function App() {
           </header>
 
           {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
-          <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
+          <nav
+            className={`secondary-bar ${menuOpen ? "active" : ""}`}
+            style={{
+              transition: "transform 0.3s ease",
+              transform: scoreboardVisible ? "translateY(0)" : "translateY(-50px)",
+            }}
+          >
             <div className="secondary-bar-container">
               <Link to="/" className="nav-item" onClick={toggleMenu}>
                 Home
@@ -233,7 +240,7 @@ function App() {
               <Route path="/ask-questions" element={<Chatbot />} />
               <Route path="/games/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
-              <Route path="/fan-hub" element={<FanHub />} /> {/* New Fan Hub Route */}
+              <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
               <Route path="/commitments" element={<Commitments />} />
