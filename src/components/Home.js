@@ -28,6 +28,7 @@ const Home = () => {
                     : teamsService.getPolls(2024, "ap", week);
 
                 // For games, pass the week as a number if regular, or as an object for postseason
+                // MODIFIED: convert week string to number when not "postseason"
                 const queryParam = week === "postseason" 
                   ? { seasonType: "postseason" } 
                   : parseInt(week, 10);
@@ -287,3 +288,4 @@ const Home = () => {
 };
 
 export default Home;
+
