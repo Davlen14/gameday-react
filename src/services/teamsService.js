@@ -152,17 +152,23 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     const endpoint = "/rankings";
     let params;
     if (week === "postseason") {
-        // If the week is "postseason", set seasonType to "postseason" (no week parameter)
+        // Use postseason polls if available.
         params = { year, pollType, seasonType: "postseason" };
     } else {
-        // Otherwise, set seasonType to "regular" and include the week parameter
         params = { year, pollType, seasonType: "regular" };
-        if (week) {
-            params.week = week;
-        }
+        if (week) params.week = week;
     }
     const data = await fetchData(endpoint, params);
-    return data.map(pollGroup => ({
+
+    // Filter out polls that are not FBS (e.g., those containing "FCS", "Division II", or "Division III")
+    const fbsPollData = data.filter(pollGroup => {
+      const pollName = pollGroup.polls[0].poll;
+      return !pollName.includes("FCS") && 
+             !pollName.includes("Division II") && 
+             !pollName.includes("Division III");
+    });
+
+    return fbsPollData.map(pollGroup => ({
         id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
         rankings: pollGroup.polls[0].ranks.map(team => ({
@@ -174,6 +180,7 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
         }))
     }));
 };
+
 
 
 
