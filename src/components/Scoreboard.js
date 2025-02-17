@@ -14,27 +14,40 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   const [error, setError] = useState(null);
   const scoreboardRef = useRef(null); // ✅ Track visibility
 
-  // Fetch teams, games, media, and lines data for the selected week
+  // Fetch teams, games, media, and lines data for the selected week or postseason
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+
+        // If "postseason" is selected, use a query object with seasonType
+        // Otherwise, use the week number
+        const queryParam = week === "postseason" ? { seasonType: "postseason" } : week;
+
         const [teamsData, gamesData, mediaData, linesData] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getGames(week),
-          teamsService.getGameMedia(2024, week),
+          teamsService.getGames(queryParam),
+          teamsService.getGameMedia(2024, queryParam),
           teamsService.getGameLines(2024),
         ]);
 
         setTeams(teamsData);
 
-        // Filter games to include only FBS vs. FBS
+        // Filter games to include only FBS vs. FBS matchups
         const fbsGames = gamesData.filter(
           (game) =>
             game.homeClassification === "fbs" &&
             game.awayClassification === "fbs"
         );
-        setGames(fbsGames);
+
+        // If postseason, sort by startDate because week numbers aren’t reliable
+        const sortedGames =
+          week === "postseason"
+            ? fbsGames.sort(
+                (a, b) => new Date(a.startDate) - new Date(b.startDate)
+              )
+            : fbsGames;
+        setGames(sortedGames);
 
         setMedia(mediaData);
         setLines(linesData);
@@ -46,7 +59,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     };
 
     fetchData();
-  }, [week]); // ✅ Uses global week state
+  }, [week]);
 
   // ✅ Track Scoreboard visibility
   useEffect(() => {
@@ -66,7 +79,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         observer.unobserve(scoreboardRef.current);
       }
     };
-  }, []);
+  }, [setScoreboardVisible]);
 
   // Helpers
   const getTeamLogo = (teamName) => {
@@ -124,7 +137,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
-      {/* Filters (NCAAF + Week) */}
+      {/* Filters (NCAAF + Week/Postseason) */}
       <div className="scoreboard-filters">
         <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
         <div className="scoreboard-divider" />
@@ -132,14 +145,15 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         <select
           id="weekSelect"
           className="scoreboard-week-dropdown"
-          value={week} // ✅ Now using global week state
-          onChange={(e) => setWeek(Number(e.target.value))} // ✅ Updates global state
+          value={week}
+          onChange={(e) => setWeek(e.target.value)} // Note: now week may be a number (as string) or "postseason"
         >
           {[...Array(17).keys()].map((w) => (
             <option key={w + 1} value={w + 1}>
-              {w + 1}
+              {`Week ${w + 1}`}
             </option>
           ))}
+          <option value="postseason">Postseason</option>
         </select>
       </div>
 
@@ -149,7 +163,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
           const gameMedia = getMediaForGame(game.id);
           const tvNetwork = gameMedia?.network || "";
 
-          // Determine sportsbook line: DraftKings > ESPN Bet > Bovada
+          // Determine sportsbook line: try providers in order: DraftKings > ESPN Bet > Bovada
           const gameLines = getLinesForGame(game.id);
           let chosenLine = null;
           if (gameLines && gameLines.lines) {
@@ -170,7 +184,9 @@ const Scoreboard = ({ setScoreboardVisible }) => {
               <div className="scoreboard-game-card">
                 {/* Row 1: Time (left) & TV (right) */}
                 <div className="scoreboard-game-header">
-                  <div className="scoreboard-game-time">{formatGameTime(game)}</div>
+                  <div className="scoreboard-game-time">
+                    {formatGameTime(game)}
+                  </div>
                   <div className="scoreboard-game-network">
                     <FaTv className="scoreboard-tv-icon" />
                     {tvNetwork && <span>{tvNetwork}</span>}
@@ -231,6 +247,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 };
 
 export default Scoreboard;
+
 
 
 
