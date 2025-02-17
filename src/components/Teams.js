@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 
-// 1) Import Recharts components
+// Import Recharts components
 import {
   LineChart,
   Line,
@@ -11,7 +11,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 
 const Teams = () => {
@@ -23,7 +23,7 @@ const Teams = () => {
   const [selectedTeams, setSelectedTeams] = useState([]);
 
   // We'll store each selected team's ratings here
-  // Shape: { [teamId]: { offense, defense, overall, ... } }
+  // Shape: { [team.school]: { offense, defense, overall, ... } }
   const [teamRatings, setTeamRatings] = useState({});
 
   // Group teams by conference
@@ -47,7 +47,7 @@ const Teams = () => {
     "Mid-American": "Mid-American.png",
     "Mountain West": "Mountain West.png",
     "Pac-12": "Pac-12.png",
-    "SEC": "SEC.png"
+    "SEC": "SEC.png",
   };
 
   // Fetch all teams on mount
@@ -66,25 +66,20 @@ const Teams = () => {
     fetchTeams();
   }, []);
 
-  // Whenever the user selects (or deselects) teams, fetch their ratings
-  // and store in state so we can build the chart.
+  // Whenever the user selects (or deselects) teams, fetch their ratings.
+  // Note: The dependency array is now [selectedTeams] only.
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
-      // Make a copy so we don't mutate state directly
       const newRatings = { ...teamRatings };
 
-      for (const t of selectedTeams) {
-        // Only fetch if we haven't already loaded ratings for this team
-        if (!newRatings[t.id]) {
-          try {
-            // Adjust as needed to match your actual service signature
-            const data = await teamsService.getTeamRatings(t.id);
-            newRatings[t.id] = data;
-          } catch (err) {
-            console.error(`Error fetching ratings for team ${t.id}:`, err);
-            // Fallback to some default if needed
-            newRatings[t.id] = { offense: 1, defense: 1, overall: 1 };
-          }
+      for (const team of selectedTeams) {
+        try {
+          // Fetch ratings using team.school and 2024 as parameters
+          const data = await teamsService.getTeamRatings(team.school, 2024);
+          newRatings[team.school] = data;
+        } catch (err) {
+          console.error(`Error fetching ratings for team ${team.school}:`, err);
+          newRatings[team.school] = { offense: 1, defense: 1, overall: 1 };
         }
       }
 
@@ -94,7 +89,7 @@ const Teams = () => {
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
     }
-  }, [selectedTeams, teamRatings]);
+  }, [selectedTeams]);
 
   if (isLoading) return <div className="loading">Loading teams...</div>;
   if (error) return <div className="error">Error: {error}</div>;
@@ -104,11 +99,9 @@ const Teams = () => {
   // Handle adding/removing teams from comparison
   const handleTeamSelect = (team) => {
     setSelectedTeams((prevSelected) => {
-      // If team is already selected, remove it
       if (prevSelected.find((t) => t.id === team.id)) {
         return prevSelected.filter((t) => t.id !== team.id);
       } else {
-        // Limit how many teams can be compared at once (e.g., 4)
         if (prevSelected.length < 4) {
           return [...prevSelected, team];
         } else {
@@ -127,25 +120,14 @@ const Teams = () => {
   // ------------------------------
   // BUILD THE COMPARISON CHART DATA
   // ------------------------------
-  // We'll compare 3 metrics on the X-axis: Offense, Defense, Overall
-  // Each line = 1 selected team (with color = team.color)
+  // We'll compare 3 metrics: Offense, Defense, Overall.
+  // Each row in chartData represents one metric.
   const METRICS = ["Offense", "Defense", "Overall"];
-
-  // For the X-axis, each "row" in the data array is one metric
   const chartData = METRICS.map((metric) => {
     const row = { metric };
     selectedTeams.forEach((team) => {
-      const r = teamRatings[team.id];
-      if (r) {
-        // Offense => r.offense
-        // Defense => r.defense
-        // Overall => r.overall
-        // We'll store it under a property with the team's ID
-        // so each <Line dataKey={team.id} ... /> can read it.
-        row[team.id] = r[metric.toLowerCase()] || 0;
-      } else {
-        row[team.id] = 0;
-      }
+      const r = teamRatings[team.school];
+      row[team.school] = r ? r[metric.toLowerCase()] || 0 : 0;
     });
     return row;
   });
@@ -153,18 +135,14 @@ const Teams = () => {
   // Custom Legend to show each team's logo and name
   const renderCustomLegend = (props) => {
     const { payload } = props;
-    // payload looks like: [{ value: '123', dataKey: '123', color: '#xxx' }, ...]
-    // where dataKey is the team ID if we set <Line dataKey={team.id} />
     return (
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
         {payload.map((entry) => {
-          const teamId = entry.dataKey;
-          const team = selectedTeams.find((t) => t.id.toString() === teamId);
+          const teamSchool = entry.dataKey;
+          const team = selectedTeams.find((t) => t.school === teamSchool);
           if (!team) return null;
-
           return (
-            <div key={teamId} style={{ display: "flex", alignItems: "center" }}>
-              {/* Colored box for the line */}
+            <div key={teamSchool} style={{ display: "flex", alignItems: "center" }}>
               <div
                 style={{
                   width: 16,
@@ -173,13 +151,16 @@ const Teams = () => {
                   marginRight: 6,
                 }}
               />
-              {/* Team logo */}
               <img
                 src={team.logos?.[0] || "/photos/default-team.png"}
                 alt={team.school}
-                style={{ width: 20, height: 20, marginRight: 6, objectFit: "contain" }}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 6,
+                  objectFit: "contain",
+                }}
               />
-              {/* Team name */}
               <span>{team.school}</span>
             </div>
           );
@@ -197,11 +178,13 @@ const Teams = () => {
             {Object.entries(groupedTeams).map(([conference, teams]) => (
               <section key={conference} className="conference-section">
                 <div className="conference-header">
-                  <img 
+                  <img
                     src={`/photos/${conferenceLogos[conference]}`}
                     alt={conference}
                     className="conference-logo"
-                    onError={(e) => { e.target.style.display = 'none'; }}
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
                   />
                   <h2 className="conference-title">{conference}</h2>
                 </div>
@@ -262,10 +245,10 @@ const Teams = () => {
                   <Legend content={renderCustomLegend} />
                   {selectedTeams.map((team) => (
                     <Line
-                      key={team.id}
+                      key={team.school}
                       type="monotone"
-                      dataKey={String(team.id)}
-                      stroke={team.color || "#000"} // fallback if no color
+                      dataKey={team.school}
+                      stroke={team.color || "#000"}
                       strokeWidth={2}
                       activeDot={{ r: 6 }}
                     />
@@ -274,7 +257,7 @@ const Teams = () => {
               </ResponsiveContainer>
             </div>
 
-            {/* Also keep your existing table or card display if you like */}
+            {/* Comparison Cards */}
             <div className="comparison-table">
               {selectedTeams.map((team) => (
                 <div key={team.id} className="comparison-card">
@@ -286,7 +269,6 @@ const Teams = () => {
                   <div className="comparison-info">
                     <h3>{team.school}</h3>
                     <p>Conference: {team.conference}</p>
-                    {/* Additional details or stats */}
                   </div>
                 </div>
               ))}
@@ -297,7 +279,6 @@ const Teams = () => {
 
       {/* Embedded CSS */}
       <style>{`
-        /* Overall Container: Two Columns */
         .teams-comparison-container {
           display: flex;
           gap: 1rem;
@@ -305,13 +286,9 @@ const Teams = () => {
           margin: 0 auto;
           padding: 2rem;
         }
-
-        /* Left Column */
         .teams-list-section {
           flex: 3;
         }
-
-        /* Right Column */
         .comparison-section {
           flex: 1;
           background: #f5f5f5;
@@ -320,11 +297,9 @@ const Teams = () => {
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
           height: fit-content;
         }
-
         .comparison-section h2 {
           margin-top: 0;
         }
-
         .clear-button {
           margin-bottom: 1rem;
           background-color: #ff6961;
@@ -334,13 +309,11 @@ const Teams = () => {
           border-radius: 5px;
           cursor: pointer;
         }
-
         .comparison-table {
           display: flex;
           flex-direction: column;
           gap: 1rem;
         }
-
         .comparison-card {
           background: #fff;
           border-radius: 8px;
@@ -350,29 +323,23 @@ const Teams = () => {
           align-items: center;
           gap: 1rem;
         }
-
         .comparison-team-logo {
           width: 50px;
           height: 50px;
           object-fit: contain;
         }
-
         .comparison-info h3 {
           margin: 0;
           font-size: 1.2rem;
         }
-
-        /* Teams Container (left side) */
         .teams-container {
           padding: 1rem 0;
         }
-
         .conferences-list {
           display: flex;
           flex-direction: column;
           gap: 2rem;
         }
-
         .conference-section {
           background: white;
           border-radius: 10px;
@@ -381,7 +348,6 @@ const Teams = () => {
           text-align: left;
           width: 100%;
         }
-
         .conference-header {
           display: flex;
           align-items: center;
@@ -390,19 +356,16 @@ const Teams = () => {
           padding-bottom: 0.75rem;
           margin-bottom: 1rem;
         }
-
         .conference-logo {
           height: 50px;
           width: auto;
         }
-
         .conference-title {
           font-size: 1.6rem;
           color: #333;
           margin: 0;
           font-weight: bold;
         }
-
         .teams-table {
           display: flex;
           flex-wrap: wrap;
@@ -410,8 +373,6 @@ const Teams = () => {
           justify-content: flex-start;
           padding: 20px;
         }
-
-        /* Wrap each team card + button */
         .team-card-container {
           display: flex;
           flex-direction: column;
@@ -419,7 +380,6 @@ const Teams = () => {
           min-width: 220px;
           max-width: 240px;
         }
-
         .team-card {
           text-decoration: none;
           color: inherit;
@@ -433,30 +393,25 @@ const Teams = () => {
           transition: transform 0.2s ease-in-out;
           flex: 1;
         }
-
         .team-card:hover {
           transform: scale(1.05);
           background: #f9f9f9;
         }
-
         .team-content {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .team-logo {
           width: 50px;
           height: 50px;
           object-fit: contain;
         }
-
         .team-name {
           font-size: 1rem;
           font-weight: bold;
           color: #333;
         }
-
         .compare-button {
           margin-top: 0.5rem;
           background-color: #007bff;
@@ -466,12 +421,9 @@ const Teams = () => {
           border-radius: 5px;
           cursor: pointer;
         }
-
         .compare-button:hover {
           background-color: #0056b3;
         }
-
-        /* Responsive Styles */
         @media (max-width: 1024px) {
           .teams-table {
             justify-content: center;
@@ -480,7 +432,6 @@ const Teams = () => {
             flex: 1 1 calc(33% - 20px);
           }
         }
-
         @media (max-width: 768px) {
           .team-card {
             flex: 1 1 calc(50% - 20px);
@@ -489,7 +440,6 @@ const Teams = () => {
             font-size: 1.4rem;
           }
         }
-
         @media (max-width: 480px) {
           .team-card {
             flex: 1 1 100%;
