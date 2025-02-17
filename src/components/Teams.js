@@ -27,14 +27,45 @@ const Teams = () => {
   // Shape: { [team.school]: { offense, defense, overall, ... } }
   const [teamRatings, setTeamRatings] = useState({});
 
-  // Group teams by conference
+  // Conference order based on popularity
+  const conferenceOrder = [
+    "Big Ten",
+    "SEC",
+    "ACC",
+    "Big 12",
+    "Pac-12",
+    "American Athletic",
+    "Mountain West",
+    "Conference USA",
+    "Mid-American",
+    "FBS Independents"
+  ];
+
+  // Group teams by conference and sort by popularity
   const groupByConference = (teams) => {
-    return teams.reduce((acc, team) => {
+    const grouped = teams.reduce((acc, team) => {
       const conference = team.conference;
       if (!acc[conference]) acc[conference] = [];
       acc[conference].push(team);
       return acc;
     }, {});
+
+    // Sort conferences based on the predefined order
+    const sortedConferences = {};
+    conferenceOrder.forEach((conference) => {
+      if (grouped[conference]) {
+        sortedConferences[conference] = grouped[conference];
+      }
+    });
+
+    // Add any remaining conferences that were not in the predefined order
+    Object.keys(grouped).forEach((conference) => {
+      if (!sortedConferences[conference]) {
+        sortedConferences[conference] = grouped[conference];
+      }
+    });
+
+    return sortedConferences;
   };
 
   // Conference logo mapping
