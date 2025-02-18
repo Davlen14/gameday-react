@@ -10,6 +10,20 @@
   --shadow: rgba(0, 0, 0, 0.2);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #ff4d4d; /* Adjusted for dark mode */
+    --secondary: #ff1a1a;
+    --status-green: #22c55e;
+    --background: #1e1e1e;
+    --surface: rgba(255, 255, 255, 0.1); /* Glass Effect */
+    --text-primary: #f1f1f1;
+    --text-secondary: #cccccc;
+    --border: rgba(255, 255, 255, 0.1);
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
 /* 🔥 Full-Screen Chatbot Layout - Reduced Height */
 .chatbot-container {
   display: flex;

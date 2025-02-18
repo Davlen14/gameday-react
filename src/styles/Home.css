@@ -6,12 +6,21 @@
     --border-color: #dddddd;
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #333333;
+        --text-color: #ffffff;
+        --background-color: #1e1e1e;
+        --border-color: #444444;
+    }
+}
+
 .home-container {
-font-family: "Orbitron", "Titillium Web", sans-serif; 
-padding: 1rem 2rem; /* Reduce top padding */
-background-color: var(--background-color);
-color: var(--text-color);
-min-height: 100vh;
+    font-family: "Orbitron", "Titillium Web", sans-serif; 
+    padding: 1rem 2rem; /* Reduce top padding */
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
 }
 
 .hero-header {
@@ -21,15 +30,12 @@ min-height: 100vh;
     position: relative;
 }
 
-
 .hero-header h1 {
     margin-top: 0;
     color: #D4001C;
     font-size: 3rem;
     font-style: italic;
 }
-
-
 
 .week-selector {
     margin-top: 1rem;
@@ -84,11 +90,24 @@ select {
     border: 1px solid #ddd;
 }
 
+@media (prefers-color-scheme: dark) {
+    .poll-card {
+        background: #2e2e2e;
+        border: 1px solid #444;
+    }
+}
+
 .ranking-item {
     display: flex;
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid #ddd;
+}
+
+@media (prefers-color-scheme: dark) {
+    .ranking-item {
+        border-bottom: 1px solid #444;
+    }
 }
 
 .team-logo {
@@ -104,7 +123,7 @@ select {
 }
 
 .rank {
-    color:  #D4001C;
+    color: #D4001C;
     font-weight: bold;
 }
 
@@ -134,6 +153,13 @@ select {
     transition: all 0.3s ease;
 }
 
+@media (prefers-color-scheme: dark) {
+    .game-card {
+        background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
 .game-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
@@ -146,6 +172,12 @@ select {
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
     color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+    .game-header {
+        color: #aaa;
+    }
 }
 
 .network {
@@ -197,6 +229,12 @@ select {
     color: #666;
 }
 
+@media (prefers-color-scheme: dark) {
+    .team-record {
+        color: #aaa;
+    }
+}
+
 .vs-container {
     display: flex;
     flex-direction: column;
@@ -238,9 +276,21 @@ select {
     background: rgba(0, 0, 0, 0.04);
 }
 
+@media (prefers-color-scheme: dark) {
+    .score {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
 .score-divider {
     font-weight: 500;
     color: #999;
+}
+
+@media (prefers-color-scheme: dark) {
+    .score-divider {
+        color: #777;
+    }
 }
 
 .game-footer {
@@ -249,6 +299,13 @@ select {
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     font-size: 0.9rem;
     color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+    .game-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #aaa;
+    }
 }
 
 /* Scrollbar Styling */
@@ -291,24 +348,25 @@ select {
         font-size: 1rem;
     }
 
-        .score {
-            font-size: 1.2rem;
-        }
+    .score {
+        font-size: 1.2rem;
     }
-    /* FEATURED SECTION */
+}
+
+/* FEATURED SECTION */
 .featured-section {
     margin-bottom: 3rem; /* Spacing before next section */
-  }
-  
-  /* 
+}
+
+/* 
     We'll create a 3x3 grid:
       Row 1: [big, big, small1]
       Row 2: [big, big, small2]
       Row 3: [small3, small4, small5]
     The first child in the .featured-grid is the "big" Ohio State card;
     the next five are small cards.
-  */
-  .featured-grid {
+*/
+.featured-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, auto);
@@ -317,56 +375,56 @@ select {
       "big big small1"
       "big big small2"
       "small3 small4 small5";
-  }
-  
-  /* Assign each grid area by the element’s order */
-  .featured-grid > :nth-child(1) {
+}
+
+/* Assign each grid area by the element’s order */
+.featured-grid > :nth-child(1) {
     grid-area: big;
     position: relative;
-  }
-  .featured-grid > :nth-child(2) {
+}
+.featured-grid > :nth-child(2) {
     grid-area: small1;
     position: relative;
-  }
-  .featured-grid > :nth-child(3) {
+}
+.featured-grid > :nth-child(3) {
     grid-area: small2;
     position: relative;
-  }
-  .featured-grid > :nth-child(4) {
+}
+.featured-grid > :nth-child(4) {
     grid-area: small3;
     position: relative;
-  }
-  .featured-grid > :nth-child(5) {
+}
+.featured-grid > :nth-child(5) {
     grid-area: small4;
     position: relative;
-  }
-  .featured-grid > :nth-child(6) {
+}
+.featured-grid > :nth-child(6) {
     grid-area: small5;
     position: relative;
-  }
-  
-  /* Card Styles */
-  .featured-card {
+}
+
+/* Card Styles */
+.featured-card {
     border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
-  }
-  
-  .featured-card img {
+}
+
+.featured-card img {
     width: 100%;
     height: auto;
     display: block;
     object-fit: cover;
     transition: transform 0.3s ease;
-  }
-  
-  /* Slight zoom on hover */
-  .featured-card:hover img {
+}
+
+/* Slight zoom on hover */
+.featured-card:hover img {
     transform: scale(1.03);
-  }
-  
-  /* Text Overlay at Bottom */
-  .featured-overlay {
+}
+
+/* Text Overlay at Bottom */
+.featured-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -374,46 +432,46 @@ select {
     background-color: rgba(212, 0, 28, 0.85); /* uses your accent color with opacity */
     color: #fff;
     padding: 1rem;
-  }
-  
-  .featured-overlay h2,
-  .featured-overlay h3 {
+}
+
+.featured-overlay h2,
+.featured-overlay h3 {
     margin: 0 0 0.25rem;
     font-weight: 600;
-  }
-  
-  .featured-overlay p {
+}
+
+.featured-overlay p {
     margin: 0;
     font-size: 0.9rem;
-  }
-  
-  /* 
+}
+
+/* 
     Responsive Tweaks:
     Adjust the grid layout on smaller screens so everything stacks nicely.
-  */
-  @media (max-width: 992px) {
+*/
+@media (max-width: 992px) {
     .featured-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: repeat(3, auto);
-      grid-template-areas:
-        "big big"
-        "small1 small2"
-        "small3 small4"
-        "small5 small5";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, auto);
+        grid-template-areas:
+          "big big"
+          "small1 small2"
+          "small3 small4"
+          "small5 small5";
     }
-  }
-  
-  @media (max-width: 600px) {
+}
+
+@media (max-width: 600px) {
     .featured-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-      grid-template-areas:
-        "big"
-        "small1"
-        "small2"
-        "small3"
-        "small4"
-        "small5";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-template-areas:
+          "big"
+          "small1"
+          "small2"
+          "small3"
+          "small4"
+          "small5";
     }
-  }
+}
   

@@ -1,16 +1,26 @@
 .commitments-container {
-    text-align: center;
-    padding: 60px 20px;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.commitments-container h1 {
+  color: #d4001c;
+  font-size: 2.2rem;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.commitments-container p {
+  font-size: 1.3rem;
+  color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+  .commitments-container {
+    background-color: #333; /* Optional: change background color for dark mode */
   }
-  
-  .commitments-container h1 {
-    color: #d4001c;
-    font-size: 2.2rem;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  
+
   .commitments-container p {
-    font-size: 1.3rem;
-    color: #666;
+    color: #ccc; /* Change text color to a lighter shade for dark mode */
   }
+}
