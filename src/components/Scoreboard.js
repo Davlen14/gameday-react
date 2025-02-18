@@ -137,7 +137,6 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
-      /* Filters (NCAAF + Week/Postseason) */
       <div className="scoreboard-filters">
         <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
         <div className="scoreboard-divider" />
