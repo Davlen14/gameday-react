@@ -79,15 +79,6 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   const getMediaForGame = (gameId) => media.find((m) => m.id === gameId) || null;
   const getLinesForGame = (gameId) => lines.find((l) => l.id === gameId) || null;
 
-  const getSportsbookLogo = (provider) => {
-    const logos = {
-      DraftKings: "/photos/draftkings.png",
-      "ESPN Bet": "/photos/espnbet.png",
-      Bovada: "/photos/bovada.png",
-    };
-    return logos[provider] || "/photos/default_sportsbook.png";
-  };
-
   if (isLoading) {
     return <div className="loading-container">Loading...</div>;
   }
@@ -113,53 +104,39 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         </select>
       </div>
       <div className="scoreboard-games">
-        {games.map((game) => {
-          const gameLines = getLinesForGame(game.id);
-          let chosenLine = null;
-          if (gameLines && gameLines.lines) {
-            for (let provider of ["DraftKings", "ESPN Bet", "Bovada"]) {
-              chosenLine = gameLines.lines.find((line) => line.provider === provider);
-              if (chosenLine) break;
-            }
-          }
-
-          return (
-            <Link to={`/games/${game.id}`} key={game.id} className="scoreboard-game-link">
-              <div className="scoreboard-game-card">
-                <div className="scoreboard-game-header">
-                  <div className="scoreboard-game-time">{game.completed ? "Final" : "Live"}</div>
-                </div>
-                <div className="scoreboard-card-team">
-                  <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="scoreboard-team-logo" />
-                  <span className="scoreboard-team-name">{getTeamAbbreviation(game.awayTeam)}</span>
-                  <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
-                </div>
-                <div className="scoreboard-home-row">
-                  <div className="scoreboard-card-team scoreboard-home-team">
-                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="scoreboard-team-logo" />
-                    <span className="scoreboard-team-name">{getTeamAbbreviation(game.homeTeam)}</span>
-                    <span className="scoreboard-team-score">{game.homePoints ?? ""}</span>
-                  </div>
-                  {chosenLine && (
-                    <div className="scoreboard-sportsbook scoreboard-home-ou">
-                      <img
-                        src={getSportsbookLogo(chosenLine.provider)}
-                        alt={chosenLine.provider}
-                        className="scoreboard-sportsbook-logo"
-                      />
-                      <span className="scoreboard-sportsbook-ou">
-                         {chosenLine.overUnder}
-                      </span>
-                    </div>
-                  )}
+        {games.map((game) => (
+          <Link to={`/games/${game.id}`} key={game.id} className="scoreboard-game-link">
+            <div className="scoreboard-game-card">
+              <div className="scoreboard-game-header">
+                <div className="scoreboard-game-time">{game.completed ? "Final" : "Live"}</div>
+                <div className="scoreboard-game-network">
+                  <FaTv className="scoreboard-tv-icon" />
+                  {getMediaForGame(game.id)?.network && <span>{getMediaForGame(game.id).network}</span>}
                 </div>
               </div>
-            </Link>
-          );
-        })}
+              <div className="scoreboard-card-team">
+                <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="scoreboard-team-logo" />
+                <span className="scoreboard-team-name">{getTeamAbbreviation(game.awayTeam)}</span>
+                <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
+              </div>
+              <div className="scoreboard-home-row">
+                <div className="scoreboard-card-team scoreboard-home-team">
+                  <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="scoreboard-team-logo" />
+                  <span className="scoreboard-team-name">{getTeamAbbreviation(game.homeTeam)}</span>
+                  <span className="scoreboard-team-score">{game.homePoints ?? ""}</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
 };
 
 export default Scoreboard;
+
+
+
+
+
