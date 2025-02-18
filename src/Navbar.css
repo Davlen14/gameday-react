@@ -81,3 +81,20 @@
     margin: 5px;
   }
 }
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .secondary-bar {
+    background-color: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333333;
+  }
+
+  .nav-item {
+    color: #ffffff;
+  }
+
+  .nav-item::after {
+    background-color: #D4001C;
+  }
+}

@@ -1,181 +1,200 @@
+:root {
+  --background-color: #f5f5f5;
+  --sidebar-background-color: #004c8c;
+  --text-color: #000;
+  --sidebar-text-color: #fff;
+  --light-gray: #e0e0e0;
+  --white: #fff;
+  --black: #000;
+}
+
+[data-theme="dark"] {
+  --background-color: #121212;
+  --sidebar-background-color: #1e1e1e;
+  --text-color: #fff;
+  --sidebar-text-color: #000;
+  --light-gray: #fff;
+  --white: #000;
+  --black: #fff;
+}
+
 /* DASHBOARD LAYOUT WRAPPER */
 .team-dashboard {
-    display: flex; /* Side-by-side layout: sidebar + main content */
-    min-height: 100vh; /* Full viewport height */
-    font-family: 'Arial', sans-serif;
-    background-color: #f5f5f5; /* Slight background to distinguish from sidebar */
-  }
-  
-  /* SIDEBAR */
-  .team-sidebar {
-    width: 280px; /* Fixed width for sidebar */
-    background-color: #004c8c; /* Primary color (example) */
-    color: #fff;
-    padding: 20px;
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center; /* Center content horizontally */
-  }
-  
-  /* BACK LINK */
-  .back-to-teams {
-    color: #fff;
-    text-decoration: none;
-    margin-bottom: 20px;
-    font-weight: bold;
-    align-self: flex-start; /* Align link to the left inside sidebar */
-  }
-  
-  /* TEAM LOGO IN SIDEBAR */
-  .team-logo-large {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    margin-bottom: 10px;
-  }
-  
-  /* TEAM NAME & MASCOT */
-  .team-name {
-    font-size: 1.8rem;
-    margin: 0;
-    text-align: center;
-  }
-  
-  .team-mascot {
-    font-size: 1rem;
-    margin: 0;
-    text-align: center;
-    color: #e0e0e0; /* Slightly lighter than white */
-  }
-  
-  /* MAIN CONTENT AREA */
-  .team-main-content {
-    flex: 1; /* Fills remaining width */
-    padding: 20px;
-    overflow-y: auto; /* Scrollable if content is tall */
-  }
-  
-  /* SECTION WRAPPERS (Ratings, Schedule, Roster) */
-  .team-ratings,
-  .team-schedule,
-  .team-roster {
-    background: #fff;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .team-ratings h2,
-  .team-schedule h2,
-  .team-roster h2 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-weight: bold;
-  }
-  
-  /* RATINGS SECTION (Chart Centering) */
-  .team-ratings {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center chart horizontally */
-    text-align: center;
-  }
-  
-  /* GAUGES CONTAINER */
-  .gauges-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  /* Style each gauge */
-  .gauge {
-    position: relative;
-    text-align: center;
-    padding: 0.5rem;
-    /* Optionally fix a width to keep gauges uniform */
-    width: 180px; 
-    margin: 0 auto; /* Center the gauge container */
-  }
-  
-  /* Ensure the SVG is centered */
-  .gauge svg {
-    display: block;
-    margin: 0 auto;
-  }
-  
-  /* Center label within the gauge (if used inside SVG) */
-  .gauge-label {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  /* Title below the gauge */
-  .gauge-title {
-    margin-top: 0.5rem;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-  }
-  
-  /* Tick labels inside the gauge (if not overridden inline) */
-  .gauge svg text {
-    font-family: Arial, sans-serif;
-  }
-  
-  /* RATINGS EXPLANATION SECTION */
-  .ratings-explanation {
-    margin-top: 1rem;
-    background: #e8f0fe; /* Light blue background */
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: left;
-  }
-  
-  /* SCHEDULE SECTION */
-  .schedule-item {
-    padding: 15px 0;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .schedule-item:last-child {
-    border-bottom: none;
-  }
-  
-  .teams-playing {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .schedule-team-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-  }
-  
-  /* ROSTER SECTION */
-  .team-roster ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .team-roster li {
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-    font-size: 16px;
-  }
-  
-  .team-roster li:last-child {
-    border-bottom: none;
-  }
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: var(--background-color);
+}
+
+/* SIDEBAR */
+.team-sidebar {
+  width: 280px;
+  background-color: var(--sidebar-background-color);
+  color: var(--sidebar-text-color);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* BACK LINK */
+.back-to-teams {
+  color: var(--sidebar-text-color);
+  text-decoration: none;
+  margin-bottom: 20px;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+/* TEAM LOGO IN SIDEBAR */
+.team-logo-large {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+/* TEAM NAME & MASCOT */
+.team-name {
+  font-size: 1.8rem;
+  margin: 0;
+  text-align: center;
+}
+
+.team-mascot {
+  font-size: 1rem;
+  margin: 0;
+  text-align: center;
+  color: var(--light-gray);
+}
+
+/* MAIN CONTENT AREA */
+.team-main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* SECTION WRAPPERS (Ratings, Schedule, Roster) */
+.team-ratings,
+.team-schedule,
+.team-roster {
+  background: var(--white);
+  margin-bottom: 20px;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.team-ratings h2,
+.team-schedule h2,
+.team-roster h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+/* RATINGS SECTION (Chart Centering) */
+.team-ratings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* GAUGES CONTAINER */
+.gauges-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Style each gauge */
+.gauge {
+  position: relative;
+  text-align: center;
+  padding: 0.5rem;
+  width: 180px;
+  margin: 0 auto;
+}
+
+/* Ensure the SVG is centered */
+.gauge svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Center label within the gauge (if used inside SVG) */
+.gauge-label {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Title below the gauge */
+.gauge-title {
+  margin-top: 0.5rem;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Tick labels inside the gauge (if not overridden inline) */
+.gauge svg text {
+  font-family: Arial, sans-serif;
+}
+
+/* RATINGS EXPLANATION SECTION */
+.ratings-explanation {
+  margin-top: 1rem;
+  background: #e8f0fe;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* SCHEDULE SECTION */
+.schedule-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+.teams-playing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.schedule-team-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* ROSTER SECTION */
+.team-roster ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.team-roster li {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.team-roster li:last-child {
+  border-bottom: none;
+}
   
   
   
