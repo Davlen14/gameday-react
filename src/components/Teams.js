@@ -3,33 +3,42 @@ import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import "../styles/Teams.css"; // Import the new CSS file
 
-// Import D3.js for data visualization
-import * as d3 from "d3";
-
-// Conference logo mapping
-const conferenceLogos = {
-  "ACC": "ACC.png",
-  "American Athletic": "American Athletic.png",
-  "Big 12": "Big 12.png",
-  "Big Ten": "Big Ten.png",
-  "Conference USA": "Conference USA.png",
-  "FBS Independents": "FBS Independents.png",
-  "Mid-American": "Mid-American.png",
-  "Mountain West": "Mountain West.png",
-  "Pac-12": "Pac-12.png",
-  "SEC": "SEC.png",
-};
+// Import Recharts components
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const Teams = () => {
   const [teams, setTeams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Store the teams selected for comparison
   const [selectedTeams, setSelectedTeams] = useState([]);
+
+  // We'll store each selected team's ratings here
+  // Shape: { [team.school]: { offense, defense, overall, ... } }
   const [teamRatings, setTeamRatings] = useState({});
 
+  // Conference order based on popularity
   const conferenceOrder = [
-    "Big Ten", "SEC", "ACC", "Big 12", "Pac-12", "American Athletic", "Mountain West",
-    "Conference USA", "Mid-American", "FBS Independents"
+    "Big Ten",
+    "SEC",
+    "ACC",
+    "Big 12",
+    "Pac-12",
+    "American Athletic",
+    "Mountain West",
+    "Conference USA",
+    "Mid-American",
+    "FBS Independents"
   ];
 
   // Group teams by conference and sort by popularity
@@ -41,6 +50,7 @@ const Teams = () => {
       return acc;
     }, {});
 
+    // Sort conferences based on the predefined order
     const sortedConferences = {};
     conferenceOrder.forEach((conference) => {
       if (grouped[conference]) {
@@ -48,7 +58,28 @@ const Teams = () => {
       }
     });
 
+    // Add any remaining conferences that were not in the predefined order
+    Object.keys(grouped).forEach((conference) => {
+      if (!sortedConferences[conference]) {
+        sortedConferences[conference] = grouped[conference];
+      }
+    });
+
     return sortedConferences;
+  };
+
+  // Conference logo mapping
+  const conferenceLogos = {
+    "ACC": "ACC.png",
+    "American Athletic": "American Athletic.png",
+    "Big 12": "Big 12.png",
+    "Big Ten": "Big Ten.png",
+    "Conference USA": "Conference USA.png",
+    "FBS Independents": "FBS Independents.png",
+    "Mid-American": "Mid-American.png",
+    "Mountain West": "Mountain West.png",
+    "Pac-12": "Pac-12.png",
+    "SEC": "SEC.png",
   };
 
   // Fetch all teams on mount
@@ -67,12 +98,15 @@ const Teams = () => {
     fetchTeams();
   }, []);
 
-  // Fetch selected team ratings
+  // Whenever the user selects (or deselects) teams, fetch their ratings.
+  // Note: The dependency array is now [selectedTeams] only.
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
+
       for (const team of selectedTeams) {
         try {
+          // Fetch ratings using team.school and 2024 as parameters
           const data = await teamsService.getTeamRatings(team.school, 2024);
           newRatings[team.school] = data;
         } catch (err) {
@@ -80,6 +114,7 @@ const Teams = () => {
           newRatings[team.school] = { offense: 1, defense: 1, overall: 1 };
         }
       }
+
       setTeamRatings(newRatings);
     };
 
@@ -114,9 +149,19 @@ const Teams = () => {
     setSelectedTeams([]);
   };
 
+  // Helper to get team abbreviation
+  const getTeamAbbreviation = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.abbreviation || teamName;
+  };
+
   // ------------------------------
   // BUILD THE COMPARISON CHART DATA
   // ------------------------------
+  // We'll compare 3 metrics: Offense, Defense, Overall.
+  // Each row in chartData represents one metric.
   const METRICS = ["Offense", "Defense", "Overall"];
   const chartData = METRICS.map((metric) => {
     const row = { metric };
@@ -127,54 +172,42 @@ const Teams = () => {
     return row;
   });
 
-  const renderBarChart = () => {
-    const svgWidth = 800;
-    const svgHeight = 400;
-    const margin = { top: 20, right: 30, bottom: 40, left: 40 };
-
-    const x = d3.scaleBand()
-      .domain(selectedTeams.map((team) => team.school))
-      .range([margin.left, svgWidth - margin.right])
-      .padding(0.1);
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(chartData, (d) => d3.max(METRICS, (metric) => d[metric]))])
-      .nice()
-      .range([svgHeight - margin.bottom, margin.top]);
-
-    const svg = d3.select("#bar-chart")
-      .attr("width", svgWidth)
-      .attr("height", svgHeight);
-
-    svg.selectAll("*").remove(); // Clear previous content
-
-    svg.append("g")
-      .selectAll(".bar")
-      .data(chartData)
-      .enter()
-      .append("rect")
-      .attr("class", "bar")
-      .attr("x", (d) => x(d.metric))
-      .attr("y", (d) => y(d3.max(METRICS, (metric) => d[metric]))) // Dynamic positioning
-      .attr("width", x.bandwidth())
-      .attr("height", (d) => svgHeight - margin.bottom - y(d3.max(METRICS, (metric) => d[metric])))
-      .style("fill", "#00D2D5");
-
-    svg.append("g")
-      .selectAll(".axis")
-      .data([x, y])
-      .enter()
-      .append("g")
-      .each(function (d) {
-        d.select(this);
-      });
+  // Custom Legend to show each team's logo and name
+  const renderCustomLegend = (props) => {
+    const { payload } = props;
+    return (
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        {payload.map((entry) => {
+          const teamSchool = entry.dataKey;
+          const team = selectedTeams.find((t) => t.school === teamSchool);
+          if (!team) return null;
+          return (
+            <div key={teamSchool} style={{ display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  backgroundColor: entry.color,
+                  marginRight: 6,
+                }}
+              />
+              <img
+                src={team.logos?.[0] || "/photos/default-team.png"}
+                alt={team.school}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 6,
+                  objectFit: "contain",
+                }}
+              />
+              <span>{team.school}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
-
-  useEffect(() => {
-    if (selectedTeams.length > 0) {
-      renderBarChart();
-    }
-  }, [selectedTeams]);
 
   return (
     <div className="teams-comparison-container">
@@ -196,6 +229,7 @@ const Teams = () => {
                   <h2 className="conference-title">{conference}</h2>
                 </div>
 
+                {/* Teams in a "table" layout */}
                 <div className="teams-table">
                   {teams.map((team) => (
                     <div key={team.id} className="team-card-container">
@@ -211,6 +245,7 @@ const Teams = () => {
                           <span className="team-name">{getTeamAbbreviation(team.school)}</span>
                         </div>
                       </div>
+                      {/* Compare Button */}
                       <button
                         className="compare-button"
                         onClick={() => handleTeamSelect(team)}
@@ -241,8 +276,28 @@ const Teams = () => {
               Clear All
             </button>
 
-            {/* Bar chart comparing selected teams on Offense/Defense/Overall */}
-            <div id="bar-chart" style={{ width: "100%", height: 400 }}></div>
+            {/* Chart comparing selected teams on Offense/Defense/Overall */}
+            <div style={{ width: "100%", height: 300, marginBottom: "1rem" }}>
+              <ResponsiveContainer>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="metric" />
+                  <YAxis domain={[0, 50]} />
+                  <Tooltip />
+                  <Legend content={renderCustomLegend} />
+                  {selectedTeams.map((team) => (
+                    <Line
+                      key={team.school}
+                      type="monotone"
+                      dataKey={team.school}
+                      stroke={team.color || "#000"}
+                      strokeWidth={2}
+                      activeDot={{ r: 6 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
             {/* Comparison Cards */}
             <div className="comparison-table">
