@@ -137,11 +137,10 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
-      {/* Filters (NCAAF + Week/Postseason) */}
+      /* Filters (NCAAF + Week/Postseason) */
       <div className="scoreboard-filters">
         <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
         <div className="scoreboard-divider" />
-        <span className="scoreboard-week-label">Week:</span>
         <select
           id="weekSelect"
           className="scoreboard-week-dropdown"
@@ -157,7 +156,6 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         </select>
       </div>
 
-      {/* Horizontally scrolling games */}
       <div className="scoreboard-games">
         {games.map((game) => {
           const gameMedia = getMediaForGame(game.id);
