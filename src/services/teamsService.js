@@ -162,7 +162,7 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
         }
     }
     const data = await fetchData(endpoint, params);
-    return data.map(pollGroup => ({
+    const mappedPolls = data.map(pollGroup => ({
         id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
         name: pollGroup.polls[0].poll,
         rankings: pollGroup.polls[0].ranks.map(team => ({
@@ -173,6 +173,13 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
             firstPlaceVotes: team.firstPlaceVotes
         }))
     }));
+    // For postseason, filter out non-FBS polls (keep only "AP Top 25" and "Coaches Poll")
+    if (week === "postseason") {
+        return mappedPolls.filter(poll =>
+            poll.name === "AP Top 25" || poll.name === "Coaches Poll"
+        );
+    }
+    return mappedPolls;
 };
 
 
