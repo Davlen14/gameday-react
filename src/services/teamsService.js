@@ -173,11 +173,13 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
             firstPlaceVotes: team.firstPlaceVotes
         }))
     }));
-    // For postseason, filter out non-FBS polls (keep only "AP Top 25" and "Coaches Poll")
+    // For postseason, filter out non-FBS polls (keep only "AP Top 25" and "Coaches Poll"),
+    // using trim() and toLowerCase() for safety.
     if (week === "postseason") {
-        return mappedPolls.filter(poll =>
-            poll.name === "AP Top 25" || poll.name === "Coaches Poll"
-        );
+        return mappedPolls.filter(poll => {
+            const name = poll.name.trim().toLowerCase();
+            return name === "ap top 25" || name === "coaches poll";
+        });
     }
     return mappedPolls;
 };
