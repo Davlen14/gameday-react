@@ -79,6 +79,15 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   const getMediaForGame = (gameId) => media.find((m) => m.id === gameId) || null;
   const getLinesForGame = (gameId) => lines.find((l) => l.id === gameId) || null;
 
+  const getSportsbookLogo = (provider) => {
+    const logos = {
+      DraftKings: "/photos/draftkings.png",
+      "ESPN Bet": "/photos/espnbet.png",
+      Bovada: "/photos/bovada.png",
+    };
+    return logos[provider] || "/photos/default_sportsbook.png";
+  };
+
   if (isLoading) {
     return <div className="loading-container">Loading...</div>;
   }
