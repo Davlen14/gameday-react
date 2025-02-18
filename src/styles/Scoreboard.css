@@ -9,77 +9,59 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0.75rem;
+    padding: 6px 12px;
     font-family: "Orbitron", "Titillium Web", sans-serif;
     width: 100%;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* Container for NCAAF + Week filters */
 .scoreboard-filters {
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* minimal spacing between elements */
+    gap: 8px;
 }
 
-/* ESPN-like thin vertical divider between "NCAAF" and the next item */
+/* ESPN-like thin vertical divider */
 .scoreboard-divider {
-    border-left: 1px solid #ccc;
-    height: 14px;
-    margin: 0 0.5rem; /* small horizontal spacing */
+    border-left: 1px solid #ddd;
+    height: 16px;
+    margin: 0 6px;
 }
 
-/* The clickable "NCAAF" label */
+/* Clickable "NCAAF" label */
 .scoreboard-ncaaf-dropdown {
-    font-size: 0.7rem;
+    font-size: 12px;
     font-weight: 600;
-    color: #333;
+    color: #222;
     text-transform: uppercase;
     cursor: pointer;
 }
 
-/* Label for the week dropdown */
-.scoreboard-week-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #333;
-}
-
-/* The week dropdown */
+/* Week dropdown */
 .scoreboard-week-dropdown {
-    font-size: 0.7rem;
-    color: #333;
+    font-size: 12px;
+    color: #222;
     cursor: pointer;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-radius: 4px;
     background-color: #f9f9f9;
-    padding: 0.1rem 0.3rem;
+    padding: 4px 8px;
 }
 
-/* Container for the horizontally scrolling game cards */
+/* Horizontally scrolling game cards */
 .scoreboard-games {
     display: flex;
     overflow-x: auto;
-    gap: 0;
     -webkit-overflow-scrolling: touch;
-    border-bottom: 1px solid #ddd;
     flex: 1;
+    border-bottom: none;
 }
 
-/* --- Custom Scrollbar Styling --- */
-
-/* WebKit Browsers (Chrome, Safari, Edge) */
-.scoreboard-games {
-    overflow-x: auto;
-    -ms-overflow-style: none;  /* Hide scrollbar in IE/Edge */
-    scrollbar-width: none; /* Hide scrollbar in Firefox */
-}
-
-/* Completely hide scrollbar in WebKit browsers */
+/* Hide scrollbar */
 .scoreboard-games::-webkit-scrollbar {
-    display: none; 
+    display: none;
 }
-
-/* --- End Custom Scrollbar Styling --- */
 
 /* Remove default link styles for scoreboard "cards" */
 .scoreboard-game-link {
@@ -87,131 +69,115 @@
     color: inherit;
 }
 
-/* Each scoreboard "card" (one matchup) */
+/* Game card styling */
 .scoreboard-game-card {
-    /* No absolute positioning needed; no extra bottom padding */
     flex: 0 0 auto;
-    min-width: 150px;
+    min-width: 140px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 0.5rem 0.75rem; /* just normal padding */
+    padding: 6px 10px;
     border-right: 1px solid #ccc;
     background: none;
     transition: background-color 0.2s ease;
 }
 
-/* Remove border on the last card to match ESPN style */
 .scoreboard-game-card:last-child {
     border-right: none;
 }
 
-/* Subtle hover effect on each card */
 .scoreboard-game-card:hover {
-    background-color: #f8f8f8;
+    background-color: #f2f2f2;
 }
 
-/* Each team block (away/home) in a vertical stack */
+/* Team block */
 .scoreboard-card-team {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 6px;
 }
 
-/* Team logo styling */
+/* Team logo */
 .scoreboard-team-logo {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
-    border-radius: 0;
 }
 
-/* Team name styling (smaller to fit the card) */
+/* Team name */
 .scoreboard-team-name {
-    font-size: 0.65rem; /* reduced size */
+    font-size: 11px;
     font-weight: 600;
-    color: #333;
+    color: #222;
 }
 
-/* Team score styling (smaller) */
+/* Team score */
 .scoreboard-team-score {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: #333;
-    margin-left: 0.25rem;
+    font-size: 12px;
+    font-weight: 700;
+    color: #111;
 }
 
-/* TV info styling */
+/* TV info */
 .scoreboard-tv {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
+    gap: 6px;
 }
+
 .scoreboard-tv-icon {
-    font-size: 1.2rem;
+    font-size: 14px;
     color: #e53935;
-    opacity: 0.9;
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 }
+
 .scoreboard-tv-network {
-    font-size: 0.6rem;
+    font-size: 11px;
     color: #666;
 }
 
-/* Game header (Time & TV icon) */
+/* Game header */
 .scoreboard-game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 0.25rem; /* optional spacing */
+    margin-bottom: 4px;
 }
 
-/***********************************************************
- * Home row: holds the home team on the left, O/U on the right
- ***********************************************************/
+/* Home row */
 .scoreboard-home-row {
     display: flex;
-    justify-content: space-between; /* home team left, O/U right */
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-top: 0.3rem; /* optional spacing above this row */
+    margin-top: 6px;
 }
 
-/* The O/U container (inline with home team) */
+/* O/U section */
 .scoreboard-sportsbook.scoreboard-home-ou {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 6px;
 }
 
-/* O/U sportsbook logo (slightly smaller) */
 .scoreboard-sportsbook-logo {
     width: 14px;
     height: 14px;
-    object-fit: contain;
 }
 
-/* O/U text: smaller & gray */
 .scoreboard-sportsbook-ou {
-    font-size: 0.4rem;   /* smaller text */
+    font-size: 10px;
     font-weight: 600;
-    color: #888;         /* gray to stand out less */
+    color: #888;
 }
 
-/***********************************************************
- * Responsive Adjustments (Optional)
- ***********************************************************/
+/* Responsive Adjustments */
 @media (max-width: 768px) {
     .scoreboard-bar {
         flex-wrap: wrap;
     }
-
-    .scoreboard-filters,
-    .scoreboard-games {
+    .scoreboard-filters, .scoreboard-games {
         width: 100%;
-        margin-bottom: 0.5rem;
+        margin-bottom: 6px;
     }
 }
-
