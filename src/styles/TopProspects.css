@@ -77,6 +77,7 @@
     padding: 14px 12px; /* Ensures uniform height */
     font-size: 14px;
     border-bottom: 1px solid #ddd;
+    /* Changed from middle to top to avoid staggered appearance */
     vertical-align: top; 
 }
 
@@ -103,15 +104,17 @@
 /* Player Name & Icon */
 .player-cell {
     display: flex;
+    /* Changed from align-items: center to flex-start */
     align-items: flex-start; 
     gap: 10px;
-    white-space: nowrap;
+    white-space: nowrap; /* Prevents wrapping */
 }
 
 .player-wrapper {
     display: flex;
     align-items: center;
     gap: 8px;
+    /* Removed width: 100% to prevent unwanted stretching */
 }
 
 .player-icon {
@@ -124,13 +127,13 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    flex-wrap: nowrap;
-    min-width: 80px;
+    flex-wrap: nowrap;  /* Prevents the stars from wrapping */
+    min-width: 80px;    /* Adjust this value if needed */
 }
 
 .star-icon {
     color: #FFD700;
-    font-size: 12px;
+    font-size: 12px; /* Slightly smaller for better alignment */
     margin-right: 2px;
 }
 
@@ -191,75 +194,12 @@
 
     .player-cell {
         flex-direction: column;
-        align-items: center;
+        align-items: center; /* For mobile, you can keep center alignment */
     }
 
     .committed-cell {
         flex-direction: column;
         text-align: center;
-    }
-}
-
-/* Dark Mode Overrides */
-@media (prefers-color-scheme: dark) {
-    /* Container backgrounds */
-    .top-prospects-container {
-        background: #000;
-    }
-    .prospects-table {
-        background: #000;
-        border: 1px solid #444;
-        box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
-        color: #fff;
-    }
-    
-    /* Headings and text adjustments */
-    .top-prospects-container h1 {
-        color: #fff; /* black (#222) becomes white */
-    }
-    .filters-container select,
-    .filters-container input,
-    .team-search input {
-        background: #000; /* originally white becomes black */
-        color: #fff;    /* originally dark text becomes white */
-        border: 1px solid #444;
-    }
-    .team-search .search-icon {
-        color: #fff;   /* gray text becomes white */
-    }
-    
-    .prospects-table th {
-        background: #333; /* darker background for table header */
-        color: #fff;
-        border-bottom: 2px solid #444;
-    }
-    .prospects-table td {
-        border-bottom: 1px solid #444;
-        color: #fff;
-    }
-    .prospect-row:hover {
-        background: #222;
-    }
-    .player-icon {
-        color: #fff; /* dark gray (#555) becomes white */
-    }
-    .uncommitted {
-        color: #fff; /* gray text becomes white */
-    }
-    .commit-box {
-        background: #333;
-        border: 1px solid #444;
-    }
-    .team-logo {
-        background: #000;
-        border: 1px solid #444;
-    }
-    
-    /* Ensure other text elements adapt */
-    .player-cell,
-    .player-wrapper,
-    .committed-cell {
-        color: #fff;
     }
 }
 
