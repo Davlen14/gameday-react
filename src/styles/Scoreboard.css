@@ -1,6 +1,4 @@
-/***********************************************************
- * ESPN-Style Minimal Combined Scoreboard
- ***********************************************************/
+/* ESPN-Style Minimal Combined Scoreboard */
 
 /* The main scoreboard container holding filters & games in one row */
 .scoreboard-bar {
@@ -13,6 +11,7 @@
     font-family: "Orbitron", "Titillium Web", sans-serif;
     width: 100%;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
 }
 
 /* Container for NCAAF + Week filters */
@@ -55,7 +54,8 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex: 1;
-    border-bottom: none;
+    padding-bottom: 6px;
+    gap: 10px;
 }
 
 /* Hide scrollbar */
@@ -63,31 +63,22 @@
     display: none;
 }
 
-/* Remove default link styles for scoreboard "cards" */
-.scoreboard-game-link {
-    text-decoration: none;
-    color: inherit;
-}
-
 /* Game card styling */
 .scoreboard-game-card {
     flex: 0 0 auto;
-    min-width: 140px;
+    min-width: 130px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 6px 10px;
-    border-right: 1px solid #ccc;
-    background: none;
-    transition: background-color 0.2s ease;
-}
-
-.scoreboard-game-card:last-child {
-    border-right: none;
+    align-items: center;
+    padding: 8px;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease-in-out;
 }
 
 .scoreboard-game-card:hover {
-    background-color: #f2f2f2;
+    background-color: #f8f8f8;
 }
 
 /* Team block */
@@ -99,8 +90,8 @@
 
 /* Team logo */
 .scoreboard-team-logo {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
@@ -113,16 +104,17 @@
 
 /* Team score */
 .scoreboard-team-score {
-    font-size: 12px;
-    font-weight: 700;
-    color: #111;
+    font-size: 13px;
+    font-weight: bold;
+    color: #000;
 }
 
 /* TV info */
 .scoreboard-tv {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    margin-top: 4px;
 }
 
 .scoreboard-tv-icon {
@@ -150,14 +142,16 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 /* O/U section */
 .scoreboard-sportsbook.scoreboard-home-ou {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    font-size: 11px;
+    color: #444;
 }
 
 .scoreboard-sportsbook-logo {
@@ -168,7 +162,7 @@
 .scoreboard-sportsbook-ou {
     font-size: 10px;
     font-weight: 600;
-    color: #888;
+    color: #777;
 }
 
 /* Responsive Adjustments */
