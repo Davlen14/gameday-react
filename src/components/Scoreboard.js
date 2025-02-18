@@ -129,7 +129,17 @@ const Scoreboard = ({ setScoreboardVisible }) => {
                 <div className="scoreboard-game-header">
                   <div className="scoreboard-game-time">{game.completed ? "Final" : "Live"}</div>
                 </div>
+                <div className="scoreboard-card-team">
+                  <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="scoreboard-team-logo" />
+                  <span className="scoreboard-team-name">{getTeamAbbreviation(game.awayTeam)}</span>
+                  <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
+                </div>
                 <div className="scoreboard-home-row">
+                  <div className="scoreboard-card-team scoreboard-home-team">
+                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="scoreboard-team-logo" />
+                    <span className="scoreboard-team-name">{getTeamAbbreviation(game.homeTeam)}</span>
+                    <span className="scoreboard-team-score">{game.homePoints ?? ""}</span>
+                  </div>
                   {chosenLine && (
                     <div className="scoreboard-sportsbook scoreboard-home-ou">
                       <img
@@ -138,7 +148,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
                         className="scoreboard-sportsbook-logo"
                       />
                       <span className="scoreboard-sportsbook-ou">
-                        O/U: {chosenLine.overUnder}
+                         {chosenLine.overUnder}
                       </span>
                     </div>
                   )}
