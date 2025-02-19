@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import newsService from "../services/newsService"; // API service for news
 import teamsService from "../services/teamsService"; // API service for teams
 import "../styles/LatestUpdates.css"; // Import updated styles
+import { FaFootballBall, FaTrophy, FaFire, FaVideo } from "react-icons/fa"; // Icon imports
 
 const LatestUpdates = () => {
     const [news, setNews] = useState([]);
@@ -54,7 +55,9 @@ const LatestUpdates = () => {
         <div className="latest-updates-container">
             {/* 🔹 Hero Section */}
             <div className="latest-hero">
-                <h1>🏈 Gameday+ News</h1>
+                <h1>
+                    <FaFootballBall className="icon" /> Gameday+ News
+                </h1>
                 <p>Stay updated with the latest college football headlines and analysis.</p>
             </div>
 
@@ -68,13 +71,15 @@ const LatestUpdates = () => {
                         <>
                             {/* Featured Story */}
                             <div className="featured-story">
-                                <a 
-                                    href={news[0].url} 
-                                    target="_blank" 
+                                <a
+                                    href={news[0].url}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="featured-story-card"
                                 >
-                                    {news[0].image && <img src={news[0].image} alt={news[0].title} className="featured-image" />}
+                                    {news[0].image && (
+                                        <img src={news[0].image} alt={news[0].title} className="featured-image" />
+                                    )}
                                     <div className="featured-details">
                                         <h2>{news[0].title}</h2>
                                         <p>{news[0].description}</p>
@@ -86,14 +91,16 @@ const LatestUpdates = () => {
                             {/* Dual Story Row */}
                             <div className="dual-story-row">
                                 {news.slice(1, 3).map((article, index) => (
-                                    <a 
-                                        key={index} 
-                                        href={article.url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
+                                    <a
+                                        key={index}
+                                        href={article.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="dual-story-card"
                                     >
-                                        {article.image && <img src={article.image} alt={article.title} className="dual-story-image" />}
+                                        {article.image && (
+                                            <img src={article.image} alt={article.title} className="dual-story-image" />
+                                        )}
                                         <div className="dual-story-details">
                                             <h3>{article.title}</h3>
                                             <span className="latest-news-source">{article.source.name}</span>
@@ -105,14 +112,16 @@ const LatestUpdates = () => {
                             {/* Scrollable News Feed */}
                             <div className="scrollable-news">
                                 {news.slice(3, 10).map((article, index) => (
-                                    <a 
-                                        key={index} 
-                                        href={article.url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
+                                    <a
+                                        key={index}
+                                        href={article.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="scrollable-news-card"
                                     >
-                                        {article.image && <img src={article.image} alt={article.title} className="scrollable-news-image" />}
+                                        {article.image && (
+                                            <img src={article.image} alt={article.title} className="scrollable-news-image" />
+                                        )}
                                         <div className="scrollable-news-details">
                                             <h4>{article.title}</h4>
                                             <span className="latest-news-source">{article.source.name}</span>
@@ -130,7 +139,9 @@ const LatestUpdates = () => {
                 <div className="latest-news-sidebar">
                     {/* Best of Gameday+ */}
                     <div className="best-of-gameday">
-                        <h2>🏆 Best of Gameday+</h2>
+                        <h2>
+                            <FaTrophy className="icon" /> Best of Gameday+
+                        </h2>
                         <ul>
                             {news.slice(10, 15).map((article, index) => (
                                 <li key={index}>
@@ -145,7 +156,9 @@ const LatestUpdates = () => {
 
                     {/* Trending Now */}
                     <div className="trending-news">
-                        <h2>🔥 Trending Now</h2>
+                        <h2>
+                            <FaFire className="icon" /> Trending Now
+                        </h2>
                         <ul>
                             {news.slice(15, 20).map((article, index) => (
                                 <li key={index}>
@@ -160,9 +173,9 @@ const LatestUpdates = () => {
                     {/* 🏆 Latest AP Poll Rankings */}
                     <div className="latest-poll-section">
                         <h2 className="polls-header">
-                            <img 
-                                src="/photos/committee.png" 
-                                alt="Committee Logo" 
+                            <img
+                                src="/photos/committee.png"
+                                alt="Committee Logo"
                                 className="poll-logo"
                             />
                             Latest Rankings
@@ -174,9 +187,9 @@ const LatestUpdates = () => {
                                 {polls.length > 0 && polls[0].rankings ? (
                                     polls[0].rankings.slice(0, 5).map((team, index) => (
                                         <li key={index} className="poll-team">
-                                            <img 
-                                                src={getTeamLogo(team.school)} 
-                                                alt={team.school} 
+                                            <img
+                                                src={getTeamLogo(team.school)}
+                                                alt={team.school}
                                                 className="team-logo"
                                             />
                                             <span className="rank">#{team.rank}</span>
@@ -192,11 +205,13 @@ const LatestUpdates = () => {
 
                     {/* CFB Video Highlights */}
                     <div className="cfb-highlights">
-                        <h2>🎥 CFB Video Highlights</h2>
-                        <iframe 
-                            width="100%" 
-                            height="200" 
-                            src="https://www.youtube.com/embed/your-highlight-video-id" 
+                        <h2>
+                            <FaVideo className="icon" /> CFB Video Highlights
+                        </h2>
+                        <iframe
+                            width="100%"
+                            height="200"
+                            src="https://www.youtube.com/embed/your-highlight-video-id"
                             title="CFB Highlights"
                             frameBorder="0"
                             allowFullScreen

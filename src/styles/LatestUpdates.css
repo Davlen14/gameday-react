@@ -307,4 +307,7 @@
         flex: 0 0 250px;
     }
 }
-
+.icon {
+    margin-right: 8px;
+    vertical-align: middle;
+}
