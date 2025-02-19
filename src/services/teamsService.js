@@ -205,25 +205,38 @@ export const getTeamById = async (teamId) => {
 
 export const getTeamSchedule = async (team, year = 2024) => {
     const endpoint = "/games";
-    const params = { year, team, seasonType: "regular", division: "fbs" }; // 🔥 Removed "week"
-    const response = await fetchData(endpoint, params);
 
-    if (!response || response.length === 0) {
-        throw new Error("No schedule data found");
+    // Fetch both regular season and postseason games
+    const regularSeasonParams = { year, team, seasonType: "regular", division: "fbs" };
+    const postseasonParams = { year, team, seasonType: "postseason", division: "fbs" };
+
+    try {
+        const [regularSeason, postseason] = await Promise.all([
+            fetchData(endpoint, regularSeasonParams),
+            fetchData(endpoint, postseasonParams),
+        ]);
+
+        const allGames = [...regularSeason, ...postseason];
+
+        if (!allGames.length) {
+            throw new Error("No schedule data found");
+        }
+
+        return allGames.map((game) => ({
+            id: game.id,
+            week: game.week,
+            date: game.startDate,
+            homeTeam: game.homeTeam,
+            awayTeam: game.awayTeam,
+            homePoints: game.homePoints || 0,
+            awayPoints: game.awayPoints || 0,
+            venue: game.venue || "TBD",
+            conferenceGame: game.conferenceGame,
+            neutralSite: game.neutralSite,
+        }));
+    } catch (error) {
+        throw new Error("Error fetching schedule");
     }
-
-    return response.map((game) => ({
-        id: game.id,
-        week: game.week,
-        date: game.startDate,
-        homeTeam: game.homeTeam,
-        awayTeam: game.awayTeam,
-        homePoints: game.homePoints || 0,
-        awayPoints: game.awayPoints || 0,
-        venue: game.venue || "TBD",
-        conferenceGame: game.conferenceGame,
-        neutralSite: game.neutralSite,
-    }));
 };
 
 export const getTeamRatings = async (team, year = 2024) => {

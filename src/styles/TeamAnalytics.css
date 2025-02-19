@@ -1,7 +1,7 @@
 .team-analytics-container {
     text-align: center;
     padding: 20px;
-    max-width: 600px;
+    max-width: 700px;
     margin: auto;
 }
 
@@ -24,9 +24,10 @@
 }
 
 .team-logo {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
+    margin: 5px;
 }
 
 .schedule {
@@ -34,11 +35,36 @@
     margin-top: 20px;
 }
 
+.game-list {
+    list-style: none;
+    padding: 0;
+}
+
 .game-item {
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
     border-bottom: 1px solid #ddd;
 }
 
-.error {
-    color: red;
+.game-teams {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vs {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.game-info {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.venue {
+    font-weight: bold;
 }

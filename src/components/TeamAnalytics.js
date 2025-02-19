@@ -24,16 +24,16 @@ const TeamAnalytics = () => {
     const handleTeamChange = async (event) => {
         const teamId = event.target.value;
         if (!teamId) return;
-    
+
         setIsLoading(true);
         setError(null);
-    
+
         try {
             // Find the selected team using team ID
-            const teamData = teams.find(team => team.id === parseInt(teamId));
+            const teamData = teams.find((team) => team.id === parseInt(teamId));
             setSelectedTeam(teamData);
-    
-            // 🔥 FIX: Pass the team NAME instead of ID to getTeamSchedule
+
+            // Fetch schedule using team name
             const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
             setSchedule(scheduleData);
         } catch (err) {
@@ -43,7 +43,10 @@ const TeamAnalytics = () => {
         }
     };
 
-    const getTeamLogo = (team) => team?.logos ? team.logos[0] : "/photos/default_team.png";
+    const getTeamLogo = (teamName) => {
+        const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
+        return team?.logos ? team.logos[0] : "/photos/default_team.png";
+    };
 
     return (
         <div className="team-analytics-container">
@@ -63,7 +66,7 @@ const TeamAnalytics = () => {
 
             {selectedTeam && (
                 <div className="team-info">
-                    <img src={getTeamLogo(selectedTeam)} alt={selectedTeam.school} className="team-logo" />
+                    <img src={getTeamLogo(selectedTeam.school)} alt={selectedTeam.school} className="team-logo" />
                     <h2>{selectedTeam.school}</h2>
                 </div>
             )}
@@ -74,10 +77,24 @@ const TeamAnalytics = () => {
             {schedule.length > 0 && (
                 <div className="schedule">
                     <h3>{selectedTeam.school} Schedule (2024)</h3>
-                    <ul>
+                    <ul className="game-list">
                         {schedule.map((game) => (
                             <li key={game.id} className="game-item">
-                                <strong>{game.week}</strong>: {game.awayTeam} @ {game.homeTeam} ({new Date(game.startTime).toLocaleDateString()})
+                                <div className="game-teams">
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
+                                        <span>{game.awayTeam}</span>
+                                    </div>
+                                    <span className="vs"> @ </span>
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
+                                        <span>{game.homeTeam}</span>
+                                    </div>
+                                </div>
+                                <div className="game-info">
+                                    <span>{new Date(game.date).toLocaleDateString()}</span>
+                                    <span className="venue">Venue: {game.venue}</span>
+                                </div>
                             </li>
                         ))}
                     </ul>
