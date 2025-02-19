@@ -255,31 +255,31 @@ const LatestUpdates = () => {
             )}
           </div>
 
-            {/* CFB Video Highlights */}
-            <div className="cfb-highlights">
+          {/* CFB Video Highlights */}
+          <div className="cfb-highlights">
             <h2>
-                <FaVideo className="icon" /> CFB Video Highlights
+              <FaVideo className="icon" /> CFB Video Highlights
             </h2>
             {loadingVideos ? (
-                <p className="loading-text">Loading videos...</p>
+              <p className="loading-text">Loading videos...</p>
             ) : videos.length > 0 ? (
-                <div className="video-grid">
+              <div className="video-grid">
                 {videos.map((video) => (
-                    <div key={video.id.videoId} className="video-card">
+                  <div key={video.id.videoId} className="video-card">
                     <iframe
-                        width="100%"
-                        height="200"
-                        src={`https://www.youtube.com/embed/${video.id.videoId}`}
-                        title={video.snippet.title}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                      width="100%"
+                      height="200"
+                      src={`https://www.youtube.com/embed/${video.id.videoId}`}
+                      title={video.snippet.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
                     ></iframe>
-                    </div>
+                  </div>
                 ))}
-                </div>
+              </div>
             ) : (
-                <p>No videos found.</p>
+              <p>No videos found.</p>
             )}
           </div>
         </div>
