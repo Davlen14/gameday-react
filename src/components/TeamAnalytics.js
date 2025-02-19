@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import "../styles/TeamAnalytics.css";
 
@@ -14,16 +14,69 @@ const {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } = lazy(() => import("recharts"));
 
 function TeamAnalytics() {
-  const { teamId } = useParams(); 
-  // If you're passing a numeric `teamId` in the URL (e.g., /team-metrics/:teamId),
-  // be sure to convert it to an integer if needed.
+  const { teamId } = useParams();
+  const navigate = useNavigate();
+
+  // State for when no team is selected via URL
+  const [availableTeams, setAvailableTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
 
   // -----------------------------
-  // 1) State Variables
+  // If no teamId in URL, show team selection dropdown
+  // -----------------------------
+  useEffect(() => {
+    if (!teamId) {
+      // Fetch list of teams for the dropdown
+      async function fetchTeams() {
+        try {
+          const teams = await teamsService.getTeams();
+          setAvailableTeams(teams);
+        } catch (err) {
+          console.error("Error fetching teams:", err);
+        }
+      }
+      fetchTeams();
+    }
+  }, [teamId]);
+
+  const handleTeamSelect = () => {
+    if (selectedTeam) {
+      // Navigate to the team analytics page with the selected team ID in the URL
+      navigate(`/team-metrics/${selectedTeam}`);
+    }
+  };
+
+  // -----------------------------
+  // If no teamId, render the dropdown UI
+  // -----------------------------
+  if (!teamId) {
+    return (
+      <div className="team-analytics-container">
+        <h2>Select a Team to View Analytics</h2>
+        <select
+          value={selectedTeam}
+          onChange={(e) => setSelectedTeam(e.target.value)}
+        >
+          <option value="">-- Select a Team --</option>
+          {availableTeams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.school}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleTeamSelect} disabled={!selectedTeam}>
+          View Analytics
+        </button>
+      </div>
+    );
+  }
+
+  // -----------------------------
+  // 1) State Variables for Analytics Data
   // -----------------------------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,7 +92,7 @@ function TeamAnalytics() {
 
   // Key Metrics
   const [basicStats, setBasicStats] = useState(null); // e.g. from getTeamStats()
-  const [ratings, setRatings] = useState(null);        // e.g. from getTeamRatings()
+  const [ratings, setRatings] = useState(null); // e.g. from getTeamRatings()
   const [advancedStats, setAdvancedStats] = useState(null); // e.g. from getAdvancedStats()
 
   // Matchup Insights
@@ -52,7 +105,7 @@ function TeamAnalytics() {
   const [playerStats, setPlayerStats] = useState([]);
 
   // -----------------------------
-  // 2) Fetch Data on Mount
+  // 2) Fetch Data on Mount (when teamId exists)
   // -----------------------------
   useEffect(() => {
     let isMounted = true;
@@ -63,44 +116,34 @@ function TeamAnalytics() {
 
       try {
         // 1. Basic Team Info (by ID)
-        //    NOTE: If your endpoints need the team "name" instead of ID,
-        //    you may need to fetch the team object first, then call subsequent endpoints with the name.
-        const teamData = await teamsService.getTeamById(teamId); 
+        const teamData = await teamsService.getTeamById(teamId);
         if (!teamData) throw new Error("Team not found");
 
-        // 2. Team Record (optional: pass year or other params if needed)
+        // 2. Team Record
         const record = await teamsService.getTeamRecords(teamId, 2024);
 
-        // 3. Poll / Rankings data (e.g. AP, Coaches) - if relevant
-        //    This is just a placeholder call. You can filter for the specific team after you get the poll data.
+        // 3. Poll / Rankings data (placeholder call)
         const polls = await teamsService.getPolls(2024, "ap");
 
-        // 4. Basic Stats (like total yards, passing yards, etc.)
-        //    Might need the "team name" from teamData.school or teamData.name
+        // 4. Basic Stats (might need team name from teamData.school)
         const stats = await teamsService.getTeamStats(teamData.school, 2024);
 
         // 5. SP+ or advanced rating data
         const ratingData = await teamsService.getTeamRatings(teamData.school, 2024);
 
         // 6. Additional advanced stats
-        //    This endpoint is presumably newly added. Adjust params as needed.
         const advStats = await teamsService.getAdvancedStats(teamId);
 
-        // 7. Recent Games (you might fetch all and then slice to last 5, 10, etc.)
-        //    You can store them in state, then filter by user selection.
+        // 7. Recent Games
         const recent = await teamsService.getTeamSchedule(teamData.school, 2024);
 
-        // 8. Betting Lines (for line movements & trends)
+        // 8. Betting Lines
         const lines = await teamsService.getGameLines(2024, teamData.school);
 
-        // 9. Upcoming Matchup (if there's a next scheduled game, you can pass the next opponent)
-        //    For demonstration, let's say the next opponent is "Ohio State".
-        //    Replace with dynamic logic if you have the next scheduled game from `recent` or another source.
+        // 9. Upcoming Matchup (example with "Ohio State")
         const matchup = await teamsService.getTeamMatchup(teamData.school, "Ohio State");
 
-        // 10. Player Performance
-        //     Example: get last 5 games for QBs or top skill players
-        //     This is just an example call. Adjust the params for your real usage.
+        // 10. Player Performance (example: passing stats)
         const pStats = await teamsService.getPlayerSeasonStats(2024, "passing");
 
         if (isMounted) {
@@ -135,38 +178,40 @@ function TeamAnalytics() {
   // -----------------------------
   const handleFilterChange = (filterOption) => {
     setSelectedFilter(filterOption);
-    // For example, if you have all games in `recentGames`, 
-    // you can filter them in a memoized selector or directly here.
   };
 
-  // Example: Filter the recent games based on selectedFilter
+  // Filter the recent games based on the selected filter
   const filteredGames = React.useMemo(() => {
     if (!recentGames || recentGames.length === 0) return [];
     if (selectedFilter === "Season") return recentGames;
-    
-    const count = parseInt(selectedFilter.replace("L", ""), 10); // e.g. "L5" -> 5
-    return recentGames.slice(-count); // last N games
+    const count = parseInt(selectedFilter.replace("L", ""), 10);
+    return recentGames.slice(-count);
   }, [recentGames, selectedFilter]);
 
-  // Build chart data from `filteredGames`, `basicStats`, etc.
+  // Build chart data for Recharts
   const recentGameChartData = filteredGames.map((game) => ({
     week: game.week,
-    pointsFor: game.homeTeam === teamInfo?.school ? game.homePoints : game.awayPoints,
-    pointsAgainst: game.homeTeam === teamInfo?.school ? game.awayPoints : game.homePoints,
-    // Add more stats if you have them
+    pointsFor:
+      game.homeTeam === teamInfo?.school ? game.homePoints : game.awayPoints,
+    pointsAgainst:
+      game.homeTeam === teamInfo?.school ? game.awayPoints : game.homePoints,
   }));
 
   // -----------------------------
-  // 4) Render
+  // 4) Render Analytics UI
   // -----------------------------
-  if (loading) return <div className="team-analytics-loading">Loading Team Analytics...</div>;
-  if (error) return <div className="team-analytics-error">Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="team-analytics-loading">
+        Loading Team Analytics...
+      </div>
+    );
+  if (error)
+    return <div className="team-analytics-error">Error: {error}</div>;
 
   return (
     <div className="team-analytics-container">
-      {/* 
-        1️⃣ HEADER SECTION 
-      */}
+      {/* 1️⃣ HEADER SECTION */}
       <section className="team-analytics-header">
         <div className="team-info">
           <img
@@ -178,31 +223,31 @@ function TeamAnalytics() {
             <h1>{teamInfo?.school}</h1>
             <p>Conference: {teamInfo?.conference || "N/A"}</p>
             <p>
-              Record: {teamRecord?.overallWins || 0}-{teamRecord?.overallLosses || 0}
+              Record: {teamRecord?.overallWins || 0}-
+              {teamRecord?.overallLosses || 0}
             </p>
-            {/* If pollData includes ranking info for this team, display it */}
-            <p>Rank: 
-              {/* example: if pollData[0] is AP poll, find the rank for this team */}
-              {pollData?.[0]?.rankings.find((r) => r.school === teamInfo?.school)?.rank || "N/A"}
+            <p>
+              Rank:{" "}
+              {pollData?.[0]?.rankings.find(
+                (r) => r.school === teamInfo?.school
+              )?.rank || "N/A"}
             </p>
-            {/* Offensive & Defensive Ranks from SP+ or your custom rating system */}
             <p>Offense Rank: {ratings?.offenseRank}</p>
             <p>Defense Rank: {ratings?.defenseRank}</p>
           </div>
         </div>
       </section>
 
-      {/* 
-        2️⃣ RECENT GAME PERFORMANCE 
-      */}
+      {/* 2️⃣ RECENT GAME PERFORMANCE */}
       <section className="recent-game-performance">
         <div className="filters">
           <button onClick={() => handleFilterChange("L5")}>Last 5</button>
           <button onClick={() => handleFilterChange("L10")}>Last 10</button>
           <button onClick={() => handleFilterChange("L20")}>Last 20</button>
-          <button onClick={() => handleFilterChange("Season")}>Season</button>
+          <button onClick={() => handleFilterChange("Season")}>
+            Season
+          </button>
         </div>
-
         <div className="chart-container">
           <Suspense fallback={<div>Loading Charts...</div>}>
             <ResponsiveContainer width="100%" height={300}>
@@ -212,17 +257,23 @@ function TeamAnalytics() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="pointsFor" fill="#8884d8" name="Points For" />
-                <Bar dataKey="pointsAgainst" fill="#82ca9d" name="Points Against" />
+                <Bar
+                  dataKey="pointsFor"
+                  fill="#8884d8"
+                  name="Points For"
+                />
+                <Bar
+                  dataKey="pointsAgainst"
+                  fill="#82ca9d"
+                  name="Points Against"
+                />
               </BarChart>
             </ResponsiveContainer>
           </Suspense>
         </div>
       </section>
 
-      {/* 
-        3️⃣ KEY TEAM METRICS (Cards UI)
-      */}
+      {/* 3️⃣ KEY TEAM METRICS (Cards UI) */}
       <section className="key-team-metrics">
         <h2>Key Team Metrics</h2>
         <div className="metrics-cards">
@@ -253,28 +304,33 @@ function TeamAnalytics() {
         </div>
       </section>
 
-      {/* 
-        4️⃣ MATCHUP INSIGHTS
-      */}
+      {/* 4️⃣ MATCHUP INSIGHTS */}
       <section className="matchup-insights">
         <h2>Upcoming Matchup Insights</h2>
         {matchupData ? (
           <div className="matchup-stats">
             <p>Team A Points Scored: {matchupData.team1PointsPerGame}</p>
             <p>Team B Points Allowed: {matchupData.team2PointsAllowedPerGame}</p>
-            <p>Rushing vs. Passing Tendencies: {matchupData.team1RunPassRatio} vs. {matchupData.team2RunPassRatio}</p>
-            <p>Defensive Strengths: {matchupData.team1DefensiveStrength} vs. {matchupData.team2DefensiveStrength}</p>
-            <p>Key Players: {matchupData.keyPlayers?.join(", ")}</p>
-            {/* Add more as needed */}
+            <p>
+              Rushing vs. Passing Tendencies:{" "}
+              {matchupData.team1RunPassRatio} vs.{" "}
+              {matchupData.team2RunPassRatio}
+            </p>
+            <p>
+              Defensive Strengths: {matchupData.team1DefensiveStrength} vs.{" "}
+              {matchupData.team2DefensiveStrength}
+            </p>
+            <p>
+              Key Players:{" "}
+              {matchupData.keyPlayers?.join(", ")}
+            </p>
           </div>
         ) : (
           <p>No matchup data available.</p>
         )}
       </section>
 
-      {/* 
-        5️⃣ LINE MOVEMENTS & BETTING TRENDS
-      */}
+      {/* 5️⃣ LINE MOVEMENTS & BETTING TRENDS */}
       <section className="line-movements">
         <h2>Line Movements & Betting Trends</h2>
         <div className="chart-container">
@@ -286,18 +342,25 @@ function TeamAnalytics() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="spreadOpen" stroke="#8884d8" name="Open Spread" />
-                <Line type="monotone" dataKey="spreadCurrent" stroke="#82ca9d" name="Current Spread" />
+                <Line
+                  type="monotone"
+                  dataKey="spreadOpen"
+                  stroke="#8884d8"
+                  name="Open Spread"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="spreadCurrent"
+                  stroke="#82ca9d"
+                  name="Current Spread"
+                />
               </LineChart>
             </ResponsiveContainer>
           </Suspense>
         </div>
-        {/* You can also add public betting % bar charts, ATS record, etc. */}
       </section>
 
-      {/* 
-        6️⃣ PLAYER PERFORMANCE BREAKDOWN
-      */}
+      {/* 6️⃣ PLAYER PERFORMANCE BREAKDOWN */}
       <section className="player-performance">
         <h2>Player Performance (Last 5 Games)</h2>
         <div className="player-stats-table">
