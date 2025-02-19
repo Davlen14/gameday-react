@@ -24,10 +24,10 @@ const fetchData = async (endpoint, params = {}) => {
 
 // Core API interaction functions
 export const getGameById = async (gameId) => {
-    const endpoint = "/games";
-    const params = { id: gameId };
-    const response = await fetchData(endpoint, params);
-    return response?.[0] || null;
+  const endpoint = "/games";
+  const params = { gameId }; // ✅ Use 'gameId' instead of 'id'
+  const response = await fetchData(endpoint, params);
+  return response?.[0] || null;
 };
 
 export const getTeams = async () => {
