@@ -1,118 +1,110 @@
 import React, { useState, useEffect } from "react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import teamsService from "../services/teamsService";
-import TeamScheduleChart from "./TeamScheduleChart";  // 🔥 Import the chart
 import "../styles/TeamAnalytics.css";
 
-const TeamAnalytics = () => {
-    const [teams, setTeams] = useState([]);
-    const [selectedTeam, setSelectedTeam] = useState(null);
+const TeamScheduleChart = ({ teamName }) => {
     const [schedule, setSchedule] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [teams, setTeams] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchTeams = async () => {
+        const fetchSchedule = async () => {
             try {
                 const teamsData = await teamsService.getTeams();
                 setTeams(teamsData);
+
+                const scheduleData = await teamsService.getTeamSchedule(teamName, 2024);
+                setSchedule(scheduleData);
             } catch (err) {
-                setError("Failed to load teams.");
+                setError("Failed to load schedule.");
+            } finally {
+                setIsLoading(false);
             }
         };
-        fetchTeams();
-    }, []);
 
-    const handleTeamChange = async (event) => {
-        const teamId = event.target.value;
-        if (!teamId) return;
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const teamData = teams.find((team) => team.id === parseInt(teamId));
-            setSelectedTeam(teamData);
-
-            const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
-            setSchedule(scheduleData);
-        } catch (err) {
-            setError("Failed to load schedule.");
-        } finally {
-            setIsLoading(false);
+        if (teamName) {
+            fetchSchedule();
         }
+    }, [teamName]);
+
+    const getTeamData = (team) => {
+        return teams.find(t => t.school.toLowerCase() === team.toLowerCase()) || {};
     };
 
-    const getTeamLogo = (teamName) => {
-        const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
-        return team?.logos ? team.logos[0] : "/photos/default_team.png";
+    const formattedData = schedule.map(game => ({
+        week: game.week,
+        homeTeam: game.homeTeam,
+        awayTeam: game.awayTeam,
+        homePoints: game.homePoints || 0,
+        awayPoints: game.awayPoints || 0,
+        homeColor: getTeamData(game.homeTeam).color || "#999999",
+        awayColor: getTeamData(game.awayTeam).color || "#888888",
+        homeLogo: getTeamData(game.homeTeam).logos ? getTeamData(game.homeTeam).logos[0] : "/photos/default_team.png",
+        awayLogo: getTeamData(game.awayTeam).logos ? getTeamData(game.awayTeam).logos[0] : "/photos/default_team.png",
+    }));
+
+    const CustomTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            const game = payload[0].payload;
+            return (
+                <div className="custom-tooltip">
+                    <div className="tooltip-team">
+                        <img src={game.homeLogo} alt={game.homeTeam} className="tooltip-logo" />
+                        <span>{game.homeTeam}: {game.homePoints}</span>
+                    </div>
+                    <div className="tooltip-team">
+                        <img src={game.awayLogo} alt={game.awayTeam} className="tooltip-logo" />
+                        <span>{game.awayTeam}: {game.awayPoints}</span>
+                    </div>
+                </div>
+            );
+        }
+        return null;
     };
+
+    const CustomXAxisTick = ({ x, y, payload }) => {
+        const game = formattedData[payload.value - 1]; // Match week index
+        if (!game) return null;
+
+        return (
+            <g transform={`translate(${x},${y})`}>
+                <image href={game.homeLogo} x={-15} y={-60} width="30" height="30" />
+                <image href={game.awayLogo} x={-15} y={-30} width="30" height="30" />
+            </g>
+        );
+    };
+
+    if (isLoading) return <p>Loading schedule...</p>;
+    if (error) return <p className="error">{error}</p>;
 
     return (
-        <div className="team-analytics-container">
-            <h1>Team Analytics</h1>
+        <div className="chart-container">
+            <h2 className="chart-title">{teamName} 2024 Schedule - Points Scored</h2>
+            <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={formattedData} margin={{ top: 50, right: 30, left: 20, bottom: 50 }}>
+                    <XAxis dataKey="week" tick={<CustomXAxisTick />} tickLine={false} />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
 
-            <div className="team-selector">
-                <label>Select a Team:</label>
-                <select onChange={handleTeamChange} className="team-dropdown">
-                    <option value="">-- Choose a Team --</option>
-                    {teams.map((team) => (
-                        <option key={team.id} value={team.id}>
-                            {team.school}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {selectedTeam && (
-                <div className="team-info">
-                    <img src={getTeamLogo(selectedTeam.school)} alt={selectedTeam.school} className="team-logo" />
-                    <h2>{selectedTeam.school}</h2>
-                </div>
-            )}
-
-            {isLoading && <p>Loading schedule...</p>}
-            {error && <p className="error">{error}</p>}
-
-            {schedule.length > 0 && (
-                <>
-                    <div className="schedule">
-                        <h3>{selectedTeam.school} Schedule (2024)</h3>
-                        <ul className="game-list">
-                            {schedule.map((game) => (
-                                <li key={game.id} className="game-item">
-                                    <div className="game-teams">
-                                        <div className="team">
-                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                            <span>{game.awayTeam}</span>
-                                        </div>
-                                        <span className="vs"> @ </span>
-                                        <div className="team">
-                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                            <span>{game.homeTeam}</span>
-                                        </div>
-                                    </div>
-                                    <div className="game-info">
-                                        <span>{new Date(game.date).toLocaleDateString()}</span>
-                                        <span className="venue">Venue: {game.venue}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* 🔥 ADD THE BAR CHART BELOW THE SCHEDULE */}
-                    <TeamScheduleChart teamName={selectedTeam.school} />
-
-                    {/* 🔥 Align Team Logos with the Chart */}
-                    <div className="team-logos-container">
-                        {schedule.map((game) => (
-                            <img key={game.id} src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo-chart" />
+                    {/* Home Team Bar */}
+                    <Bar dataKey="homePoints" name="Home" fill="#ffffff">
+                        {formattedData.map((game, index) => (
+                            <Cell key={`home-${index}`} fill={game.homeColor} />
                         ))}
-                    </div>
-                </>
-            )}
+                    </Bar>
+
+                    {/* Away Team Bar */}
+                    <Bar dataKey="awayPoints" name="Away" fill="#ffffff">
+                        {formattedData.map((game, index) => (
+                            <Cell key={`away-${index}`} fill={game.awayColor} />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
         </div>
     );
 };
 
-export default TeamAnalytics;
+export default TeamScheduleChart;

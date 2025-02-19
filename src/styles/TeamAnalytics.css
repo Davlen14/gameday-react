@@ -147,6 +147,28 @@
     border: 1px solid #ddd;
 }
 
+.custom-tooltip {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 14px;
+}
+
+.tooltip-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.tooltip-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
 /* Team Logos Container */
 .team-logos-container {
     display: flex;
