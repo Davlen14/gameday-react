@@ -85,10 +85,10 @@ export const getGames = async (query) => {
     return await fetchData(endpoint, params);
 };
 
-export const getAdvancedBoxScore = async (gameId, week, team, seasonType = "regular") => {
-    const endpoint = "/game/box/advanced";
-    const params = { gameId, week, team, seasonType };
-    return await fetchData(endpoint, params);
+export const getAdvancedBoxScore = async (gameId) => {
+  const endpoint = "/games/box/advanced";
+  const params = { gameId };
+  return await fetchData(endpoint, params);
 };
 
 export const getGameLines = async (year, team = null, seasonType = "regular") => {
