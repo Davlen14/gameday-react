@@ -203,15 +203,9 @@ export const getTeamById = async (teamId) => {
     return foundTeam;
 };
 
-// UPDATED: Added postseason support if needed (using query parameter)
-export const getTeamSchedule = async (team, year = 2024, query = 1) => {
+export const getTeamSchedule = async (team, year = 2024) => {
     const endpoint = "/games";
-    let params;
-    if (typeof query === "object" && query.seasonType === "postseason") {
-        params = { year, team, seasonType: "postseason", division: "fbs" };
-    } else {
-        params = { year, team, seasonType: "regular", division: "fbs", week: query };
-    }
+    const params = { year, team, seasonType: "regular", division: "fbs" }; // 🔥 Removed "week"
     const response = await fetchData(endpoint, params);
 
     if (!response || response.length === 0) {
