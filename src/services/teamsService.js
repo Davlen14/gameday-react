@@ -331,6 +331,245 @@ export const getTeamRoster = async (team, year = 2024) => {
       homeState: player.homeState || "N/A",
     }));
   };
+
+
+  // -------------------------
+// Additional Endpoints
+// -------------------------
+
+// GET /calendar - Fetch the game calendar
+export const getCalendar = async (year) => {
+    const endpoint = "/calendar";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /drives - Fetch drive data for a given game
+  export const getDrives = async (gameId) => {
+    const endpoint = "/drives";
+    const params = { gameId };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /plays - Fetch general play-by-play data for a given game
+  export const getPlays = async (gameId) => {
+    const endpoint = "/plays";
+    const params = { gameId };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /plays/types - Fetch the types of plays
+  export const getPlayTypes = async () => {
+    const endpoint = "/plays/types";
+    return await fetchData(endpoint);
+  };
+  
+  // GET /plays/stats - Fetch statistics for plays in a given game
+  export const getPlaysStats = async (gameId) => {
+    const endpoint = "/plays/stats";
+    const params = { gameId };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /plays/stats/types - Fetch the types for play statistics
+  export const getPlaysStatsTypes = async () => {
+    const endpoint = "/plays/stats/types";
+    return await fetchData(endpoint);
+  };
+  
+  // GET /conferences - Fetch conference information
+  export const getConferences = async () => {
+    const endpoint = "/conferences";
+    return await fetchData(endpoint);
+  };
+  
+  // GET /coaches - Fetch coaches information
+  export const getCoaches = async (year) => {
+    const endpoint = "/coaches";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /player/search - Search for players based on a query
+  export const getPlayerSearch = async (query) => {
+    const endpoint = "/player/search";
+    const params = { query };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /player/usage - Fetch player usage data
+  export const getPlayerUsage = async (year, team) => {
+    const endpoint = "/player/usage";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /player/returning - Fetch data on returning players
+  export const getPlayerReturning = async (year) => {
+    const endpoint = "/player/returning";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /player/portal - Fetch data from the player portal
+  export const getPlayerPortal = async (year) => {
+    const endpoint = "/player/portal";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /recruiting/teams - Fetch recruiting data for teams
+  export const getRecruitingTeams = async (year) => {
+    const endpoint = "/recruiting/teams";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /recruiting/groups - Fetch recruiting groups data
+  export const getRecruitingGroups = async (year) => {
+    const endpoint = "/recruiting/groups";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ratings/sp/conferences - Fetch SP ratings broken down by conference
+  export const getRatingsSPConferences = async (year) => {
+    const endpoint = "/ratings/sp/conferences";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ratings/srs - Fetch SRS (Simple Rating System) ratings
+  export const getRatingsSRS = async (year) => {
+    const endpoint = "/ratings/srs";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ratings/elo - Fetch Elo ratings
+  export const getRatingsElo = async (year) => {
+    const endpoint = "/ratings/elo";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ratings/fpi - Fetch FPI (Football Power Index) ratings
+  export const getRatingsFPI = async (year) => {
+    const endpoint = "/ratings/fpi";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ppa/predicted - Fetch predicted points (PPA) data
+  export const getPPAPredicted = async (year) => {
+    const endpoint = "/ppa/predicted";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ppa/teams - Fetch PPA data for teams
+  export const getPPATeams = async (year) => {
+    const endpoint = "/ppa/teams";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ppa/games - Fetch PPA data for games
+  export const getPPAGames = async (year) => {
+    const endpoint = "/ppa/games";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /ppa/players/games - Fetch PPA data for players in games
+  export const getPPAPlayersGames = async (year) => {
+    const endpoint = "/ppa/players/games";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /metrics/wp - Fetch win probability metrics
+  export const getMetricsWP = async (year, week) => {
+    const endpoint = "/metrics/wp";
+    const params = { year, week };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /metrics/wp/pregame - Fetch pregame win probability metrics
+  export const getMetricsWPPregame = async (year, week) => {
+    const endpoint = "/metrics/wp/pregame";
+    const params = { year, week };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /metrics/fg/ep - Fetch field goal expected points metrics
+  export const getMetricsFGEP = async (year, gameId) => {
+    const endpoint = "/metrics/fg/ep";
+    const params = { year, gameId };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /stats/categories - Fetch statistical categories
+  export const getStatsCategories = async () => {
+    const endpoint = "/stats/categories";
+    return await fetchData(endpoint);
+  };
+  
+  // GET /stats/game/advanced - Fetch advanced game stats
+  export const getStatsGameAdvanced = async (gameId, year) => {
+    const endpoint = "/stats/game/advanced";
+    const params = { gameId, year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /draft/teams - Fetch NFL draft teams data
+  export const getDraftTeams = async (year) => {
+    const endpoint = "/draft/teams";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /draft/positions - Fetch NFL draft positions data
+  export const getDraftPositions = async (year) => {
+    const endpoint = "/draft/positions";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /draft/picks - Fetch NFL draft picks data
+  export const getDraftPicks = async (year) => {
+    const endpoint = "/draft/picks";
+    const params = { year };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /wepa/team/season - Fetch adjusted team metrics (Wepa)
+  export const getWepaTeamSeason = async (year, team) => {
+    const endpoint = "/wepa/team/season";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /wepa/players/passing - Fetch adjusted player passing metrics (Wepa)
+  export const getWepaPlayersPassing = async (year, team) => {
+    const endpoint = "/wepa/players/passing";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /wepa/players/rushing - Fetch adjusted player rushing metrics (Wepa)
+  export const getWepaPlayersRushing = async (year, team) => {
+    const endpoint = "/wepa/players/rushing";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+  };
+  
+  // GET /wepa/players/kicking - Fetch adjusted player kicking metrics (Wepa)
+  export const getWepaPlayersKicking = async (year, team) => {
+    const endpoint = "/wepa/players/kicking";
+    const params = { year, team };
+    return await fetchData(endpoint, params);
+  };
   
 
 // Export all functions
@@ -358,6 +597,40 @@ const teamsService = {
     getPlayerGameStats,
     fetchScoreboard,
     getAllRecruits,
+    getCalendar,
+    getDrives,
+    getPlays,
+    getPlayTypes,
+    getPlaysStats,
+    getPlaysStatsTypes,
+    getConferences,
+    getCoaches,
+    getPlayerSearch,
+    getPlayerUsage,
+    getPlayerReturning,
+    getPlayerPortal,
+    getRecruitingTeams,
+    getRecruitingGroups,
+    getRatingsSPConferences,
+    getRatingsSRS,
+    getRatingsElo,
+    getRatingsFPI,
+    getPPAPredicted,
+    getPPATeams,
+    getPPAGames,
+    getPPAPlayersGames,
+    getMetricsWP,
+    getMetricsWPPregame,
+    getMetricsFGEP,
+    getStatsCategories,
+    getStatsGameAdvanced,
+    getDraftTeams,
+    getDraftPositions,
+    getDraftPicks,
+    getWepaTeamSeason,
+    getWepaPlayersPassing,
+    getWepaPlayersRushing,
+    getWepaPlayersKicking,
 };
 
 export default teamsService;
