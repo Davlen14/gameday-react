@@ -178,7 +178,7 @@
 .cfb-highlights {
     background: #fff;
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 0; /* Boxy edges */
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -251,10 +251,66 @@
 }
 
 /* 🔹 CFB Video Highlights */
-.cfb-highlights iframe {
-    border-radius: 12px;
+.cfb-highlights {
+    background: #fff;
+    padding: 20px;
+    border-radius: 0; /* Boxy edges */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cfb-highlights h2 {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
+    gap: 15px;
+}
+
+.video-card {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: #f0f0f0;
+    transition: transform 0.3s ease;
+}
+
+.video-card:hover {
+    transform: scale(1.05);
+}
+
+.video-card iframe {
     width: 100%;
     height: 200px;
+    border-radius: 0; /* Boxy edges */
+    transition: opacity 0.3s ease;
+    opacity: 0.8; /* Make videos less visible by default */
+}
+
+/* On hover, play the video */
+.video-card:hover iframe {
+    opacity: 1; /* Full opacity on hover */
+}
+
+/* Optional: Add overlay effect on hover */
+.video-card:hover::after {
+    content: '▶'; /* Play icon */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: #fff;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.video-card iframe:focus {
+    outline: none;
 }
 
 /* 🔹 Responsive */
