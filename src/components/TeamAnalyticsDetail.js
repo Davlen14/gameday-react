@@ -22,27 +22,27 @@ const TeamAnalyticsDetail = ({ teamName }) => {
             .catch(() => ({ id: game.id, stats: [] }))
         );
   
+        // In your useEffect when processing scheduleData and stats:
         const statsResults = await Promise.all(statsPromises);
         console.log("Advanced Stats Data:", statsResults);
-  
+
         // Combine the two box scores (one per team) into a single stats object per game.
         const statsMap = {};
         statsResults.forEach(({ id, stats }) => {
-          // Find the game so we know which team is home vs. away
-          const gameData = scheduleData.find((g) => g.id === id);
-          if (!gameData) return;
-          stats.forEach((box) => {
+        // Change to use gameId instead of id:
+        const gameData = scheduleData.find((g) => g.gameId === id);
+        if (!gameData) return;
+        stats.forEach((box) => {
             if (!statsMap[id]) statsMap[id] = {};
             if (box.team === gameData.homeTeam) {
-              statsMap[id].homeOffense = box.offense;
-              statsMap[id].homeDefense = box.defense;
+            statsMap[id].homeOffense = box.offense;
+            statsMap[id].homeDefense = box.defense;
             } else if (box.team === gameData.awayTeam) {
-              statsMap[id].awayOffense = box.offense;
-              statsMap[id].awayDefense = box.defense;
+            statsMap[id].awayOffense = box.offense;
+            statsMap[id].awayDefense = box.defense;
             }
-          });
         });
-  
+        });
         setAdvancedStats(statsMap);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -68,7 +68,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
     <div className="team-analytics-detail-container">
       <h2 className="detail-title">{teamName} 2024 Game Details</h2>
       {schedule.map((game) => {
-        const gameStats = advancedStats[game.id] || {};
+        const gameStats = advancedStats[game.game.id] || {};
         const homeOffense = gameStats.homeOffense || {};
         const awayOffense = gameStats.awayOffense || {};
         const homeDefense = gameStats.homeDefense || {};
@@ -76,9 +76,9 @@ const TeamAnalyticsDetail = ({ teamName }) => {
 
         return (
           <div
-            key={game.id}
-            className={`game-detail-card ${expandedGameId === game.id ? "expanded" : ""}`}
-            onClick={() => handleGameClick(game.id)}
+          key={game.gameId}
+          className={`game-detail-card ${expandedGameId === game.gameId ? "expanded" : ""}`}
+          onClick={() => handleGameClick(game.gameId)}
           >
             <div className="game-header">
               <div className="team-info">
