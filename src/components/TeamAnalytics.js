@@ -24,15 +24,17 @@ const TeamAnalytics = () => {
     const handleTeamChange = async (event) => {
         const teamId = event.target.value;
         if (!teamId) return;
-        
+    
         setIsLoading(true);
         setError(null);
-
+    
         try {
+            // Find the selected team using team ID
             const teamData = teams.find(team => team.id === parseInt(teamId));
             setSelectedTeam(teamData);
-
-            const scheduleData = await teamsService.getTeamSchedule(2024, teamId);
+    
+            // 🔥 FIX: Pass the team NAME instead of ID to getTeamSchedule
+            const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
             setSchedule(scheduleData);
         } catch (err) {
             setError("Failed to load schedule.");
