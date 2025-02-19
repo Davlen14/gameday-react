@@ -103,7 +103,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
           <option value="postseason">Postseason</option>
         </select>
       </div>
-      <div className="scoreboard-games">
+<div className="scoreboard-games">
   {games.map((game) => (
     <Link to={`/games/${game.id}`} key={game.id} className="scoreboard-game-link">
       <div className="scoreboard-game-card">
