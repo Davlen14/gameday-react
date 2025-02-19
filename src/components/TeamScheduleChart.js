@@ -34,12 +34,11 @@ const TeamScheduleChart = ({ teamName }) => {
         return teamData?.color || "#999999"; // Default gray if not found
     };
 
+    // Ensure all games have valid points
     const formattedData = schedule.map(game => ({
         week: `Week ${game.week}`,
-        homeTeam: game.homeTeam,
-        awayTeam: game.awayTeam,
-        homePoints: game.homePoints,
-        awayPoints: game.awayPoints,
+        [game.homeTeam]: game.homePoints || 0,  // Dynamic team names as data keys
+        [game.awayTeam]: game.awayPoints || 0,  
         homeColor: getTeamColor(game.homeTeam),
         awayColor: getTeamColor(game.awayTeam),
     }));
@@ -52,16 +51,18 @@ const TeamScheduleChart = ({ teamName }) => {
             <h2 className="chart-title">{teamName} 2024 Schedule - Points Scored</h2>
             <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={formattedData} margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
-                    <XAxis dataKey="week" tick={{ fill: "#ffffff" }} />
-                    <YAxis tick={{ fill: "#ffffff" }} />
-                    <Tooltip cursor={{ fill: "rgba(255, 255, 255, 0.1)" }} />
+                    <XAxis dataKey="week" tick={{ fill: "#333" }} />
+                    <YAxis tick={{ fill: "#333" }} />
+                    <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
                     <Legend />
-                    {formattedData.map((game, index) => (
+                    
+                    {/* 🔥 Dynamically create bars for each team based on game data */}
+                    {schedule.length > 0 && (
                         <>
-                            <Bar key={`home-${index}`} dataKey="homePoints" name={game.homeTeam} fill={game.homeColor} />
-                            <Bar key={`away-${index}`} dataKey="awayPoints" name={game.awayTeam} fill={game.awayColor} />
+                            <Bar dataKey={schedule[0].homeTeam} name={schedule[0].homeTeam} fill={formattedData[0].homeColor} />
+                            <Bar dataKey={schedule[0].awayTeam} name={schedule[0].awayTeam} fill={formattedData[0].awayColor} />
                         </>
-                    ))}
+                    )}
                 </BarChart>
             </ResponsiveContainer>
         </div>
