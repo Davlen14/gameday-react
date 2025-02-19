@@ -232,7 +232,7 @@ function App() {
 
           {/* MAIN CONTENT */}
           <main className="app-content">
-            <Routes>
+                      <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/teams/:teamId" element={<TeamDetail />} />
@@ -241,6 +241,8 @@ function App() {
               <Route path="/more" element={<More />} />
               <Route path="/ask-questions" element={<Chatbot />} />
               <Route path="/games/:gameId" element={<GameDetailView />} />
+              {/* Added alias route for singular "/game" URL */}
+              <Route path="/game/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
 
