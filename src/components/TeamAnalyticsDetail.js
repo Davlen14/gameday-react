@@ -22,15 +22,17 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                 const statsResults = await Promise.all(statsPromises);
 
                 const statsMap = statsResults.reduce((acc, stat, index) => {
-                    acc[scheduleData[index].id] = stat || {
-                        homeOffense: {},
-                        awayOffense: {},
-                        homeDefense: {},
-                        awayDefense: {}
+                    const gameId = scheduleData[index].id;
+                    const teamStats = stat?.find((entry) => entry.team === teamName);
+
+                    acc[gameId] = teamStats || {
+                        offense: {},
+                        defense: {},
                     };
+
                     return acc;
                 }, {});
-                
+
                 setAdvancedStats(statsMap);
             } catch (err) {
                 setError("Failed to load data.");
@@ -88,7 +90,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                         </div>
                     </div>
 
-                    {expandedGameId === game.id && advancedStats[game.id] && advancedStats[game.id].homeOffense && (
+                    {expandedGameId === game.id && advancedStats[game.id] && (
                         <div className="advanced-stats">
                             <h4 className="advanced-stats-title">Detailed Performance</h4>
 
@@ -98,25 +100,19 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                                 <div className="stat-item">
                                     <span className="stat-category">Plays</span>
                                     <div className="stat-comparison">
-                                        <span>{advancedStats[game.id].homeOffense.plays || "N/A"}</span>
-                                        <span>vs</span>
-                                        <span>{advancedStats[game.id].awayOffense.plays || "N/A"}</span>
+                                        <span>{advancedStats[game.id].offense.plays || "N/A"}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
                                     <span className="stat-category">Total PPA</span>
                                     <div className="stat-comparison">
-                                        <span>{(advancedStats[game.id].homeOffense.totalPPA || 0).toFixed(2)}</span>
-                                        <span>vs</span>
-                                        <span>{(advancedStats[game.id].awayOffense.totalPPA || 0).toFixed(2)}</span>
+                                        <span>{(advancedStats[game.id].offense.totalPPA || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
                                     <span className="stat-category">Success Rate</span>
                                     <div className="stat-comparison">
-                                        <span>{((advancedStats[game.id].homeOffense.successRate || 0) * 100).toFixed(1)}%</span>
-                                        <span>vs</span>
-                                        <span>{((advancedStats[game.id].awayOffense.successRate || 0) * 100).toFixed(1)}%</span>
+                                        <span>{((advancedStats[game.id].offense.successRate || 0) * 100).toFixed(1)}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -127,46 +123,36 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                                 <div className="stat-item">
                                     <span className="stat-category">Plays Defended</span>
                                     <div className="stat-comparison">
-                                        <span>{advancedStats[game.id].homeDefense.plays || "N/A"}</span>
-                                        <span>vs</span>
-                                        <span>{advancedStats[game.id].awayDefense.plays || "N/A"}</span>
+                                        <span>{advancedStats[game.id].defense.plays || "N/A"}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
                                     <span className="stat-category">Total PPA Allowed</span>
                                     <div className="stat-comparison">
-                                        <span>{(advancedStats[game.id].homeDefense.totalPPA || 0).toFixed(2)}</span>
-                                        <span>vs</span>
-                                        <span>{(advancedStats[game.id].awayDefense.totalPPA || 0).toFixed(2)}</span>
+                                        <span>{(advancedStats[game.id].defense.totalPPA || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
                                     <span className="stat-category">Success Rate Allowed</span>
                                     <div className="stat-comparison">
-                                        <span>{((advancedStats[game.id].homeDefense.successRate || 0) * 100).toFixed(1)}%</span>
-                                        <span>vs</span>
-                                        <span>{((advancedStats[game.id].awayDefense.successRate || 0) * 100).toFixed(1)}%</span>
+                                        <span>{((advancedStats[game.id].defense.successRate || 0) * 100).toFixed(1)}%</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Explosiveness and Other Metrics */}
+                            {/* Additional Metrics */}
                             <h5>Additional Metrics</h5>
                             <div className="stat-grid">
                                 <div className="stat-item">
                                     <span className="stat-category">Explosiveness</span>
                                     <div className="stat-comparison">
-                                        <span>{(advancedStats[game.id].homeOffense.explosiveness || 0).toFixed(2)}</span>
-                                        <span>vs</span>
-                                        <span>{(advancedStats[game.id].awayOffense.explosiveness || 0).toFixed(2)}</span>
+                                        <span>{(advancedStats[game.id].offense.explosiveness || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
                                     <span className="stat-category">Power Success</span>
                                     <div className="stat-comparison">
-                                        <span>{((advancedStats[game.id].homeOffense.powerSuccess || 0) * 100).toFixed(1)}%</span>
-                                        <span>vs</span>
-                                        <span>{((advancedStats[game.id].awayOffense.powerSuccess || 0) * 100).toFixed(1)}%</span>
+                                        <span>{((advancedStats[game.id].offense.powerSuccess || 0) * 100).toFixed(1)}%</span>
                                     </div>
                                 </div>
                             </div>
