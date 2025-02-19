@@ -13,27 +13,33 @@ const TeamAnalyticsDetail = ({ teamName }) => {
     const fetchSchedule = async () => {
       try {
         const scheduleData = await teamsService.getTeamSchedule(teamName, 2024);
+        console.log("Schedule Data:", scheduleData); // Debugging
+  
         setSchedule(scheduleData);
-
+  
         const statsPromises = scheduleData.map((game) =>
-          teamsService.getAdvancedStats(game.id).catch(() => null)
+          teamsService.getAdvancedStats(game.id)
+            .then((data) => ({ id: game.id, stats: data }))
+            .catch(() => ({ id: game.id, stats: {} }))
         );
-
+  
         const statsResults = await Promise.all(statsPromises);
-
-        const statsMap = statsResults.reduce((acc, stat, index) => {
-          acc[scheduleData[index].id] = stat || {};
+        console.log("Advanced Stats Data:", statsResults); // Debugging
+  
+        const statsMap = statsResults.reduce((acc, { id, stats }) => {
+          acc[id] = stats || {};
           return acc;
         }, {});
-
+  
         setAdvancedStats(statsMap);
       } catch (err) {
+        console.error("Error fetching data:", err);
         setError("Failed to load data.");
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     if (teamName) {
       fetchSchedule();
     }
