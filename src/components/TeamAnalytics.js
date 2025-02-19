@@ -53,6 +53,8 @@ const TeamAnalytics = () => {
         if (!teamData) throw new Error("Team not found");
         setTeamInfo(teamData);
 
+        // Use the team schedule logic that works: pass the team school name and year,
+        // and then set the schedule from the API response.
         const sched = await teamsService.getTeamSchedule(teamData.school, 2024);
         setSchedule(sched);
       } catch (err) {
@@ -92,9 +94,9 @@ const TeamAnalytics = () => {
   if (loading) return <div className="team-analytics-loading">Loading team data...</div>;
   if (error) return <div className="team-analytics-error">Error: {error}</div>;
 
-  // Prepare chart data from schedule
+  // Prepare chart data from schedule using the working logic:
+  // Determine for each game whether the team is home or away, and record points accordingly.
   const chartData = schedule.map((game) => {
-    // Determine whether the selected team is home or away
     const isHome = game.homeTeam === teamInfo.school;
     return {
       week: game.week,
@@ -129,16 +131,8 @@ const TeamAnalytics = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar
-                dataKey="teamPoints"
-                name={`${teamInfo.school} Points`}
-                fill="#82ca9d"
-              />
-              <Bar
-                dataKey="opponentPoints"
-                name="Opponent Points"
-                fill="#8884d8"
-              />
+              <Bar dataKey="teamPoints" name={`${teamInfo.school} Points`} fill="#82ca9d" />
+              <Bar dataKey="opponentPoints" name="Opponent Points" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -154,7 +148,7 @@ const TeamAnalytics = () => {
         ) : (
           <ul>
             {schedule.map((game) => (
-              <li key={game.id}>
+              <li key={game.id || game.week}>
                 Week {game.week} - {game.homeTeam} vs. {game.awayTeam} on{" "}
                 {new Date(game.date).toLocaleDateString()}
               </li>
