@@ -50,9 +50,12 @@ const TeamAnalytics = () => {
     };
 
     // 🔥 Navigate to game details when clicking a game card
-    const handleGameClick = (gameId) => {
-        navigate(`/game/${gameId}`);
-    };
+// Replace your handleGameClick with this:
+const handleGameClick = (gameId) => {
+    // Navigate to TeamAnalyticsDetail view.
+    // For example, pass the team's id and the gameId as a query parameter:
+    navigate(`/team-metrics/${selectedTeam.id}?gameId=${gameId}`);
+  };
 
     return (
         <div className="team-analytics-container">
