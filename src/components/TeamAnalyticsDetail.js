@@ -16,32 +16,31 @@ const TeamAnalyticsDetail = ({ teamName }) => {
         console.log("Schedule Data:", scheduleData);
         setSchedule(scheduleData);
   
+        // Use game.gameId instead of game.id for advanced stats fetching.
         const statsPromises = scheduleData.map((game) =>
-          teamsService.getAdvancedStats(game.id)
-            .then((data) => ({ id: game.id, stats: data }))
-            .catch(() => ({ id: game.id, stats: [] }))
+          teamsService.getAdvancedStats(game.gameId)
+            .then((data) => ({ id: game.gameId, stats: data }))
+            .catch(() => ({ id: game.gameId, stats: [] }))
         );
   
-        // In your useEffect when processing scheduleData and stats:
         const statsResults = await Promise.all(statsPromises);
         console.log("Advanced Stats Data:", statsResults);
-
-        // Combine the two box scores (one per team) into a single stats object per game.
+  
+        // Combine the two box score arrays (one per team) into a single stats object per game.
         const statsMap = {};
         statsResults.forEach(({ id, stats }) => {
-        // Change to use gameId instead of id:
-        const gameData = scheduleData.find((g) => g.gameId === id);
-        if (!gameData) return;
-        stats.forEach((box) => {
+          const gameData = scheduleData.find((g) => g.gameId === id);
+          if (!gameData) return;
+          stats.forEach((box) => {
             if (!statsMap[id]) statsMap[id] = {};
             if (box.team === gameData.homeTeam) {
-            statsMap[id].homeOffense = box.offense;
-            statsMap[id].homeDefense = box.defense;
+              statsMap[id].homeOffense = box.offense;
+              statsMap[id].homeDefense = box.defense;
             } else if (box.team === gameData.awayTeam) {
-            statsMap[id].awayOffense = box.offense;
-            statsMap[id].awayDefense = box.defense;
+              statsMap[id].awayOffense = box.offense;
+              statsMap[id].awayDefense = box.defense;
             }
-        });
+          });
         });
         setAdvancedStats(statsMap);
       } catch (err) {
@@ -68,7 +67,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
     <div className="team-analytics-detail-container">
       <h2 className="detail-title">{teamName} 2024 Game Details</h2>
       {schedule.map((game) => {
-        const gameStats = advancedStats[game.game.id] || {};
+        const gameStats = advancedStats[game.gameId] || {};
         const homeOffense = gameStats.homeOffense || {};
         const awayOffense = gameStats.awayOffense || {};
         const homeDefense = gameStats.homeDefense || {};
@@ -76,9 +75,9 @@ const TeamAnalyticsDetail = ({ teamName }) => {
 
         return (
           <div
-          key={game.gameId}
-          className={`game-detail-card ${expandedGameId === game.gameId ? "expanded" : ""}`}
-          onClick={() => handleGameClick(game.gameId)}
+            key={game.gameId}
+            className={`game-detail-card ${expandedGameId === game.gameId ? "expanded" : ""}`}
+            onClick={() => handleGameClick(game.gameId)}
           >
             <div className="game-header">
               <div className="team-info">
@@ -116,7 +115,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
               </div>
             </div>
 
-            {expandedGameId === game.id && (
+            {expandedGameId === game.gameId && (
               <div className="advanced-stats">
                 <h4 className="advanced-stats-title">Detailed Performance</h4>
 
