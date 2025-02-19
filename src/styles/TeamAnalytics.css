@@ -1,97 +1,44 @@
-/* TeamAnalytics.css */
-
-/* Base Styles */
 .team-analytics-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    font-family: "Roboto", sans-serif;
-    color: #333;
-    background-color: #f9f9f9;
-  }
-  
-  h1, h2, h3 {
-    font-weight: 600;
-    color: #222;
-  }
-  
-  /* Header Section (Team Overview) */
-  .team-analytics-header {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  }
-  
-  .team-info {
-    display: flex;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .team-logo {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    margin-right: 1rem;
-    border-radius: 50%;
-    border: 2px solid #ddd;
-  }
-  
-  /* Bar Chart Section */
-  .team-points-chart {
-    background: #fff;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  }
-  
-  /* Schedule Section */
-  .team-schedule {
-    background: #fff;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  }
-  
-  .team-schedule ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .team-schedule li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .team-schedule li:last-child {
-    border-bottom: none;
-  }
-  
-  /* Loading and Error States */
-  .team-analytics-loading,
-  .team-analytics-error {
     text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
-    color: #666;
-  }
-  
-  /* Responsive Styles */
-  @media (max-width: 768px) {
-    .team-analytics-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .team-logo {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 0.5rem;
-    }
-  }
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+}
+
+.team-selector {
+    margin-bottom: 20px;
+}
+
+.team-dropdown {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+.team-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.schedule {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.game-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.error {
+    color: red;
+}
