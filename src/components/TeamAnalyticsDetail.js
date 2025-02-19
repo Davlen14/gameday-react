@@ -13,23 +13,35 @@ const TeamAnalyticsDetail = ({ teamName }) => {
     const fetchSchedule = async () => {
       try {
         const scheduleData = await teamsService.getTeamSchedule(teamName, 2024);
-        console.log("Schedule Data:", scheduleData); // Debugging
-  
+        console.log("Schedule Data:", scheduleData);
         setSchedule(scheduleData);
   
         const statsPromises = scheduleData.map((game) =>
           teamsService.getAdvancedStats(game.id)
             .then((data) => ({ id: game.id, stats: data }))
-            .catch(() => ({ id: game.id, stats: {} }))
+            .catch(() => ({ id: game.id, stats: [] }))
         );
   
         const statsResults = await Promise.all(statsPromises);
-        console.log("Advanced Stats Data:", statsResults); // Debugging
+        console.log("Advanced Stats Data:", statsResults);
   
-        const statsMap = statsResults.reduce((acc, { id, stats }) => {
-          acc[id] = stats || {};
-          return acc;
-        }, {});
+        // Combine the two box scores (one per team) into a single stats object per game.
+        const statsMap = {};
+        statsResults.forEach(({ id, stats }) => {
+          // Find the game so we know which team is home vs. away
+          const gameData = scheduleData.find((g) => g.id === id);
+          if (!gameData) return;
+          stats.forEach((box) => {
+            if (!statsMap[id]) statsMap[id] = {};
+            if (box.team === gameData.homeTeam) {
+              statsMap[id].homeOffense = box.offense;
+              statsMap[id].homeDefense = box.defense;
+            } else if (box.team === gameData.awayTeam) {
+              statsMap[id].awayOffense = box.offense;
+              statsMap[id].awayDefense = box.defense;
+            }
+          });
+        });
   
         setAdvancedStats(statsMap);
       } catch (err) {
@@ -65,9 +77,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
         return (
           <div
             key={game.id}
-            className={`game-detail-card ${
-              expandedGameId === game.id ? "expanded" : ""
-            }`}
+            className={`game-detail-card ${expandedGameId === game.id ? "expanded" : ""}`}
             onClick={() => handleGameClick(game.id)}
           >
             <div className="game-header">
@@ -110,7 +120,6 @@ const TeamAnalyticsDetail = ({ teamName }) => {
               <div className="advanced-stats">
                 <h4 className="advanced-stats-title">Detailed Performance</h4>
 
-                {/* Offensive Stats */}
                 <h5>Offensive Stats</h5>
                 <div className="stat-grid">
                   <div className="stat-item">
@@ -139,7 +148,6 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                   </div>
                 </div>
 
-                {/* Defensive Stats */}
                 <h5>Defensive Stats</h5>
                 <div className="stat-grid">
                   <div className="stat-item">
@@ -168,7 +176,6 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                   </div>
                 </div>
 
-                {/* Explosiveness and Other Metrics */}
                 <h5>Additional Metrics</h5>
                 <div className="stat-grid">
                   <div className="stat-item">
