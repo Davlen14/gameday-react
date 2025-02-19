@@ -11,12 +11,13 @@ function TeamAnalytics() {
   const [availableTeams, setAvailableTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState("");
 
-  // Analytics state (we'll add more data later)
+  // State for team info and schedule
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [teamInfo, setTeamInfo] = useState(null);
+  const [teamSchedule, setTeamSchedule] = useState([]);
 
-  // Fetch teams if no team is selected
+  // Fetch available teams if no team is selected
   useEffect(() => {
     if (!teamId) {
       async function fetchTeams() {
@@ -31,22 +32,27 @@ function TeamAnalytics() {
     }
   }, [teamId]);
 
-  // Fetch basic team info if teamId exists
+  // Fetch team info and schedule if teamId exists
   useEffect(() => {
     if (!teamId) return;
-    async function fetchTeamInfo() {
+    async function fetchData() {
       setLoading(true);
       setError(null);
       try {
+        // Get team info (includes logo and school name)
         const teamData = await teamsService.getTeamById(teamId);
         if (!teamData) throw new Error("Team not found");
         setTeamInfo(teamData);
+
+        // Get team schedule using the team name (adjust parameters as needed)
+        const schedule = await teamsService.getTeamSchedule(teamData.school, 2024);
+        setTeamSchedule(schedule);
       } catch (err) {
         setError(err.message);
       }
       setLoading(false);
     }
-    fetchTeamInfo();
+    fetchData();
   }, [teamId]);
 
   const handleTeamSelect = () => {
@@ -80,7 +86,7 @@ function TeamAnalytics() {
 
   return (
     <div className="team-analytics-container">
-      {/* Basic Header Section */}
+      {/* Basic Header Section: Display team logo and school name */}
       <section className="team-analytics-header">
         <div className="team-info">
           <img
@@ -88,14 +94,26 @@ function TeamAnalytics() {
             alt={`${teamInfo?.school} logo`}
             className="team-logo"
           />
-          <div>
-            <h1>{teamInfo?.school}</h1>
-            <p>Conference: {teamInfo?.conference || "N/A"}</p>
-          </div>
+          <h1>{teamInfo?.school}</h1>
         </div>
       </section>
 
-      {/* More sections will be added here step by step */}
+      {/* Team Schedule Section */}
+      <section className="team-schedule">
+        <h2>Team Schedule</h2>
+        {teamSchedule.length === 0 ? (
+          <p>No schedule available.</p>
+        ) : (
+          <ul>
+            {teamSchedule.map((game) => (
+              <li key={game.id}>
+                Week {game.week} - {game.homeTeam} vs. {game.awayTeam} on{" "}
+                {new Date(game.date).toLocaleDateString()}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
