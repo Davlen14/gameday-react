@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import "./TeamAnalytics.css";
+import "../styles/TeamAnalytics.css";
 
 // Lazy-load Recharts components for performance
 const {
