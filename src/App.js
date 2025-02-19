@@ -12,6 +12,7 @@ import TeamDetail from "./components/TeamDetailView";
 import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
 import LatestUpdates from "./components/LatestUpdates"; // ✅ Import the Latest Updates page
 import FanHub from "./components/FanHub"; // ✅ Import FanHub for the Fan Hub UI
+import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Team Analytics component
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -241,10 +242,14 @@ function App() {
               <Route path="/games/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
+
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
               <Route path="/commitments" element={<Commitments />} />
               <Route path="/transfer-portal" element={<TransferPortal />} />
+
+              {/* New Team Analytics Route */}
+              <Route path="/team-metrics" element={<TeamAnalytics />} />
             </Routes>
           </main>
         </div>
