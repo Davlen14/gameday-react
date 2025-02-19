@@ -15,17 +15,17 @@ const TeamAnalyticsDetail = ({ teamName }) => {
         const scheduleData = await teamsService.getTeamSchedule(teamName, 2024);
         console.log("Schedule Data:", scheduleData);
         setSchedule(scheduleData);
-  
-        // Use game.gameId instead of game.id for advanced stats fetching.
+
+        // Use game.gameId for advanced stats fetching.
         const statsPromises = scheduleData.map((game) =>
           teamsService.getAdvancedStats(game.gameId)
             .then((data) => ({ id: game.gameId, stats: data }))
             .catch(() => ({ id: game.gameId, stats: [] }))
         );
-  
+
         const statsResults = await Promise.all(statsPromises);
         console.log("Advanced Stats Data:", statsResults);
-  
+
         // Combine the two box score arrays (one per team) into a single stats object per game.
         const statsMap = {};
         statsResults.forEach(({ id, stats }) => {
@@ -50,7 +50,7 @@ const TeamAnalyticsDetail = ({ teamName }) => {
         setIsLoading(false);
       }
     };
-  
+
     if (teamName) {
       fetchSchedule();
     }
