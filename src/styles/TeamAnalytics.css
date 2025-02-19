@@ -142,6 +142,18 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
     border: 1px solid #ddd;
 }
+.team-logos-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 15px;
+}
+
+.team-logo-chart {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
 
 /* Responsiveness */
 @media (max-width: 768px) {
