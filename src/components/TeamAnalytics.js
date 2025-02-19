@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
+import TeamScheduleChart from "./TeamScheduleChart";  // 🔥 Import the chart
 import "../styles/TeamAnalytics.css";
 
 const TeamAnalytics = () => {
@@ -29,11 +30,9 @@ const TeamAnalytics = () => {
         setError(null);
 
         try {
-            // Find the selected team using team ID
             const teamData = teams.find((team) => team.id === parseInt(teamId));
             setSelectedTeam(teamData);
 
-            // Fetch schedule using team name
             const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
             setSchedule(scheduleData);
         } catch (err) {
@@ -75,30 +74,35 @@ const TeamAnalytics = () => {
             {error && <p className="error">{error}</p>}
 
             {schedule.length > 0 && (
-                <div className="schedule">
-                    <h3>{selectedTeam.school} Schedule (2024)</h3>
-                    <ul className="game-list">
-                        {schedule.map((game) => (
-                            <li key={game.id} className="game-item">
-                                <div className="game-teams">
-                                    <div className="team">
-                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                        <span>{game.awayTeam}</span>
+                <>
+                    <div className="schedule">
+                        <h3>{selectedTeam.school} Schedule (2024)</h3>
+                        <ul className="game-list">
+                            {schedule.map((game) => (
+                                <li key={game.id} className="game-item">
+                                    <div className="game-teams">
+                                        <div className="team">
+                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
+                                            <span>{game.awayTeam}</span>
+                                        </div>
+                                        <span className="vs"> @ </span>
+                                        <div className="team">
+                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
+                                            <span>{game.homeTeam}</span>
+                                        </div>
                                     </div>
-                                    <span className="vs"> @ </span>
-                                    <div className="team">
-                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                        <span>{game.homeTeam}</span>
+                                    <div className="game-info">
+                                        <span>{new Date(game.date).toLocaleDateString()}</span>
+                                        <span className="venue">Venue: {game.venue}</span>
                                     </div>
-                                </div>
-                                <div className="game-info">
-                                    <span>{new Date(game.date).toLocaleDateString()}</span>
-                                    <span className="venue">Venue: {game.venue}</span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* 🔥 ADD THE BAR CHART BELOW THE SCHEDULE */}
+                    <TeamScheduleChart teamName={selectedTeam.school} />
+                </>
             )}
         </div>
     );
