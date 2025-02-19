@@ -13,6 +13,7 @@ import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard compo
 import LatestUpdates from "./components/LatestUpdates"; // ✅ Import the Latest Updates page
 import FanHub from "./components/FanHub"; // ✅ Import FanHub for the Fan Hub UI
 import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Team Analytics component
+import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -248,8 +249,9 @@ function App() {
               <Route path="/commitments" element={<Commitments />} />
               <Route path="/transfer-portal" element={<TransferPortal />} />
 
-              {/* New Team Analytics Route */}
+              {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
+              <Route path="/team-metrics/:teamId" element={<TeamAnalyticsDetail />} />
             </Routes>
           </main>
         </div>
