@@ -21,18 +21,17 @@ function TeamAnalytics() {
   const { teamId } = useParams();
   const navigate = useNavigate();
 
-  // State for team selection (used when no team is selected via URL)
+  // State for team selection (when no team is specified)
   const [availableTeams, setAvailableTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState("");
 
-  // Analytics state hooks (always called)
+  // Analytics state hooks (always declared)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [teamInfo, setTeamInfo] = useState(null);
-  const [teamRecord, setTeamRecord] = useState(null);
-  const [pollData, setPollData] = useState(null);
-
+  const [teamRecord, setTeamRecord] = useState({ overallWins: 0, overallLosses: 0 });
+  const [pollData, setPollData] = useState([]);
   const [recentGames, setRecentGames] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState("L5");
 
@@ -41,7 +40,7 @@ function TeamAnalytics() {
   const [advancedStats, setAdvancedStats] = useState(null);
 
   const [matchupData, setMatchupData] = useState(null);
-  const [bettingLines, setBettingLines] = useState(null);
+  const [bettingLines, setBettingLines] = useState([]);
   const [playerStats, setPlayerStats] = useState([]);
 
   // -----------------------------
@@ -66,63 +65,102 @@ function TeamAnalytics() {
   // -----------------------------
   useEffect(() => {
     if (!teamId) return;
+
     setLoading(true);
     setError(null);
-
     let isMounted = true;
+
     async function fetchAllData() {
+      // We'll store the teamData locally so we can use it later
+      let teamData = null;
       try {
-        // 1. Basic Team Info (by ID)
-        const teamData = await teamsService.getTeamById(teamId);
+        teamData = await teamsService.getTeamById(teamId);
         if (!teamData) throw new Error("Team not found");
-
-        // 2. Team Record
-        const record = await teamsService.getTeamRecords(teamId, 2024);
-
-        // 3. Poll / Rankings data
-        const polls = await teamsService.getPolls(2024, "ap");
-
-        // 4. Basic Stats (using team name)
-        const stats = await teamsService.getTeamStats(teamData.school, 2024);
-
-        // 5. Advanced Ratings
-        const ratingData = await teamsService.getTeamRatings(teamData.school, 2024);
-
-        // 6. Additional advanced stats
-        const advStats = await teamsService.getAdvancedStats(teamId);
-
-        // 7. Recent Games
-        const recent = await teamsService.getTeamSchedule(teamData.school, 2024);
-
-        // 8. Betting Lines
-        const lines = await teamsService.getGameLines(2024, teamData.school);
-
-        // 9. Upcoming Matchup (example: versus "Ohio State")
-        const matchup = await teamsService.getTeamMatchup(teamData.school, "Ohio State");
-
-        // 10. Player Performance (example: passing stats)
-        const pStats = await teamsService.getPlayerSeasonStats(2024, "passing");
-
-        if (isMounted) {
-          setTeamInfo(teamData);
-          setTeamRecord(record);
-          setPollData(polls);
-          setBasicStats(stats);
-          setRatings(ratingData);
-          setAdvancedStats(advStats);
-          setRecentGames(recent);
-          setBettingLines(lines);
-          setMatchupData(matchup);
-          setPlayerStats(pStats);
-          setLoading(false);
-        }
+        if (isMounted) setTeamInfo(teamData);
       } catch (err) {
         if (isMounted) {
-          setError(err.message || "Error fetching data");
+          setError(err.message || "Error fetching team data");
           setLoading(false);
         }
+        return; // Cannot proceed without team data
       }
+
+      // Use teamData.school for subsequent calls
+      try {
+        const record = await teamsService.getTeamRecords(teamId, 2024);
+        if (isMounted) setTeamRecord(record);
+      } catch (err) {
+        console.error("Error fetching team record:", err);
+        if (isMounted) setTeamRecord({ overallWins: 0, overallLosses: 0 });
+      }
+
+      try {
+        const polls = await teamsService.getPolls(2024, "ap");
+        if (isMounted) setPollData(polls);
+      } catch (err) {
+        console.error("Error fetching polls:", err);
+        if (isMounted) setPollData([]);
+      }
+
+      try {
+        const stats = await teamsService.getTeamStats(teamData.school, 2024);
+        if (isMounted) setBasicStats(stats);
+      } catch (err) {
+        console.error("Error fetching team stats:", err);
+        if (isMounted) setBasicStats(null);
+      }
+
+      try {
+        const ratingData = await teamsService.getTeamRatings(teamData.school, 2024);
+        if (isMounted) setRatings(ratingData);
+      } catch (err) {
+        console.error("Error fetching team ratings:", err);
+        if (isMounted) setRatings(null);
+      }
+
+      try {
+        const advStats = await teamsService.getAdvancedStats(teamId);
+        if (isMounted) setAdvancedStats(advStats);
+      } catch (err) {
+        console.error("Error fetching advanced stats:", err);
+        if (isMounted) setAdvancedStats(null);
+      }
+
+      try {
+        const recent = await teamsService.getTeamSchedule(teamData.school, 2024);
+        if (isMounted) setRecentGames(recent);
+      } catch (err) {
+        console.error("Error fetching recent games:", err);
+        if (isMounted) setRecentGames([]);
+      }
+
+      try {
+        const lines = await teamsService.getGameLines(2024, teamData.school);
+        if (isMounted) setBettingLines(lines);
+      } catch (err) {
+        console.error("Error fetching betting lines:", err);
+        if (isMounted) setBettingLines([]);
+      }
+
+      try {
+        const matchup = await teamsService.getTeamMatchup(teamData.school, "Ohio State");
+        if (isMounted) setMatchupData(matchup);
+      } catch (err) {
+        console.error("Error fetching matchup data:", err);
+        if (isMounted) setMatchupData(null);
+      }
+
+      try {
+        const pStats = await teamsService.getPlayerSeasonStats(2024, "passing");
+        if (isMounted) setPlayerStats(pStats);
+      } catch (err) {
+        console.error("Error fetching player stats:", err);
+        if (isMounted) setPlayerStats([]);
+      }
+
+      if (isMounted) setLoading(false);
     }
+
     fetchAllData();
     return () => {
       isMounted = false;
@@ -151,18 +189,23 @@ function TeamAnalytics() {
 
   const recentGameChartData = filteredGames.map((game) => ({
     week: game.week,
-    pointsFor: game.homeTeam === teamInfo?.school ? game.homePoints : game.awayPoints,
-    pointsAgainst: game.homeTeam === teamInfo?.school ? game.awayPoints : game.homePoints,
+    pointsFor:
+      game.homeTeam === teamInfo?.school ? game.homePoints : game.awayPoints,
+    pointsAgainst:
+      game.homeTeam === teamInfo?.school ? game.awayPoints : game.homePoints,
   }));
 
   // -----------------------------
-  // Render team selection if no team is chosen
+  // Render team selection UI if no team is chosen
   // -----------------------------
   if (!teamId) {
     return (
       <div className="team-analytics-container">
         <h2>Select a Team to View Analytics</h2>
-        <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)}>
+        <select
+          value={selectedTeam}
+          onChange={(e) => setSelectedTeam(e.target.value)}
+        >
           <option value="">-- Select a Team --</option>
           {availableTeams.map((team) => (
             <option key={team.id} value={team.id}>
@@ -199,14 +242,17 @@ function TeamAnalytics() {
             <h1>{teamInfo?.school}</h1>
             <p>Conference: {teamInfo?.conference || "N/A"}</p>
             <p>
-              Record: {teamRecord?.overallWins || 0}-{teamRecord?.overallLosses || 0}
+              Record: {teamRecord?.overallWins || 0}-
+              {teamRecord?.overallLosses || 0}
             </p>
             <p>
               Rank:{" "}
-              {pollData?.[0]?.rankings.find((r) => r.school === teamInfo?.school)?.rank || "N/A"}
+              {pollData?.[0]?.rankings.find(
+                (r) => r.school === teamInfo?.school
+              )?.rank || "N/A"}
             </p>
-            <p>Offense Rank: {ratings?.offenseRank}</p>
-            <p>Defense Rank: {ratings?.defenseRank}</p>
+            <p>Offense Rank: {ratings?.offenseRank || "N/A"}</p>
+            <p>Defense Rank: {ratings?.defenseRank || "N/A"}</p>
           </div>
         </div>
       </section>
@@ -242,11 +288,11 @@ function TeamAnalytics() {
         <div className="metrics-cards">
           <div className="metric-card">
             <h3>Offensive Rating</h3>
-            <p>{ratings?.offense}</p>
+            <p>{ratings?.offense || "N/A"}</p>
           </div>
           <div className="metric-card">
             <h3>Defensive Rating</h3>
-            <p>{ratings?.defense}</p>
+            <p>{ratings?.defense || "N/A"}</p>
           </div>
           <div className="metric-card">
             <h3>Pace (plays per game)</h3>
@@ -272,17 +318,17 @@ function TeamAnalytics() {
         <h2>Upcoming Matchup Insights</h2>
         {matchupData ? (
           <div className="matchup-stats">
-            <p>Team A Points Scored: {matchupData.team1PointsPerGame}</p>
-            <p>Team B Points Allowed: {matchupData.team2PointsAllowedPerGame}</p>
+            <p>Team A Points Scored: {matchupData.team1PointsPerGame || "N/A"}</p>
+            <p>Team B Points Allowed: {matchupData.team2PointsAllowedPerGame || "N/A"}</p>
             <p>
-              Rushing vs. Passing Tendencies: {matchupData.team1RunPassRatio} vs.{" "}
-              {matchupData.team2RunPassRatio}
+              Rushing vs. Passing Tendencies: {matchupData.team1RunPassRatio || "N/A"} vs.{" "}
+              {matchupData.team2RunPassRatio || "N/A"}
             </p>
             <p>
-              Defensive Strengths: {matchupData.team1DefensiveStrength} vs.{" "}
-              {matchupData.team2DefensiveStrength}
+              Defensive Strengths: {matchupData.team1DefensiveStrength || "N/A"} vs.{" "}
+              {matchupData.team2DefensiveStrength || "N/A"}
             </p>
-            <p>Key Players: {matchupData.keyPlayers?.join(", ")}</p>
+            <p>Key Players: {matchupData.keyPlayers ? matchupData.keyPlayers.join(", ") : "N/A"}</p>
           </div>
         ) : (
           <p>No matchup data available.</p>
@@ -327,8 +373,8 @@ function TeamAnalytics() {
             <tbody>
               {playerStats.slice(0, 5).map((player) => (
                 <tr key={player.id}>
-                  <td>{player.fullName}</td>
-                  <td>{player.position}</td>
+                  <td>{player.fullName || "N/A"}</td>
+                  <td>{player.position || "N/A"}</td>
                   <td>{player.passingYards || 0}</td>
                   <td>{player.rushingYards || 0}</td>
                   <td>{player.receivingYards || 0}</td>
