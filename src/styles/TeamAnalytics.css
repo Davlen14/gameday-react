@@ -4,10 +4,11 @@
     padding: 20px;
     max-width: 850px;
     margin: auto;
-    background: #121212;
+    background: #ffffff;
     border-radius: 12px;
-    color: white;
-    box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
+    color: #333;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
 }
 
 /* Team Selector Dropdown */
@@ -19,9 +20,9 @@
     padding: 12px;
     font-size: 16px;
     border-radius: 8px;
-    background: #222;
-    color: white;
-    border: 1px solid #444;
+    background: #f9f9f9;
+    color: #333;
+    border: 1px solid #ccc;
     transition: all 0.2s ease-in-out;
 }
 
@@ -31,7 +32,7 @@
 
 .team-dropdown:focus {
     outline: none;
-    border-color: #ffffff;
+    border-color: #555;
 }
 
 /* Team Info Section */
@@ -59,10 +60,11 @@
 .schedule {
     text-align: left;
     margin-top: 20px;
-    background: #1a1a1a;
+    background: #f5f5f5;
     padding: 15px;
     border-radius: 12px;
-    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.05);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ddd;
 }
 
 /* Game List */
@@ -77,12 +79,12 @@
     flex-direction: column;
     align-items: center;
     padding: 12px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #ddd;
     transition: background 0.2s ease-in-out;
 }
 
 .game-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Game Teams */
@@ -95,32 +97,33 @@
 .vs {
     font-size: 18px;
     font-weight: bold;
-    color: #ddd;
+    color: #555;
 }
 
 /* Game Info */
 .game-info {
     font-size: 14px;
-    color: #ddd;
+    color: #666;
     margin-top: 5px;
     text-align: center;
 }
 
 .venue {
     font-weight: bold;
-    color: #bbb;
+    color: #444;
 }
 
 /* Modernized Chart Container */
 .chart-container {
-    background: #1a1a1a;
+    background: #ffffff;
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0px 6px 12px rgba(255, 255, 255, 0.08);
-    color: white;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08);
+    color: #333;
     text-align: center;
     max-width: 900px;
     margin: 30px auto;
+    border: 1px solid #ddd;
 }
 
 /* Chart Title */
@@ -128,15 +131,16 @@
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 20px;
-    color: #ffffff;
+    color: #222;
 }
 
 /* Tooltip Styling */
 .recharts-tooltip-wrapper {
-    background: rgba(0, 0, 0, 0.85) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     border-radius: 10px;
     padding: 12px;
-    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.15);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ddd;
 }
 
 /* Responsiveness */
