@@ -102,6 +102,13 @@ const TeamAnalytics = () => {
 
                     {/* 🔥 ADD THE BAR CHART BELOW THE SCHEDULE */}
                     <TeamScheduleChart teamName={selectedTeam.school} />
+
+                    {/* 🔥 Align Team Logos with the Chart */}
+                    <div className="team-logos-container">
+                        {schedule.map((game) => (
+                            <img key={game.id} src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo-chart" />
+                        ))}
+                    </div>
                 </>
             )}
         </div>

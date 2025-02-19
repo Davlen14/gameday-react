@@ -2,7 +2,8 @@
 .team-analytics-container {
     text-align: center;
     padding: 20px;
-    max-width: 850px;
+    max-width: 90%;
+    width: 90%;
     margin: auto;
     background: #ffffff;
     border-radius: 12px;
@@ -45,8 +46,8 @@
 }
 
 .team-logo {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     margin: 5px;
     transition: transform 0.2s ease-in-out;
@@ -61,10 +62,11 @@
     text-align: left;
     margin-top: 20px;
     background: #f5f5f5;
-    padding: 15px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
     border: 1px solid #ddd;
+    max-width: 100%;
 }
 
 /* Game List */
@@ -81,6 +83,7 @@
     padding: 12px;
     border-bottom: 1px solid #ddd;
     transition: background 0.2s ease-in-out;
+    width: 100%;
 }
 
 .game-item:hover {
@@ -116,19 +119,20 @@
 /* Modernized Chart Container */
 .chart-container {
     background: #ffffff;
-    padding: 25px;
+    padding: 30px;
     border-radius: 12px;
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08);
     color: #333;
     text-align: center;
-    max-width: 900px;
+    max-width: 100%;
+    width: 95%;
     margin: 30px auto;
     border: 1px solid #ddd;
 }
 
 /* Chart Title */
 .chart-title {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
     margin-bottom: 20px;
     color: #222;
@@ -142,20 +146,36 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
     border: 1px solid #ddd;
 }
+
+/* Team Logos Container */
 .team-logos-container {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 40px;
-    margin-top: 15px;
+    margin-top: 20px;
+    max-width: 100%;
 }
 
+/* Team Logos under Chart */
 .team-logo-chart {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
 }
 
 /* Responsiveness */
+@media (max-width: 1024px) {
+    .team-analytics-container {
+        max-width: 95%;
+        width: 95%;
+    }
+
+    .chart-container {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .team-analytics-container {
         max-width: 100%;
@@ -167,12 +187,17 @@
     }
 
     .chart-container {
-        max-width: 100%;
-        padding: 15px;
+        width: 100%;
+        padding: 20px;
     }
 
     .team-logo {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .team-logo-chart {
+        width: 50px;
+        height: 50px;
     }
 }
