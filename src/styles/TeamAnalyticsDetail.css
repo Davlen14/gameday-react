@@ -1,0 +1,71 @@
+.game-detail-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.game-detail-card.expanded {
+    margin: 20px 0;
+    transform: scale(1.02);
+}
+
+.advanced-stats {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.advanced-stats-title {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    background: #f8f8f8;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.stat-category {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.stat-comparison {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    color: #222;
+}
+
+.stat-comparison span:first-child {
+    color: #2c7be5;
+}
+
+.stat-comparison span:last-child {
+    color: #e54b2c;
+}
+
+/* Add to existing responsive design */
+@media (max-width: 768px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-comparison {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
