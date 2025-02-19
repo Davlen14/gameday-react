@@ -25,7 +25,7 @@ const fetchData = async (endpoint, params = {}) => {
 // Core API interaction functions
 export const getGameById = async (gameId) => {
   const endpoint = "/games";
-  const params = { gameId }; // ✅ Use 'gameId' instead of 'id'
+  const params = { id: gameId }; // ✅ 'id' is the correct key for game lookup
   const response = await fetchData(endpoint, params);
   return response?.[0] || null;
 };
