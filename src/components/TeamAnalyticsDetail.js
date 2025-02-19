@@ -4,6 +4,7 @@ import "../styles/TeamAnalyticsDetail.css";
 
 const TeamAnalyticsDetail = ({ teamName }) => {
     const [schedule, setSchedule] = useState([]);
+    const [advancedStats, setAdvancedStats] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedGameId, setExpandedGameId] = useState(null);
@@ -13,8 +14,19 @@ const TeamAnalyticsDetail = ({ teamName }) => {
             try {
                 const scheduleData = await teamsService.getTeamSchedule(teamName, 2024);
                 setSchedule(scheduleData);
+
+                // Fetch advanced stats for all games
+                const statsPromises = scheduleData.map(game =>
+                    teamsService.getAdvancedStats(game.id)
+                );
+                const statsResults = await Promise.all(statsPromises);
+                const statsMap = statsResults.reduce((acc, stat, index) => {
+                    acc[scheduleData[index].id] = stat;
+                    return acc;
+                }, {});
+                setAdvancedStats(statsMap);
             } catch (err) {
-                setError("Failed to load schedule.");
+                setError("Failed to load data.");
             } finally {
                 setIsLoading(false);
             }
@@ -36,9 +48,9 @@ const TeamAnalyticsDetail = ({ teamName }) => {
         <div className="team-analytics-detail-container">
             <h2 className="detail-title">{teamName} 2024 Game Details</h2>
             {schedule.map((game) => (
-                <div 
-                    key={game.id} 
-                    className={`game-detail-card ${expandedGameId === game.id ? 'expanded' : ''}`}
+                <div
+                    key={game.id}
+                    className={`game-detail-card ${expandedGameId === game.id ? "expanded" : ""}`}
                     onClick={() => handleGameClick(game.id)}
                 >
                     <div className="game-header">
@@ -69,32 +81,85 @@ const TeamAnalyticsDetail = ({ teamName }) => {
                         </div>
                     </div>
 
-                    {expandedGameId === game.id && (
+                    {expandedGameId === game.id && advancedStats[game.id] && (
                         <div className="advanced-stats">
                             <h4 className="advanced-stats-title">Detailed Performance</h4>
+
+                            {/* Offensive Stats */}
+                            <h5>Offensive Stats</h5>
                             <div className="stat-grid">
                                 <div className="stat-item">
-                                    <span className="stat-category">Total Yards</span>
+                                    <span className="stat-category">Plays</span>
                                     <div className="stat-comparison">
-                                        <span>{game.homeTotalYards}</span>
+                                        <span>{advancedStats[game.id].homeOffense.plays}</span>
                                         <span>vs</span>
-                                        <span>{game.awayTotalYards}</span>
+                                        <span>{advancedStats[game.id].awayOffense.plays}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
-                                    <span className="stat-category">Passing Yards</span>
+                                    <span className="stat-category">Total PPA</span>
                                     <div className="stat-comparison">
-                                        <span>{game.homePassingYards}</span>
+                                        <span>{advancedStats[game.id].homeOffense.totalPPA.toFixed(2)}</span>
                                         <span>vs</span>
-                                        <span>{game.awayPassingYards}</span>
+                                        <span>{advancedStats[game.id].awayOffense.totalPPA.toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="stat-item">
-                                    <span className="stat-category">Rushing Yards</span>
+                                    <span className="stat-category">Success Rate</span>
                                     <div className="stat-comparison">
-                                        <span>{game.homeRushingYards}</span>
+                                        <span>{(advancedStats[game.id].homeOffense.successRate * 100).toFixed(1)}%</span>
                                         <span>vs</span>
-                                        <span>{game.awayRushingYards}</span>
+                                        <span>{(advancedStats[game.id].awayOffense.successRate * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Defensive Stats */}
+                            <h5>Defensive Stats</h5>
+                            <div className="stat-grid">
+                                <div className="stat-item">
+                                    <span className="stat-category">Plays Defended</span>
+                                    <div className="stat-comparison">
+                                        <span>{advancedStats[game.id].homeDefense.plays}</span>
+                                        <span>vs</span>
+                                        <span>{advancedStats[game.id].awayDefense.plays}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-category">Total PPA Allowed</span>
+                                    <div className="stat-comparison">
+                                        <span>{advancedStats[game.id].homeDefense.totalPPA.toFixed(2)}</span>
+                                        <span>vs</span>
+                                        <span>{advancedStats[game.id].awayDefense.totalPPA.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-category">Success Rate Allowed</span>
+                                    <div className="stat-comparison">
+                                        <span>{(advancedStats[game.id].homeDefense.successRate * 100).toFixed(1)}%</span>
+                                        <span>vs</span>
+                                        <span>{(advancedStats[game.id].awayDefense.successRate * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Explosiveness and Other Metrics */}
+                            <h5>Additional Metrics</h5>
+                            <div className="stat-grid">
+                                <div className="stat-item">
+                                    <span className="stat-category">Explosiveness</span>
+                                    <div className="stat-comparison">
+                                        <span>{advancedStats[game.id].homeOffense.explosiveness.toFixed(2)}</span>
+                                        <span>vs</span>
+                                        <span>{advancedStats[game.id].awayOffense.explosiveness.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-category">Power Success</span>
+                                    <div className="stat-comparison">
+                                        <span>{(advancedStats[game.id].homeOffense.powerSuccess * 100).toFixed(1)}%</span>
+                                        <span>vs</span>
+                                        <span>{(advancedStats[game.id].awayOffense.powerSuccess * 100).toFixed(1)}%</span>
                                     </div>
                                 </div>
                             </div>
