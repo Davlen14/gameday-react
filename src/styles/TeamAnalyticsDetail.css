@@ -1,71 +1,86 @@
-.game-detail-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.game-detail-card.expanded {
-    margin: 20px 0;
-    transform: scale(1.02);
-}
-
-.advanced-stats {
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #eee;
-}
-
-.advanced-stats-title {
-    font-size: 16px;
+.team-analytics-detail-container-analyticlsdetail {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .detail-title-analyticlsdetail {
+    font-size: 24px;
+    margin-bottom: 20px;
     color: #333;
-    margin-bottom: 15px;
-}
-
-.stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.stat-item {
-    background: #f8f8f8;
-    padding: 12px;
+  }
+  
+  .game-detail-card-analyticlsdetail {
+    background-color: #fff;
+    border: 1px solid #ddd;
     border-radius: 8px;
-}
-
-.stat-category {
-    display: block;
-    font-weight: 600;
-    color: #444;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.stat-comparison {
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+  
+  .game-header-analyticlsdetail {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-size: 15px;
-    color: #222;
-}
-
-.stat-comparison span:first-child {
-    color: #2c7be5;
-}
-
-.stat-comparison span:last-child {
-    color: #e54b2c;
-}
-
-/* Add to existing responsive design */
-@media (max-width: 768px) {
-    .stat-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-comparison {
-        flex-direction: column;
-        gap: 5px;
-    }
-}
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .team-info-analyticlsdetail {
+    display: flex;
+    align-items: center;
+  }
+  
+  .team-logo-detail-analyticlsdetail {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+  
+  .team-name-analyticlsdetail {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .vs-analyticlsdetail {
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+  }
+  
+  .game-meta-analyticlsdetail {
+    margin-bottom: 10px;
+  }
+  
+  .game-meta-analyticlsdetail p {
+    margin: 5px 0;
+  }
+  
+  .game-stats-analyticlsdetail {
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .stat-box-analyticlsdetail {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    width: 45%;
+  }
+  
+  .stat-label-analyticlsdetail {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .stat-value-analyticlsdetail {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+  }
+  
+  .error-analyticlsdetail {
+    color: red;
+    font-weight: bold;
+  }
+  

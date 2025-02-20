@@ -27,34 +27,34 @@ const TeamAnalyticsDetail = ({ teamName }) => {
   }, [teamName]);
 
   if (isLoading) return <p>Loading game details...</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (error) return <p className="error-analyticlsdetail">{error}</p>;
 
   return (
-    <div className="team-analytics-detail-container">
-      <h2 className="detail-title">{teamName} 2024 Game Details</h2>
+    <div className="team-analytics-detail-container-analyticlsdetail">
+      <h2 className="detail-title-analyticlsdetail">{teamName} 2024 Game Details</h2>
       {schedule.map((game) => (
-        <div key={game.gameId} className="game-detail-card">
-          <div className="game-header">
-            <div className="team-info">
+        <div key={game.gameId} className="game-detail-card-analyticlsdetail">
+          <div className="game-header-analyticlsdetail">
+            <div className="team-info-analyticlsdetail">
               <img
                 src={`/logos/${game.homeTeam}.png`}
                 alt={game.homeTeam}
-                className="team-logo-detail"
+                className="team-logo-detail-analyticlsdetail"
               />
-              <span className="team-name">{game.homeTeam}</span>
+              <span className="team-name-analyticlsdetail">{game.homeTeam}</span>
             </div>
-            <span className="vs">VS</span>
-            <div className="team-info">
+            <span className="vs-analyticlsdetail">VS</span>
+            <div className="team-info-analyticlsdetail">
               <img
                 src={`/logos/${game.awayTeam}.png`}
                 alt={game.awayTeam}
-                className="team-logo-detail"
+                className="team-logo-detail-analyticlsdetail"
               />
-              <span className="team-name">{game.awayTeam}</span>
+              <span className="team-name-analyticlsdetail">{game.awayTeam}</span>
             </div>
           </div>
 
-          <div className="game-meta">
+          <div className="game-meta-analyticlsdetail">
             <p>
               <strong>Date:</strong> {new Date(game.date).toLocaleDateString()}
             </p>
@@ -63,14 +63,14 @@ const TeamAnalyticsDetail = ({ teamName }) => {
             </p>
           </div>
 
-          <div className="game-stats">
-            <div className="stat-box">
-              <span className="stat-label">{game.homeTeam} Points</span>
-              <span className="stat-value">{game.homePoints}</span>
+          <div className="game-stats-analyticlsdetail">
+            <div className="stat-box-analyticlsdetail">
+              <span className="stat-label-analyticlsdetail">{game.homeTeam} Points</span>
+              <span className="stat-value-analyticlsdetail">{game.homePoints}</span>
             </div>
-            <div className="stat-box">
-              <span className="stat-label">{game.awayTeam} Points</span>
-              <span className="stat-value">{game.awayPoints}</span>
+            <div className="stat-box-analyticlsdetail">
+              <span className="stat-label-analyticlsdetail">{game.awayTeam} Points</span>
+              <span className="stat-value-analyticlsdetail">{game.awayPoints}</span>
             </div>
           </div>
         </div>
