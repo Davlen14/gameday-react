@@ -84,51 +84,69 @@ const TeamAnalyticsDetail = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
-      {/* Card Container */}
-      <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col items-center space-y-6 max-w-xl w-full mx-4">
-        {/* Teams and Score */}
-        <div className="flex flex-col sm:flex-row items-center sm:space-x-8 space-y-4 sm:space-y-0">
-          {/* Home Team */}
-          <div className="flex flex-col items-center">
-            <img
-              src={getTeamLogo(game.homeTeam)}
-              alt={game.homeTeam}
-              className="w-20 h-20 object-contain"
-            />
-            <span className="mt-2 text-lg font-semibold">
-              {game.homeTeam}
-            </span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+      {/* Hero Section (Top of the page) */}
+      <div className="bg-white shadow p-6 sm:p-8">
+        <div className="max-w-6xl mx-auto flex flex-col space-y-6">
+          {/* Title and Additional Info */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">
+                Game Dashboard
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">
+                {game.homeTeam} vs {game.awayTeam} —{" "}
+                {new Date(game.date).toLocaleDateString()}
+              </p>
+              <p className="text-gray-600 text-sm">Venue: {game.venue}</p>
+            </div>
           </div>
 
-          {/* Score */}
-          <div className="text-4xl font-bold text-gray-800">
-            {game.homePoints} - {game.awayPoints}
-          </div>
+          {/* Teams and Score */}
+          <div className="flex flex-col sm:flex-row items-center sm:justify-center space-y-4 sm:space-y-0 sm:space-x-8">
+            {/* Home Team */}
+            <div className="flex flex-col items-center">
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam}
+                className="w-24 h-24 object-contain"
+              />
+              <span className="mt-2 text-lg font-semibold">
+                {game.homeTeam}
+              </span>
+            </div>
 
-          {/* Away Team */}
-          <div className="flex flex-col items-center">
-            <img
-              src={getTeamLogo(game.awayTeam)}
-              alt={game.awayTeam}
-              className="w-20 h-20 object-contain"
-            />
-            <span className="mt-2 text-lg font-semibold">
-              {game.awayTeam}
-            </span>
+            {/* Score */}
+            <div className="text-4xl font-bold text-gray-800">
+              {game.homePoints} - {game.awayPoints}
+            </div>
+
+            {/* Away Team */}
+            <div className="flex flex-col items-center">
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="w-24 h-24 object-contain"
+              />
+              <span className="mt-2 text-lg font-semibold">
+                {game.awayTeam}
+              </span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Venue */}
-        <div className="text-gray-600 text-sm font-medium">
-          Venue: {game.venue}
-        </div>
+      {/* Additional Dashboard Content */}
+      <div className="max-w-6xl mx-auto p-6">
+        {/* Placeholder for extra stats or analytics */}
       </div>
     </div>
   );
 };
 
 export default TeamAnalyticsDetail;
+
+
 
 
 
