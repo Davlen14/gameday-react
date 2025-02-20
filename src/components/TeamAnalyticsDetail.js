@@ -1,84 +1,86 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import { useParams } from "react-router-dom";
-import "../styles/TeamAnalyticsDetail.css"; // Import your custom CSS
+import { useParams, useLocation } from "react-router-dom";
 
 const TeamAnalyticsDetail = () => {
   const { teamId } = useParams();
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const gameId = queryParams.get("gameId");
+
   const [team, setTeam] = useState(null);
-  const [schedule, setSchedule] = useState([]);
+  const [game, setGame] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const getTeamLogo = (teamName) => {
-    // Assuming team logos are stored in a way where the logo is the same as the team name
-    return `/logos/${teamName}.png`; // Adjust as needed if your logo structure differs
-  };
+  const getTeamLogo = (teamName) => `/logos/${teamName}.png`;
 
   useEffect(() => {
-    const fetchSchedule = async () => {
+    const fetchGameDetail = async () => {
       try {
-        const teamData = await teamsService.getTeams();
-        const foundTeam = teamData.find((t) => t.id === parseInt(teamId, 10));
+        const teamsData = await teamsService.getTeams();
+        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId, 10));
         if (!foundTeam) {
           throw new Error("Team not found");
         }
         setTeam(foundTeam);
-        
+
         const scheduleData = await teamsService.getTeamSchedule(foundTeam.school, 2024);
-        setSchedule(scheduleData);
+        const foundGame = scheduleData.find((g) => g.id === parseInt(gameId, 10));
+        if (!foundGame) {
+          throw new Error("Game not found");
+        }
+        setGame(foundGame);
       } catch (err) {
-        setError(`Error: ${err.message}`);
+        setError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSchedule();
-  }, [teamId]);
+    fetchGameDetail();
+  }, [teamId, gameId]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div className="error-analyticlsdetail">{error}</div>;
-  if (!team) return <div>Team not found</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">
+        {error}
+      </div>
+    );
+  if (!game)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Game not found
+      </div>
+    );
 
   return (
-    <div className="team-analytics-detail-container-analyticlsdetail">
-      <h2 className="detail-title-analyticlsdetail">{team.school} 2024 Game Schedule</h2>
-      {schedule.length > 0 ? (
-        schedule.map((game, index) => (
-          <div key={index} className="game-detail-card-analyticlsdetail">
-            <div className="game-header-analyticlsdetail">
-              <div className="team-info-analyticlsdetail">
-                <img
-                  src={getTeamLogo(game.homeTeam)}
-                  alt={game.homeTeam}
-                  className="team-logo-detail-analyticlsdetail"
-                />
-                <span className="team-name-analyticlsdetail">{game.homeTeam}</span>
-              </div>
-              <span className="vs-analyticlsdetail">VS</span>
-              <div className="team-info-analyticlsdetail">
-                <img
-                  src={getTeamLogo(game.awayTeam)}
-                  alt={game.awayTeam}
-                  className="team-logo-detail-analyticlsdetail"
-                />
-                <span className="team-name-analyticlsdetail">{game.awayTeam}</span>
-              </div>
-            </div>
-            <div className="game-meta-analyticlsdetail">
-              <p><strong>Date:</strong> {new Date(game.date).toLocaleDateString()}</p>
-              <p><strong>Venue:</strong> {game.venue}</p>
-              <p><strong>Score:</strong> {game.homePoints} - {game.awayPoints}</p>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p>No games found for this team in 2024.</p>
-      )}
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div className="flex items-center space-x-4 p-4 bg-white rounded shadow">
+        <img
+          src={getTeamLogo(game.homeTeam)}
+          alt={game.homeTeam}
+          className="w-20 h-20"
+        />
+        <span className="text-2xl font-bold">
+          {game.homePoints} - {game.awayPoints}
+        </span>
+        <img
+          src={getTeamLogo(game.awayTeam)}
+          alt={game.awayTeam}
+          className="w-20 h-20"
+        />
+      </div>
     </div>
   );
 };
 
 export default TeamAnalyticsDetail;
+
 
