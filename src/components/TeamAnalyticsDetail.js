@@ -3,124 +3,162 @@ import teamsService from "../services/teamsService";
 import { useParams, useLocation } from "react-router-dom";
 
 const TeamAnalyticsDetail = () => {
-  // ... [keep all the existing state and data fetching logic] ...
+  const { teamId } = useParams();
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const gameId = queryParams.get("gameId");
+
+  const [teamsList, setTeamsList] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [game, setGame] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch the correct logo for a given team
+  const getTeamLogo = (teamName) => {
+    const team = teamsList.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.logos ? team.logos[0] : "/photos/default_team.png";
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. Fetch all teams
+        const teamsData = await teamsService.getTeams();
+        setTeamsList(teamsData);
+
+        // 2. Find the selected team by ID
+        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId, 10));
+        if (!foundTeam) {
+          throw new Error("Team not found");
+        }
+        setSelectedTeam(foundTeam);
+
+        // 3. Fetch that team's schedule
+        const scheduleData = await teamsService.getTeamSchedule(
+          foundTeam.school,
+          2024
+        );
+
+        // 4. Find the specific game by gameId
+        const foundGame = scheduleData.find(
+          (g) => g.id === parseInt(gameId, 10)
+        );
+        if (!foundGame) {
+          throw new Error("Game not found");
+        }
+        setGame(foundGame);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [teamId, gameId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Game not found
+      </div>
+    );
+  }
+
+  // Pull colors from the game object
+  const homeColor = game.homeColor;
+  const awayColor = game.awayColor;
+
+  // Prepare logos and date/time
+  const homeLogo = getTeamLogo(game.homeTeam);
+  const awayLogo = getTeamLogo(game.awayTeam);
+  const gameDate = new Date(game.date).toLocaleDateString();
+  const gameTime = game.time || "TBD"; // Adjust as needed if your API uses a different property
 
   return (
-    <div className="min-h-screen w-full bg-gray-50">
-      {/* Game Header Section */}
-      <div className="bg-gray-900 text-white py-2 text-center">
-        <h1 className="text-xl font-bold">{game.tournament || "College Football Classic"}</h1>
-        <p className="text-sm">{game.venue} • {gameDate}</p>
+    <div className="min-h-screen w-full bg-gray-100 flex flex-col">
+      {/* --- Scoreboard Section --- */}
+      <div className="relative flex items-center justify-between bg-white py-4 shadow">
+        {/* Left diagonal color (Away color) */}
+        <div
+          className="absolute left-0 top-0 h-full w-12"
+          style={{
+            backgroundColor: awayColor,
+            clipPath: "polygon(0 0, 100% 0, 85% 100%, 0 100%)",
+          }}
+        ></div>
+
+        {/* Right diagonal color (Home color) */}
+        <div
+          className="absolute right-0 top-0 h-full w-12"
+          style={{
+            backgroundColor: homeColor,
+            clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0 100%)",
+          }}
+        ></div>
+
+        {/* Away Team */}
+        <div className="flex items-center pl-16 space-x-3">
+          <img
+            src={awayLogo}
+            alt={game.awayTeam}
+            className="w-10 h-10 object-contain"
+          />
+          <div className="text-left">
+            <div className="font-bold text-base">{game.awayTeam}</div>
+            {game.awayPoints !== undefined && (
+              <div className="text-sm">{game.awayPoints}</div>
+            )}
+          </div>
+        </div>
+
+        {/* Game Info (center) */}
+        <div className="text-center">
+          <div className="font-bold">{gameDate}</div>
+          <div className="text-sm">{gameTime}</div>
+          <div className="text-xs mt-1">{game.venue}</div>
+        </div>
+
+        {/* Home Team */}
+        <div className="flex items-center pr-16 space-x-3">
+          <div className="text-right">
+            <div className="font-bold text-base">{game.homeTeam}</div>
+            {game.homePoints !== undefined && (
+              <div className="text-sm">{game.homePoints}</div>
+            )}
+          </div>
+          <img
+            src={homeLogo}
+            alt={game.homeTeam}
+            className="w-10 h-10 object-contain"
+          />
+        </div>
       </div>
 
-      {/* Teams Display Section */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between bg-white rounded-lg shadow-lg p-8">
-          {/* Away Team */}
-          <div className="flex flex-col items-center w-1/3">
-            <img
-              src={awayLogo}
-              alt={game.awayTeam}
-              className="w-32 h-32 object-contain mb-4"
-            />
-            <h2 className="text-2xl font-bold text-center">{game.awayTeam}</h2>
-            <div className="text-4xl font-bold text-gray-800 mt-2">
-              {game.awayPoints}
-            </div>
-            <span className="text-sm text-gray-500">Overall: 8-2</span>
-          </div>
-
-          {/* Game Status */}
-          <div className="flex flex-col items-center mx-4">
-            <div className="text-2xl font-bold text-gray-500">VS</div>
-            <div className="mt-4 text-center">
-              <div className="text-lg font-semibold">{gameTime}</div>
-              <div className="text-sm text-gray-500 mt-1">{game.venue}</div>
-              <button className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700">
-                Follow Game
-              </button>
-            </div>
-          </div>
-
-          {/* Home Team */}
-          <div className="flex flex-col items-center w-1/3">
-            <img
-              src={homeLogo}
-              alt={game.homeTeam}
-              className="w-32 h-32 object-contain mb-4"
-            />
-            <h2 className="text-2xl font-bold text-center">{game.homeTeam}</h2>
-            <div className="text-4xl font-bold text-gray-800 mt-2">
-              {game.homePoints}
-            </div>
-            <span className="text-sm text-gray-500">Overall: 7-3</span>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-8 mt-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Team Stats</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Total Yards</span>
-                <span>415 - 392</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Passing Yards</span>
-                <span>289 - 256</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Rushing Yards</span>
-                <span>126 - 136</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Key Players</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Passing Leader</span>
-                <span>J. Smith: 289 yds</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Rushing Leader</span>
-                <span>M. Johnson: 98 yds</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Receiving Leader</span>
-                <span>T. Williams: 132 yds</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Game Details</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Attendance</span>
-                <span>54,872</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Duration</span>
-                <span>3:24</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Weather</span>
-                <span>72° • Clear</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Sections */}
-        <div className="mt-8 bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">Game Recap</h3>
-          <p className="text-gray-600">
-            In a thrilling matchup between conference rivals, {game.homeTeam} secured 
-            a victory over {game.awayTeam} with a strong fourth-quarter performance...
-          </p>
+      {/* --- Additional Content (stats, charts, etc.) --- */}
+      <div className="flex-1 max-w-4xl w-full mx-auto p-6">
+        <div className="bg-white rounded shadow p-4">
+          <h2 className="text-xl font-semibold mb-4">Additional Dashboard Stats</h2>
+          <p className="text-sm text-gray-600">Add your content here...</p>
         </div>
       </div>
     </div>
@@ -128,6 +166,7 @@ const TeamAnalyticsDetail = () => {
 };
 
 export default TeamAnalyticsDetail;
+
 
 
 
