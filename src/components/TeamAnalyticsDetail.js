@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import { useParams, useLocation } from "react-router-dom"; // <-- Fixes 'useLocation' is not defined
+import { useParams, useLocation } from "react-router-dom"; // Fixed import for useLocation
 import "../styles/TeamAnalyticsDetail.css"; // Import your custom CSS
 
 const TeamAnalyticsDetail = () => {
@@ -108,6 +108,11 @@ const TeamAnalyticsDetail = () => {
           />
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.awayTeam}</span>
+            {game.awayConference && (
+              <span className="scoreboard__conference">
+                {game.awayConference}
+              </span>
+            )}
             {game.awayPoints !== undefined && (
               <span className="scoreboard__team-score">
                 {game.awayPoints}
@@ -121,12 +126,33 @@ const TeamAnalyticsDetail = () => {
           <div className="scoreboard__date">{gameDate}</div>
           <div className="scoreboard__time">{gameTime}</div>
           <div className="scoreboard__venue">{game.venue}</div>
+          {/* Display additional game media info */}
+          {(game.mediaType || game.outlet) && (
+            <div className="scoreboard__media">
+              <span className="scoreboard__media-text">
+                Media: {game.mediaType} | {game.outlet}
+              </span>
+            </div>
+          )}
+          {/* Display season details if available */}
+          {(game.season || game.week || game.seasonType) && (
+            <div className="scoreboard__season">
+              <span>
+                Season: {game.season} | Week: {game.week} ({game.seasonType})
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Home Team */}
         <div className="scoreboard__team scoreboard__team--home">
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.homeTeam}</span>
+            {game.homeConference && (
+              <span className="scoreboard__conference">
+                {game.homeConference}
+              </span>
+            )}
             {game.homePoints !== undefined && (
               <span className="scoreboard__team-score">
                 {game.homePoints}
@@ -153,3 +179,4 @@ const TeamAnalyticsDetail = () => {
 };
 
 export default TeamAnalyticsDetail;
+
