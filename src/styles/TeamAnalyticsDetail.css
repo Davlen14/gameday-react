@@ -29,7 +29,7 @@
     height: 80px; /* Adjust as needed for your design */
     margin: 0 auto;
     width: 100%;
-    max-width: 1200px; /* Optional: limit width to keep it centered */
+    max-width: 1200px; /* Keep it centered & not too wide */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 0 20px; /* Horizontal padding for content */
   }
@@ -126,4 +126,5 @@
     font-size: 18px;
     font-weight: 600;
   }
+  
   
