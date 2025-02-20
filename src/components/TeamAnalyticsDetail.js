@@ -14,7 +14,7 @@ const TeamAnalyticsDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch the correct logo for a given team
+  // Fetch the correct logo for a given team name
   const getTeamLogo = (teamName) => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
