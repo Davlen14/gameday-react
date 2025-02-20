@@ -8,25 +8,42 @@ const TeamAnalyticsDetail = () => {
   const queryParams = new URLSearchParams(search);
   const gameId = queryParams.get("gameId");
 
-  const [team, setTeam] = useState(null);
+  const [teamsList, setTeamsList] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [game, setGame] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const getTeamLogo = (teamName) => `/logos/${teamName}.png`;
+  // Use the same logic as in TeamAnalytics to get a team's logo.
+  const getTeamLogo = (teamName) => {
+    const team = teamsList.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.logos ? team.logos[0] : "/photos/default_team.png";
+  };
 
   useEffect(() => {
-    const fetchGameDetail = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch all teams and store them in state.
         const teamsData = await teamsService.getTeams();
-        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId, 10));
+        setTeamsList(teamsData);
+
+        // Find the selected team by ID.
+        const foundTeam = teamsData.find(
+          (t) => t.id === parseInt(teamId, 10)
+        );
         if (!foundTeam) {
           throw new Error("Team not found");
         }
-        setTeam(foundTeam);
+        setSelectedTeam(foundTeam);
 
+        // Fetch the schedule for the selected team.
         const scheduleData = await teamsService.getTeamSchedule(foundTeam.school, 2024);
-        const foundGame = scheduleData.find((g) => g.id === parseInt(gameId, 10));
+        // Find the specific game using the gameId from the query string.
+        const foundGame = scheduleData.find(
+          (g) => g.id === parseInt(gameId, 10)
+        );
         if (!foundGame) {
           throw new Error("Game not found");
         }
@@ -38,7 +55,7 @@ const TeamAnalyticsDetail = () => {
       }
     };
 
-    fetchGameDetail();
+    fetchData();
   }, [teamId, gameId]);
 
   if (isLoading)
@@ -82,5 +99,6 @@ const TeamAnalyticsDetail = () => {
 };
 
 export default TeamAnalyticsDetail;
+
 
 
