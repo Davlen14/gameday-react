@@ -202,6 +202,12 @@
     gap: 6px;
 }
 
+.line-details .spread {
+    flex-direction: row; /* Ensure it behaves the same as O/U and ML */
+    align-items: center;
+    width: 100%;
+}
+
 /* Spread, Over/Under, Moneyline lines */
 .line-details .spread,
 .line-details .over-under,
