@@ -1,8 +1,9 @@
+// TeamAnalyticsDetail.js
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import { useParams, useLocation } from "react-router-dom"; // Fixed import for useLocation
-import "../styles/TeamAnalyticsDetail.css"; // Import your custom CSS
-// Import Recharts components (added Cell for custom fills)
+import { useParams, useLocation } from "react-router-dom";
+import "../styles/TeamAnalyticsDetail.css";
+// Import Recharts components
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -13,8 +14,10 @@ import {
   Tooltip,
   Legend,
   CartesianGrid,
-  Cell
+  Cell,
 } from "recharts";
+// Import the TopPerformers component
+import TopPerformers from "./TopPerformers";
 
 const TeamAnalyticsDetail = () => {
   const { teamId } = useParams();
@@ -48,7 +51,7 @@ const TeamAnalyticsDetail = () => {
     return team && team.abbreviation ? team.abbreviation : teamName;
   };
 
-  // New helper to get team color from teamsList data
+  // Helper to get team color
   const getTeamColor = (teamName) => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -134,43 +137,6 @@ const TeamAnalyticsDetail = () => {
     );
   };
 
-  const findTeamExplosiveness = (teamName) => {
-    if (!advancedStats?.teams?.explosiveness) return "N/A";
-    return (
-      advancedStats.teams.explosiveness.find(
-        (item) => item.team.toLowerCase() === teamName.toLowerCase()
-      )?.overall?.total ?? "N/A"
-    );
-  };
-
-  const findTeamRushing = (teamName) => {
-    if (!advancedStats?.teams?.rushing) return null;
-    return advancedStats.teams.rushing.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
-  const findTeamHavoc = (teamName) => {
-    if (!advancedStats?.teams?.havoc) return null;
-    return advancedStats.teams.havoc.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
-  const findTeamScoring = (teamName) => {
-    if (!advancedStats?.teams?.scoringOpportunities) return null;
-    return advancedStats.teams.scoringOpportunities.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
-  const findTeamFieldPosition = (teamName) => {
-    if (!advancedStats?.teams?.fieldPosition) return null;
-    return advancedStats.teams.fieldPosition.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -200,7 +166,7 @@ const TeamAnalyticsDetail = () => {
         }
         setGame(foundGame);
 
-        // 5. Fetch advanced box score stats using the correct endpoint
+        // 5. Fetch advanced box score stats
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
 
@@ -297,7 +263,7 @@ const TeamAnalyticsDetail = () => {
       Rushing: player.rushing,
       Passing: player.passing,
       team: player.team,
-      position: player.position
+      position: player.position,
     })) || [];
 
   return (
@@ -362,113 +328,14 @@ const TeamAnalyticsDetail = () => {
         </div>
       </div>
 
-      {/* Top Performers Section */}
-      <div
-        className="top-performers"
-        style={{
-          width: "96%",
-          margin: "2% auto",
-          background: "#fff",
-          borderRadius: "8px",
-          padding: "20px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "15px" }}>Top Performers</h2>
-        <div
-          className="top-performers__container"
-          style={{ display: "flex", flexWrap: "wrap", gap: "2%" }}
-        >
-          {[
-            { team: game.homeTeam, label: getTeamAbbreviation(game.homeTeam) },
-            { team: game.awayTeam, label: getTeamAbbreviation(game.awayTeam) }
-          ].map((side) => {
-            const passingCategory = topPerformersPassing &&
-              topPerformersPassing[0]?.teams.find(
-                (t) => t.team.toLowerCase() === side.team.toLowerCase()
-              )?.categories.find((cat) => cat.name === "passing");
-            const rushingCategory = topPerformersRushing &&
-              topPerformersRushing[0]?.teams.find(
-                (t) => t.team.toLowerCase() === side.team.toLowerCase()
-              )?.categories.find((cat) => cat.name === "rushing");
-            const receivingCategory = topPerformersReceiving &&
-              topPerformersReceiving[0]?.teams.find(
-                (t) => t.team.toLowerCase() === side.team.toLowerCase()
-              )?.categories.find((cat) => cat.name === "receiving");
-
-            return (
-              <div
-                key={side.team}
-                className="top-performers__team"
-                style={{
-                  flex: "1 1 48%",
-                  border: "1px solid #eee",
-                  borderRadius: "8px",
-                  padding: "10px"
-                }}
-              >
-                <h3 style={{ textAlign: "center", marginBottom: "10px" }}>
-                  {side.label}
-                </h3>
-                {/* Passing Section */}
-                <div className="top-performers__category">
-                  <h4>Passing</h4>
-                  {passingCategory &&
-                    passingCategory.types
-                      .filter((type) => ["YDS", "C/ATT", "QBR", "TD"].includes(type.name))
-                      .map((statType) => (
-                        <div key={statType.name} style={{ marginBottom: "5px" }}>
-                          <strong>{statType.name}:</strong>{" "}
-                          {statType.athletes.slice(0, 2).map((athlete, i) => (
-                            <span key={athlete.id}>
-                              {athlete.name} ({athlete.stat})
-                              {i === 0 ? ", " : ""}
-                            </span>
-                          ))}
-                        </div>
-                      ))}
-                </div>
-                {/* Rushing Section */}
-                <div className="top-performers__category">
-                  <h4>Rushing</h4>
-                  {rushingCategory &&
-                    rushingCategory.types
-                      .filter((type) => ["YDS", "CAR", "TD"].includes(type.name))
-                      .map((statType) => (
-                        <div key={statType.name} style={{ marginBottom: "5px" }}>
-                          <strong>{statType.name}:</strong>{" "}
-                          {statType.athletes.slice(0, 2).map((athlete, i) => (
-                            <span key={athlete.id}>
-                              {athlete.name} ({athlete.stat})
-                              {i === 0 ? ", " : ""}
-                            </span>
-                          ))}
-                        </div>
-                      ))}
-                </div>
-                {/* Receiving Section */}
-                <div className="top-performers__category">
-                  <h4>Receiving</h4>
-                  {receivingCategory &&
-                    receivingCategory.types
-                      .filter((type) => ["YDS", "REC", "TD"].includes(type.name))
-                      .map((statType) => (
-                        <div key={statType.name} style={{ marginBottom: "5px" }}>
-                          <strong>{statType.name}:</strong>{" "}
-                          {statType.athletes.slice(0, 2).map((athlete, i) => (
-                            <span key={athlete.id}>
-                              {athlete.name} ({athlete.stat})
-                              {i === 0 ? ", " : ""}
-                            </span>
-                          ))}
-                        </div>
-                      ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Top Performers Section (imported from TopPerformers.js) */}
+      <TopPerformers
+        game={game}
+        topPerformersPassing={topPerformersPassing}
+        topPerformersRushing={topPerformersRushing}
+        topPerformersReceiving={topPerformersReceiving}
+        getTeamAbbreviation={getTeamAbbreviation}
+      />
 
       {/* Advanced Box Score Section */}
       <div className="advanced-box-score">
