@@ -157,7 +157,7 @@ const Lines = () => {
     const logos = {
       DraftKings: "/photos/draftkings.png",
       "ESPN Bet": "/photos/espnbet.png",
-      Bovada: "/photos/bovada.png",
+      Bovada: "/photos/bovada.jpg",
     };
     return logos[provider] || "/photos/default_sportsbook.png";
   };
