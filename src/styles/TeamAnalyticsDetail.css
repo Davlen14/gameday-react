@@ -143,11 +143,10 @@
   max-width: 1400px;
   width: 100%;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
-
 .advanced-box-score h2 {
   margin-bottom: 12px;
   font-size: 20px;
@@ -155,11 +154,12 @@
   text-align: center;
 }
 
+/* Removed table styling as charts now replace tables */
+/*
 .advanced-box-score__table {
   width: 100%;
   border-collapse: collapse;
 }
-
 .advanced-box-score__table th,
 .advanced-box-score__table td {
   padding: 10px;
@@ -167,16 +167,79 @@
   text-align: center;
   font-size: 14px;
 }
-
 .advanced-box-score__table th {
   background-color: #f0f0f0;
   font-weight: 600;
 }
-
 .advanced-box-score__table tr:nth-child(even) {
   background-color: #f9f9f9;
 }
-
 .advanced-box-score__table tr:hover {
   background-color: #f1f1f1;
+}
+*/
+
+/* Chart Containers */
+.chart-container {
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 1400px;
+  width: 100%;
+}
+
+/* Styling for Recharts Tooltips to match modern design */
+.recharts-default-tooltip {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* New Player Stats Section (Chart based display) */
+.player-stats-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin: 20px auto;
+  max-width: 1400px;
+  width: 100%;
+}
+.player-stats-section h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+  .scoreboard {
+    max-width: 95%;
+  }
+  .dashboard-content,
+  .advanced-box-score,
+  .chart-container,
+  .player-stats-section {
+    max-width: 95%;
+  }
+}
+@media (max-width: 768px) {
+  .scoreboard {
+    padding: 0 15px;
+  }
+  .scoreboard__logo {
+    width: 40px;
+    height: 40px;
+  }
+  .dashboard-stats, 
+  .advanced-box-score, 
+  .chart-container,
+  .player-stats-section {
+    padding: 15px;
+  }
 }

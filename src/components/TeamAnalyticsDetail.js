@@ -1,8 +1,19 @@
-
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import { useParams, useLocation } from "react-router-dom"; // Fixed import for useLocation
 import "../styles/TeamAnalyticsDetail.css"; // Import your custom CSS
+// Import Recharts components
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from "recharts";
 
 const TeamAnalyticsDetail = () => {
   const { teamId } = useParams();
@@ -157,6 +168,25 @@ const TeamAnalyticsDetail = () => {
   const cumulativeOverallHome = homeTeamCumulativeStats?.overall?.total ?? "N/A";
   const cumulativeOverallAway = awayTeamCumulativeStats?.overall?.total ?? "N/A";
 
+  // Create data array for Advanced Box Score Chart
+  const boxScoreData = [
+    { metric: "Overall PPA", Home: overallPpaHome, Away: overallPpaAway },
+    { metric: "Passing PPA", Home: passingPpaHome, Away: passingPpaAway },
+    { metric: "Rushing PPA", Home: rushingPpaHome, Away: rushingPpaAway },
+    { metric: "Cumulative PPA", Home: cumulativeOverallHome, Away: cumulativeOverallAway }
+  ];
+
+  // Prepare data for Player Stats Chart, using player usage stats from advancedStats.players.usage
+  const playerUsageData =
+    advancedStats?.players?.usage?.map((player) => ({
+      name: player.player,
+      Usage: player.total,
+      Rushing: player.rushing,
+      Passing: player.passing,
+      team: player.team,
+      position: player.position
+    })) || [];
+
   return (
     <div className="team-analytics-page">
       {/* Scoreboard Section */}
@@ -219,7 +249,7 @@ const TeamAnalyticsDetail = () => {
         </div>
       </div>
 
-      {/* Advanced Box Score Section */}
+      {/* Advanced Box Score Section - Replaced Table with Chart */}
       <div className="advanced-box-score">
         <h2
           title={`Definitions:
@@ -236,199 +266,19 @@ Field Position: Average start and predicted points.`}
         >
           Advanced Box Score
         </h2>
-        <table className="advanced-box-score__table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>{game.homeTeam}</th>
-              <th>{game.awayTeam}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr title="Average points per play (overall)">
-              <td>Overall PPA</td>
-              <td>{overallPpaHome}</td>
-              <td>{overallPpaAway}</td>
-            </tr>
-            <tr title="Points per play from passing">
-              <td>Passing PPA</td>
-              <td>{passingPpaHome}</td>
-              <td>{passingPpaAway}</td>
-            </tr>
-            <tr title="Points per play from rushing">
-              <td>Rushing PPA</td>
-              <td>{rushingPpaHome}</td>
-              <td>{rushingPpaAway}</td>
-            </tr>
-            <tr title="Cumulative overall points per play">
-              <td>Cumulative Overall PPA</td>
-              <td>{cumulativeOverallHome}</td>
-              <td>{cumulativeOverallAway}</td>
-            </tr>
-            <tr title="Overall success rate">
-              <td>Success Rate (Overall)</td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
-                )?.overall?.total ?? "N/A"}
-              </td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
-                )?.overall?.total ?? "N/A"}
-              </td>
-            </tr>
-            <tr title="Standard downs success rate">
-              <td>Standard Downs Success</td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
-                )?.standardDowns?.total ?? "N/A"}
-              </td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
-                )?.standardDowns?.total ?? "N/A"}
-              </td>
-            </tr>
-            <tr title="Passing downs success rate">
-              <td>Passing Downs Success</td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
-                )?.passingDowns?.total ?? "N/A"}
-              </td>
-              <td>
-                {advancedStats?.teams?.successRates?.find(
-                  (item) =>
-                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
-                )?.passingDowns?.total ?? "N/A"}
-              </td>
-            </tr>
-            <tr title="Explosive play metric (overall)">
-              <td>Explosiveness</td>
-              <td>{findTeamExplosiveness(game.homeTeam)}</td>
-              <td>{findTeamExplosiveness(game.awayTeam)}</td>
-            </tr>
-            {(() => {
-              const homeRushing = findTeamRushing(game.homeTeam);
-              const awayRushing = findTeamRushing(game.awayTeam);
-              return (
-                <>
-                  <tr title="Power success rate">
-                    <td>Rushing - Power Success</td>
-                    <td>{homeRushing?.powerSuccess ?? "N/A"}</td>
-                    <td>{awayRushing?.powerSuccess ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Stuff rate">
-                    <td>Rushing - Stuff Rate</td>
-                    <td>{homeRushing?.stuffRate ?? "N/A"}</td>
-                    <td>{awayRushing?.stuffRate ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Line yards">
-                    <td>Rushing - Line Yards</td>
-                    <td>{homeRushing?.lineYards ?? "N/A"}</td>
-                    <td>{awayRushing?.lineYards ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Line yards average">
-                    <td>Rushing - Line Yards Average</td>
-                    <td>{homeRushing?.lineYardsAverage ?? "N/A"}</td>
-                    <td>{awayRushing?.lineYardsAverage ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Second level yards">
-                    <td>Rushing - Second Level Yards</td>
-                    <td>{homeRushing?.secondLevelYards ?? "N/A"}</td>
-                    <td>{awayRushing?.secondLevelYards ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Second level yards average">
-                    <td>Rushing - Second Level Yards Average</td>
-                    <td>{homeRushing?.secondLevelYardsAverage ?? "N/A"}</td>
-                    <td>{awayRushing?.secondLevelYardsAverage ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Open field yards">
-                    <td>Rushing - Open Field Yards</td>
-                    <td>{homeRushing?.openFieldYards ?? "N/A"}</td>
-                    <td>{awayRushing?.openFieldYards ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Open field yards average">
-                    <td>Rushing - Open Field Yards Average</td>
-                    <td>{homeRushing?.openFieldYardsAverage ?? "N/A"}</td>
-                    <td>{awayRushing?.openFieldYardsAverage ?? "N/A"}</td>
-                  </tr>
-                </>
-              );
-            })()}
-            {(() => {
-              const homeHavoc = findTeamHavoc(game.homeTeam);
-              const awayHavoc = findTeamHavoc(game.awayTeam);
-              return (
-                <>
-                  <tr title="Total havoc">
-                    <td>Havoc - Total</td>
-                    <td>{homeHavoc?.total ?? "N/A"}</td>
-                    <td>{awayHavoc?.total ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Front Seven havoc">
-                    <td>Havoc - Front Seven</td>
-                    <td>{homeHavoc?.frontSeven ?? "N/A"}</td>
-                    <td>{awayHavoc?.frontSeven ?? "N/A"}</td>
-                  </tr>
-                  <tr title="DB havoc">
-                    <td>Havoc - DB</td>
-                    <td>{homeHavoc?.db ?? "N/A"}</td>
-                    <td>{awayHavoc?.db ?? "N/A"}</td>
-                  </tr>
-                </>
-              );
-            })()}
-            {(() => {
-              const homeScoring = findTeamScoring(game.homeTeam);
-              const awayScoring = findTeamScoring(game.awayTeam);
-              return (
-                <>
-                  <tr title="Number of scoring opportunities">
-                    <td>Scoring Opportunities</td>
-                    <td>{homeScoring?.opportunities ?? "N/A"}</td>
-                    <td>{awayScoring?.opportunities ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Points scored from scoring opportunities">
-                    <td>Points</td>
-                    <td>{homeScoring?.points ?? "N/A"}</td>
-                    <td>{awayScoring?.points ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Points per opportunity">
-                    <td>Points Per Opportunity</td>
-                    <td>{homeScoring?.pointsPerOpportunity ?? "N/A"}</td>
-                    <td>{awayScoring?.pointsPerOpportunity ?? "N/A"}</td>
-                  </tr>
-                </>
-              );
-            })()}
-            {(() => {
-              const homeField = findTeamFieldPosition(game.homeTeam);
-              const awayField = findTeamFieldPosition(game.awayTeam);
-              return (
-                <>
-                  <tr title="Average starting field position">
-                    <td>Average Start</td>
-                    <td>{homeField?.averageStart ?? "N/A"}</td>
-                    <td>{awayField?.averageStart ?? "N/A"}</td>
-                  </tr>
-                  <tr title="Average starting predicted points">
-                    <td>Starting Predicted Points</td>
-                    <td>{homeField?.averageStartingPredictedPoints ?? "N/A"}</td>
-                    <td>{awayField?.averageStartingPredictedPoints ?? "N/A"}</td>
-                  </tr>
-                </>
-              );
-            })()}
-          </tbody>
-        </table>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={boxScoreData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="metric" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Home" fill={homeColor || "#002244"} />
+            <Bar dataKey="Away" fill={awayColor || "#008E97"} />
+            <Line type="monotone" dataKey="Home" stroke={homeColor || "#002244"} />
+            <Line type="monotone" dataKey="Away" stroke={awayColor || "#008E97"} />
+          </ComposedChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Additional Dashboard Content */}
@@ -439,34 +289,26 @@ Field Position: Average start and predicted points.`}
         </div>
       </div>
 
-      {/* New Player Stats Section */}
+      {/* New Player Stats Section - Replaced Table with Chart */}
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>
-          <table className="player-stats-table">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Team</th>
-                <th>Position</th>
-                <th>Total Usage</th>
-                <th>Rushing</th>
-                <th>Passing</th>
-              </tr>
-            </thead>
-            <tbody>
-              {advancedStats.players.usage.map((player, index) => (
-                <tr key={index}>
-                  <td>{player.player}</td>
-                  <td>{player.team}</td>
-                  <td>{player.position}</td>
-                  <td>{player.total}</td>
-                  <td>{player.rushing}</td>
-                  <td>{player.passing}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart
+              data={playerUsageData}
+              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="Usage" stackId="a" fill="#8884d8" />
+              <Bar dataKey="Rushing" stackId="a" fill="#82ca9d" />
+              <Bar dataKey="Passing" stackId="a" fill="#ffc658" />
+              <Line type="monotone" dataKey="Usage" stroke="#8884d8" />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>
