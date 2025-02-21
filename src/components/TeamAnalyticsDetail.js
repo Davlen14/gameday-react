@@ -253,19 +253,30 @@ const TeamAnalyticsDetail = () => {
       <div className="advanced-box-score">
         <h2
           title={`Definitions:
-Overall PPA: Average points per play (overall).
+Overall PPA: Average points per play overall.
 Passing PPA: Average points per play from passing.
 Rushing PPA: Average points per play from rushing.
-Cumulative Overall PPA: Cumulative overall points per play.
-Success Rates: Overall, standard downs, and passing downs success.
-Explosiveness: Explosive play metric.
-Rushing Metrics: Includes power success, stuff rate, line yards, second level, and open field yards.
-Havoc: Defensive disruption metrics.
-Scoring Opportunities: Number, points, and efficiency.
-Field Position: Average start and predicted points.`}
+Cumulative PPA: Cumulative overall points per play.
+Higher values generally indicate more efficient and effective plays. 
+(Note: Negative values or lower totals suggest underperformance.)`}
         >
           Advanced Box Score
         </h2>
+        {/* Explanation for Advanced Box Score */}
+        <div className="explanation-box">
+          <p>
+            <strong>Overall PPA:</strong> Measures average points per play overall. Higher values indicate more effective plays.
+          </p>
+          <p>
+            <strong>Passing PPA:</strong> Represents points per play from passing. A higher value generally means better passing efficiency.
+          </p>
+          <p>
+            <strong>Rushing PPA:</strong> Indicates points per play from rushing. Positive values are favorable, while negative values suggest inefficiency.
+          </p>
+          <p>
+            <strong>Cumulative PPA:</strong> Reflects total accumulated points per play. Positive cumulative totals are desirable.
+          </p>
+        </div>
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={boxScoreData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -293,6 +304,18 @@ Field Position: Average start and predicted points.`}
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>
+          {/* Explanation for Player Stats */}
+          <div className="explanation-box">
+            <p>
+              <strong>Usage:</strong> Represents the overall involvement of the player in the game. Higher usage typically indicates a key role.
+            </p>
+            <p>
+              <strong>Rushing:</strong> Measures performance on rushing plays. Positive numbers are better.
+            </p>
+            <p>
+              <strong>Passing:</strong> Indicates production from passing plays. Higher values point to effective passing involvement.
+            </p>
+          </div>
           <ResponsiveContainer width="100%" height={400}>
             <ComposedChart
               data={playerUsageData}
