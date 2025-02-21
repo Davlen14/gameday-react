@@ -1093,7 +1093,7 @@ const fetchData = async (query, variables = {}) => {
   };
   
   // Export all functions in teamsService
-  const teamsService = {
+  const graphqlTeamsService = {
     getGameById,
     getTeams,
     getGames,
@@ -1152,5 +1152,5 @@ const fetchData = async (query, variables = {}) => {
     getWepaPlayersKicking,
   };
   
-  export default teamsService;
+  export default graphqlTeamsService;
   
