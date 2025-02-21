@@ -17,6 +17,53 @@ const CrossIcon = () => (
   </svg>
 );
 
+/**
+ * Converts a hex color (like "#981e32") to a rough brightness value (0-255).
+ * The higher the value, the lighter the color.
+ */
+function getColorBrightness(hex) {
+  // Strip "#" if present
+  const cleanHex = hex.replace(/^#/, "");
+
+  // Parse r, g, b
+  const bigint = parseInt(cleanHex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  // Simple brightness formula
+  // (There are more advanced formulas, but this is a good start)
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+/**
+ * Lightens a dark color by a certain amount (0-100).
+ * Very simplistic approach for demonstration.
+ */
+function lightenColor(hex, amount = 30) {
+  // Convert hex to RGB
+  const cleanHex = hex.replace(/^#/, "");
+  let bigint = parseInt(cleanHex, 16);
+
+  let r = (bigint >> 16) & 255;
+  let g = (bigint >> 8) & 255;
+  let b = bigint & 255;
+
+  // Increase each channel by 'amount', clamp to 255
+  r = Math.min(255, r + amount);
+  g = Math.min(255, g + amount);
+  b = Math.min(255, b + amount);
+
+  // Reassemble into hex
+  const newColor =
+    "#" +
+    ((1 << 24) + (r << 16) + (g << 8) + b)
+      .toString(16)
+      .slice(1)
+      .toUpperCase();
+  return newColor;
+}
+
 const Lines = () => {
   const [lines, setLines] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -51,23 +98,69 @@ const Lines = () => {
   }, [teams.length]);
 
   /**
-   * Return a team's color if available; otherwise fallback to #ccc
+   * Returns a style object for a given team:
+   * {
+   *   backgroundColor: "#c4012f" or some adjusted color,
+   *   textColor: "#fff" or "#000",
+   *   logo: "logo_url.png" (maybe the secondary logo if color is dark)
+   * }
    */
-  const getTeamColor = (teamName) => {
+  const getTeamStyle = (teamName) => {
+    // Find the team
     const matchedTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
     );
-    return matchedTeam?.color || "#ccc";
-  };
 
-  /**
-   * Return the first team logo if found, otherwise a default image
-   */
-  const getTeamLogo = (teamName) => {
-    const matchedTeam = teams.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return matchedTeam?.logos ? matchedTeam.logos[0] : "/photos/default_team.png";
+    if (!matchedTeam) {
+      return {
+        backgroundColor: "#ccc",
+        textColor: "#fff",
+        logo: "/photos/default_team.png",
+      };
+    }
+
+    // Grab the primary color & alt color
+    let { color, alternateColor, logos } = matchedTeam;
+    if (!color) color = "#ccc";
+
+    // Determine brightness
+    const brightness = getColorBrightness(color);
+
+    // If color is too dark (<128?), we can either lighten it or use alternateColor
+    let finalColor = color;
+    if (brightness < 80) {
+      // Let's see if we have an alternateColor
+      if (alternateColor) {
+        // Check if alt color is lighter
+        const altBrightness = getColorBrightness(alternateColor);
+        // If alt is significantly brighter, use it, otherwise lighten the original
+        finalColor = altBrightness > 100 ? alternateColor : lightenColor(color, 60);
+      } else {
+        // No alt color, so lighten the original
+        finalColor = lightenColor(color, 60);
+      }
+    }
+
+    // Now decide on text color based on finalColor
+    const finalBrightness = getColorBrightness(finalColor);
+    const textColor = finalBrightness < 130 ? "#fff" : "#000";
+
+    // Decide which logo to use (if we have a second one for dark backgrounds, e.g. the '-dark' version)
+    let chosenLogo = "/photos/default_team.png";
+    if (logos && logos.length > 0) {
+      // If finalColor is dark, maybe use logos[1] if it exists
+      if (finalBrightness < 130 && logos.length > 1) {
+        chosenLogo = logos[1];
+      } else {
+        chosenLogo = logos[0];
+      }
+    }
+
+    return {
+      backgroundColor: finalColor,
+      textColor,
+      logo: chosenLogo,
+    };
   };
 
   /**
@@ -85,9 +178,9 @@ const Lines = () => {
    */
   const getSportsbookLogo = (provider) => {
     const logos = {
-      "DraftKings": "/photos/draftkings.png",
+      DraftKings: "/photos/draftkings.png",
       "ESPN Bet": "/photos/espnbet.png",
-      "Bovada": "/photos/bovada.png",
+      Bovada: "/photos/bovada.png",
     };
     return logos[provider] || "/photos/default_sportsbook.png";
   };
@@ -139,9 +232,9 @@ const Lines = () => {
       <h1 className="lines-title">2024 Betting Odds</h1>
 
       {lines.map((game) => {
-        // Instead of a single gradient, we have left & right color panels
-        const homeColor = getTeamColor(game.homeTeam);
-        const awayColor = getTeamColor(game.awayTeam);
+        // Use getTeamStyle for both home & away
+        const homeStyle = getTeamStyle(game.homeTeam);
+        const awayStyle = getTeamStyle(game.awayTeam);
 
         return (
           <div key={game.id} className="lines-card">
@@ -155,10 +248,13 @@ const Lines = () => {
               {/* Left Panel (Home Team) */}
               <div
                 className="team-home-panel"
-                style={{ backgroundColor: homeColor }}
+                style={{
+                  backgroundColor: homeStyle.backgroundColor,
+                  color: homeStyle.textColor,
+                }}
               >
                 <img
-                  src={getTeamLogo(game.homeTeam)}
+                  src={homeStyle.logo}
                   alt={game.homeTeam}
                   className="team-logo-large"
                 />
@@ -179,10 +275,13 @@ const Lines = () => {
               {/* Right Panel (Away Team) */}
               <div
                 className="team-away-panel"
-                style={{ backgroundColor: awayColor }}
+                style={{
+                  backgroundColor: awayStyle.backgroundColor,
+                  color: awayStyle.textColor,
+                }}
               >
                 <img
-                  src={getTeamLogo(game.awayTeam)}
+                  src={awayStyle.logo}
                   alt={game.awayTeam}
                   className="team-logo-large"
                 />
