@@ -16,6 +16,9 @@ import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Te
 import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
 import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysis
 
+// New ArbitrageEV Component Import
+import ArbitrageEV from "./components/ArbitrageEV";
+
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -85,12 +88,8 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/current-lines">Current Game Lines</Link>
                         <Link to="/spread-analysis">Spread + Analysis</Link>
-                        <Link to="/moneyline-comparisons">
-                        Arbitrage + EV
-                        </Link>
-                        <Link to="/over-under-metrics">
-                          Over/Under Metrics
-                        </Link>
+                        <Link to="/arbitrage-ev">Arbitrage + EV</Link>
+                        <Link to="/over-under-metrics">Over/Under Metrics</Link>
                       </div>
                     )}
                   </div>
@@ -106,9 +105,7 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/predict-outcomes">Predict Outcomes</Link>
                         <Link to="/ask-questions">Ask Questions</Link>
-                        <Link to="/betting-suggestions">
-                          Betting Suggestions
-                        </Link>
+                        <Link to="/betting-suggestions">Betting Suggestions</Link>
                       </div>
                     )}
                   </div>
@@ -125,9 +122,7 @@ function App() {
                         <Link to="/latest-news">Latest Updates</Link>
                         <Link to="/injury-reports">Injury Report</Link>
                         <Link to="/rankings">Rankings</Link>
-                        <Link to="/coaching-changes">
-                          Coaching Changes
-                        </Link>
+                        <Link to="/coaching-changes">Coaching Changes</Link>
                       </div>
                     )}
                   </div>
@@ -159,9 +154,7 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/highlights">Game Highlights</Link>
                         <Link to="/analysis">Game Analysis</Link>
-                        <Link to="/press-conferences">
-                          Press Conferences
-                        </Link>
+                        <Link to="/press-conferences">Press Conferences</Link>
                       </div>
                     )}
                   </div>
@@ -224,7 +217,7 @@ function App() {
                 More
               </Link>
               <Link to="/pickem-predictions" className="nav-item">
-                Pick'em & Predictions
+                Pick'em &amp; Predictions
               </Link>
               <Link to="/fan-hub" className="nav-item">
                 Fan Hub
@@ -258,6 +251,9 @@ function App() {
 
               {/* New Lines Route for Spread + Analysis */}
               <Route path="/spread-analysis" element={<Lines />} />
+
+              {/* New Route for Arbitrage + EV */}
+              <Route path="/arbitrage-ev" element={<ArbitrageEV />} />
             </Routes>
           </main>
         </div>
