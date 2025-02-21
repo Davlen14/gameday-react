@@ -86,7 +86,7 @@ function App() {
                         <Link to="/current-lines">Current Game Lines</Link>
                         <Link to="/spread-analysis">Spread + Analysis</Link>
                         <Link to="/moneyline-comparisons">
-                          Moneyline Comparisons
+                        Arbitrage + EV
                         </Link>
                         <Link to="/over-under-metrics">
                           Over/Under Metrics
