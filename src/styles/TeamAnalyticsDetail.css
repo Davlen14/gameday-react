@@ -41,9 +41,8 @@ body {
   justify-content: space-between;
   background-color: #fff;
   height: 100px;
-  margin: 20px auto;
-  width: 100%;
-  max-width: 1400px;
+  margin: 2% auto;       /* was 20px auto */
+  width: 96%;            /* nearly full, leaving ~2% each side */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 0 30px;
   border-radius: 8px;
@@ -143,9 +142,8 @@ body {
 /* Main Content */
 .dashboard-content {
   flex: 1;
-  max-width: 1400px;
-  width: 100%;
-  margin: 20px auto;
+  margin: 2% auto;      /* was 20px auto */
+  width: 96%;           /* fill nearly full width */
   padding: 20px;
 }
 .dashboard-stats {
@@ -166,9 +164,8 @@ body {
 
 /* Advanced Box Score Section */
 .advanced-box-score {
-  margin: 20px auto;
-  max-width: 1400px;
-  width: 100%;
+  margin: 2% auto;      /* was 20px auto */
+  width: 96%;           /* nearly full width */
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -201,9 +198,8 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.08);
   padding: 20px;
-  margin: 20px auto;
-  max-width: 1400px;
-  width: 100%;
+  margin: 2% auto;   /* was 20px auto */
+  width: 96%;        /* nearly full width */
 }
 
 /* Tooltip Styling */
@@ -216,14 +212,13 @@ body {
 
 /* Player Stats Section */
 .player-stats-section {
-  margin-top: 30px;
+  margin-top: 2%;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-  margin: 20px auto;
-  max-width: 1400px;
-  width: 100%;
+  margin: 2% auto;     /* was 20px auto */
+  width: 96%;          /* nearly full width */
 }
 .player-stats-section h2 {
   font-size: 22px;
@@ -235,13 +230,13 @@ body {
 /* Responsiveness */
 @media (max-width: 1024px) {
   .scoreboard {
-    max-width: 95%;
+    width: 96%;
   }
   .dashboard-content,
   .advanced-box-score,
   .chart-container,
   .player-stats-section {
-    max-width: 95%;
+    width: 96%;
   }
 }
 @media (max-width: 768px) {

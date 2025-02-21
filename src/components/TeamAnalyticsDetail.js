@@ -54,34 +54,67 @@ const TeamAnalyticsDetail = () => {
     return team && team.color ? team.color : null;
   };
 
-  // Custom tooltip for Advanced Box Score
+  // Custom tooltip for Advanced Box Score showing logos and abbreviation
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="custom-tooltip" style={{ backgroundColor: "#fff", border: "1px solid #ddd", padding: "10px" }}>
-          <p className="label" style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</p>
+        <div
+          className="custom-tooltip"
+          style={{ backgroundColor: "#fff", border: "1px solid #ddd", padding: "10px" }}
+        >
+          <p style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img 
-                src={getTeamLogo(game.homeTeam)} 
-                alt={game.homeTeam} 
-                style={{ width: 20, height: 20, objectFit: "contain" }} 
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam}
+                style={{ width: 20, height: 20, objectFit: "contain" }}
               />
-              <span>{getTeamAbbreviation(game.homeTeam)}: {payload.find(item => item.dataKey === "Home")?.value}</span>
+              <span>
+                {getTeamAbbreviation(game.homeTeam)}:{" "}
+                {payload.find((item) => item.dataKey === "Home")?.value}
+              </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img 
-                src={getTeamLogo(game.awayTeam)} 
-                alt={game.awayTeam} 
-                style={{ width: 20, height: 20, objectFit: "contain" }} 
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                style={{ width: 20, height: 20, objectFit: "contain" }}
               />
-              <span>{getTeamAbbreviation(game.awayTeam)}: {payload.find(item => item.dataKey === "Away")?.value}</span>
+              <span>
+                {getTeamAbbreviation(game.awayTeam)}:{" "}
+                {payload.find((item) => item.dataKey === "Away")?.value}
+              </span>
             </div>
           </div>
         </div>
       );
     }
     return null;
+  };
+
+  // Custom Legend for Advanced Box Score showing logos and abbreviations
+  const renderCustomLegend = () => {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <img
+            src={getTeamLogo(game.homeTeam)}
+            alt={game.homeTeam}
+            style={{ width: 20, height: 20, objectFit: "contain" }}
+          />
+          <span>{getTeamAbbreviation(game.homeTeam)}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <img
+            src={getTeamLogo(game.awayTeam)}
+            alt={game.awayTeam}
+            style={{ width: 20, height: 20, objectFit: "contain" }}
+          />
+          <span>{getTeamAbbreviation(game.awayTeam)}</span>
+        </div>
+      </div>
+    );
   };
 
   // Helper functions to match advanced stats by team name
@@ -331,7 +364,7 @@ Higher values generally indicate more efficient and effective plays.
             <XAxis dataKey="metric" />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            <Legend content={renderCustomLegend} />
             <Bar dataKey="Home" fill={homeTeamColor ? homeTeamColor : "#002244"} />
             <Bar dataKey="Away" fill={awayTeamColor ? awayTeamColor : "#008E97"} />
             <Line type="monotone" dataKey="Home" stroke={homeTeamColor ? homeTeamColor : "#002244"} />
