@@ -26,9 +26,7 @@ const TeamAnalyticsDetail = () => {
 
   // Helper functions to match advanced stats by team name
   const findTeamStatsByName = (teamName) => {
-    // If advancedStats or advancedStats.teams or advancedStats.teams.ppa doesn't exist, return null
     if (!advancedStats?.teams?.ppa) return null;
-    // Attempt to find a matching team entry
     return advancedStats.teams.ppa.find(
       (item) => item.team.toLowerCase() === teamName.toLowerCase()
     );
@@ -70,8 +68,8 @@ const TeamAnalyticsDetail = () => {
         }
         setGame(foundGame);
 
-        // 5. Fetch advanced box score stats using your service file
-        const advancedData = await teamsService.getStatsGameAdvanced(gameId, 2024);
+        // 5. Fetch advanced box score stats using the correct endpoint
+        const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
       } catch (err) {
         setError(err.message);
@@ -115,13 +113,10 @@ const TeamAnalyticsDetail = () => {
   // Extract advanced box score metrics (or 'N/A' if not found)
   const overallPpaHome = homeTeamStats?.overall?.total ?? "N/A";
   const overallPpaAway = awayTeamStats?.overall?.total ?? "N/A";
-
   const passingPpaHome = homeTeamStats?.passing?.total ?? "N/A";
   const passingPpaAway = awayTeamStats?.passing?.total ?? "N/A";
-
   const rushingPpaHome = homeTeamStats?.rushing?.total ?? "N/A";
   const rushingPpaAway = awayTeamStats?.rushing?.total ?? "N/A";
-
   const cumulativeOverallHome =
     homeTeamCumulativeStats?.overall?.total ?? "N/A";
   const cumulativeOverallAway =
@@ -225,7 +220,7 @@ const TeamAnalyticsDetail = () => {
               <td>{cumulativeOverallHome}</td>
               <td>{cumulativeOverallAway}</td>
             </tr>
-            {/* You can add additional rows here for more advanced metrics */}
+            {/* Add additional rows here for more advanced metrics */}
           </tbody>
         </table>
       </div>
