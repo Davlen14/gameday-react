@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Lines.css"; // Your custom CSS file
 
-// SVG Components for status icons
+// Modernized SVG Components
 const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="8" cy="8" r="8" fill="green" />
-    <path d="M4 8l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="12" fill="#00C853" />
+    <path d="M7 12l3 3 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const CrossIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="8" cy="8" r="8" fill="red" />
-    <path d="M5 5l6 6M11 5l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="12" fill="#D50000" />
+    <path d="M7 7l10 10M17 7l-10 10" stroke="white" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
@@ -37,7 +37,9 @@ const Lines = () => {
 
         // Fetch lines for 2024 regular season
         const response = await teamsService.getGameLines(2024, null, "regular");
-        setLines(response);
+        // Sort games by week so they appear in ascending order
+        const sortedLines = response.sort((a, b) => a.week - b.week);
+        setLines(sortedLines);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -49,7 +51,7 @@ const Lines = () => {
   }, [teams.length]);
 
   /**
-   * Get a team's primary color if available, or default to #ccc
+   * Return a team's color if available; otherwise fallback to #ccc
    */
   const getTeamColor = (teamName) => {
     const matchedTeam = teams.find(
@@ -59,8 +61,7 @@ const Lines = () => {
   };
 
   /**
-   * Dynamically find the matching team in the teams array by name.
-   * Returns the first logo if found, otherwise returns a default image.
+   * Return the first team logo if found, otherwise a default image
    */
   const getTeamLogo = (teamName) => {
     const matchedTeam = teams.find(
@@ -70,7 +71,17 @@ const Lines = () => {
   };
 
   /**
-   * Get a sportsbook logo by provider name, or default if not found.
+   * Return a team's abbreviation or the full team name if abbreviation not found
+   */
+  const getTeamAbbreviation = (teamName) => {
+    const matchedTeam = teams.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return matchedTeam?.abbreviation || teamName;
+  };
+
+  /**
+   * Return a sportsbook logo by provider name, or a default if not found
    */
   const getSportsbookLogo = (provider) => {
     const logos = {
@@ -81,6 +92,47 @@ const Lines = () => {
     return logos[provider] || "/photos/default_sportsbook.png";
   };
 
+  // --- Betting Logic Helpers ---
+
+  // Spread coverage:
+  // - Negative spread means the home team is favored by abs(spread).
+  //   They must win by > abs(spread) to cover.
+  // - Positive spread means the away team is favored by spread.
+  //   The away team must win by > spread (or lose by less than spread) to cover.
+  const hasCoveredSpread = (spread, homeScore, awayScore) => {
+    if (spread == null) return false; // No spread data
+    const margin = homeScore - awayScore;
+
+    if (spread < 0) {
+      // Home favored by abs(spread)
+      return margin > Math.abs(spread);
+    } else if (spread > 0) {
+      // Away favored
+      const awayMargin = awayScore - homeScore;
+      return awayMargin > spread;
+    } else {
+      // spread == 0 => "pick 'em"
+      // Covered if there's a winner (not a tie)
+      return homeScore !== awayScore;
+    }
+  };
+
+  // Over/Under coverage:
+  // - If total points > line => Over
+  // - Otherwise => Under
+  const isOver = (overUnder, homeScore, awayScore) => {
+    if (overUnder == null) return false;
+    const total = homeScore + awayScore;
+    return total > overUnder;
+  };
+
+  // Moneyline coverage:
+  // - Home ML covers if homeScore > awayScore
+  // - Away ML covers if awayScore > homeScore
+  const homeMlCovered = (homeScore, awayScore) => homeScore > awayScore;
+  const awayMlCovered = (homeScore, awayScore) => awayScore > homeScore;
+
+  // --- Render States ---
   if (isLoading) {
     return <div className="lines-loading">Loading lines for 2024...</div>;
   }
@@ -93,21 +145,19 @@ const Lines = () => {
     return <p className="lines-none">No lines data available for 2024.</p>;
   }
 
+  // --- Main Render ---
   return (
     <div className="lines-page">
       <h1 className="lines-title">2024 Betting Odds</h1>
 
       {lines.map((game) => {
-        // For the gradient background
+        // Prepare gradient for the game header
         const homeColor = getTeamColor(game.homeTeam);
         const awayColor = getTeamColor(game.awayTeam);
 
         return (
           <div key={game.id} className="lines-card">
-            {/* 
-              Game Header (Teams, Logos, Score, Start Time)
-              Wrapped in a container for the gradient background
-            */}
+            {/* Gradient Header */}
             <div
               className="game-header-container"
               style={{
@@ -115,6 +165,7 @@ const Lines = () => {
               }}
             >
               <div className="game-header">
+                {/* Home Team Block */}
                 <div className="team-block">
                   <img
                     src={getTeamLogo(game.homeTeam)}
@@ -127,6 +178,7 @@ const Lines = () => {
                   </div>
                 </div>
 
+                {/* Away Team Block */}
                 <div className="team-block">
                   <img
                     src={getTeamLogo(game.awayTeam)}
@@ -139,6 +191,7 @@ const Lines = () => {
                   </div>
                 </div>
 
+                {/* Meta Info (Week, Date) */}
                 <div className="game-meta">
                   <span className="game-week">Week {game.week}</span>
                   <span className="game-date">
@@ -159,12 +212,17 @@ const Lines = () => {
                       className="sportsbook-logo"
                     />
                     <div className="line-details">
+                      {/* Spread */}
                       <span className="spread">
                         <span className="metric-label">
                           Spread: {line.spread !== null ? line.spread : "N/A"}
                         </span>
                         <span className="status">
-                          {line.spread === 3 ? (
+                          {hasCoveredSpread(
+                            line.spread,
+                            game.homeScore,
+                            game.awayScore
+                          ) ? (
                             <>
                               <CheckIcon /> Covered!
                             </>
@@ -175,56 +233,63 @@ const Lines = () => {
                           )}
                         </span>
                       </span>
+
+                      {/* Over/Under */}
                       <span className="over-under">
                         <span className="metric-label">
-                          O/U: {line.overUnder !== null ? line.overUnder : "N/A"}
+                          O/U:{" "}
+                          {line.overUnder !== null ? line.overUnder : "N/A"}
                         </span>
                         <span className="status">
-                          {line.overUnder === 54 ? (
+                          {isOver(line.overUnder, game.homeScore, game.awayScore) ? (
                             <>
-                              <CheckIcon /> Covered!
+                              <CheckIcon /> Over!
                             </>
                           ) : (
                             <>
-                              <CrossIcon /> Not Covered!
+                              <CrossIcon /> Under!
                             </>
                           )}
                         </span>
                       </span>
+
+                      {/* Home ML */}
                       <span className="moneyline">
                         <span className="metric-label">
-                          Home ML:{" "}
+                          {getTeamAbbreviation(game.homeTeam)} ML:{" "}
                           {line.homeMoneyline !== null
                             ? line.homeMoneyline
                             : "N/A"}
                         </span>
                         <span className="status">
-                          {line.homeMoneyline === 130 ? (
+                          {homeMlCovered(game.homeScore, game.awayScore) ? (
                             <>
-                              <CheckIcon /> Covered!
+                              <CheckIcon />
                             </>
                           ) : (
                             <>
-                              <CrossIcon /> Not Covered!
+                              <CrossIcon />
                             </>
                           )}
                         </span>
                       </span>
+
+                      {/* Away ML */}
                       <span className="moneyline">
                         <span className="metric-label">
-                          Away ML:{" "}
+                          {getTeamAbbreviation(game.awayTeam)} ML:{" "}
                           {line.awayMoneyline !== null
                             ? line.awayMoneyline
                             : "N/A"}
                         </span>
                         <span className="status">
-                          {line.awayMoneyline === -150 ? (
+                          {awayMlCovered(game.homeScore, game.awayScore) ? (
                             <>
-                              <CheckIcon /> Covered!
+                              <CheckIcon />
                             </>
                           ) : (
                             <>
-                              <CrossIcon /> Not Covered!
+                              <CrossIcon />
                             </>
                           )}
                         </span>
