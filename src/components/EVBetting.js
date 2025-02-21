@@ -1,31 +1,67 @@
 import React from "react";
 
-const EVBetting = ({ oddsData, getSportsbookLogo }) => {
+const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
   if (!oddsData || oddsData.length === 0) {
     return <p>No positive EV bets available.</p>;
   }
 
   return (
-    <div>
-      <h2>Positive EV Betting Opportunities</h2>
+    <div className="ev-container">
       {oddsData.map((game) => (
-        <div key={game.id} className="ev-game">
-          <h3>
-            {game.homeTeam} vs {game.awayTeam} (Week {game.week})
-          </h3>
-          <div className="odds-list">
-            {game.lines.map((line, index) => (
-              <div key={index} className="odds-item">
-                <img
-                  src={getSportsbookLogo(line.provider)}
-                  alt={line.provider}
-                  className="sportsbook-logo"
-                />
-                <p>
-                  <strong>{line.provider}</strong> - Over/Under: {line.overUnder}, Spread: {line.spread}
-                </p>
-              </div>
-            ))}
+        <div key={game.id} className="game-card">
+          {/* Game Header */}
+          <div className="game-header">
+            <div className="team-info">
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam}
+                className="team-logo"
+              />
+              <span className="team-name">{game.homeTeam}</span>
+            </div>
+            <span className="versus">vs</span>
+            <div className="team-info">
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="team-logo"
+              />
+              <span className="team-name">{game.awayTeam}</span>
+            </div>
+            <div className="game-week">Week {game.week}</div>
+          </div>
+
+          {/* Compare Sportsbooks in a Table */}
+          <div className="odds-comparison">
+            {game.lines.length > 0 ? (
+              <table className="odds-table">
+                <thead>
+                  <tr>
+                    <th>Sportsbook</th>
+                    <th>Over/Under</th>
+                    <th>Spread</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {game.lines.map((line, index) => (
+                    <tr key={index}>
+                      <td className="sportsbook">
+                        <img
+                          src={getSportsbookLogo(line.provider)}
+                          alt={line.provider}
+                          className="sportsbook-logo"
+                        />
+                        {line.provider}
+                      </td>
+                      <td>{line.overUnder}</td>
+                      <td>{line.spread}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No lines available from selected sportsbooks.</p>
+            )}
           </div>
         </div>
       ))}

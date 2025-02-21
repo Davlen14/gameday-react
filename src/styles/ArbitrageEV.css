@@ -190,3 +190,62 @@
     color: #333;
     margin-top: 0.2rem;
   }
+  /* =========================================
+   New Styles for Optimized Game Cards & Comparison Tables
+   ========================================= */
+
+.game-card {
+    background-color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  
+  .team-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .versus {
+    font-style: italic;
+    margin: 0 1rem;
+  }
+  
+  .game-week {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: auto;
+  }
+  
+  .odds-comparison {
+    overflow-x: auto;
+  }
+  
+  .odds-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .odds-table th,
+  .odds-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+    font-family: "Titillium Web", sans-serif;
+  }
+  
+  .odds-table th {
+    background-color: var(--background-color);
+    font-weight: bold;
+  }
