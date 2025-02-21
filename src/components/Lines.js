@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import teamsService from "../services/teamsService";
-import "../styles/Lines.css";
+import "../styles/Lines.css"; // Your custom CSS file
 
-// Modern SVG Icons
+// Modern SVG Components
 const CheckIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="12" r="12" fill="#00C853" />
@@ -23,6 +23,7 @@ const Lines = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch teams and lines data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -59,12 +60,12 @@ const Lines = () => {
     return logos[provider] || "/photos/default_sportsbook.png";
   };
 
-  const hasCovered = (spread, homeScore, awayScore, homeTeam) => {
+  const hasCoveredSpread = (spread, homeScore, awayScore, homeTeam) => {
     const actualMargin = homeScore - awayScore;
     return spread < 0 ? actualMargin > Math.abs(spread) : actualMargin < spread;
   };
 
-  const isOverUnderCovered = (overUnder, homeScore, awayScore) => {
+  const hasCoveredOverUnder = (overUnder, homeScore, awayScore) => {
     return homeScore + awayScore > overUnder;
   };
 
@@ -81,12 +82,22 @@ const Lines = () => {
           {/* Game Header */}
           <div className="game-header">
             <div className="team-block">
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam}
+                className="team-logo"
+              />
               <div className="team-info">
                 <span className="team-name">{game.homeTeam}</span>
                 <span className="team-score">{game.homeScore}</span>
               </div>
             </div>
             <div className="team-block">
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="team-logo"
+              />
               <div className="team-info">
                 <span className="team-name">{game.awayTeam}</span>
                 <span className="team-score">{game.awayScore}</span>
@@ -94,7 +105,9 @@ const Lines = () => {
             </div>
             <div className="game-meta">
               <span className="game-week">Week {game.week}</span>
-              <span className="game-date">{new Date(game.startDate).toLocaleString()}</span>
+              <span className="game-date">
+                {new Date(game.startDate).toLocaleString()}
+              </span>
             </div>
           </div>
 
@@ -103,12 +116,16 @@ const Lines = () => {
             {game.lines && game.lines.length > 0 ? (
               game.lines.map((line, index) => (
                 <div key={index} className="line-item">
-                  <img src={getSportsbookLogo(line.provider)} alt={line.provider} className="sportsbook-logo" />
+                  <img
+                    src={getSportsbookLogo(line.provider)}
+                    alt={line.provider}
+                    className="sportsbook-logo"
+                  />
                   <div className="line-details">
                     <span className="spread">
                       <span className="metric-label">Spread: {line.spread ?? "N/A"}</span>
                       <span className="status">
-                        {hasCovered(line.spread, game.homeScore, game.awayScore, game.homeTeam) ? (
+                        {hasCoveredSpread(line.spread, game.homeScore, game.awayScore, game.homeTeam) ? (
                           <><CheckIcon /> Covered!</>
                         ) : (
                           <><CrossIcon /> Not Covered!</>
@@ -118,7 +135,7 @@ const Lines = () => {
                     <span className="over-under">
                       <span className="metric-label">O/U: {line.overUnder ?? "N/A"}</span>
                       <span className="status">
-                        {isOverUnderCovered(line.overUnder, game.homeScore, game.awayScore) ? (
+                        {hasCoveredOverUnder(line.overUnder, game.homeScore, game.awayScore) ? (
                           <><CheckIcon /> Over!</>
                         ) : (
                           <><CrossIcon /> Under!</>
