@@ -9,3 +9,5 @@ const EVBetting = () => {
     </div>
   );
 };
+
+export default EVBetting;
