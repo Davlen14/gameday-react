@@ -51,21 +51,56 @@ const fetchData = async (query, variables = {}) => {
     return data?.games?.[0] || null;
   };
   
-  // 2. getTeams
-  export const getTeams = async () => {
+// 2. getTeams – using the new currentTeams query
+export const getTeams = async () => {
     const query = `
-      query GetTeams($year: Int!) {
-        teams(where: { year: { _eq: $year }, division: { _eq: "fbs" } }) {
-          id
-          school
+      query CurrentTeams(
+        $limit: Int,
+        $offset: Int,
+        $orderBy: [currentTeamsOrderBy!],
+        $where: currentTeamsBoolExp
+      ) {
+        currentTeams(
+          limit: $limit,
+          offset: $offset,
+          orderBy: $orderBy,
+          where: $where
+        ) {
+          abbreviation
+          classification
           conference
+          conferenceId
+          division
+          school
+          teamId
         }
       }
     `;
-    const variables = { year: 2024 };
+    // Adjust variables as needed; here we filter for FBS teams
+    const variables = {
+      limit: 100,
+      offset: 0,
+      where: { division: { _eq: "fbs" } }
+    };
     const data = await fetchData(query, variables);
-    return data?.teams || [];
+    return data?.currentTeams || [];
   };
+  
+  // 2A. getTeamLogo – using the historicalTeam query to fetch logos
+  export const getTeamLogo = async (school) => {
+    const query = `
+      query HistoricalTeam($where: historicalTeamBoolExp) {
+        historicalTeam(where: $where) {
+          images
+        }
+      }
+    `;
+    // We use the school name to match the historical record
+    const variables = { where: { school: { _eq: school } } };
+    const data = await fetchData(query, variables);
+    return data?.historicalTeam?.[0]?.images || null;
+  };
+  
   
   // 3. getGameMedia
   export const getGameMedia = async (year, queryParam) => {
