@@ -19,7 +19,6 @@ const CrossIcon = () => (
 
 /**
  * Converts a hex color (like "#981e32") to a rough brightness value (0-255).
- * The higher the value, the lighter the color.
  */
 function getColorBrightness(hex) {
   const cleanHex = hex.replace(/^#/, "");
@@ -33,9 +32,8 @@ function getColorBrightness(hex) {
 
 /**
  * Lightens a dark color by a certain amount (0-100).
- * Reduced from 60 to 30 for a more subtle effect.
  */
-function lightenColor(hex, amount = 15) {
+function lightenColor(hex, amount = 5) {
   const cleanHex = hex.replace(/^#/, "");
   let bigint = parseInt(cleanHex, 16);
 
@@ -93,7 +91,7 @@ const Lines = () => {
    * Returns a style object for a given team:
    * {
    *   backgroundColor: "#c4012f" or some adjusted color,
-   *   textColor: "#fff" or "#000",
+   *   textColor: "#fff" or "#3b1f00",
    *   logo: "logo_url.png"
    * }
    */
@@ -126,9 +124,10 @@ const Lines = () => {
       }
     }
 
-    // Decide text color
+    // Decide text color based on final brightness
     const finalBrightness = getColorBrightness(finalColor);
-    const textColor = finalBrightness < 130 ? "#fff" : "#000";
+    // If it's darker, use white; if lighter, use a brown/gray
+    const textColor = finalBrightness < 130 ? "#fff" : "#3b1f00";
 
     // Choose the best logo
     let chosenLogo = "/photos/default_team.png";
@@ -214,9 +213,9 @@ const Lines = () => {
           <div key={game.id} className="lines-card">
             {/* 
               Game Header with 3 sections:
-              1) Left angled color panel for Home (logo + team name)
-              2) Center neutral area (Week, date, *and now the scores*)
-              3) Right angled color panel for Away (logo + team name)
+              1) Left angled color panel for Home
+              2) Center neutral area (Week, date, scores)
+              3) Right angled color panel for Away
             */}
             <div className="game-header">
               {/* Left Panel (Home Team) */}
@@ -244,7 +243,6 @@ const Lines = () => {
                   {new Date(game.startDate).toLocaleString()}
                 </div>
 
-                {/* Move Scores to the White Center, in black, bigger, bold */}
                 <div className="score-block">
                   <span className="score home-score">
                     {game.homeScore}
