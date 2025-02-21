@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Arbitrage from "./Arbitrage";
-import EVBetting from "./EVBetting";
+import { Arbitrage } from "./Arbitrage";
+// Use named import (ensure EVBetting is exported like: export const EVBetting = () => { ... })
+import { EVBetting } from "./EVBetting";
 import "../styles/ArbitrageEV.css"; // Styles for layout
 
 const ArbitrageEV = () => {
