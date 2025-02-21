@@ -86,10 +86,11 @@ export const getGames = async (query) => {
 };
 
 export const getAdvancedBoxScore = async (gameId) => {
-  const endpoint = "/stats/game/advanced";
-  const params = { gameId, year: 2024 };
+  const endpoint = "/game/box/advanced";
+  const params = { id: gameId, year: 2024 };
   return await fetchData(endpoint, params);
 };
+
 
 export const getGameLines = async (year, team = null, seasonType = "regular") => {
     const endpoint = "/lines";
