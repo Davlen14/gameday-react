@@ -39,6 +39,43 @@ const TeamAnalyticsDetail = () => {
     );
   };
 
+  const findTeamExplosiveness = (teamName) => {
+    if (!advancedStats?.teams?.explosiveness) return "N/A";
+    return (
+      advancedStats.teams.explosiveness.find(
+        (item) => item.team.toLowerCase() === teamName.toLowerCase()
+      )?.overall?.total ?? "N/A"
+    );
+  };
+
+  const findTeamRushing = (teamName) => {
+    if (!advancedStats?.teams?.rushing) return null;
+    return advancedStats.teams.rushing.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamHavoc = (teamName) => {
+    if (!advancedStats?.teams?.havoc) return null;
+    return advancedStats.teams.havoc.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamScoring = (teamName) => {
+    if (!advancedStats?.teams?.scoringOpportunities) return null;
+    return advancedStats.teams.scoringOpportunities.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamFieldPosition = (teamName) => {
+    if (!advancedStats?.teams?.fieldPosition) return null;
+    return advancedStats.teams.fieldPosition.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -106,7 +143,6 @@ const TeamAnalyticsDetail = () => {
   // Find advanced stats for home/away by matching team names
   const homeTeamStats = findTeamStatsByName(game.homeTeam);
   const awayTeamStats = findTeamStatsByName(game.awayTeam);
-
   const homeTeamCumulativeStats = findTeamCumulativeStatsByName(game.homeTeam);
   const awayTeamCumulativeStats = findTeamCumulativeStatsByName(game.awayTeam);
 
@@ -117,10 +153,8 @@ const TeamAnalyticsDetail = () => {
   const passingPpaAway = awayTeamStats?.passing?.total ?? "N/A";
   const rushingPpaHome = homeTeamStats?.rushing?.total ?? "N/A";
   const rushingPpaAway = awayTeamStats?.rushing?.total ?? "N/A";
-  const cumulativeOverallHome =
-    homeTeamCumulativeStats?.overall?.total ?? "N/A";
-  const cumulativeOverallAway =
-    awayTeamCumulativeStats?.overall?.total ?? "N/A";
+  const cumulativeOverallHome = homeTeamCumulativeStats?.overall?.total ?? "N/A";
+  const cumulativeOverallAway = awayTeamCumulativeStats?.overall?.total ?? "N/A";
 
   return (
     <div className="team-analytics-page">
@@ -142,9 +176,7 @@ const TeamAnalyticsDetail = () => {
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.awayTeam}</span>
             {game.awayConference && (
-              <span className="scoreboard__conference">
-                {game.awayConference}
-              </span>
+              <span className="scoreboard__conference">{game.awayConference}</span>
             )}
             {game.awayPoints !== undefined && (
               <span className="scoreboard__team-score">{game.awayPoints}</span>
@@ -176,9 +208,7 @@ const TeamAnalyticsDetail = () => {
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.homeTeam}</span>
             {game.homeConference && (
-              <span className="scoreboard__conference">
-                {game.homeConference}
-              </span>
+              <span className="scoreboard__conference">{game.homeConference}</span>
             )}
             {game.homePoints !== undefined && (
               <span className="scoreboard__team-score">{game.homePoints}</span>
@@ -190,7 +220,22 @@ const TeamAnalyticsDetail = () => {
 
       {/* Advanced Box Score Section */}
       <div className="advanced-box-score">
-        <h2>Advanced Box Score</h2>
+        {/* Add a tooltip via the title attribute on the header */}
+        <h2
+          title={`Definitions:
+Overall PPA: Average points per play (overall).
+Passing PPA: Average points per play from passing.
+Rushing PPA: Average points per play from rushing.
+Cumulative Overall PPA: Cumulative overall points per play.
+Success Rates: Overall, standard downs, and passing downs success.
+Explosiveness: Explosive play metric.
+Rushing Metrics: Includes power success, stuff rate, line yards, second level, and open field yards.
+Havoc: Defensive disruption metrics.
+Scoring Opportunities: Number, points, and efficiency.
+Field Position: Average start and predicted points.`}
+        >
+          Advanced Box Score
+        </h2>
         <table className="advanced-box-score__table">
           <thead>
             <tr>
@@ -200,27 +245,195 @@ const TeamAnalyticsDetail = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
+            {/* PPA Metrics */}
+            <tr title="Average points per play (overall)">
               <td>Overall PPA</td>
               <td>{overallPpaHome}</td>
               <td>{overallPpaAway}</td>
             </tr>
-            <tr>
+            <tr title="Points per play from passing">
               <td>Passing PPA</td>
               <td>{passingPpaHome}</td>
               <td>{passingPpaAway}</td>
             </tr>
-            <tr>
+            <tr title="Points per play from rushing">
               <td>Rushing PPA</td>
               <td>{rushingPpaHome}</td>
               <td>{rushingPpaAway}</td>
             </tr>
-            <tr>
+            <tr title="Cumulative overall points per play">
               <td>Cumulative Overall PPA</td>
               <td>{cumulativeOverallHome}</td>
               <td>{cumulativeOverallAway}</td>
             </tr>
-            {/* Add additional rows here for more advanced metrics */}
+            {/* Success Rates */}
+            <tr title="Overall success rate">
+              <td>Success Rate (Overall)</td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
+                )?.overall?.total ?? "N/A"}
+              </td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
+                )?.overall?.total ?? "N/A"}
+              </td>
+            </tr>
+            <tr title="Standard downs success rate">
+              <td>Standard Downs Success</td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
+                )?.standardDowns?.total ?? "N/A"}
+              </td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
+                )?.standardDowns?.total ?? "N/A"}
+              </td>
+            </tr>
+            <tr title="Passing downs success rate">
+              <td>Passing Downs Success</td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.homeTeam.toLowerCase()
+                )?.passingDowns?.total ?? "N/A"}
+              </td>
+              <td>
+                {advancedStats?.teams?.successRates?.find(
+                  (item) =>
+                    item.team.toLowerCase() === game.awayTeam.toLowerCase()
+                )?.passingDowns?.total ?? "N/A"}
+              </td>
+            </tr>
+            {/* Explosiveness */}
+            <tr title="Explosive play metric (overall)">
+              <td>Explosiveness</td>
+              <td>{findTeamExplosiveness(game.homeTeam)}</td>
+              <td>{findTeamExplosiveness(game.awayTeam)}</td>
+            </tr>
+            {/* Rushing Metrics */}
+            {(() => {
+              const homeRushing = findTeamRushing(game.homeTeam);
+              const awayRushing = findTeamRushing(game.awayTeam);
+              return (
+                <>
+                  <tr title="Power success rate">
+                    <td>Rushing - Power Success</td>
+                    <td>{homeRushing?.powerSuccess ?? "N/A"}</td>
+                    <td>{awayRushing?.powerSuccess ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Stuff rate">
+                    <td>Rushing - Stuff Rate</td>
+                    <td>{homeRushing?.stuffRate ?? "N/A"}</td>
+                    <td>{awayRushing?.stuffRate ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Line yards">
+                    <td>Rushing - Line Yards</td>
+                    <td>{homeRushing?.lineYards ?? "N/A"}</td>
+                    <td>{awayRushing?.lineYards ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Line yards average">
+                    <td>Rushing - Line Yards Average</td>
+                    <td>{homeRushing?.lineYardsAverage ?? "N/A"}</td>
+                    <td>{awayRushing?.lineYardsAverage ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Second level yards">
+                    <td>Rushing - Second Level Yards</td>
+                    <td>{homeRushing?.secondLevelYards ?? "N/A"}</td>
+                    <td>{awayRushing?.secondLevelYards ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Second level yards average">
+                    <td>Rushing - Second Level Yards Average</td>
+                    <td>{homeRushing?.secondLevelYardsAverage ?? "N/A"}</td>
+                    <td>{awayRushing?.secondLevelYardsAverage ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Open field yards">
+                    <td>Rushing - Open Field Yards</td>
+                    <td>{homeRushing?.openFieldYards ?? "N/A"}</td>
+                    <td>{awayRushing?.openFieldYards ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Open field yards average">
+                    <td>Rushing - Open Field Yards Average</td>
+                    <td>{homeRushing?.openFieldYardsAverage ?? "N/A"}</td>
+                    <td>{awayRushing?.openFieldYardsAverage ?? "N/A"}</td>
+                  </tr>
+                </>
+              );
+            })()}
+            {/* Havoc */}
+            {(() => {
+              const homeHavoc = findTeamHavoc(game.homeTeam);
+              const awayHavoc = findTeamHavoc(game.awayTeam);
+              return (
+                <>
+                  <tr title="Total havoc">
+                    <td>Havoc - Total</td>
+                    <td>{homeHavoc?.total ?? "N/A"}</td>
+                    <td>{awayHavoc?.total ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Front Seven havoc">
+                    <td>Havoc - Front Seven</td>
+                    <td>{homeHavoc?.frontSeven ?? "N/A"}</td>
+                    <td>{awayHavoc?.frontSeven ?? "N/A"}</td>
+                  </tr>
+                  <tr title="DB havoc">
+                    <td>Havoc - DB</td>
+                    <td>{homeHavoc?.db ?? "N/A"}</td>
+                    <td>{awayHavoc?.db ?? "N/A"}</td>
+                  </tr>
+                </>
+              );
+            })()}
+            {/* Scoring Opportunities */}
+            {(() => {
+              const homeScoring = findTeamScoring(game.homeTeam);
+              const awayScoring = findTeamScoring(game.awayTeam);
+              return (
+                <>
+                  <tr title="Number of scoring opportunities">
+                    <td>Scoring Opportunities</td>
+                    <td>{homeScoring?.opportunities ?? "N/A"}</td>
+                    <td>{awayScoring?.opportunities ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Points scored from scoring opportunities">
+                    <td>Points</td>
+                    <td>{homeScoring?.points ?? "N/A"}</td>
+                    <td>{awayScoring?.points ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Points per opportunity">
+                    <td>Points Per Opportunity</td>
+                    <td>{homeScoring?.pointsPerOpportunity ?? "N/A"}</td>
+                    <td>{awayScoring?.pointsPerOpportunity ?? "N/A"}</td>
+                  </tr>
+                </>
+              );
+            })()}
+            {/* Field Position */}
+            {(() => {
+              const homeField = findTeamFieldPosition(game.homeTeam);
+              const awayField = findTeamFieldPosition(game.awayTeam);
+              return (
+                <>
+                  <tr title="Average starting field position">
+                    <td>Average Start</td>
+                    <td>{homeField?.averageStart ?? "N/A"}</td>
+                    <td>{awayField?.averageStart ?? "N/A"}</td>
+                  </tr>
+                  <tr title="Average starting predicted points">
+                    <td>Starting Predicted Points</td>
+                    <td>{homeField?.averageStartingPredictedPoints ?? "N/A"}</td>
+                    <td>{awayField?.averageStartingPredictedPoints ?? "N/A"}</td>
+                  </tr>
+                </>
+              );
+            })()}
           </tbody>
         </table>
       </div>
