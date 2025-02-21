@@ -122,60 +122,73 @@ const Lines = () => {
               </span>
             </div>
           </div>
-{/* Lines Section */}
-<div className="lines-row">
-  {game.lines && game.lines.length > 0 ? (
-    game.lines.map((line, index) => (
-      <div key={index} className="line-item">
-        {/* Sportsbook Logo */}
-        <div className="sportsbook-logo-container">
-          <img
-            src={getSportsbookLogo(line.provider)}
-            alt={line.provider}
-            className="sportsbook-logo"
-          />
-        </div>
 
-        {/* Line Details */}
-        <div className="line-details">
-          <div className="line-entry">
-            <strong>Spread:</strong> {line.spread !== null ? line.spread : "N/A"}
-            <div className="status">
-              {line.spread === 3 ? <CheckIcon /> : <CrossIcon />}
-              {line.spread === 3 ? "Covered!" : "Not Covered!"}
-            </div>
+          {/* Lines Section */}
+          <div className="lines-row">
+            {game.lines && game.lines.length > 0 ? (
+              game.lines.map((line, index) => (
+                <div key={index} className="line-item">
+                  <img
+                    src={getSportsbookLogo(line.provider)}
+                    alt={line.provider}
+                    className="sportsbook-logo"
+                  />
+                  <div className="line-details">
+                    <span className="spread">
+                      Spread: {line.spread !== null ? line.spread : "N/A"}{" "}
+                      {line.spread === 3 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
+                    </span>
+                    <span className="over-under">
+                      O/U: {line.overUnder !== null ? line.overUnder : "N/A"}{" "}
+                      {line.overUnder === 54 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
+                    </span>
+                    <span className="moneyline">
+                      Home ML: {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}{" "}
+                      {line.homeMoneyline === 130 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
+                    </span>
+                    <span className="moneyline">
+                      Away ML: {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}{" "}
+                      {line.awayMoneyline === -150 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="line-item">No lines available</div>
+            )}
           </div>
-
-          <div className="line-entry">
-            <strong>O/U:</strong> {line.overUnder !== null ? line.overUnder : "N/A"}
-            <div className="status">
-              {line.overUnder === 54 ? <CheckIcon /> : <CrossIcon />}
-              {line.overUnder === 54 ? "Covered!" : "Not Covered!"}
-            </div>
-          </div>
-
-          <div className="line-entry">
-            <strong>Home ML:</strong> {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}
-            <div className="status">
-              {line.homeMoneyline === 130 ? <CheckIcon /> : <CrossIcon />}
-              {line.homeMoneyline === 130 ? "Covered!" : "Not Covered!"}
-            </div>
-          </div>
-
-          <div className="line-entry">
-            <strong>Away ML:</strong> {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}
-            <div className="status">
-              {line.awayMoneyline === -150 ? <CheckIcon /> : <CrossIcon />}
-              {line.awayMoneyline === -150 ? "Covered!" : "Not Covered!"}
-            </div>
-          </div>
-        </div>
-      </div>
-    ))
-  ) : (
-    <div className="line-item">No lines available</div>
-  )}
-</div>
         </div>
       ))}
     </div>
