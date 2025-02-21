@@ -1,15 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Lines.css"; // Your custom CSS file
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 
 // Modernized SVG Components
 const CheckIcon = () => (
@@ -35,21 +26,25 @@ function getColorBrightness(hex) {
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
+  // Simple brightness formula
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
 /**
- * Lightens a dark color by a given amount.
+ * Lightens a dark color by a certain amount (0-100).
  */
-function lightenColor(hex, amount = 15) {
+function lightenColor(hex, amount = 5) {
   const cleanHex = hex.replace(/^#/, "");
   let bigint = parseInt(cleanHex, 16);
+
   let r = (bigint >> 16) & 255;
   let g = (bigint >> 8) & 255;
   let b = bigint & 255;
+
   r = Math.min(255, r + amount);
   g = Math.min(255, g + amount);
   b = Math.min(255, b + amount);
+
   const newColor =
     "#" +
     ((1 << 24) + (r << 16) + (g << 8) + b)
@@ -59,189 +54,27 @@ function lightenColor(hex, amount = 15) {
   return newColor;
 }
 
-/** FILTERS COMPONENT **/
-const FilterBar = ({ filters, setFilters, teams, lines }) => {
-  // Unique years and weeks from lines data
-  const years = useMemo(() => {
-    const ys = new Set(lines.map((g) => new Date(g.startDate).getFullYear()));
-    return Array.from(ys).sort();
-  }, [lines]);
-
-  const weeks = useMemo(() => {
-    const ws = new Set(lines.map((g) => g.week));
-    return Array.from(ws).sort((a, b) => a - b);
-  }, [lines]);
-
-  return (
-    <div className="filter-bar">
-      <label>
-        Year:
-        <select
-          value={filters.year}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, year: e.target.value }))
-          }
-        >
-          <option value="">All</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Week:
-        <select
-          value={filters.week}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, week: e.target.value }))
-          }
-        >
-          <option value="">All</option>
-          {weeks.map((w) => (
-            <option key={w} value={w}>
-              {w}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Team:
-        <select
-          value={filters.team}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, team: e.target.value }))
-          }
-        >
-          <option value="">All</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.school}>
-              {t.school}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
-  );
-};
-
-/** GRAPH COMPONENT **/
-const CoverageChart = ({ games, getTeamAbbreviation, hasCoveredSpread }) => {
-  // Calculate coverage rates for each team from the given games.
-  const coverageData = {};
-  games.forEach((game) => {
-    // For home team
-    const home = game.homeTeam;
-    if (!coverageData[home]) {
-      coverageData[home] = { games: 0, covered: 0 };
-    }
-    coverageData[home].games += 1;
-    if (hasCoveredSpread(
-      game.lines[0]?.spread,
-      game.homeScore,
-      game.awayScore
-    )) {
-      coverageData[home].covered += 1;
-    }
-    // For away team
-    const away = game.awayTeam;
-    if (!coverageData[away]) {
-      coverageData[away] = { games: 0, covered: 0 };
-    }
-    coverageData[away].games += 1;
-    if (!hasCoveredSpread(
-      game.lines[0]?.spread,
-      game.homeScore,
-      game.awayScore
-    )) {
-      // For away team, if home did not cover, away is considered to have "covered"
-      coverageData[away].covered += 1;
-    }
-  });
-  const data = Object.entries(coverageData).map(([team, stats]) => ({
-    team: getTeamAbbreviation(team),
-    coverage: ((stats.covered / stats.games) * 100).toFixed(1),
-  }));
-
-  return (
-    <div className="coverage-chart">
-      <h2>Team Coverage Rates (%)</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
-          <XAxis dataKey="team" />
-          <YAxis label={{ value: "% Covered", angle: -90, position: "insideLeft" }} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="coverage" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-/** BET SIMULATOR COMPONENT (Basic Placeholder) **/
-const BetSimulator = ({ games }) => {
-  const [selectedGames, setSelectedGames] = useState([]);
-  const toggleGame = (gameId) => {
-    setSelectedGames((prev) =>
-      prev.includes(gameId)
-        ? prev.filter((id) => id !== gameId)
-        : [...prev, gameId]
-    );
-  };
-
-  // For simplicity, assume each game has a fixed payout multiplier of 2x
-  const payout =
-    selectedGames.length > 0 ? (2 ** selectedGames.length).toFixed(2) : 0;
-
-  return (
-    <div className="bet-simulator">
-      <h2>Bet Simulator</h2>
-      <p>Select games to build a parlay. Each game doubles your payout!</p>
-      <div className="bet-games">
-        {games.map((game) => (
-          <div key={game.id} className="bet-game">
-            <label>
-              <input
-                type="checkbox"
-                checked={selectedGames.includes(game.id)}
-                onChange={() => toggleGame(game.id)}
-              />
-              {game.homeTeam} vs. {game.awayTeam} (Week {game.week})
-            </label>
-          </div>
-        ))}
-      </div>
-      <div className="bet-payout">
-        <strong>Potential Payout Multiplier: {payout}x</strong>
-      </div>
-    </div>
-  );
-};
-
 const Lines = () => {
   const [lines, setLines] = useState([]);
   const [teams, setTeams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Filters: year, week, team
-  const [filters, setFilters] = useState({
-    year: "",
-    week: "",
-    team: "",
-  });
 
   // Fetch teams and lines data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+
+        // Only fetch teams if we haven't loaded them yet
         if (teams.length === 0) {
           const teamsData = await teamsService.getTeams();
           setTeams(teamsData);
         }
+
+        // Fetch lines for 2024 regular season
         const response = await teamsService.getGameLines(2024, null, "regular");
+        // Sort games by week so they appear in ascending order
         const sortedLines = response.sort((a, b) => a.week - b.week);
         setLines(sortedLines);
       } catch (err) {
@@ -250,16 +83,23 @@ const Lines = () => {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, [teams.length]);
 
   /**
-   * Returns a style object for a given team.
+   * Returns a style object for a given team:
+   * {
+   *   backgroundColor: "#c4012f" or some adjusted color,
+   *   textColor: "#fff" or "#3b1f00",
+   *   logo: "logo_url.png"
+   * }
    */
   const getTeamStyle = (teamName) => {
     const matchedTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
     );
+
     if (!matchedTeam) {
       return {
         backgroundColor: "#ccc",
@@ -267,9 +107,13 @@ const Lines = () => {
         logo: "/photos/default_team.png",
       };
     }
+
     let { color, alternateColor, logos } = matchedTeam;
     if (!color) color = "#ccc";
+
     const brightness = getColorBrightness(color);
+
+    // If color is too dark (<80?), lighten or use alt
     let finalColor = color;
     if (brightness < 80) {
       if (alternateColor) {
@@ -279,16 +123,22 @@ const Lines = () => {
         finalColor = lightenColor(color, 30);
       }
     }
+
+    // Decide text color based on final brightness
     const finalBrightness = getColorBrightness(finalColor);
+    // If it's darker, use white; if lighter, use a brown/gray
     const textColor = finalBrightness < 130 ? "#fff" : "#3b1f00";
+
+    // Choose the best logo
     let chosenLogo = "/photos/default_team.png";
     if (logos && logos.length > 0) {
       if (finalBrightness < 130 && logos.length > 1) {
-        chosenLogo = logos[1];
+        chosenLogo = logos[1]; // e.g. the darker version
       } else {
         chosenLogo = logos[0];
       }
     }
+
     return {
       backgroundColor: finalColor,
       textColor,
@@ -314,14 +164,16 @@ const Lines = () => {
 
   // --- Betting Logic Helpers ---
   const hasCoveredSpread = (spread, homeScore, awayScore) => {
-    if (spread == null) return false;
+    if (spread == null) return false; // No spread data
     const margin = homeScore - awayScore;
+
     if (spread < 0) {
       return margin > Math.abs(spread);
     } else if (spread > 0) {
       const awayMargin = awayScore - homeScore;
       return awayMargin > spread;
     } else {
+      // spread == 0 => "pick 'em"
       return homeScore !== awayScore;
     }
   };
@@ -335,54 +187,38 @@ const Lines = () => {
   const homeMlCovered = (homeScore, awayScore) => homeScore > awayScore;
   const awayMlCovered = (homeScore, awayScore) => awayScore > homeScore;
 
-  // --- Filtering Logic ---
-  const filteredLines = lines.filter((game) => {
-    const gameYear = new Date(game.startDate).getFullYear().toString();
-    const matchYear = filters.year ? gameYear === filters.year : true;
-    const matchWeek = filters.week ? game.week.toString() === filters.week : true;
-    const matchTeam =
-      filters.team
-        ? game.homeTeam.toLowerCase().includes(filters.team.toLowerCase()) ||
-          game.awayTeam.toLowerCase().includes(filters.team.toLowerCase())
-        : true;
-    return matchYear && matchWeek && matchTeam;
-  });
-
   // --- Render States ---
   if (isLoading) {
     return <div className="lines-loading">Loading lines for 2024...</div>;
   }
+
   if (error) {
     return <div className="lines-error">Error: {error}</div>;
   }
+
   if (lines.length === 0) {
     return <p className="lines-none">No lines data available for 2024.</p>;
   }
 
+  // --- Main Render ---
   return (
     <div className="lines-page">
       <h1 className="lines-title">2024 Betting Odds</h1>
 
-      {/* Filter Bar */}
-      <FilterBar filters={filters} setFilters={setFilters} teams={teams} lines={lines} />
-
-      {/* Coverage Chart */}
-      <CoverageChart
-        games={filteredLines}
-        getTeamAbbreviation={getTeamAbbreviation}
-        hasCoveredSpread={hasCoveredSpread}
-      />
-
-      {/* Bet Simulator */}
-      <BetSimulator games={filteredLines} />
-
-      {/* Lines List */}
-      {filteredLines.map((game) => {
+      {lines.map((game) => {
         const homeStyle = getTeamStyle(game.homeTeam);
         const awayStyle = getTeamStyle(game.awayTeam);
+
         return (
           <div key={game.id} className="lines-card">
+            {/* 
+              Game Header with 3 sections:
+              1) Left angled color panel for Home
+              2) Center neutral area (Week, date, scores)
+              3) Right angled color panel for Away
+            */}
             <div className="game-header">
+              {/* Left Panel (Home Team) */}
               <div
                 className="team-home-panel"
                 style={{
@@ -399,16 +235,25 @@ const Lines = () => {
                   <span className="team-name">{game.homeTeam}</span>
                 </div>
               </div>
+
+              {/* Center Info (Neutral) */}
               <div className="game-center">
                 <div className="game-week">Week {game.week}</div>
                 <div className="game-date">
                   {new Date(game.startDate).toLocaleString()}
                 </div>
+
                 <div className="score-block">
-                  <span className="score home-score">{game.homeScore}</span>
-                  <span className="score away-score">{game.awayScore}</span>
+                  <span className="score home-score">
+                    {game.homeScore}
+                  </span>
+                  <span className="score away-score">
+                    {game.awayScore}
+                  </span>
                 </div>
               </div>
+
+              {/* Right Panel (Away Team) */}
               <div
                 className="team-away-panel"
                 style={{
@@ -426,6 +271,8 @@ const Lines = () => {
                 </div>
               </div>
             </div>
+
+            {/* Lines Section */}
             <div className="lines-row">
               {game.lines && game.lines.length > 0 ? (
                 game.lines.map((line, index) => (
@@ -436,6 +283,7 @@ const Lines = () => {
                       className="sportsbook-logo"
                     />
                     <div className="line-details">
+                      {/* Spread */}
                       <span className="spread">
                         <span className="metric-label">
                           Spread: {line.spread ?? "N/A"}
@@ -456,6 +304,8 @@ const Lines = () => {
                           )}
                         </span>
                       </span>
+
+                      {/* Over/Under */}
                       <span className="over-under">
                         <span className="metric-label">
                           O/U: {line.overUnder ?? "N/A"}
@@ -472,6 +322,8 @@ const Lines = () => {
                           )}
                         </span>
                       </span>
+
+                      {/* Home ML */}
                       <span className="moneyline">
                         <span className="metric-label">
                           {getTeamAbbreviation(game.homeTeam)} ML:{" "}
@@ -489,6 +341,8 @@ const Lines = () => {
                           )}
                         </span>
                       </span>
+
+                      {/* Away ML */}
                       <span className="moneyline">
                         <span className="metric-label">
                           {getTeamAbbreviation(game.awayTeam)} ML:{" "}
