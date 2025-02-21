@@ -1,7 +1,21 @@
-// Lines.js
 import React, { useEffect, useState } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Lines.css"; // Your custom CSS file
+
+// SVG Components for status icons
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="8" cy="8" r="8" fill="green" />
+    <path d="M4 8l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CrossIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="8" cy="8" r="8" fill="red" />
+    <path d="M5 5l6 6M11 5l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
 
 const Lines = () => {
   const [lines, setLines] = useState([]);
@@ -121,22 +135,52 @@ const Lines = () => {
                   />
                   <div className="line-details">
                     <span className="spread">
-                      Spread: {line.spread !== null ? line.spread : "N/A"}
+                      Spread: {line.spread !== null ? line.spread : "N/A"}{" "}
+                      {line.spread === 3 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
                     </span>
                     <span className="over-under">
-                      O/U: {line.overUnder !== null ? line.overUnder : "N/A"}
+                      O/U: {line.overUnder !== null ? line.overUnder : "N/A"}{" "}
+                      {line.overUnder === 54 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
                     </span>
                     <span className="moneyline">
-                      Home ML:{" "}
-                      {line.homeMoneyline !== null
-                        ? line.homeMoneyline
-                        : "N/A"}
+                      Home ML: {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}{" "}
+                      {line.homeMoneyline === 130 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
                     </span>
                     <span className="moneyline">
-                      Away ML:{" "}
-                      {line.awayMoneyline !== null
-                        ? line.awayMoneyline
-                        : "N/A"}
+                      Away ML: {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}{" "}
+                      {line.awayMoneyline === -150 ? (
+                        <span className="status">
+                          <CheckIcon /> Covered!
+                        </span>
+                      ) : (
+                        <span className="status">
+                          <CrossIcon /> Not Covered!
+                        </span>
+                      )}
                     </span>
                   </div>
                 </div>
