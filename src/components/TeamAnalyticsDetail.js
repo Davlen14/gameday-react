@@ -37,6 +37,14 @@ const TeamAnalyticsDetail = () => {
     return team && team.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
+  // Helper to get team abbreviation
+  const getTeamAbbreviation = (teamName) => {
+    const team = teamsList.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.abbreviation ? team.abbreviation : teamName;
+  };
+
   // New helper to get team color from teamsList data
   const getTeamColor = (teamName) => {
     const team = teamsList.find(
@@ -95,6 +103,30 @@ const TeamAnalyticsDetail = () => {
     if (!advancedStats?.teams?.fieldPosition) return null;
     return advancedStats.teams.fieldPosition.find(
       (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  // Custom Legend for Advanced Box Score (shows team logo and abbreviation)
+  const renderCustomLegend = () => {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <img
+            src={getTeamLogo(game.homeTeam)}
+            alt={game.homeTeam}
+            style={{ width: 20, height: 20, objectFit: "contain" }}
+          />
+          <span>{getTeamAbbreviation(game.homeTeam)}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <img
+            src={getTeamLogo(game.awayTeam)}
+            alt={game.awayTeam}
+            style={{ width: 20, height: 20, objectFit: "contain" }}
+          />
+          <span>{getTeamAbbreviation(game.awayTeam)}</span>
+        </div>
+      </div>
     );
   };
 
@@ -293,7 +325,7 @@ Higher values generally indicate more efficient and effective plays.
             <XAxis dataKey="metric" />
             <YAxis />
             <Tooltip />
-            <Legend />
+            <Legend content={renderCustomLegend} />
             <Bar dataKey="Home" fill={homeTeamColor ? homeTeamColor : "#002244"} />
             <Bar dataKey="Away" fill={awayTeamColor ? awayTeamColor : "#008E97"} />
             <Line type="monotone" dataKey="Home" stroke={homeTeamColor ? homeTeamColor : "#002244"} />
