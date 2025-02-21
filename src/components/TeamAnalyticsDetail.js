@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import { useParams, useLocation } from "react-router-dom"; // Fixed import for useLocation
 import "../styles/TeamAnalyticsDetail.css"; // Import your custom CSS
-// Import Recharts components
+// Import Recharts components (added Cell for custom fills)
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -12,7 +12,8 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  CartesianGrid
+  CartesianGrid,
+  Cell
 } from "recharts";
 
 const TeamAnalyticsDetail = () => {
@@ -326,7 +327,20 @@ Higher values generally indicate more efficient and effective plays.
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="Usage" stackId="a" fill="#8884d8" />
+              <Bar dataKey="Usage" stackId="a">
+                {playerUsageData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      entry.team === game.homeTeam
+                        ? homeColor
+                        : entry.team === game.awayTeam
+                        ? awayColor
+                        : "#8884d8"
+                    }
+                  />
+                ))}
+              </Bar>
               <Bar dataKey="Rushing" stackId="a" fill="#82ca9d" />
               <Bar dataKey="Passing" stackId="a" fill="#ffc658" />
               <Line type="monotone" dataKey="Usage" stroke="#8884d8" />
