@@ -1,0 +1,183 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  /* Modal Header */
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+  }
+  
+  .game-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .team-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .team-name {
+    font-weight: bold;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+  }
+  
+  .versus {
+    font-style: italic;
+    font-size: 1.2rem;
+  }
+  
+  .game-week {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  /* Close Button */
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+  }
+  
+  /* Modal Body */
+  .modal-body {
+    margin-top: 20px;
+  }
+  
+  /* Arbitrage Calculator */
+  .arbitrage-calculator h3 {
+    margin-bottom: 10px;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+  }
+  
+  .pair-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  
+  .pair-item {
+    flex: 1;
+    background: var(--background-color);
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .sportsbook-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    margin-bottom: 5px;
+  }
+  
+  .arbitrage-condition {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  /* Stake Input */
+  .stake-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .stake-input input {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    width: 100px;
+  }
+  
+  /* Calculation Results */
+  .calculation-results p {
+    margin: 5px 0;
+    font-family: "Titillium Web", sans-serif;
+  }
+  
+  /* Modal Footer */
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+    margin-top: 20px;
+  }
+  
+  .place-bet-button,
+  .close-button-footer {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    cursor: pointer;
+  }
+  
+  .place-bet-button {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+  }
+  
+  .place-bet-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .close-button-footer {
+    background-color: #eee;
+    color: var(--text-color);
+  }
+  
+  /* Animation */
+  @keyframes slideDown {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }

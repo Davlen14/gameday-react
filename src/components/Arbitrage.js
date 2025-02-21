@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
+import ArbitrageModal from "./ArbitrageModal";
 
 const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  const openModal = (game) => {
+    setSelectedGame(game);
+  };
+
+  const closeModal = () => {
+    setSelectedGame(null);
+  };
+
   if (!oddsData || oddsData.length === 0) {
     return <p>No arbitrage opportunities available.</p>;
   }
@@ -8,7 +19,12 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
   return (
     <div className="arbitrage-container">
       {oddsData.map((game) => (
-        <div key={game.id} className="game-card">
+        <div
+          key={game.id}
+          className="game-card"
+          onClick={() => openModal(game)}
+          style={{ cursor: "pointer" }}
+        >
           {/* Game Header with Team Logos */}
           <div className="game-header">
             <div className="team-info">
@@ -65,6 +81,14 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
           </div>
         </div>
       ))}
+      {selectedGame && (
+        <ArbitrageModal
+          game={selectedGame}
+          onClose={closeModal}
+          getTeamLogo={getTeamLogo}
+          getSportsbookLogo={getSportsbookLogo}
+        />
+      )}
     </div>
   );
 };
