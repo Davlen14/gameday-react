@@ -127,7 +127,8 @@
 
 .scoreboard-tv-icon {
     font-size: 14px;
-    color: #e53935;
+    font-weight: 200;
+    color: #000000;
 }
 
 .scoreboard-tv-network {
@@ -170,6 +171,13 @@
     font-weight: 600;
     color: #888;
 }
+
+.scoreboard-game-time {
+    font-weight: 400;
+    color: #000;
+    font-size: 10px;
+  }
+
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
