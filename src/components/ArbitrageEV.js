@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Arbitrage from "./Arbitrage";
 import EVBetting from "./EVBetting";
-import "./ArbitrageEV.css"; // Styles for layout
+import "./styles/ArbitrageEV.css"; // Styles for layout
 
 const ArbitrageEV = () => {
   const [activeTab, setActiveTab] = useState("arbitrage");
