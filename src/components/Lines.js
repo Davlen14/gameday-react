@@ -22,26 +22,20 @@ const CrossIcon = () => (
  * The higher the value, the lighter the color.
  */
 function getColorBrightness(hex) {
-  // Strip "#" if present
   const cleanHex = hex.replace(/^#/, "");
-
-  // Parse r, g, b
   const bigint = parseInt(cleanHex, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
-
   // Simple brightness formula
-  // (There are more advanced formulas, but this is a good start)
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
 /**
  * Lightens a dark color by a certain amount (0-100).
- * Very simplistic approach for demonstration.
+ * Reduced from 60 to 30 for a more subtle effect.
  */
 function lightenColor(hex, amount = 30) {
-  // Convert hex to RGB
   const cleanHex = hex.replace(/^#/, "");
   let bigint = parseInt(cleanHex, 16);
 
@@ -49,12 +43,10 @@ function lightenColor(hex, amount = 30) {
   let g = (bigint >> 8) & 255;
   let b = bigint & 255;
 
-  // Increase each channel by 'amount', clamp to 255
   r = Math.min(255, r + amount);
   g = Math.min(255, g + amount);
   b = Math.min(255, b + amount);
 
-  // Reassemble into hex
   const newColor =
     "#" +
     ((1 << 24) + (r << 16) + (g << 8) + b)
@@ -102,11 +94,10 @@ const Lines = () => {
    * {
    *   backgroundColor: "#c4012f" or some adjusted color,
    *   textColor: "#fff" or "#000",
-   *   logo: "logo_url.png" (maybe the secondary logo if color is dark)
+   *   logo: "logo_url.png"
    * }
    */
   const getTeamStyle = (teamName) => {
-    // Find the team
     const matchedTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
     );
@@ -119,38 +110,31 @@ const Lines = () => {
       };
     }
 
-    // Grab the primary color & alt color
     let { color, alternateColor, logos } = matchedTeam;
     if (!color) color = "#ccc";
 
-    // Determine brightness
     const brightness = getColorBrightness(color);
 
-    // If color is too dark (<128?), we can either lighten it or use alternateColor
+    // If color is too dark (<80?), lighten or use alt
     let finalColor = color;
     if (brightness < 80) {
-      // Let's see if we have an alternateColor
       if (alternateColor) {
-        // Check if alt color is lighter
         const altBrightness = getColorBrightness(alternateColor);
-        // If alt is significantly brighter, use it, otherwise lighten the original
-        finalColor = altBrightness > 100 ? alternateColor : lightenColor(color, 60);
+        finalColor = altBrightness > 100 ? alternateColor : lightenColor(color, 30);
       } else {
-        // No alt color, so lighten the original
-        finalColor = lightenColor(color, 60);
+        finalColor = lightenColor(color, 30);
       }
     }
 
-    // Now decide on text color based on finalColor
+    // Decide text color
     const finalBrightness = getColorBrightness(finalColor);
     const textColor = finalBrightness < 130 ? "#fff" : "#000";
 
-    // Decide which logo to use (if we have a second one for dark backgrounds, e.g. the '-dark' version)
+    // Choose the best logo
     let chosenLogo = "/photos/default_team.png";
     if (logos && logos.length > 0) {
-      // If finalColor is dark, maybe use logos[1] if it exists
       if (finalBrightness < 130 && logos.length > 1) {
-        chosenLogo = logos[1];
+        chosenLogo = logos[1]; // e.g. the darker version
       } else {
         chosenLogo = logos[0];
       }
@@ -163,9 +147,6 @@ const Lines = () => {
     };
   };
 
-  /**
-   * Return a team's abbreviation or the full team name if abbreviation not found
-   */
   const getTeamAbbreviation = (teamName) => {
     const matchedTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -173,9 +154,6 @@ const Lines = () => {
     return matchedTeam?.abbreviation || teamName;
   };
 
-  /**
-   * Return a sportsbook logo by provider name, or a default if not found
-   */
   const getSportsbookLogo = (provider) => {
     const logos = {
       DraftKings: "/photos/draftkings.png",
@@ -191,15 +169,12 @@ const Lines = () => {
     const margin = homeScore - awayScore;
 
     if (spread < 0) {
-      // Home favored by abs(spread)
       return margin > Math.abs(spread);
     } else if (spread > 0) {
-      // Away favored
       const awayMargin = awayScore - homeScore;
       return awayMargin > spread;
     } else {
       // spread == 0 => "pick 'em"
-      // Covered if there's a winner (not a tie)
       return homeScore !== awayScore;
     }
   };
@@ -232,7 +207,6 @@ const Lines = () => {
       <h1 className="lines-title">2024 Betting Odds</h1>
 
       {lines.map((game) => {
-        // Use getTeamStyle for both home & away
         const homeStyle = getTeamStyle(game.homeTeam);
         const awayStyle = getTeamStyle(game.awayTeam);
 
@@ -240,9 +214,9 @@ const Lines = () => {
           <div key={game.id} className="lines-card">
             {/* 
               Game Header with 3 sections:
-              1) Left angled color panel for Home
-              2) Center neutral area for game date/time
-              3) Right angled color panel for Away
+              1) Left angled color panel for Home (logo + team name)
+              2) Center neutral area (Week, date, *and now the scores*)
+              3) Right angled color panel for Away (logo + team name)
             */}
             <div className="game-header">
               {/* Left Panel (Home Team) */}
@@ -260,7 +234,6 @@ const Lines = () => {
                 />
                 <div className="team-text">
                   <span className="team-name">{game.homeTeam}</span>
-                  <span className="team-score">{game.homeScore}</span>
                 </div>
               </div>
 
@@ -269,6 +242,16 @@ const Lines = () => {
                 <div className="game-week">Week {game.week}</div>
                 <div className="game-date">
                   {new Date(game.startDate).toLocaleString()}
+                </div>
+
+                {/* Move Scores to the White Center, in black, bigger, bold */}
+                <div className="score-block">
+                  <span className="score home-score">
+                    {game.homeScore}
+                  </span>
+                  <span className="score away-score">
+                    {game.awayScore}
+                  </span>
                 </div>
               </div>
 
@@ -287,7 +270,6 @@ const Lines = () => {
                 />
                 <div className="team-text">
                   <span className="team-name">{game.awayTeam}</span>
-                  <span className="team-score">{game.awayScore}</span>
                 </div>
               </div>
             </div>

@@ -61,15 +61,28 @@
 }
 
 /* Center neutral section for game date/week info */
+/* Example styling for the new score-block in the center */
 .game-center {
-    width: 40%; /* middle chunk */
     background: #fff; /* neutral background */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #333;
-}
+  }
+  
+  .score-block {
+    display: flex;
+    gap: 20px; /* space between home/away scores */
+    margin-top: 10px;
+  }
+  
+  /* The score itself */
+  .score {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: bold;
+    font-size: 1.5rem; /* bigger text */
+    color: #000;      /* black */
+  }
 
 /* Right angled panel for the away team */
 .team-away-panel {
