@@ -40,6 +40,13 @@
     align-items: center;
     margin-bottom: 15px;
   }
+  .moneyline-team-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    border-radius: 6px;
+    margin-right: 5px;
+  }
   
   .team-block {
     display: flex;
@@ -114,9 +121,9 @@
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 50%; /* Round logos */
+    border-radius: 6px; /* Changed from 50% to 6px for slightly rounded square */
     margin-right: 10px;
-  }
+}
   
   /* Line details (spread, O/U, ML) */
   .line-details {
