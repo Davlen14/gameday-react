@@ -136,3 +136,47 @@
   font-size: 20px;
   font-weight: 600;
 }
+
+/* Advanced Box Score Section */
+.advanced-box-score {
+  margin: 20px auto;
+  max-width: 1400px;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.advanced-box-score h2 {
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.advanced-box-score__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.advanced-box-score__table th,
+.advanced-box-score__table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+  font-size: 14px;
+}
+
+.advanced-box-score__table th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+}
+
+.advanced-box-score__table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.advanced-box-score__table tr:hover {
+  background-color: #f1f1f1;
+}

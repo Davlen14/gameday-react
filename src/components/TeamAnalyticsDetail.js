@@ -12,6 +12,7 @@ const TeamAnalyticsDetail = () => {
   const [teamsList, setTeamsList] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [game, setGame] = useState(null);
+  const [advancedStats, setAdvancedStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -51,6 +52,10 @@ const TeamAnalyticsDetail = () => {
           throw new Error("Game not found");
         }
         setGame(foundGame);
+
+        // 5. Fetch advanced box score stats using your service file
+        const advancedData = await teamsService.getStatsGameAdvanced(gameId, 2024);
+        setAdvancedStats(advancedData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -81,7 +86,18 @@ const TeamAnalyticsDetail = () => {
   const homeLogo = getTeamLogo(game.homeTeam);
   const awayLogo = getTeamLogo(game.awayTeam);
   const gameDate = new Date(game.date).toLocaleDateString();
-  const gameTime = game.time || "TBD"; // Adjust if your API uses a different property
+  const gameTime = game.time || "TBD";
+
+  // Extract advanced box score metrics using optional chaining
+  // (Adjust these keys if your API returns a different structure)
+  const overallPpaHome = advancedStats?.teams?.ppa?.[0]?.overall?.total;
+  const overallPpaAway = advancedStats?.teams?.ppa?.[1]?.overall?.total;
+  const passingPpaHome = advancedStats?.teams?.ppa?.[0]?.passing?.total;
+  const passingPpaAway = advancedStats?.teams?.ppa?.[1]?.passing?.total;
+  const rushingPpaHome = advancedStats?.teams?.ppa?.[0]?.rushing?.total;
+  const rushingPpaAway = advancedStats?.teams?.ppa?.[1]?.rushing?.total;
+  const cumulativeOverallHome = advancedStats?.teams?.cumulativePpa?.[0]?.overall?.total;
+  const cumulativeOverallAway = advancedStats?.teams?.cumulativePpa?.[1]?.overall?.total;
 
   return (
     <div className="team-analytics-page">
@@ -92,41 +108,29 @@ const TeamAnalyticsDetail = () => {
           className="scoreboard__color-bar scoreboard__color-bar--left"
           style={{ backgroundColor: awayColor }}
         />
-
         {/* Home Color Bar */}
         <div
           className="scoreboard__color-bar scoreboard__color-bar--right"
           style={{ backgroundColor: homeColor }}
         />
-
         {/* Away Team */}
         <div className="scoreboard__team scoreboard__team--away">
-          <img
-            src={awayLogo}
-            alt={game.awayTeam}
-            className="scoreboard__logo"
-          />
+          <img src={awayLogo} alt={game.awayTeam} className="scoreboard__logo" />
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.awayTeam}</span>
             {game.awayConference && (
-              <span className="scoreboard__conference">
-                {game.awayConference}
-              </span>
+              <span className="scoreboard__conference">{game.awayConference}</span>
             )}
             {game.awayPoints !== undefined && (
-              <span className="scoreboard__team-score">
-                {game.awayPoints}
-              </span>
+              <span className="scoreboard__team-score">{game.awayPoints}</span>
             )}
           </div>
         </div>
-
         {/* Game Info (Center) */}
         <div className="scoreboard__center">
           <div className="scoreboard__date">{gameDate}</div>
           <div className="scoreboard__time">{gameTime}</div>
           <div className="scoreboard__venue">{game.venue}</div>
-          {/* Display additional game media info */}
           {(game.mediaType || game.outlet) && (
             <div className="scoreboard__media">
               <span className="scoreboard__media-text">
@@ -134,7 +138,6 @@ const TeamAnalyticsDetail = () => {
               </span>
             </div>
           )}
-          {/* Display season details if available */}
           {(game.season || game.week || game.seasonType) && (
             <div className="scoreboard__season">
               <span>
@@ -143,28 +146,56 @@ const TeamAnalyticsDetail = () => {
             </div>
           )}
         </div>
-
         {/* Home Team */}
         <div className="scoreboard__team scoreboard__team--home">
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.homeTeam}</span>
             {game.homeConference && (
-              <span className="scoreboard__conference">
-                {game.homeConference}
-              </span>
+              <span className="scoreboard__conference">{game.homeConference}</span>
             )}
             {game.homePoints !== undefined && (
-              <span className="scoreboard__team-score">
-                {game.homePoints}
-              </span>
+              <span className="scoreboard__team-score">{game.homePoints}</span>
             )}
           </div>
-          <img
-            src={homeLogo}
-            alt={game.homeTeam}
-            className="scoreboard__logo"
-          />
+          <img src={homeLogo} alt={game.homeTeam} className="scoreboard__logo" />
         </div>
+      </div>
+
+      {/* Advanced Box Score Section */}
+      <div className="advanced-box-score">
+        <h2>Advanced Box Score</h2>
+        <table className="advanced-box-score__table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>{game.homeTeam}</th>
+              <th>{game.awayTeam}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Overall PPA</td>
+              <td>{overallPpaHome}</td>
+              <td>{overallPpaAway}</td>
+            </tr>
+            <tr>
+              <td>Passing PPA</td>
+              <td>{passingPpaHome}</td>
+              <td>{passingPpaAway}</td>
+            </tr>
+            <tr>
+              <td>Rushing PPA</td>
+              <td>{rushingPpaHome}</td>
+              <td>{rushingPpaAway}</td>
+            </tr>
+            <tr>
+              <td>Cumulative Overall PPA</td>
+              <td>{cumulativeOverallHome}</td>
+              <td>{cumulativeOverallAway}</td>
+            </tr>
+            {/* You can add additional rows here for more advanced metrics */}
+          </tbody>
+        </table>
       </div>
 
       {/* Additional Dashboard Content */}
