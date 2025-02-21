@@ -6,107 +6,107 @@
     max-width: 1200px;
     margin: 20px auto;
     font-family: "Arial", sans-serif;
-  }
-  
-  .lines-title {
+}
+
+.lines-title {
     text-align: center;
     font-size: 2rem;
     margin-bottom: 30px;
-  }
-  
-  /* Loading/Error/No data states */
-  .lines-loading,
-  .lines-error,
-  .lines-none {
+}
+
+/* Loading/Error/No data states */
+.lines-loading,
+.lines-error,
+.lines-none {
     text-align: center;
     margin-top: 40px;
     font-size: 1.2rem;
-  }
-  
-  /* Each game card */
-  .lines-card {
+}
+
+/* Each game card */
+.lines-card {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     padding: 20px;
-  }
-  
-  /* Header with team info */
-  .game-header {
+}
+
+/* Header with team info */
+.game-header {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-  }
-  .moneyline-team-logo {
+}
+.moneyline-team-logo {
     width: 30px;
     height: 30px;
     object-fit: contain;
     border-radius: 6px;
     margin-right: 5px;
-  }
-  
-  .team-block {
+}
+
+.team-block {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-  }
-  
-  .team-logo {
+}
+
+.team-logo {
     width: 50px;
     height: 50px;
     object-fit: contain;
     border-radius: 8px; /* Rounded edges for a modern look */
     margin-right: 10px;
-  }
-  
-  .team-info {
+}
+
+.team-info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-  }
-  
-  .team-name {
+}
+
+.team-name {
     font-weight: bold;
     font-size: 1.1rem;
-  }
-  
-  .team-score {
+}
+
+.team-score {
     font-size: 0.9rem;
     color: #555;
     margin-top: 4px;
-  }
-  
-  /* Meta info (week, date/time) */
-  .game-meta {
+}
+
+/* Meta info (week, date/time) */
+.game-meta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-  }
-  
-  .game-week {
+}
+
+.game-week {
     font-weight: bold;
     margin-bottom: 4px;
-  }
-  
-  .game-date {
+}
+
+.game-date {
     font-size: 0.9rem;
     color: #888;
-  }
-  
-  /* Lines row */
-  .lines-row {
+}
+
+/* Lines row */
+.lines-row {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
     border-top: 1px solid #eee;
     padding-top: 15px;
-  }
-  
-  /* Single line item */
-  .line-item {
+}
+
+/* Single line item */
+.line-item {
     display: flex;
     align-items: center;
     background-color: #fafafa;
@@ -115,46 +115,64 @@
     min-width: 220px;
     flex: 1 1 220px;
     box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
-  }
-  
-  .sportsbook-logo {
+}
+
+.sportsbook-logo {
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 6px; /* Changed from 50% to 6px for slightly rounded square */
+    border-radius: 6px; /* Slightly rounded square */
     margin-right: 10px;
 }
-  
-  /* Line details (spread, O/U, ML) */
-  .line-details {
+
+/* Line details (spread, O/U, ML) */
+.line-details {
     display: flex;
     flex-direction: column;
     font-size: 0.9rem;
-  }
-  
-  .line-details .spread,
-  .line-details .over-under,
-  .line-details .moneyline {
+}
+.line-details .spread,
+.line-details .over-under,
+.line-details .moneyline {
     margin: 2px 0;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
+}
+
+/* Align metric label and status correctly */
+.line-details span.spread,
+.line-details span.over-under,
+.line-details span.moneyline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.line-details .metric-label {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.line-details .status {
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
     .game-header {
-      flex-direction: column;
-      align-items: flex-start;
+        flex-direction: column;
+        align-items: flex-start;
     }
-  
+
     .team-block {
-      margin-bottom: 8px;
+        margin-bottom: 8px;
     }
-  
+
     .game-meta {
-      align-items: flex-start;
-      margin-top: 8px;
+        align-items: flex-start;
+        margin-top: 8px;
     }
-  
+
     .lines-row {
-      flex-direction: column;
+        flex-direction: column;
     }
-  }
+}

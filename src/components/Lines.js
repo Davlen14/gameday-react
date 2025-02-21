@@ -135,52 +135,68 @@ const Lines = () => {
                   />
                   <div className="line-details">
                     <span className="spread">
-                      Spread: {line.spread !== null ? line.spread : "N/A"}{" "}
-                      {line.spread === 3 ? (
-                        <span className="status">
-                          <CheckIcon /> Covered!
-                        </span>
-                      ) : (
-                        <span className="status">
-                          <CrossIcon /> Not Covered!
-                        </span>
-                      )}
+                      <span className="metric-label">
+                        Spread: {line.spread !== null ? line.spread : "N/A"}
+                      </span>
+                      <span className="status">
+                        {line.spread === 3 ? (
+                          <>
+                            <CheckIcon /> Covered!
+                          </>
+                        ) : (
+                          <>
+                            <CrossIcon /> Not Covered!
+                          </>
+                        )}
+                      </span>
                     </span>
                     <span className="over-under">
-                      O/U: {line.overUnder !== null ? line.overUnder : "N/A"}{" "}
-                      {line.overUnder === 54 ? (
-                        <span className="status">
-                          <CheckIcon /> Covered!
-                        </span>
-                      ) : (
-                        <span className="status">
-                          <CrossIcon /> Not Covered!
-                        </span>
-                      )}
+                      <span className="metric-label">
+                        O/U: {line.overUnder !== null ? line.overUnder : "N/A"}
+                      </span>
+                      <span className="status">
+                        {line.overUnder === 54 ? (
+                          <>
+                            <CheckIcon /> Covered!
+                          </>
+                        ) : (
+                          <>
+                            <CrossIcon /> Not Covered!
+                          </>
+                        )}
+                      </span>
                     </span>
                     <span className="moneyline">
-                      Home ML: {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}{" "}
-                      {line.homeMoneyline === 130 ? (
-                        <span className="status">
-                          <CheckIcon /> Covered!
-                        </span>
-                      ) : (
-                        <span className="status">
-                          <CrossIcon /> Not Covered!
-                        </span>
-                      )}
+                      <span className="metric-label">
+                        Home ML: {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}
+                      </span>
+                      <span className="status">
+                        {line.homeMoneyline === 130 ? (
+                          <>
+                            <CheckIcon /> Covered!
+                          </>
+                        ) : (
+                          <>
+                            <CrossIcon /> Not Covered!
+                          </>
+                        )}
+                      </span>
                     </span>
                     <span className="moneyline">
-                      Away ML: {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}{" "}
-                      {line.awayMoneyline === -150 ? (
-                        <span className="status">
-                          <CheckIcon /> Covered!
-                        </span>
-                      ) : (
-                        <span className="status">
-                          <CrossIcon /> Not Covered!
-                        </span>
-                      )}
+                      <span className="metric-label">
+                        Away ML: {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}
+                      </span>
+                      <span className="status">
+                        {line.awayMoneyline === -150 ? (
+                          <>
+                            <CheckIcon /> Covered!
+                          </>
+                        ) : (
+                          <>
+                            <CrossIcon /> Not Covered!
+                          </>
+                        )}
+                      </span>
                     </span>
                   </div>
                 </div>
