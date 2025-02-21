@@ -46,16 +46,6 @@ const Lines = () => {
   };
 
   /**
-   * Returns the abbreviated team name if available; otherwise, returns the full name.
-   */
-  const getTeamAbbreviation = (teamName) => {
-    const matchedTeam = teams.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return matchedTeam?.abbreviation ? matchedTeam.abbreviation : teamName;
-  };
-
-  /**
    * Get a sportsbook logo by provider name, or default if not found.
    */
   const getSportsbookLogo = (provider) => {
@@ -79,14 +69,11 @@ const Lines = () => {
     return <p className="lines-none">No lines data available for 2024.</p>;
   }
 
-  // Sort games by week
-  const sortedLines = [...lines].sort((a, b) => a.week - b.week);
-
   return (
     <div className="lines-page">
       <h1 className="lines-title">2024 Betting Odds</h1>
 
-      {sortedLines.map((game) => (
+      {lines.map((game) => (
         <div key={game.id} className="lines-card">
           {/* Game Header (Teams, Logos, Score, Start Time) */}
           <div className="game-header">
@@ -139,34 +126,18 @@ const Lines = () => {
                     <span className="over-under">
                       O/U: {line.overUnder !== null ? line.overUnder : "N/A"}
                     </span>
-                    <div className="moneylines">
-                      <div className="moneyline">
-                        <img
-                          src={getTeamLogo(game.homeTeam)}
-                          alt={game.homeTeam}
-                          className="moneyline-team-logo"
-                        />
-                        <span className="team-abbrev">
-                          {getTeamAbbreviation(game.homeTeam)}
-                        </span>
-                        <span className="ml-value">
-                          {line.homeMoneyline !== null ? line.homeMoneyline : "N/A"}
-                        </span>
-                      </div>
-                      <div className="moneyline">
-                        <img
-                          src={getTeamLogo(game.awayTeam)}
-                          alt={game.awayTeam}
-                          className="moneyline-team-logo"
-                        />
-                        <span className="team-abbrev">
-                          {getTeamAbbreviation(game.awayTeam)}
-                        </span>
-                        <span className="ml-value">
-                          {line.awayMoneyline !== null ? line.awayMoneyline : "N/A"}
-                        </span>
-                      </div>
-                    </div>
+                    <span className="moneyline">
+                      Home ML:{" "}
+                      {line.homeMoneyline !== null
+                        ? line.homeMoneyline
+                        : "N/A"}
+                    </span>
+                    <span className="moneyline">
+                      Away ML:{" "}
+                      {line.awayMoneyline !== null
+                        ? line.awayMoneyline
+                        : "N/A"}
+                    </span>
                   </div>
                 </div>
               ))
