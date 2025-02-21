@@ -32,21 +32,96 @@
     padding: 20px;
 }
 
-/* Header with team info */
+/* ===============================
+   NEW HEADER LAYOUT (Angled Edges)
+   =============================== */
+
+/* We replace the old .game-header rules with a new flex container 
+   that has three sections: left panel, center, right panel.
+   Make sure your React code matches these class names. */
+.game-header {
+    display: flex;
+    width: 100%;
+    position: relative;
+    margin-bottom: 10px; /* space under header */
+    min-height: 100px;   /* ensure enough height for logos/text */
+}
+
+/* Left angled panel for the home team */
+.team-home-panel {
+    position: relative;
+    width: 30%; /* adjust to taste */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    /* Angled edge on the right side */
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+    padding: 10px; /* spacing inside panel */
+}
+
+/* Center neutral section for game date/week info */
+.game-center {
+    width: 40%; /* middle chunk */
+    background: #fff; /* neutral background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+/* Right angled panel for the away team */
+.team-away-panel {
+    position: relative;
+    width: 30%; /* adjust to taste */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    /* Angled edge on the left side */
+    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
+    padding: 10px; /* spacing inside panel */
+}
+
+/* Large logos inside angled panels */
+.team-logo-large {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-right: 10px; 
+    border-radius: 8px; 
+}
+
+/* Text block inside each panel for name/score */
+.team-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.team-text .team-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.team-text .team-score {
+    font-size: 0.9rem;
+    color: #eee;
+    margin-top: 4px;
+}
+
+/* ===============================
+   OLD HEADER STYLES (If you want to keep for reference)
+   You can remove or comment these out if you no longer need them.
+   =============================== */
+/*
 .game-header {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-}
-
-.moneyline-team-logo {
-    width: 30px;
-    height: 30px;
-    object-fit: contain;
-    border-radius: 6px;
-    margin-right: 5px;
 }
 
 .team-block {
@@ -59,7 +134,7 @@
     width: 50px;
     height: 50px;
     object-fit: contain;
-    border-radius: 8px; /* Rounded edges for a modern look */
+    border-radius: 8px;
     margin-right: 10px;
 }
 
@@ -68,23 +143,14 @@
     flex-direction: column;
     align-items: flex-start;
 }
+*/
 
-.team-name {
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.team-score {
-    font-size: 0.9rem;
-    color: #555;
-    margin-top: 4px;
-}
-
-/* Meta info (week, date/time) */
+/* Meta info (week, date/time) inside the center panel (if you want) */
 .game-meta {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
+    margin-top: 5px;
 }
 
 .game-week {
@@ -132,55 +198,57 @@
     display: flex;
     flex-direction: column;
     font-size: 0.9rem;
-    width: 100%; /* Ensures full width */
-    gap: 6px; /* Adds spacing between rows */
-}
-
-.line-details .spread {
-    flex-direction: row; /* Ensure it behaves the same as O/U and ML */
-    align-items: center;
     width: 100%;
+    gap: 6px;
 }
 
+/* Spread, Over/Under, Moneyline lines */
 .line-details .spread,
 .line-details .over-under,
 .line-details .moneyline {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%; /* Ensures everything lines up properly */
+    width: 100%;
     padding: 4px 0;
 }
 
 /* Metric label and status alignment */
 .line-details .metric-label {
-    flex-grow: 1; /* Ensures it stretches */
+    flex-grow: 1;
     text-align: left;
-    min-width: 80px; /* Prevents overlap */
+    min-width: 80px;
 }
 
 .line-details .status {
     white-space: nowrap;
     text-align: right;
-    flex-shrink: 0; /* Prevents it from shrinking */
+    flex-shrink: 0;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-header {
         flex-direction: column;
-        align-items: flex-start;
+        clip-path: none !important; /* angled edges won't work well on small screens */
     }
-
-    .team-block {
-        margin-bottom: 8px;
+    .team-home-panel,
+    .team-away-panel,
+    .game-center {
+        width: 100%;
+        clip-path: none;
     }
-
-    .game-meta {
-        align-items: flex-start;
-        margin-top: 8px;
+    .game-center {
+        background: #fff;
+        margin-bottom: 10px;
     }
-
+    .team-logo-large {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    .team-text {
+        align-items: center;
+    }
     .lines-row {
         flex-direction: column;
     }

@@ -93,12 +93,6 @@ const Lines = () => {
   };
 
   // --- Betting Logic Helpers ---
-
-  // Spread coverage:
-  // - Negative spread means the home team is favored by abs(spread).
-  //   They must win by > abs(spread) to cover.
-  // - Positive spread means the away team is favored by spread.
-  //   The away team must win by > spread (or lose by less than spread) to cover.
   const hasCoveredSpread = (spread, homeScore, awayScore) => {
     if (spread == null) return false; // No spread data
     const margin = homeScore - awayScore;
@@ -117,18 +111,12 @@ const Lines = () => {
     }
   };
 
-  // Over/Under coverage:
-  // - If total points > line => Over
-  // - Otherwise => Under
   const isOver = (overUnder, homeScore, awayScore) => {
     if (overUnder == null) return false;
     const total = homeScore + awayScore;
     return total > overUnder;
   };
 
-  // Moneyline coverage:
-  // - Home ML covers if homeScore > awayScore
-  // - Away ML covers if awayScore > homeScore
   const homeMlCovered = (homeScore, awayScore) => homeScore > awayScore;
   const awayMlCovered = (homeScore, awayScore) => awayScore > homeScore;
 
@@ -151,52 +139,56 @@ const Lines = () => {
       <h1 className="lines-title">2024 Betting Odds</h1>
 
       {lines.map((game) => {
-        // Prepare gradient for the game header
+        // Instead of a single gradient, we have left & right color panels
         const homeColor = getTeamColor(game.homeTeam);
         const awayColor = getTeamColor(game.awayTeam);
 
         return (
           <div key={game.id} className="lines-card">
-            {/* Gradient Header */}
-            <div
-              className="game-header-container"
-              style={{
-                background: `linear-gradient(to right, ${homeColor}, ${awayColor})`,
-              }}
-            >
-              <div className="game-header">
-                {/* Home Team Block */}
-                <div className="team-block">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="team-logo"
-                  />
-                  <div className="team-info">
-                    <span className="team-name">{game.homeTeam}</span>
-                    <span className="team-score">{game.homeScore}</span>
-                  </div>
+            {/* 
+              Game Header with 3 sections:
+              1) Left angled color panel for Home
+              2) Center neutral area for game date/time
+              3) Right angled color panel for Away
+            */}
+            <div className="game-header">
+              {/* Left Panel (Home Team) */}
+              <div
+                className="team-home-panel"
+                style={{ backgroundColor: homeColor }}
+              >
+                <img
+                  src={getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="team-logo-large"
+                />
+                <div className="team-text">
+                  <span className="team-name">{game.homeTeam}</span>
+                  <span className="team-score">{game.homeScore}</span>
                 </div>
+              </div>
 
-                {/* Away Team Block */}
-                <div className="team-block">
-                  <img
-                    src={getTeamLogo(game.awayTeam)}
-                    alt={game.awayTeam}
-                    className="team-logo"
-                  />
-                  <div className="team-info">
-                    <span className="team-name">{game.awayTeam}</span>
-                    <span className="team-score">{game.awayScore}</span>
-                  </div>
+              {/* Center Info (Neutral) */}
+              <div className="game-center">
+                <div className="game-week">Week {game.week}</div>
+                <div className="game-date">
+                  {new Date(game.startDate).toLocaleString()}
                 </div>
+              </div>
 
-                {/* Meta Info (Week, Date) */}
-                <div className="game-meta">
-                  <span className="game-week">Week {game.week}</span>
-                  <span className="game-date">
-                    {new Date(game.startDate).toLocaleString()}
-                  </span>
+              {/* Right Panel (Away Team) */}
+              <div
+                className="team-away-panel"
+                style={{ backgroundColor: awayColor }}
+              >
+                <img
+                  src={getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="team-logo-large"
+                />
+                <div className="team-text">
+                  <span className="team-name">{game.awayTeam}</span>
+                  <span className="team-score">{game.awayScore}</span>
                 </div>
               </div>
             </div>
@@ -215,7 +207,7 @@ const Lines = () => {
                       {/* Spread */}
                       <span className="spread">
                         <span className="metric-label">
-                          Spread: {line.spread !== null ? line.spread : "N/A"}
+                          Spread: {line.spread ?? "N/A"}
                         </span>
                         <span className="status">
                           {hasCoveredSpread(
@@ -237,8 +229,7 @@ const Lines = () => {
                       {/* Over/Under */}
                       <span className="over-under">
                         <span className="metric-label">
-                          O/U:{" "}
-                          {line.overUnder !== null ? line.overUnder : "N/A"}
+                          O/U: {line.overUnder ?? "N/A"}
                         </span>
                         <span className="status">
                           {isOver(line.overUnder, game.homeScore, game.awayScore) ? (
@@ -257,9 +248,7 @@ const Lines = () => {
                       <span className="moneyline">
                         <span className="metric-label">
                           {getTeamAbbreviation(game.homeTeam)} ML:{" "}
-                          {line.homeMoneyline !== null
-                            ? line.homeMoneyline
-                            : "N/A"}
+                          {line.homeMoneyline ?? "N/A"}
                         </span>
                         <span className="status">
                           {homeMlCovered(game.homeScore, game.awayScore) ? (
@@ -278,9 +267,7 @@ const Lines = () => {
                       <span className="moneyline">
                         <span className="metric-label">
                           {getTeamAbbreviation(game.awayTeam)} ML:{" "}
-                          {line.awayMoneyline !== null
-                            ? line.awayMoneyline
-                            : "N/A"}
+                          {line.awayMoneyline ?? "N/A"}
                         </span>
                         <span className="status">
                           {awayMlCovered(game.homeScore, game.awayScore) ? (
