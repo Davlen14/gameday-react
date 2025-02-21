@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import { useParams, useLocation } from "react-router-dom"; // Fixed import for useLocation
@@ -96,7 +97,7 @@ const TeamAnalyticsDetail = () => {
           2024
         );
 
-        // 4. Find the specific game by gameId
+        // 4. Find the specific game by gameId (using g.id, adjust if your JSON uses gameId)
         const foundGame = scheduleData.find(
           (g) => g.id === parseInt(gameId, 10)
         );
@@ -220,7 +221,6 @@ const TeamAnalyticsDetail = () => {
 
       {/* Advanced Box Score Section */}
       <div className="advanced-box-score">
-        {/* Add a tooltip via the title attribute on the header */}
         <h2
           title={`Definitions:
 Overall PPA: Average points per play (overall).
@@ -245,7 +245,6 @@ Field Position: Average start and predicted points.`}
             </tr>
           </thead>
           <tbody>
-            {/* PPA Metrics */}
             <tr title="Average points per play (overall)">
               <td>Overall PPA</td>
               <td>{overallPpaHome}</td>
@@ -266,7 +265,6 @@ Field Position: Average start and predicted points.`}
               <td>{cumulativeOverallHome}</td>
               <td>{cumulativeOverallAway}</td>
             </tr>
-            {/* Success Rates */}
             <tr title="Overall success rate">
               <td>Success Rate (Overall)</td>
               <td>
@@ -312,13 +310,11 @@ Field Position: Average start and predicted points.`}
                 )?.passingDowns?.total ?? "N/A"}
               </td>
             </tr>
-            {/* Explosiveness */}
             <tr title="Explosive play metric (overall)">
               <td>Explosiveness</td>
               <td>{findTeamExplosiveness(game.homeTeam)}</td>
               <td>{findTeamExplosiveness(game.awayTeam)}</td>
             </tr>
-            {/* Rushing Metrics */}
             {(() => {
               const homeRushing = findTeamRushing(game.homeTeam);
               const awayRushing = findTeamRushing(game.awayTeam);
@@ -367,7 +363,6 @@ Field Position: Average start and predicted points.`}
                 </>
               );
             })()}
-            {/* Havoc */}
             {(() => {
               const homeHavoc = findTeamHavoc(game.homeTeam);
               const awayHavoc = findTeamHavoc(game.awayTeam);
@@ -391,7 +386,6 @@ Field Position: Average start and predicted points.`}
                 </>
               );
             })()}
-            {/* Scoring Opportunities */}
             {(() => {
               const homeScoring = findTeamScoring(game.homeTeam);
               const awayScoring = findTeamScoring(game.awayTeam);
@@ -415,7 +409,6 @@ Field Position: Average start and predicted points.`}
                 </>
               );
             })()}
-            {/* Field Position */}
             {(() => {
               const homeField = findTeamFieldPosition(game.homeTeam);
               const awayField = findTeamFieldPosition(game.awayTeam);
@@ -445,6 +438,37 @@ Field Position: Average start and predicted points.`}
           <p>Add your content here...</p>
         </div>
       </div>
+
+      {/* New Player Stats Section */}
+      {advancedStats?.players && advancedStats.players.usage && (
+        <div className="player-stats-section">
+          <h2>Player Stats</h2>
+          <table className="player-stats-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
+                <th>Total Usage</th>
+                <th>Rushing</th>
+                <th>Passing</th>
+              </tr>
+            </thead>
+            <tbody>
+              {advancedStats.players.usage.map((player, index) => (
+                <tr key={index}>
+                  <td>{player.player}</td>
+                  <td>{player.team}</td>
+                  <td>{player.position}</td>
+                  <td>{player.total}</td>
+                  <td>{player.rushing}</td>
+                  <td>{player.passing}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

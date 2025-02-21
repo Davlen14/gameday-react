@@ -147,8 +147,6 @@
     border: 1px solid #ddd;
 }
 
-
-
 /* Team Logos Container */
 .team-logos-container {
     display: flex;
@@ -164,6 +162,40 @@
     width: 60px;
     height: 60px;
     object-fit: contain;
+}
+
+/* New Player Stats Section */
+.player-stats-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #ddd;
+    max-width: 100%;
+}
+.player-stats-section h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #333;
+}
+.player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: auto;
+}
+.player-stats-table th,
+.player-stats-table td {
+    padding: 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+.player-stats-table th {
+    background-color: #ffffff;
+    font-weight: bold;
+}
+.player-stats-table tr:nth-child(even) {
+    background-color: #f2f2f2;
 }
 
 /* Responsiveness */
