@@ -258,7 +258,7 @@ Overall PPA: Average points per play overall.
 Passing PPA: Average points per play from passing.
 Rushing PPA: Average points per play from rushing.
 Cumulative PPA: Cumulative overall points per play.
-Higher values generally indicate more efficient and effective plays. 
+Higher values generally indicate more efficient and effective plays.
 (Note: Negative values or lower totals suggest underperformance.)`}
         >
           Advanced Box Score
@@ -285,10 +285,10 @@ Higher values generally indicate more efficient and effective plays.
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="Home" fill={homeColor || "#002244"} />
-            <Bar dataKey="Away" fill={awayColor || "#008E97"} />
-            <Line type="monotone" dataKey="Home" stroke={homeColor || "#002244"} />
-            <Line type="monotone" dataKey="Away" stroke={awayColor || "#008E97"} />
+            <Bar dataKey="Home" fill={homeColor ? homeColor : "#002244"} />
+            <Bar dataKey="Away" fill={awayColor ? awayColor : "#008E97"} />
+            <Line type="monotone" dataKey="Home" stroke={homeColor ? homeColor : "#002244"} />
+            <Line type="monotone" dataKey="Away" stroke={awayColor ? awayColor : "#008E97"} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
