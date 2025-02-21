@@ -294,11 +294,13 @@ export const getPlayerSeasonStats = async (year = 2024, category, seasonType = "
     return await fetchData(endpoint, params);
 };
 
+// Function to fetch player game stats
 export const getPlayerGameStats = async (gameId, year, week, seasonType, team, category = null) => {
-    const endpoint = "/games/players";
-    const params = { gameId, year, week, seasonType, team };
-    if (category) params.category = category;
-    return await fetchData(endpoint, params);
+  const endpoint = "/games/players";
+  const params = { gameId, year, week, seasonType, team };
+  if (category) params.category = category;
+
+  return await fetchData(endpoint, params);
 };
 
 // UPDATED: Added postseason support for fetchScoreboard

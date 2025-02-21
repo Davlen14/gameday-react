@@ -59,17 +59,16 @@ body {
   bottom: 0;
   width: 60px;
   opacity: 0.85;
-  border-radius: 8px; /* Applied rounded corners */
+  border-radius: 8px;
 }
 .scoreboard__color-bar--left {
-  left: -10px; /* Shifted 10px outwards */
+  left: -10px;
   clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
 }
 .scoreboard__color-bar--right {
-  right: -10px; /* Shifted 10px outwards */
+  right: -10px;
   clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
 }
-
 
 /* Team Containers */
 .scoreboard__team {
@@ -144,8 +143,8 @@ body {
 /* Main Content */
 .dashboard-content {
   flex: 1;
-  margin: 2% auto;      /* was 20px auto */
-  width: 96%;           /* fill nearly full width */
+  margin: 2% auto;
+  width: 96%;
   padding: 20px;
 }
 .dashboard-stats {
@@ -166,8 +165,8 @@ body {
 
 /* Advanced Box Score Section */
 .advanced-box-score {
-  margin: 2% auto;      /* was 20px auto */
-  width: 96%;           /* nearly full width */
+  margin: 2% auto;
+  width: 96%;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -200,8 +199,8 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.08);
   padding: 20px;
-  margin: 2% auto;   /* was 20px auto */
-  width: 96%;        /* nearly full width */
+  margin: 2% auto;
+  width: 96%;
 }
 
 /* Tooltip Styling */
@@ -214,19 +213,69 @@ body {
 
 /* Player Stats Section */
 .player-stats-section {
-  margin-top: 2%;
+  margin: 2% auto;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-  margin: 2% auto;     /* was 20px auto */
-  width: 96%;          /* nearly full width */
+  width: 96%;
 }
 .player-stats-section h2 {
   font-size: 22px;
   margin-bottom: 15px;
   text-align: center;
   color: #333;
+}
+
+/* Top Performers Section */
+.top-performers {
+  width: 96%;
+  margin: 2% auto;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.top-performers h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+.top-performers__container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+}
+.top-performers__team {
+  flex: 1 1 48%;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fff;
+}
+.top-performers__team h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+.top-performers__category {
+  margin-bottom: 10px;
+}
+.top-performers__category h4 {
+  margin-bottom: 5px;
+  font-size: 16px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 2px;
+  color: #444;
+}
+.top-performers__category div {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
 }
 
 /* Responsiveness */
@@ -237,7 +286,8 @@ body {
   .dashboard-content,
   .advanced-box-score,
   .chart-container,
-  .player-stats-section {
+  .player-stats-section,
+  .top-performers {
     width: 96%;
   }
 }
@@ -252,7 +302,8 @@ body {
   .dashboard-stats, 
   .advanced-box-score, 
   .chart-container,
-  .player-stats-section {
+  .player-stats-section,
+  .top-performers {
     padding: 15px;
   }
 }

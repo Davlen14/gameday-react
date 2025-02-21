@@ -26,6 +26,9 @@ const TeamAnalyticsDetail = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [game, setGame] = useState(null);
   const [advancedStats, setAdvancedStats] = useState(null);
+  const [topPerformersPassing, setTopPerformersPassing] = useState(null);
+  const [topPerformersRushing, setTopPerformersRushing] = useState(null);
+  const [topPerformersReceiving, setTopPerformersReceiving] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -50,7 +53,6 @@ const TeamAnalyticsDetail = () => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
     );
-    // Assuming your team objects have a 'color' property
     return team && team.color ? team.color : null;
   };
 
@@ -201,6 +203,36 @@ const TeamAnalyticsDetail = () => {
         // 5. Fetch advanced box score stats using the correct endpoint
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
+
+        // 6. Fetch Top Performers for Passing, Rushing, Receiving
+        const passingPlayers = await teamsService.getPlayerGameStats(
+          gameId,
+          2024,
+          1,
+          "regular",
+          foundTeam.school,
+          "passing"
+        );
+        const rushingPlayers = await teamsService.getPlayerGameStats(
+          gameId,
+          2024,
+          1,
+          "regular",
+          foundTeam.school,
+          "rushing"
+        );
+        const receivingPlayers = await teamsService.getPlayerGameStats(
+          gameId,
+          2024,
+          1,
+          "regular",
+          foundTeam.school,
+          "receiving"
+        );
+
+        setTopPerformersPassing(passingPlayers);
+        setTopPerformersRushing(rushingPlayers);
+        setTopPerformersReceiving(receivingPlayers);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -330,7 +362,115 @@ const TeamAnalyticsDetail = () => {
         </div>
       </div>
 
-      {/* Advanced Box Score Section - Replaced Table with Chart */}
+      {/* Top Performers Section */}
+      <div
+        className="top-performers"
+        style={{
+          width: "96%",
+          margin: "2% auto",
+          background: "#fff",
+          borderRadius: "8px",
+          padding: "20px",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+        }}
+      >
+        <h2 style={{ textAlign: "center", marginBottom: "15px" }}>Top Performers</h2>
+        <div
+          className="top-performers__container"
+          style={{ display: "flex", flexWrap: "wrap", gap: "2%" }}
+        >
+          {[
+            { team: game.homeTeam, label: getTeamAbbreviation(game.homeTeam) },
+            { team: game.awayTeam, label: getTeamAbbreviation(game.awayTeam) }
+          ].map((side) => {
+            const passingCategory = topPerformersPassing &&
+              topPerformersPassing[0]?.teams.find(
+                (t) => t.team.toLowerCase() === side.team.toLowerCase()
+              )?.categories.find((cat) => cat.name === "passing");
+            const rushingCategory = topPerformersRushing &&
+              topPerformersRushing[0]?.teams.find(
+                (t) => t.team.toLowerCase() === side.team.toLowerCase()
+              )?.categories.find((cat) => cat.name === "rushing");
+            const receivingCategory = topPerformersReceiving &&
+              topPerformersReceiving[0]?.teams.find(
+                (t) => t.team.toLowerCase() === side.team.toLowerCase()
+              )?.categories.find((cat) => cat.name === "receiving");
+
+            return (
+              <div
+                key={side.team}
+                className="top-performers__team"
+                style={{
+                  flex: "1 1 48%",
+                  border: "1px solid #eee",
+                  borderRadius: "8px",
+                  padding: "10px"
+                }}
+              >
+                <h3 style={{ textAlign: "center", marginBottom: "10px" }}>
+                  {side.label}
+                </h3>
+                {/* Passing Section */}
+                <div className="top-performers__category">
+                  <h4>Passing</h4>
+                  {passingCategory &&
+                    passingCategory.types
+                      .filter((type) => ["YDS", "C/ATT", "QBR", "TD"].includes(type.name))
+                      .map((statType) => (
+                        <div key={statType.name} style={{ marginBottom: "5px" }}>
+                          <strong>{statType.name}:</strong>{" "}
+                          {statType.athletes.slice(0, 2).map((athlete, i) => (
+                            <span key={athlete.id}>
+                              {athlete.name} ({athlete.stat})
+                              {i === 0 ? ", " : ""}
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                </div>
+                {/* Rushing Section */}
+                <div className="top-performers__category">
+                  <h4>Rushing</h4>
+                  {rushingCategory &&
+                    rushingCategory.types
+                      .filter((type) => ["YDS", "CAR", "TD"].includes(type.name))
+                      .map((statType) => (
+                        <div key={statType.name} style={{ marginBottom: "5px" }}>
+                          <strong>{statType.name}:</strong>{" "}
+                          {statType.athletes.slice(0, 2).map((athlete, i) => (
+                            <span key={athlete.id}>
+                              {athlete.name} ({athlete.stat})
+                              {i === 0 ? ", " : ""}
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                </div>
+                {/* Receiving Section */}
+                <div className="top-performers__category">
+                  <h4>Receiving</h4>
+                  {receivingCategory &&
+                    receivingCategory.types
+                      .filter((type) => ["YDS", "REC", "TD"].includes(type.name))
+                      .map((statType) => (
+                        <div key={statType.name} style={{ marginBottom: "5px" }}>
+                          <strong>{statType.name}:</strong>{" "}
+                          {statType.athletes.slice(0, 2).map((athlete, i) => (
+                            <span key={athlete.id}>
+                              {athlete.name} ({athlete.stat})
+                              {i === 0 ? ", " : ""}
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Advanced Box Score Section */}
       <div className="advanced-box-score">
         <h2
           title={`Definitions:
@@ -343,7 +483,6 @@ Higher values generally indicate more efficient and effective plays.
         >
           Advanced Box Score
         </h2>
-        {/* Explanation for Advanced Box Score */}
         <div className="explanation-box">
           <p>
             <strong>Overall PPA:</strong> Measures average points per play overall. Higher values indicate more effective plays.
@@ -385,7 +524,6 @@ Higher values generally indicate more efficient and effective plays.
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>
-          {/* Explanation for Player Stats */}
           <div className="explanation-box">
             <p>
               <strong>Usage:</strong> Represents the overall involvement of the player in the game. Higher usage typically indicates a key role.
