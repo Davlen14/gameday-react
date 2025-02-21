@@ -130,7 +130,7 @@ const TeamAnalyticsDetail = () => {
           {(game.mediaType || game.outlet) && (
             <div className="scoreboard__media">
               <span className="scoreboard__media-text">
-                Media: {game.mediaType} | {game.outlet}
+                Media: {game.mediaType} | Outlet: {game.outlet}
               </span>
             </div>
           )}
@@ -179,4 +179,3 @@ const TeamAnalyticsDetail = () => {
 };
 
 export default TeamAnalyticsDetail;
-
