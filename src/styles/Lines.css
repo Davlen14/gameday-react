@@ -27,7 +27,7 @@
 .lines-card {
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     padding: 20px;
 }
@@ -40,6 +40,7 @@
     align-items: center;
     margin-bottom: 15px;
 }
+
 .moneyline-team-logo {
     width: 30px;
     height: 30px;
@@ -114,14 +115,15 @@
     padding: 10px;
     min-width: 220px;
     flex: 1 1 220px;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Sportsbook logo */
 .sportsbook-logo {
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 6px; /* Slightly rounded square */
+    border-radius: 6px;
     margin-right: 10px;
 }
 
@@ -130,30 +132,31 @@
     display: flex;
     flex-direction: column;
     font-size: 0.9rem;
+    width: 100%; /* Ensures full width */
+    gap: 6px; /* Adds spacing between rows */
 }
+
 .line-details .spread,
 .line-details .over-under,
 .line-details .moneyline {
-    margin: 2px 0;
-}
-
-/* Align metric label and status correctly */
-.line-details span.spread,
-.line-details span.over-under,
-.line-details span.moneyline {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%; /* Ensures everything lines up properly */
+    padding: 4px 0;
 }
 
+/* Metric label and status alignment */
 .line-details .metric-label {
-    flex: 1;
-    margin-right: 10px;
+    flex-grow: 1; /* Ensures it stretches */
+    text-align: left;
+    min-width: 80px; /* Prevents overlap */
 }
 
 .line-details .status {
     white-space: nowrap;
     text-align: right;
+    flex-shrink: 0; /* Prevents it from shrinking */
 }
 
 /* Responsive Design */
