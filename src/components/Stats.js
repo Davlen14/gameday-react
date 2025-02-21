@@ -1,119 +1,146 @@
 import React, { useState, useEffect } from "react";
-import teamsService from "../services/teamsService";
+import graphqlTeamsService from "../services/graphqlTeamsService";
 import "../styles/Stats.css"; // Ensure CSS is linked
 
 const Stats = () => {
-    const [allTeamStats, setAllTeamStats] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [allTeamStats, setAllTeamStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  // Fallback logo since the new getTeams doesn't return logos
+  const defaultLogo = "/assets/default-logo.png";
 
-    useEffect(() => {
-        const fetchAllStats = async () => {
-            try {
-                setLoading(true);
+  useEffect(() => {
+    const fetchAllStats = async () => {
+      try {
+        setLoading(true);
+        console.log("Fetching list of teams...");
+        const teams = await graphqlTeamsService.getTeams(); // Fetch all FBS teams
+        console.log("Teams fetched:", teams);
 
-                console.log("Fetching list of teams...");
-                const teams = await teamsService.getTeams(); // Fetch all FBS teams
+        const statsPromises = teams.map(async (team) => {
+          try {
+            const stats = await graphqlTeamsService.getTeamStats(team.school, 2024);
+            return { team: team.school, stats, logo: defaultLogo };
+          } catch (err) {
+            console.error(`Error fetching stats for ${team.school}:`, err);
+            return { team: team.school, stats: null, logo: defaultLogo };
+          }
+        });
 
-                console.log("Teams fetched:", teams);
-
-                const statsPromises = teams.map(async (team) => {
-                    try {
-                        const stats = await teamsService.getTeamStats(team.school, 2024);
-                        return { team: team.school, stats, logo: team.logos[0] }; // Include team logo
-                    } catch (err) {
-                        console.error(`Error fetching stats for ${team.school}:`, err);
-                        return { team: team.school, stats: null, logo: team.logos[0] };
-                    }
-                });
-
-                const allStats = await Promise.all(statsPromises);
-
-                console.log("All Team Stats:", allStats);
-                setAllTeamStats(allStats);
-            } catch (error) {
-                console.error("Error fetching team stats:", error);
-                setError("Failed to load team stats.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAllStats();
-    }, []);
-
-    // Helper function to sort teams by stat value (highest to lowest)
-    const sortByStat = (statKey) => {
-        return [...allTeamStats]
-            .filter(({ stats }) => stats && stats[statKey] !== undefined)
-            .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
+        const allStats = await Promise.all(statsPromises);
+        console.log("All Team Stats:", allStats);
+        setAllTeamStats(allStats);
+      } catch (error) {
+        console.error("Error fetching team stats:", error);
+        setError("Failed to load team stats.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Render team stats (top 5 teams only for display)
-    const renderTeamStats = (statName) => {
-        if (loading) return <p className="stat-placeholder">Loading...</p>;
-        if (error) return <p className="stat-placeholder">{error}</p>;
+    fetchAllStats();
+  }, []);
 
-        const sortedTeams = sortByStat(statName).slice(0, 5);
+  // Helper function to sort teams by a specific stat value (highest to lowest)
+  const sortByStat = (statKey) => {
+    return [...allTeamStats]
+      .filter(({ stats }) => stats && stats[statKey] !== undefined)
+      .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
+  };
 
-        if (sortedTeams.length === 0) return <p className="stat-placeholder">No data available</p>;
+  // Render team stats (displaying top 5 teams for a given stat)
+  const renderTeamStats = (statName) => {
+    if (loading) return <p className="stat-placeholder">Loading...</p>;
+    if (error) return <p className="stat-placeholder">{error}</p>;
 
-        return sortedTeams.map(({ team, stats, logo }) => (
-            <div key={team} className="team-row">
-                <img src={logo} alt={team} className="team-logo" />
-                <span className="team-name">{team}</span>
-                <span className="team-stat">{stats[statName] || 0}</span>
-            </div>
-        ));
-    };
+    const sortedTeams = sortByStat(statName).slice(0, 5);
 
-    return (
-        <div className="stats-container">
-            <h1 className="stats-header">College Football Stats (2024)</h1>
+    if (sortedTeams.length === 0)
+      return <p className="stat-placeholder">No data available</p>;
 
-            {/* Team Offense Section */}
-            <div className="stats-section">
-                <h2 className="section-title">Team Offense</h2>
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <h3 className="stat-title">Passing Yards</h3>
-                        {renderTeamStats("netPassingYards")}
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Rushing Yards</h3>
-                        {renderTeamStats("rushingYards")}
-                    </div>
-                    <div className="stat-card">
-                        <h3 className="stat-title">Total Yards</h3>
-                        {renderTeamStats("totalYards")}
-                    </div>
-                </div>
-            </div>
+    return sortedTeams.map(({ team, stats, logo }) => (
+      <div key={team} className="team-row">
+        <img src={logo} alt={team} className="team-logo" />
+        <span className="team-name">{team}</span>
+        <span className="team-stat">{stats[statName] || 0}</span>
+      </div>
+    ));
+  };
 
-            {/* Team Defense Section */}
-            <div className="stats-section">
-                <h2 className="section-title">Team Defense</h2>
-                <div className="stats-grid">
-                    <div className="stat-card"><h3 className="stat-title">Yards Allowed</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Points Allowed</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Sacks</h3><p className="stat-placeholder">Coming Soon</p></div>
-                </div>
-            </div>
+  return (
+    <div className="stats-container">
+      <h1 className="stats-header">College Football Stats (2024)</h1>
 
-            {/* Player Statistics Section */}
-            <div className="stats-section">
-                <h2 className="section-title">Player Statistics</h2>
-                <div className="stats-grid">
-                    <div className="stat-card"><h3 className="stat-title">Passing Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Rushing Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Receiving Yards</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Tackles</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Sacks</h3><p className="stat-placeholder">Coming Soon</p></div>
-                    <div className="stat-card"><h3 className="stat-title">Interceptions</h3><p className="stat-placeholder">Coming Soon</p></div>
-                </div>
-            </div>
+      {/* Team Offense Section */}
+      <div className="stats-section">
+        <h2 className="section-title">Team Offense</h2>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h3 className="stat-title">Passing Yards</h3>
+            {renderTeamStats("netPassingYards")}
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Rushing Yards</h3>
+            {renderTeamStats("rushingYards")}
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Total Yards</h3>
+            {renderTeamStats("totalYards")}
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Team Defense Section */}
+      <div className="stats-section">
+        <h2 className="section-title">Team Defense</h2>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h3 className="stat-title">Yards Allowed</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Points Allowed</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Sacks</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Player Statistics Section */}
+      <div className="stats-section">
+        <h2 className="section-title">Player Statistics</h2>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h3 className="stat-title">Passing Yards</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Rushing Yards</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Receiving Yards</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Tackles</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Sacks</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+          <div className="stat-card">
+            <h3 className="stat-title">Interceptions</h3>
+            <p className="stat-placeholder">Coming Soon</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Stats;
