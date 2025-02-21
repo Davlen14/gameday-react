@@ -35,7 +35,7 @@ function getColorBrightness(hex) {
  * Lightens a dark color by a certain amount (0-100).
  * Reduced from 60 to 30 for a more subtle effect.
  */
-function lightenColor(hex, amount = 30) {
+function lightenColor(hex, amount = 15) {
   const cleanHex = hex.replace(/^#/, "");
   let bigint = parseInt(cleanHex, 16);
 
