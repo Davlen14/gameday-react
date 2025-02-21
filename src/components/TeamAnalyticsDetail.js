@@ -37,6 +37,15 @@ const TeamAnalyticsDetail = () => {
     return team && team.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
+  // New helper to get team color from teamsList data
+  const getTeamColor = (teamName) => {
+    const team = teamsList.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    // Assuming your team objects have a 'color' property
+    return team && team.color ? team.color : null;
+  };
+
   // Helper functions to match advanced stats by team name
   const findTeamStatsByName = (teamName) => {
     if (!advancedStats?.teams?.ppa) return null;
@@ -109,7 +118,7 @@ const TeamAnalyticsDetail = () => {
           2024
         );
 
-        // 4. Find the specific game by gameId (using g.id, adjust if your JSON uses gameId)
+        // 4. Find the specific game by gameId (using g.id)
         const foundGame = scheduleData.find(
           (g) => g.id === parseInt(gameId, 10)
         );
@@ -143,9 +152,9 @@ const TeamAnalyticsDetail = () => {
     return <div className="centered-fullscreen">Game not found</div>;
   }
 
-  // Pull colors from the game object
-  const homeColor = game.homeColor;
-  const awayColor = game.awayColor;
+  // Get team colors: try to fetch from teamsList and fallback to game object values
+  const homeTeamColor = getTeamColor(game.homeTeam) || game.homeColor;
+  const awayTeamColor = getTeamColor(game.awayTeam) || game.awayColor;
 
   // Prepare logos and date/time
   const homeLogo = getTeamLogo(game.homeTeam);
@@ -153,13 +162,13 @@ const TeamAnalyticsDetail = () => {
   const gameDate = new Date(game.date).toLocaleDateString();
   const gameTime = game.time || "TBD";
 
-  // Find advanced stats for home/away by matching team names
+  // Find advanced stats for home/away
   const homeTeamStats = findTeamStatsByName(game.homeTeam);
   const awayTeamStats = findTeamStatsByName(game.awayTeam);
   const homeTeamCumulativeStats = findTeamCumulativeStatsByName(game.homeTeam);
   const awayTeamCumulativeStats = findTeamCumulativeStatsByName(game.awayTeam);
 
-  // Extract advanced box score metrics (or 'N/A' if not found)
+  // Extract metrics (or 'N/A' if not found)
   const overallPpaHome = homeTeamStats?.overall?.total ?? "N/A";
   const overallPpaAway = awayTeamStats?.overall?.total ?? "N/A";
   const passingPpaHome = homeTeamStats?.passing?.total ?? "N/A";
@@ -177,7 +186,7 @@ const TeamAnalyticsDetail = () => {
     { metric: "Cumulative PPA", Home: cumulativeOverallHome, Away: cumulativeOverallAway }
   ];
 
-  // Prepare data for Player Stats Chart, using player usage stats from advancedStats.players.usage
+  // Prepare data for Player Stats Chart using player usage stats
   const playerUsageData =
     advancedStats?.players?.usage?.map((player) => ({
       name: player.player,
@@ -195,12 +204,12 @@ const TeamAnalyticsDetail = () => {
         {/* Away Color Bar */}
         <div
           className="scoreboard__color-bar scoreboard__color-bar--left"
-          style={{ backgroundColor: awayColor }}
+          style={{ backgroundColor: awayTeamColor }}
         />
         {/* Home Color Bar */}
         <div
           className="scoreboard__color-bar scoreboard__color-bar--right"
-          style={{ backgroundColor: homeColor }}
+          style={{ backgroundColor: homeTeamColor }}
         />
         {/* Away Team */}
         <div className="scoreboard__team scoreboard__team--away">
@@ -285,10 +294,10 @@ Higher values generally indicate more efficient and effective plays.
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="Home" fill={homeColor ? homeColor : "#002244"} />
-            <Bar dataKey="Away" fill={awayColor ? awayColor : "#008E97"} />
-            <Line type="monotone" dataKey="Home" stroke={homeColor ? homeColor : "#002244"} />
-            <Line type="monotone" dataKey="Away" stroke={awayColor ? awayColor : "#008E97"} />
+            <Bar dataKey="Home" fill={homeTeamColor ? homeTeamColor : "#002244"} />
+            <Bar dataKey="Away" fill={awayTeamColor ? awayTeamColor : "#008E97"} />
+            <Line type="monotone" dataKey="Home" stroke={homeTeamColor ? homeTeamColor : "#002244"} />
+            <Line type="monotone" dataKey="Away" stroke={awayTeamColor ? awayTeamColor : "#008E97"} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -301,7 +310,7 @@ Higher values generally indicate more efficient and effective plays.
         </div>
       </div>
 
-      {/* New Player Stats Section - Replaced Table with Chart */}
+      {/* Player Stats Section */}
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>
@@ -318,10 +327,7 @@ Higher values generally indicate more efficient and effective plays.
             </p>
           </div>
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart
-              data={playerUsageData}
-              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-            >
+            <ComposedChart data={playerUsageData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -333,9 +339,9 @@ Higher values generally indicate more efficient and effective plays.
                     key={`cell-${index}`}
                     fill={
                       entry.team === game.homeTeam
-                        ? homeColor
+                        ? homeTeamColor
                         : entry.team === game.awayTeam
-                        ? awayColor
+                        ? awayTeamColor
                         : "#8884d8"
                     }
                   />
