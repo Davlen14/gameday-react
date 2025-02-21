@@ -48,6 +48,12 @@ export const getGameMedia = async (year, query) => {
     return await fetchData(endpoint, params);
 };
 
+export const getTeamGameStats = async (gameId, team, year) => {
+  const endpoint = "/games/teams";
+  const params = { gameId, team, year };
+  return await fetchData(endpoint, params);
+};
+
 // UPDATED: Added postseason support
 export const getGameWeather = async (year, query) => {
     const endpoint = "/games/weather";
@@ -626,6 +632,7 @@ const teamsService = {
     getRatingsElo,
     getRatingsFPI,
     getPPAPredicted,
+    getTeamGameStats,
     getPPATeams,
     getPPAGames,
     getPPAPlayersGames,

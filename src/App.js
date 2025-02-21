@@ -14,6 +14,8 @@ import LatestUpdates from "./components/LatestUpdates"; // ✅ Import the Latest
 import FanHub from "./components/FanHub"; // ✅ Import FanHub for the Fan Hub UI
 import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Team Analytics component
 import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
+import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysis
+
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -232,7 +234,7 @@ function App() {
 
           {/* MAIN CONTENT */}
           <main className="app-content">
-                      <Routes>
+            <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/teams/:teamId" element={<TeamDetail />} />
@@ -241,7 +243,6 @@ function App() {
               <Route path="/more" element={<More />} />
               <Route path="/ask-questions" element={<Chatbot />} />
               <Route path="/games/:gameId" element={<GameDetailView />} />
-              {/* Added alias route for singular "/game" URL */}
               <Route path="/game/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
@@ -254,6 +255,9 @@ function App() {
               {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
               <Route path="/team-metrics/:teamId" element={<TeamAnalyticsDetail />} />
+
+              {/* New Lines Route for Spread + Analysis */}
+              <Route path="/spread-analysis" element={<Lines />} />
             </Routes>
           </main>
         </div>
