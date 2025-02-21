@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Arbitrage from "./Arbitrage";
 import EVBetting from "./EVBetting";
 import teamsService from "../services/teamsService";
-import "../styles/ArbitrageEV.css"; // Assume you'll place styling here
+import "../styles/ArbitrageEV.css";
 
 const ArbitrageEV = () => {
   const [activeTab, setActiveTab] = useState("arbitrage");
@@ -47,19 +47,22 @@ const ArbitrageEV = () => {
     return logos[provider] || "/photos/default_sportsbook.png";
   };
 
-  // Fetch betting odds data whenever `week` changes
+  // Fetch betting odds data (always get all lines, then filter locally by week)
   useEffect(() => {
     const fetchOdds = async () => {
       try {
         setIsLoading(true);
 
-        // If your API supports fetching lines by week, pass `week`:
-        // Example: const response = await teamsService.getGameLines(2024, week, "regular");
-        // If it doesn't, you may need to filter locally after fetching.
-        const response = await teamsService.getGameLines(2024, week, "regular");
+        // Use your original logic that WORKS: pass `null` for the second argument
+        // so that your backend returns all the lines. 
+        const response = await teamsService.getGameLines(2024, null, "regular");
 
-        // Filter relevant sportsbooks
-        const filteredLines = response.map((game) => ({
+        // Now filter those lines locally based on the selected `week`.
+        // If your API does return a `week` field, we can match it here:
+        const weekFiltered = response.filter((game) => game.week === week);
+
+        // Filter for relevant sportsbooks
+        const filteredLines = weekFiltered.map((game) => ({
           id: game.id,
           week: game.week,
           homeTeam: game.homeTeam,
