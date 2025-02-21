@@ -24,6 +24,23 @@ const TeamAnalyticsDetail = () => {
     return team && team.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
+  // Helper functions to match advanced stats by team name
+  const findTeamStatsByName = (teamName) => {
+    // If advancedStats or advancedStats.teams or advancedStats.teams.ppa doesn't exist, return null
+    if (!advancedStats?.teams?.ppa) return null;
+    // Attempt to find a matching team entry
+    return advancedStats.teams.ppa.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamCumulativeStatsByName = (teamName) => {
+    if (!advancedStats?.teams?.cumulativePpa) return null;
+    return advancedStats.teams.cumulativePpa.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -88,16 +105,27 @@ const TeamAnalyticsDetail = () => {
   const gameDate = new Date(game.date).toLocaleDateString();
   const gameTime = game.time || "TBD";
 
-  // Extract advanced box score metrics using optional chaining
-  // (Adjust these keys if your API returns a different structure)
-  const overallPpaHome = advancedStats?.teams?.ppa?.[0]?.overall?.total;
-  const overallPpaAway = advancedStats?.teams?.ppa?.[1]?.overall?.total;
-  const passingPpaHome = advancedStats?.teams?.ppa?.[0]?.passing?.total;
-  const passingPpaAway = advancedStats?.teams?.ppa?.[1]?.passing?.total;
-  const rushingPpaHome = advancedStats?.teams?.ppa?.[0]?.rushing?.total;
-  const rushingPpaAway = advancedStats?.teams?.ppa?.[1]?.rushing?.total;
-  const cumulativeOverallHome = advancedStats?.teams?.cumulativePpa?.[0]?.overall?.total;
-  const cumulativeOverallAway = advancedStats?.teams?.cumulativePpa?.[1]?.overall?.total;
+  // Find advanced stats for home/away by matching team names
+  const homeTeamStats = findTeamStatsByName(game.homeTeam);
+  const awayTeamStats = findTeamStatsByName(game.awayTeam);
+
+  const homeTeamCumulativeStats = findTeamCumulativeStatsByName(game.homeTeam);
+  const awayTeamCumulativeStats = findTeamCumulativeStatsByName(game.awayTeam);
+
+  // Extract advanced box score metrics (or 'N/A' if not found)
+  const overallPpaHome = homeTeamStats?.overall?.total ?? "N/A";
+  const overallPpaAway = awayTeamStats?.overall?.total ?? "N/A";
+
+  const passingPpaHome = homeTeamStats?.passing?.total ?? "N/A";
+  const passingPpaAway = awayTeamStats?.passing?.total ?? "N/A";
+
+  const rushingPpaHome = homeTeamStats?.rushing?.total ?? "N/A";
+  const rushingPpaAway = awayTeamStats?.rushing?.total ?? "N/A";
+
+  const cumulativeOverallHome =
+    homeTeamCumulativeStats?.overall?.total ?? "N/A";
+  const cumulativeOverallAway =
+    awayTeamCumulativeStats?.overall?.total ?? "N/A";
 
   return (
     <div className="team-analytics-page">
@@ -119,7 +147,9 @@ const TeamAnalyticsDetail = () => {
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.awayTeam}</span>
             {game.awayConference && (
-              <span className="scoreboard__conference">{game.awayConference}</span>
+              <span className="scoreboard__conference">
+                {game.awayConference}
+              </span>
             )}
             {game.awayPoints !== undefined && (
               <span className="scoreboard__team-score">{game.awayPoints}</span>
@@ -151,7 +181,9 @@ const TeamAnalyticsDetail = () => {
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.homeTeam}</span>
             {game.homeConference && (
-              <span className="scoreboard__conference">{game.homeConference}</span>
+              <span className="scoreboard__conference">
+                {game.homeConference}
+              </span>
             )}
             {game.homePoints !== undefined && (
               <span className="scoreboard__team-score">{game.homePoints}</span>
