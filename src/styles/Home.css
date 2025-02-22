@@ -129,9 +129,9 @@ select {
   }
 }
 
-/* Shrink poll logos to match the checkmark size more closely */
+/* Shrink poll logos to match checkmark size */
 .team-logo {
-  width: 20px; /* reduced from 40px */
+  width: 20px; /* Reduced from 40px */
   height: 20px;
   margin-right: 0.75rem;
   object-fit: contain;
@@ -345,36 +345,13 @@ select {
   background: rgba(142, 0, 0, 0.4);
 }
 
-/* Loading & Error States */
+/* =============================== */
+/* LOADING & ERROR STATES */
+/* =============================== */
 .loading-container, .error-container {
   text-align: center;
   padding: 2rem;
   font-size: 1.1rem;
-}
-
-/* =============================== */
-/* RESPONSIVE TWEAKS */
-/* =============================== */
-@media (max-width: 768px) {
-  .game-card {
-    flex: 0 0 260px;
-    padding: 1rem;
-  }
-
-  .team img {
-    width: 52px;
-    height: 52px;
-  }
-
-  .vs-circle {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
-  }
-
-  .score {
-    font-size: 1rem;
-  }
 }
 
 /* =============================== */
@@ -542,8 +519,8 @@ select {
   color: #333;
 }
 
-/* Smaller logo to match checkmark size (~16-20px) */
-.committed-logo {
+/* Committed team logo should be small (20px) */
+.committed-team-logo {
   width: 20px;
   height: 20px;
   object-fit: contain;
