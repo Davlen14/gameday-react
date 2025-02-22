@@ -4,7 +4,6 @@
 /* =============================== */
 /* COLOR SCHEME & GLOBALS */
 /* =============================== */
-
 :root {
   --primary-color: #ffffff;
   --accent-color: #D4001C;
@@ -26,7 +25,6 @@
 /* =============================== */
 /* HOME CONTAINER */
 /* =============================== */
-
 .home-container {
   font-family: "Orbitron", "Titillium Web", sans-serif; 
   padding: 1rem 1.5rem;
@@ -38,7 +36,6 @@
 /* =============================== */
 /* HERO HEADER */
 /* =============================== */
-
 .hero-header {
   text-align: center;
   margin-top: 5px;
@@ -71,7 +68,6 @@ select {
 /* =============================== */
 /* SECTION TITLES */
 /* =============================== */
-
 .section-title {
   color: var(--accent-color);
   border-bottom: 2px solid var(--accent-color);
@@ -84,7 +80,6 @@ select {
 /* =============================== */
 /* POLLS SECTION */
 /* =============================== */
-
 .poll-title {
   display: flex;
   align-items: center;
@@ -154,7 +149,6 @@ select {
 /* =============================== */
 /* MODERN GAME CARDS (Slider) */
 /* =============================== */
-
 .games-slider {
   display: flex;
   overflow-x: auto;
@@ -358,35 +352,8 @@ select {
 }
 
 /* =============================== */
-/* RESPONSIVE TWEAKS */
-/* =============================== */
-
-@media (max-width: 768px) {
-  .game-card {
-    flex: 0 0 260px;
-    padding: 1rem;
-  }
-
-  .team img {
-    width: 52px;
-    height: 52px;
-  }
-
-  .vs-circle {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
-  }
-
-  .score {
-    font-size: 1rem;
-  }
-}
-
-/* =============================== */
 /* FEATURED SECTION */
 /* =============================== */
-
 .featured-section {
   margin-bottom: 2.5rem;
 }
@@ -493,9 +460,8 @@ select {
 }
 
 /* =============================== */
-/* POLLS & RECRUITS SECTION (New Two-Column Layout) */
+/* POLLS & RECRUITS SECTION (Two-Column Layout) */
 /* =============================== */
-
 .polls-recruits-container {
   display: flex;
   gap: 2rem;
@@ -541,10 +507,32 @@ select {
   color: #666;
 }
 
-.recruit-commit {
+/* New styles for committed team display */
+.committed-team {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-left: auto;
-  color: #333;
-  font-weight: 500;
+}
+
+.committed-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.commit-check {
+  font-size: 16px;
+  color: green;
+}
+
+.recruit-commit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -562,24 +550,27 @@ select {
   .polls-recruits-container {
     flex-direction: column;
   }
-
+  
   .filters-container {
     flex-direction: column;
     align-items: center;
   }
-
+  
   .filters-container select,
   .team-search input {
     width: 80%;
   }
-
+  
   .player-cell {
     flex-direction: column;
     align-items: center;
   }
-
+  
   .committed-cell {
     flex-direction: column;
     text-align: center;
   }
 }
+
+/* =============================== */
+/* END OF FILE */

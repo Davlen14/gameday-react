@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaTv, FaStar } from "react-icons/fa";
+import { FaTv, FaStar, FaCheckCircle } from "react-icons/fa";
 import teamsService, { getAllRecruits } from "../services/teamsService";
 import "../styles/Home.css";
 import { useWeek } from "../context/WeekContext"; // Global week state
@@ -38,7 +38,7 @@ const Home = () => {
         setTeams(teamsData);
         setPolls(pollsData);
 
-        // Filter games to include only FBS vs. FBS matchup
+        // Filter games to include only FBS vs. FBS matchups
         const fbsGames = gamesData.filter(
           (game) =>
             game.homeClassification === "fbs" &&
@@ -84,7 +84,7 @@ const Home = () => {
     return networks[network] || <FaTv className="network-icon default" />;
   };
 
-  // Inline helper to render stars
+  // Inline helper to render stars for recruits
   const renderStars = (stars) => {
     return (
       <div className="stars-container">
@@ -214,7 +214,14 @@ const Home = () => {
                 <span className="recruit-position">({prospect.position})</span>
                 {prospect.stars && renderStars(prospect.stars)}
                 {prospect.committedTo && (
-                  <span className="recruit-commit">→ {prospect.committedTo}</span>
+                  <span className="recruit-commit">
+                    <img
+                      src={getTeamLogo(prospect.committedTo)}
+                      alt={`${prospect.committedTo} Logo`}
+                      className="committed-team-logo"
+                    />
+                    <FaCheckCircle className="commit-check" />
+                  </span>
                 )}
               </div>
             ))}
