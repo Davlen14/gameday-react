@@ -215,7 +215,7 @@ const Home = () => {
 
         {/* Right Column: Top 10 Recruits */}
         <section className="recruits-section right-column">
-          <h2 className="section-title">Top 10 Recruits</h2>
+          <h2 className="section-title">Top 20 Recruits</h2>
           <div className="recruits-list">
             {topRecruits.slice(0, 20).map((prospect) => (
               <div key={prospect.id} className="recruit-item">
