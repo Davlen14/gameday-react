@@ -24,9 +24,8 @@ const Home = () => {
         const pollsPromise = teamsService.getPolls(2024, "ap", week);
 
         // Determine the query param for games
-        const queryParam = week === "postseason" 
-          ? { seasonType: "postseason" } 
-          : parseInt(week, 10);
+        const queryParam =
+          week === "postseason" ? { seasonType: "postseason" } : parseInt(week, 10);
 
         // Fetch teams, polls, games, and recruits in parallel
         const [teamsData, pollsData, gamesData, recruitsData] = await Promise.all([
@@ -94,7 +93,7 @@ const Home = () => {
         <h1>GAMEDAY+</h1>
       </header>
 
-      {/* Featured Section remains unchanged */}
+      {/* Featured Section */}
       <section className="featured-section">
         <div className="featured-grid">
           {/* Big Hero Card */}
@@ -108,7 +107,7 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Five Smaller Cards */}
+          {/* Featured Card: Arch Manning Buzz */}
           <div className="featured-card small-card">
             <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
             <div className="featured-overlay">
@@ -119,6 +118,7 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Featured Card: Oregon's Next Move */}
           <div className="featured-card small-card">
             <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
             <div className="featured-overlay">
@@ -129,6 +129,7 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Featured Card: Colorado on the Rise */}
           <div className="featured-card small-card">
             <img src="/photos/CU.jpg" alt="Colorado" />
             <div className="featured-overlay">
@@ -139,6 +140,7 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Featured Card: Penn State Prospects */}
           <div className="featured-card small-card">
             <img src="/photos/Pennst.jpg" alt="Penn State" />
             <div className="featured-overlay">
@@ -148,10 +150,21 @@ const Home = () => {
               </p>
             </div>
           </div>
+
+          {/* Featured Card: Georgia Article */}
+          <div className="featured-card small-card">
+            <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
+            <div className="featured-overlay">
+              <h3>Georgia's Offseason</h3>
+              <p>
+                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. Read more
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* New Two-Column Layout for Polls and Recruits */}
+      {/* Two-Column Layout for Polls & Top Recruits */}
       <div className="polls-recruits-container">
         {/* Left Column: Coaches Poll */}
         <section className="polls-section left-column">
@@ -159,21 +172,13 @@ const Home = () => {
             {polls.map((poll) => (
               <div key={poll.id} className="poll-card">
                 <h3 className="poll-title">
-                  <img
-                    src="/photos/committee.png"
-                    alt="Committee Logo"
-                    className="poll-logo"
-                  />
+                  <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
                   {poll.name}
                 </h3>
                 <div className="rankings-list">
                   {poll.rankings.slice(0, 5).map((team) => (
                     <div key={team.school} className="ranking-item">
-                      <img
-                        src={getTeamLogo(team.school)}
-                        alt={team.school}
-                        className="team-logo"
-                      />
+                      <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
                       <div className="team-info">
                         <span className="rank">#{team.rank}</span>
                         <span className="team-name">{team.school}</span>
