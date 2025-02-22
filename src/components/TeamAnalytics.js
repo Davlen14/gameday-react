@@ -1,133 +1,148 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // 🔥 Import navigation
 import teamsService from "../services/teamsService";
-import TeamScheduleChart from "./TeamScheduleChart"; 
+import TeamScheduleChart from "./TeamScheduleChart";
 import "../styles/TeamAnalytics.css";
 
 const TeamAnalytics = () => {
-    const [teams, setTeams] = useState([]);
-    const [selectedTeam, setSelectedTeam] = useState(null);
-    const [schedule, setSchedule] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate(); // 🔥 Use React Router navigation
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [schedule, setSchedule] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // 🔥 Use React Router navigation
 
-    useEffect(() => {
-        const fetchTeams = async () => {
-            try {
-                const teamsData = await teamsService.getTeams();
-                setTeams(teamsData);
-            } catch (err) {
-                setError("Failed to load teams.");
-            }
-        };
-        fetchTeams();
-    }, []);
-
-    const handleTeamChange = async (event) => {
-        const teamId = event.target.value;
-        if (!teamId) return;
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const teamData = teams.find((team) => team.id === parseInt(teamId));
-            setSelectedTeam(teamData);
-
-            const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
-            setSchedule(scheduleData);
-        } catch (err) {
-            setError("Failed to load schedule.");
-        } finally {
-            setIsLoading(false);
-        }
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams();
+        setTeams(teamsData);
+      } catch (err) {
+        setError("Failed to load teams.");
+      }
     };
+    fetchTeams();
+  }, []);
 
-    const getTeamLogo = (teamName) => {
-        const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
-        return team?.logos ? team.logos[0] : "/photos/default_team.png";
-    };
+  const handleTeamChange = async (event) => {
+    const teamId = event.target.value;
+    if (!teamId) return;
 
-    // 🔥 Navigate to game details when clicking a game card
-// Replace your handleGameClick with this:
-const handleGameClick = (gameId) => {
-    // Navigate to TeamAnalyticsDetail view.
-    // For example, pass the team's id and the gameId as a query parameter:
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const teamData = teams.find((team) => team.id === parseInt(teamId));
+      setSelectedTeam(teamData);
+
+      const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
+      setSchedule(scheduleData);
+    } catch (err) {
+      setError("Failed to load schedule.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getTeamLogo = (teamName) => {
+    const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
+    return team?.logos ? team.logos[0] : "/photos/default_team.png";
+  };
+
+  // 🔥 Navigate to game details when clicking a game card
+  const handleGameClick = (gameId) => {
+    // Navigate to TeamAnalyticsDetail view, passing team & game info:
     navigate(`/team-metrics/${selectedTeam.id}?gameId=${gameId}`);
   };
 
-    return (
-        <div className="team-analytics-container">
-            <h1>Team Analytics</h1>
+  return (
+    <div className="team-analytics-container">
+      <h1>Team Analytics</h1>
 
-            <div className="team-selector">
-                <label>Select a Team:</label>
-                <select onChange={handleTeamChange} className="team-dropdown">
-                    <option value="">-- Choose a Team --</option>
-                    {teams.map((team) => (
-                        <option key={team.id} value={team.id}>
-                            {team.school}
-                        </option>
-                    ))}
-                </select>
-            </div>
+      <div className="team-selector">
+        <label>Select a Team:</label>
+        <select onChange={handleTeamChange} className="team-dropdown">
+          <option value="">-- Choose a Team --</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.school}
+            </option>
+          ))}
+        </select>
+      </div>
 
-            {selectedTeam && (
-                <div className="team-info">
-                    <img src={getTeamLogo(selectedTeam.school)} alt={selectedTeam.school} className="team-logo" />
-                    <h2>{selectedTeam.school}</h2>
-                </div>
-            )}
-
-            {isLoading && <p>Loading schedule...</p>}
-            {error && <p className="error">{error}</p>}
-
-            {schedule.length > 0 && (
-                <>
-                    <div className="schedule">
-                        <h3>{selectedTeam.school} Schedule (2024)</h3>
-                        <ul className="game-list">
-                            {schedule.map((game) => (
-                                <li 
-                                    key={game.id} 
-                                    className="game-item" 
-                                    onClick={() => handleGameClick(game.id)} // 🔥 Click to navigate
-                                    style={{ cursor: "pointer" }} // 👀 Make it look clickable
-                                >
-                                    <div className="game-teams">
-                                        <div className="team">
-                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                            <span>{game.awayTeam}</span>
-                                        </div>
-                                        <span className="vs"> @ </span>
-                                        <div className="team">
-                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                            <span>{game.homeTeam}</span>
-                                        </div>
-                                    </div>
-                                    <div className="game-info">
-                                        <span>{new Date(game.date).toLocaleDateString()}</span>
-                                        <span className="venue">Venue: {game.venue}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* 🔥 ADD THE BAR CHART BELOW THE SCHEDULE */}
-                    <TeamScheduleChart teamName={selectedTeam.school} />
-
-                    {/* 🔥 Align Team Logos with the Chart */}
-                    <div className="team-logos-container">
-                        {schedule.map((game) => (
-                            <img key={game.id} src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo-chart" />
-                        ))}
-                    </div>
-                </>
-            )}
+      {selectedTeam && (
+        <div className="team-info">
+          <img
+            src={getTeamLogo(selectedTeam.school)}
+            alt={selectedTeam.school}
+            className="team-logo"
+          />
+          <h2>{selectedTeam.school}</h2>
         </div>
-    );
+      )}
+
+      {isLoading && <p>Loading schedule...</p>}
+      {error && <p className="error">{error}</p>}
+
+      {schedule.length > 0 && (
+        <>
+          <div className="schedule">
+            <h3>{selectedTeam.school} Schedule (2024)</h3>
+            <ul className="game-list">
+              {schedule.map((game) => (
+                <li
+                  key={game.id}
+                  className="game-item"
+                  onClick={() => handleGameClick(game.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="game-teams">
+                    <div className="team">
+                      <img
+                        src={getTeamLogo(game.awayTeam)}
+                        alt={game.awayTeam}
+                        className="team-logo"
+                      />
+                      <span>{game.awayTeam}</span>
+                    </div>
+                    <span className="vs"> @ </span>
+                    <div className="team">
+                      <img
+                        src={getTeamLogo(game.homeTeam)}
+                        alt={game.homeTeam}
+                        className="team-logo"
+                      />
+                      <span>{game.homeTeam}</span>
+                    </div>
+                  </div>
+                  <div className="game-info">
+                    <span>{new Date(game.date).toLocaleDateString()}</span>
+                    <span className="venue">Venue: {game.venue}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* The Bar Chart */}
+          <TeamScheduleChart teamName={selectedTeam.school} />
+
+          {/* Logos Under the Chart */}
+          <div className="team-logos-container">
+            {schedule.map((game) => (
+              <img
+                key={game.id}
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="chart-axis-logo" // 🔥 Use new .chart-axis-logo class
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 export default TeamAnalytics;
