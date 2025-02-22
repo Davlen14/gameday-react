@@ -102,7 +102,6 @@ const ArbitrageModal = ({
 
   // We'll use abbreviations or short forms if you have them;
   // otherwise, fallback to the full name.
-  // For demonstration, we'll just use the full name:
   const homeAbbr = game.homeTeam;
   const awayAbbr = game.awayTeam;
 
@@ -112,7 +111,6 @@ const ArbitrageModal = ({
         {/* Modal Header (Simplified) */}
         <div className="modal-header">
           <div>
-            {/* If you'd like to keep "Week X", you can show it here */}
             <div className="game-week">Week {game.week}</div>
           </div>
           <button className="close-button" onClick={onClose}>
@@ -122,16 +120,15 @@ const ArbitrageModal = ({
 
         {/* Modal Body */}
         <div className="modal-body">
-          <h3>Arbitrage Opportunity</h3>
+          <h3>{bestPair ? "Arbitrage Opportunity" : "Market Overview"}</h3>
 
-          {/* Show a table of all lines from each sportsbook */}
+          {/* Table of all lines from each sportsbook */}
           {game.lines && game.lines.length > 0 ? (
             <table className="odds-table">
               <thead>
                 <tr>
                   <th>Sportsbook</th>
-                  <th>{homeAbbr} ML</th>
-                  <th>{awayAbbr} ML</th>
+                  <th>Moneylines</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,8 +142,9 @@ const ArbitrageModal = ({
                       />
                       <span>{line.provider}</span>
                     </td>
-                    <td>{line.homeMoneyline}</td>
-                    <td>{line.awayMoneyline}</td>
+                    <td>
+                      {homeAbbr}: {line.homeMoneyline} | {awayAbbr}: {line.awayMoneyline}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -155,7 +153,7 @@ const ArbitrageModal = ({
             <p>No lines available from selected sportsbooks.</p>
           )}
 
-          {/* If we found a valid arbitrage pair, show the calculator; otherwise, show a message */}
+          {/* Arbitrage Calculator Section */}
           {bestPair ? (
             <div className="arbitrage-calculator">
               <p className="arbitrage-condition">
@@ -176,7 +174,10 @@ const ArbitrageModal = ({
                   <p>{bestPair.homeLine.provider}</p>
                   <p>ML: {bestPair.homeLine.homeMoneyline}</p>
                   <p>
-                    Decimal: {bestPair.decimalHome ? bestPair.decimalHome.toFixed(2) : "N/A"}
+                    Decimal:{" "}
+                    {bestPair.decimalHome
+                      ? bestPair.decimalHome.toFixed(2)
+                      : "N/A"}
                   </p>
                 </div>
                 <div className="pair-item">
@@ -189,7 +190,10 @@ const ArbitrageModal = ({
                   <p>{bestPair.awayLine.provider}</p>
                   <p>ML: {bestPair.awayLine.awayMoneyline}</p>
                   <p>
-                    Decimal: {bestPair.decimalAway ? bestPair.decimalAway.toFixed(2) : "N/A"}
+                    Decimal:{" "}
+                    {bestPair.decimalAway
+                      ? bestPair.decimalAway.toFixed(2)
+                      : "N/A"}
                   </p>
                 </div>
               </div>
@@ -218,7 +222,7 @@ const ArbitrageModal = ({
             </div>
           ) : (
             <p style={{ marginTop: "1rem" }}>
-              <strong>No guaranteed arbitrage found.</strong>  
+              <strong>No guaranteed arbitrage found.</strong>
             </p>
           )}
         </div>
