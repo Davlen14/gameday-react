@@ -18,7 +18,9 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const queryParam = week === "postseason" ? { seasonType: "postseason" } : week;
+        const queryParam =
+          week === "postseason" ? { seasonType: "postseason" } : week;
+
         const [teamsData, gamesData, mediaData, linesData] = await Promise.all([
           teamsService.getTeams(),
           teamsService.getGames(queryParam),
@@ -27,16 +29,23 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         ]);
 
         setTeams(teamsData);
+
+        // Filter for FBS vs. FBS games
         const fbsGames = gamesData.filter(
-          (game) => game.homeClassification === "fbs" && game.awayClassification === "fbs"
+          (game) =>
+            game.homeClassification === "fbs" &&
+            game.awayClassification === "fbs"
         );
 
+        // Sort if postseason
         const sortedGames =
           week === "postseason"
-            ? fbsGames.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+            ? fbsGames.sort(
+                (a, b) => new Date(a.startDate) - new Date(b.startDate)
+              )
             : fbsGames;
-        setGames(sortedGames);
 
+        setGames(sortedGames);
         setMedia(mediaData);
         setLines(linesData);
       } catch (err) {
@@ -48,6 +57,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     fetchData();
   }, [week]);
 
+  // Intersection Observer to detect if scoreboard is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -66,13 +76,18 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     };
   }, [setScoreboardVisible]);
 
+  // Helper functions
   const getTeamLogo = (teamName) => {
-    const team = teams.find((t) => t.school.toLowerCase() === teamName?.toLowerCase());
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
   const getTeamAbbreviation = (teamName) => {
-    const team = teams.find((t) => t.school.toLowerCase() === teamName?.toLowerCase());
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
     return team?.abbreviation || teamName;
   };
 
@@ -88,6 +103,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
+      {/* Filters on the left (NCAAF + Week Selector) */}
       <div className="scoreboard-filters">
         <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
         <div className="scoreboard-divider" />
@@ -103,50 +119,73 @@ const Scoreboard = ({ setScoreboardVisible }) => {
           <option value="postseason">Postseason</option>
         </select>
       </div>
-<div className="scoreboard-games">
-  {games.map((game) => (
-    <Link to={`/games/${game.id}`} key={game.id} className="scoreboard-game-link">
-      <div className="scoreboard-game-card">
-        <div className="scoreboard-game-header">
-          <div className={`scoreboard-game-time ${game.completed ? "final" : ""}`}>
-            {game.completed ? "Final" : "Live"}
-          </div>
-          <div className="scoreboard-game-network">
-            <FaTv className="scoreboard-tv-icon" />
-            {getMediaForGame(game.id)?.network && <span>{getMediaForGame(game.id).network}</span>}
-          </div>
-        </div>
-        <div className="scoreboard-card-team">
-            <div className="scoreboard-team-info">
-              <img
-                src={getTeamLogo(game.awayTeam)}
-                alt={game.awayTeam}
-                className="scoreboard-team-logo"
-              />
-              <span className="scoreboard-team-name">
-                {getTeamAbbreviation(game.awayTeam)}
-              </span>
-            </div>
-            <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
-          </div>
-        <div className="scoreboard-home-row">
-          <div className="scoreboard-card-team scoreboard-home-team">
-            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="scoreboard-team-logo" />
-            <span className="scoreboard-team-name">{getTeamAbbreviation(game.homeTeam)}</span>
-            <span className="scoreboard-team-score">{game.homePoints ?? ""}</span>
-          </div>
-        </div>
+
+      {/* Scrollable list of games */}
+      <div className="scoreboard-games">
+        {games.map((game) => {
+          const isFinal = game.completed;
+          const mediaInfo = getMediaForGame(game.id);
+
+          return (
+            <Link
+              to={`/games/${game.id}`}
+              key={game.id}
+              className="scoreboard-game-link"
+            >
+              <div className="scoreboard-game-card">
+                {/* Top row: status + TV network */}
+                <div className="scoreboard-game-header">
+                  <div
+                    className={`scoreboard-game-time ${isFinal ? "final" : ""}`}
+                  >
+                    {isFinal ? "Final" : "Live"}
+                  </div>
+                  <div className="scoreboard-game-network">
+                    <FaTv className="scoreboard-tv-icon" />
+                    {mediaInfo?.network && <span>{mediaInfo.network}</span>}
+                  </div>
+                </div>
+
+                {/* Away Team Row */}
+                <div className="scoreboard-card-team">
+                  <div className="scoreboard-team-info">
+                    <img
+                      src={getTeamLogo(game.awayTeam)}
+                      alt={game.awayTeam}
+                      className="scoreboard-team-logo"
+                    />
+                    <span className="scoreboard-team-name">
+                      {getTeamAbbreviation(game.awayTeam)}
+                    </span>
+                  </div>
+                  <span className="scoreboard-team-score">
+                    {game.awayPoints ?? ""}
+                  </span>
+                </div>
+
+                {/* Home Team Row */}
+                <div className="scoreboard-card-team">
+                  <div className="scoreboard-team-info">
+                    <img
+                      src={getTeamLogo(game.homeTeam)}
+                      alt={game.homeTeam}
+                      className="scoreboard-team-logo"
+                    />
+                    <span className="scoreboard-team-name">
+                      {getTeamAbbreviation(game.homeTeam)}
+                    </span>
+                  </div>
+                  <span className="scoreboard-team-score">
+                    {game.homePoints ?? ""}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
-    </Link>
-  ))}
-</div>
     </div>
   );
 };
 
 export default Scoreboard;
-
-
-
-
-
