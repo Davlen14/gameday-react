@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaTv } from "react-icons/fa";
+import { FaTv, FaStar } from "react-icons/fa";
 import teamsService, { getAllRecruits } from "../services/teamsService";
 import "../styles/Home.css";
 import { useWeek } from "../context/WeekContext"; // Global week state
@@ -82,6 +82,17 @@ const Home = () => {
       CBS: <FaTv className="network-icon cbs" />
     };
     return networks[network] || <FaTv className="network-icon default" />;
+  };
+
+  // Inline helper to render stars
+  const renderStars = (stars) => {
+    return (
+      <div className="stars-container">
+        {[...Array(stars)].map((_, index) => (
+          <FaStar key={index} className="star-icon" />
+        ))}
+      </div>
+    );
   };
 
   if (isLoading) return <div className="loading-container">Loading...</div>;
@@ -201,6 +212,7 @@ const Home = () => {
                 <span className="recruit-rank">#{prospect.ranking}</span>
                 <span className="recruit-name">{prospect.name}</span>
                 <span className="recruit-position">({prospect.position})</span>
+                {prospect.stars && renderStars(prospect.stars)}
                 {prospect.committedTo && (
                   <span className="recruit-commit">→ {prospect.committedTo}</span>
                 )}
