@@ -183,6 +183,20 @@
     font-weight: 500;
     color: #888;
   }
+
+  .scoreboard-game-network {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* space between outlet text and icon */
+  }
+  
+  /* Keep outlet text subtle and small */
+  .scoreboard-tv-outlet {
+    font-size: 11px;
+    font-weight: 400;
+    color: #666;
+    display: inline-block;
+  }
   
   /* Responsive Adjustments */
   @media (max-width: 768px) {

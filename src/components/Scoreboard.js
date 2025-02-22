@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { FaTv } from "react-icons/fa";
-import { useWeek } from "../context/WeekContext"; // ✅ Import global week state
+import { useWeek } from "../context/WeekContext";
 
 const Scoreboard = ({ setScoreboardVisible }) => {
   const { week, setWeek } = useWeek();
@@ -12,7 +12,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   const [lines, setLines] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const scoreboardRef = useRef(null); // ✅ Track visibility
+  const scoreboardRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,7 +57,6 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     fetchData();
   }, [week]);
 
-  // Intersection Observer to detect if scoreboard is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -93,8 +92,6 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   const getMediaForGame = (gameId) =>
     media.find((m) => m.id === gameId) || null;
-  const getLinesForGame = (gameId) =>
-    lines.find((l) => l.id === gameId) || null;
 
   if (isLoading) {
     return <div className="loading-container">Loading...</div>;
@@ -143,12 +140,13 @@ const Scoreboard = ({ setScoreboardVisible }) => {
                     {isFinal ? "Final" : "Live"}
                   </div>
                   <div className="scoreboard-game-network">
-                    <FaTv className="scoreboard-tv-icon" />
+                    {/* Put the outlet first, then the TV icon */}
                     {mediaInfo?.outlet && (
                       <span className="scoreboard-tv-outlet">
                         {mediaInfo.outlet}
                       </span>
                     )}
+                    <FaTv className="scoreboard-tv-icon" />
                   </div>
                 </div>
 
