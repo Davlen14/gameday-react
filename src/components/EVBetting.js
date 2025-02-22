@@ -6,9 +6,9 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
   }
 
   return (
-    <div className="ev-container modern-ev-container">
+    <div className="ev-container">
       {oddsData.map((game) => (
-        <div key={game.id} className="game-card modern-game-card">
+        <div key={game.id} className="game-card">
           {/* Game Header */}
           <div className="game-header">
             <div className="team-info">
@@ -31,7 +31,7 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             <div className="game-week">Week {game.week}</div>
           </div>
 
-          {/* Odds Comparison Table */}
+          {/* Compare Sportsbooks in a Table */}
           <div className="odds-comparison">
             {game.lines.length > 0 ? (
               <table className="odds-table">
