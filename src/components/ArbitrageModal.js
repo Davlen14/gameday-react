@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import "./ArbitrageModal.css";
+import "../styles/ArbitrageModal.css";
 
 const convertMoneylineToDecimal = (ml) => {
   const m = parseFloat(ml);
