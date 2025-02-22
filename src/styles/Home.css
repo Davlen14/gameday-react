@@ -1,208 +1,208 @@
 /* Modern CSS Reset */
 *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Modern Google Fonts Import using display=swap for better performance */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap&display=swap');
+
+/* Modern CSS Variables with fallbacks */
+:root {
+  /* Base Colors */
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --border-color: #dddddd;
   
-  /* Modern Google Fonts Import using display=swap for better performance */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap&display=swap');
+  /* Spacing System */
+  --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+  --space-sm: clamp(0.5rem, 1vw, 1rem);
+  --space-md: clamp(1rem, 2vw, 2rem);
+  --space-lg: clamp(1.5rem, 3vw, 3rem);
   
-  /* Modern CSS Variables with fallbacks */
+  /* Typography */
+  --font-size-sm: clamp(0.75rem, 1vw, 0.875rem);
+  --font-size-base: clamp(0.875rem, 1.2vw, 1rem);
+  --font-size-lg: clamp(1.125rem, 1.5vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 2vw, 1.5rem);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+/* Modern Dark Mode using prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
   :root {
-    /* Base Colors */
-    --primary-color: #ffffff;
-    --accent-color: #D4001C;
-    --text-color: #333333;
-    --background-color: #f5f5f5;
-    --border-color: #dddddd;
+    --primary-color: #1a1a1a;
+    --text-color: #ffffff;
+    --background-color: #121212;
+    --border-color: #2a2a2a;
     
-    /* Spacing System */
-    --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
-    --space-sm: clamp(0.5rem, 1vw, 1rem);
-    --space-md: clamp(1rem, 2vw, 2rem);
-    --space-lg: clamp(1.5rem, 3vw, 3rem);
-    
-    /* Typography */
-    --font-size-sm: clamp(0.75rem, 1vw, 0.875rem);
-    --font-size-base: clamp(0.875rem, 1.2vw, 1rem);
-    --font-size-lg: clamp(1.125rem, 1.5vw, 1.25rem);
-    --font-size-xl: clamp(1.25rem, 2vw, 1.5rem);
-    
-    /* Transitions */
-    --transition-fast: 150ms ease;
-    --transition-normal: 300ms ease;
-    
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
-    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
-    
-    /* Border Radius */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 16px;
+    /* Dark mode specific shadows */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
+  }
+}
+
+/* Modern Container with CSS Grid */
+.home-container {
+  font-family: "Orbitron", "Titillium Web", system-ui, -apple-system, sans-serif;
+  padding: var(--space-md);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+}
+
+/* Modern Hero Header with CSS Grid */
+.hero-header {
+  display: grid;
+  place-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0;
+}
+
+.hero-header h1 {
+  font-size: var(--font-size-xl);
+  color: var(--accent-color);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Modern Form Elements */
+select {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--primary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-fast);
+  cursor: pointer;
+  
+  &:hover {
+    border-color: var(--accent-color);
   }
   
-  /* Modern Dark Mode using prefers-color-scheme */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --primary-color: #1a1a1a;
-      --text-color: #ffffff;
-      --background-color: #121212;
-      --border-color: #2a2a2a;
-      
-      /* Dark mode specific shadows */
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
-      --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
-      --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
+  }
+}
+
+/* Modern Game Cards using CSS Grid and Flexbox */
+.games-slider {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 280px;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-md);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) transparent;
+}
+
+.game-card {
+  scroll-snap-align: start;
+  background: var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Modern Grid Layout for Featured Section */
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-md);
+}
+
+/* Modern Card Animations */
+.featured-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform var(--transition-normal);
   }
   
-  /* Modern Container with CSS Grid */
-  .home-container {
-    font-family: "Orbitron", "Titillium Web", system-ui, -apple-system, sans-serif;
-    padding: var(--space-md);
-    background-color: var(--background-color);
-    color: var(--text-color);
-    min-height: 100vh;
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* Modern Loading States with CSS */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.loading-container {
+  background: linear-gradient(90deg, 
+    var(--background-color) 0%, 
+    var(--primary-color) 50%, 
+    var(--background-color) 100%);
+  background-size: 2000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* Modern Responsive Design using Container Queries */
+@container (min-width: 768px) {
+  .polls-recruits-container {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
   }
-  
-  /* Modern Hero Header with CSS Grid */
-  .hero-header {
-    display: grid;
-    place-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) 0;
+}
+
+/* Modern Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  
-  .hero-header h1 {
-    font-size: var(--font-size-xl);
-    color: var(--accent-color);
-    font-style: italic;
-    text-align: center;
-  }
-  
-  /* Modern Form Elements */
-  select {
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--primary-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-base);
-    transition: border-color var(--transition-fast);
-    cursor: pointer;
-    
-    &:hover {
-      border-color: var(--accent-color);
-    }
-    
-    &:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
-    }
-  }
-  
-  /* Modern Game Cards using CSS Grid and Flexbox */
-  .games-slider {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 280px;
-    gap: var(--space-md);
-    overflow-x: auto;
-    padding-bottom: var(--space-md);
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent-color) transparent;
-  }
-  
-  .game-card {
-    scroll-snap-align: start;
-    background: var(--primary-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-md);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-    
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-  }
-  
-  /* Modern Grid Layout for Featured Section */
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-    gap: var(--space-md);
-  }
-  
-  /* Modern Card Animations */
+}
+
+/* Print Styles */
+@media print {
+  .game-card,
   .featured-card {
-    position: relative;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    
-    img {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      transition: transform var(--transition-normal);
-    }
-    
-    &:hover img {
-      transform: scale(1.05);
-    }
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
-  
-  /* Modern Loading States with CSS */
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-  
-  .loading-container {
-    background: linear-gradient(90deg, 
-      var(--background-color) 0%, 
-      var(--primary-color) 50%, 
-      var(--background-color) 100%);
-    background-size: 2000px 100%;
-    animation: shimmer 2s infinite linear;
-  }
-  
-  /* Modern Responsive Design using Container Queries */
-  @container (min-width: 768px) {
-    .polls-recruits-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--space-md);
-    }
-  }
-  
-  /* Modern Accessibility Improvements */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-  
-  /* Print Styles */
-  @media print {
-    .game-card,
-    .featured-card {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-  }
+}
