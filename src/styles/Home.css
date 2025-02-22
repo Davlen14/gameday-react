@@ -97,7 +97,7 @@ select {
   display: grid;
   gap: 1rem;             /* Tighter gap than 1.5rem */
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  margin-bottom: 1.5rem; /* Slightly reduced bottom margin */
+  margin-bottom: 1.5rem;   /* Slightly reduced bottom margin */
 }
 
 .poll-card {
@@ -115,18 +115,21 @@ select {
   }
 }
 
+/* Modified Rankings for Polls - inline display */
 .ranking-item {
-  display: flex;
+  display: inline-flex; /* Change to inline-flex for inline layout */
   align-items: center;
-  gap: 6px;         /* Add small horizontal gap for inline items */
-  padding: 0.5rem 0; 
-  border-bottom: 1px solid #ddd;
+  gap: 4px;         /* Reduced gap */
+  padding: 0.25rem 0; 
   font-size: 0.85rem; /* Smaller text for poll items */
+  /* Remove border-bottom if you want a cleaner single-line look */
+  border-bottom: none;
 }
 
 @media (prefers-color-scheme: dark) {
   .ranking-item {
-    border-bottom: 1px solid #444;
+    /* Optional: you may remove the border entirely in dark mode too */
+    border-bottom: none;
   }
 }
 
@@ -252,7 +255,7 @@ select {
 
 .team-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.9rem;  
   margin-bottom: 0.2rem;
 }
 
@@ -276,7 +279,7 @@ select {
 
 .vs-circle {
   background: linear-gradient(135deg, var(--accent-color), #b30000);
-  width: 36px; 
+  width: 36px;         
   height: 36px;
   border-radius: 50%;
   display: flex;
@@ -284,7 +287,7 @@ select {
   justify-content: center;
   font-weight: 700;
   color: white;
-  font-size: 0.9rem; 
+  font-size: 0.9rem;   
   box-shadow: 0 3px 10px rgba(142, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
@@ -300,7 +303,7 @@ select {
 }
 
 .score {
-  font-size: 1rem; 
+  font-size: 1rem;   
   font-weight: 700;
   color: var(--text-color);
   padding: 0.2rem 0.6rem;
@@ -361,8 +364,8 @@ select {
 =============================== */
 .loading-container, .error-container {
   text-align: center;
-  padding: 1.5rem; 
-  font-size: 1rem; 
+  padding: 1.5rem;  
+  font-size: 1rem;  
 }
 
 /* ===============================
@@ -528,7 +531,6 @@ select {
   font-size: 0.9rem;  /* was 0.8rem */
 }
 
-/* Committed team logo: 20px instead of 18px */
 .recruit-commit {
   display: flex;
   align-items: center;
@@ -538,8 +540,9 @@ select {
   color: #333;
 }
 
+/* Committed team logo: use new class name and slightly bigger */
 .committed-team-logo {
-  width: 20px;  /* was 18px */
+  width: 20px;  /* increased to 20px */
   height: 20px;
   object-fit: contain;
   border: none;
@@ -547,7 +550,7 @@ select {
 }
 
 .commit-check {
-  font-size: 15px; /* was 14px */
+  font-size: 15px; /* slightly smaller than 16px as per previous change */
   color: green;
 }
 
