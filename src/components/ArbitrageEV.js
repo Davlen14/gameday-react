@@ -16,6 +16,10 @@ const ArbitrageEV = () => {
   // State for week filter
   const [week, setWeek] = useState(1);
 
+  // Track selected game in each tab
+  const [selectedArbGame, setSelectedArbGame] = useState(null);
+  const [selectedEVGame, setSelectedEVGame] = useState(null);
+
   // Fetch teams once to get logos
   useEffect(() => {
     const fetchTeams = async () => {
@@ -54,11 +58,10 @@ const ArbitrageEV = () => {
         setIsLoading(true);
 
         // Use your original logic that WORKS: pass `null` for the second argument
-        // so that your backend returns all the lines. 
+        // so that your backend returns all the lines.
         const response = await teamsService.getGameLines(2024, null, "regular");
 
-        // Now filter those lines locally based on the selected `week`.
-        // If your API does return a `week` field, we can match it here:
+        // Filter by week
         const weekFiltered = response.filter((game) => game.week === week);
 
         // Filter for relevant sportsbooks
@@ -74,7 +77,7 @@ const ArbitrageEV = () => {
           ),
         }));
 
-        // Sort by week for better readability
+        // Sort by week
         const sortedLines = filteredLines.sort((a, b) => a.week - b.week);
 
         setOddsData(sortedLines);
@@ -86,11 +89,17 @@ const ArbitrageEV = () => {
     };
 
     fetchOdds();
+    // Reset the selected games whenever the week changes
+    setSelectedArbGame(null);
+    setSelectedEVGame(null);
   }, [week]);
 
   // Handle tab switching
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    // Optionally reset selection when switching tabs:
+    // setSelectedArbGame(null);
+    // setSelectedEVGame(null);
   };
 
   // Handle week filter changes
@@ -98,20 +107,106 @@ const ArbitrageEV = () => {
     setWeek(Number(e.target.value));
   };
 
+  // LEFT COLUMN: Week filter + Game list for the active tab
+  const renderGameList = () => {
+    return (
+      <div className="left-panel">
+        {/* Week Filter */}
+        <div className="week-filter">
+          <label htmlFor="week-select">Select Week: </label>
+          <select id="week-select" value={week} onChange={handleWeekChange}>
+            {Array.from({ length: 20 }, (_, i) => i + 1).map((w) => (
+              <option key={w} value={w}>
+                Week {w}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Game List */}
+        <div className="game-list">
+          {oddsData.map((game) => {
+            // Determine if this game is selected in the current tab
+            const isSelected =
+              activeTab === "arbitrage"
+                ? selectedArbGame?.id === game.id
+                : selectedEVGame?.id === game.id;
+
+            return (
+              <div
+                key={game.id}
+                className={`game-item ${isSelected ? "selected" : ""}`}
+                onClick={() => {
+                  if (activeTab === "arbitrage") {
+                    setSelectedArbGame(game);
+                  } else {
+                    setSelectedEVGame(game);
+                  }
+                }}
+              >
+                <img
+                  src={getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="team-logo-sm"
+                />
+                <span>{game.homeTeam}</span>
+                <span className="vs-text">vs</span>
+                <img
+                  src={getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="team-logo-sm"
+                />
+                <span>{game.awayTeam}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // RIGHT COLUMN: Display details for the selected game
+  const renderGameDetails = () => {
+    // Figure out which game is selected based on active tab
+    const currentGame =
+      activeTab === "arbitrage" ? selectedArbGame : selectedEVGame;
+
+    if (!currentGame) {
+      return (
+        <div className="right-panel no-selection">
+          <p>Please select a game from the list.</p>
+        </div>
+      );
+    }
+
+    // For Arbitrage tab, show the Arbitrage component
+    if (activeTab === "arbitrage") {
+      return (
+        <div className="right-panel">
+          <Arbitrage
+            oddsData={[currentGame]} // pass as an array with a single game
+            getSportsbookLogo={getSportsbookLogo}
+            getTeamLogo={getTeamLogo}
+          />
+        </div>
+      );
+    }
+
+    // For Positive EV tab, show the EVBetting component
+    return (
+      <div className="right-panel">
+        <EVBetting
+          oddsData={[currentGame]}
+          getSportsbookLogo={getSportsbookLogo}
+          getTeamLogo={getTeamLogo}
+        />
+      </div>
+    );
+  };
+
+  // MAIN RENDER
   return (
     <div className="ev-arbitrage-container">
-      {/* Week Filter */}
-      <div className="week-filter">
-        <label htmlFor="week-select">Select Week: </label>
-        <select id="week-select" value={week} onChange={handleWeekChange}>
-          {Array.from({ length: 20 }, (_, i) => i + 1).map((w) => (
-            <option key={w} value={w}>
-              Week {w}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* Tab Navigation */}
       <div className="tab-nav">
         <button
@@ -128,26 +223,17 @@ const ArbitrageEV = () => {
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="tab-content">
-        {isLoading ? (
-          <p>Loading betting lines...</p>
-        ) : error ? (
-          <p className="error-message">Error: {error}</p>
-        ) : activeTab === "arbitrage" ? (
-          <Arbitrage
-            oddsData={oddsData}
-            getSportsbookLogo={getSportsbookLogo}
-            getTeamLogo={getTeamLogo}
-          />
-        ) : (
-          <EVBetting
-            oddsData={oddsData}
-            getSportsbookLogo={getSportsbookLogo}
-            getTeamLogo={getTeamLogo}
-          />
-        )}
-      </div>
+      {/* Content Section */}
+      {isLoading ? (
+        <p>Loading betting lines...</p>
+      ) : error ? (
+        <p className="error-message">Error: {error}</p>
+      ) : (
+        <div className="two-column-layout">
+          {renderGameList()}
+          {renderGameDetails()}
+        </div>
+      )}
     </div>
   );
 };
