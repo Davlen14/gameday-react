@@ -20,7 +20,7 @@ const Home = () => {
       try {
         setIsLoading(true);
 
-        // Fetch polls (Coaches Poll)
+        // Fetch polls (e.g., "ap" or "coaches")
         const pollsPromise = teamsService.getPolls(2024, "ap", week);
 
         // Determine the query param for games
@@ -46,7 +46,7 @@ const Home = () => {
         );
         setGames(fbsGames);
 
-        // Sort recruits by ranking and keep top 15
+        // Sort recruits by ranking and keep top 15 (adjust as desired)
         const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
         setTopRecruits(sortedRecruits.slice(0, 15));
       } catch (err) {
@@ -191,7 +191,8 @@ const Home = () => {
                   {poll.name}
                 </h3>
                 <div className="rankings-list">
-                  {poll.rankings.slice(0, 5).map((team) => (
+                  {/* Show top 10 teams instead of 5 */}
+                  {poll.rankings.slice(0, 10).map((team, idx) => (
                     <div key={team.school} className="ranking-item">
                       {/* Smaller .team-logo per new CSS */}
                       <img
@@ -216,7 +217,7 @@ const Home = () => {
         <section className="recruits-section right-column">
           <h2 className="section-title">Top 10 Recruits</h2>
           <div className="recruits-list">
-            {topRecruits.map((prospect) => (
+            {topRecruits.slice(0, 10).map((prospect) => (
               <div key={prospect.id} className="recruit-item">
                 <span className="recruit-rank">#{prospect.ranking}</span>
                 <span className="recruit-name">{prospect.name}</span>

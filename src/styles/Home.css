@@ -1,9 +1,9 @@
 /* Import Google Fonts: Orbitron and Titillium Web */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
-/* =============================== */
-/* COLOR SCHEME & GLOBALS */
-/* =============================== */
+/* ===============================
+   COLOR SCHEME & GLOBALS
+=============================== */
 :root {
   --primary-color: #ffffff;
   --accent-color: #D4001C;
@@ -22,9 +22,9 @@
   }
 }
 
-/* =============================== */
-/* HOME CONTAINER */
-/* =============================== */
+/* ===============================
+   HOME CONTAINER
+=============================== */
 .home-container {
   font-family: "Orbitron", "Titillium Web", sans-serif; 
   padding: 1rem 1.5rem;
@@ -33,9 +33,9 @@
   min-height: 100vh;
 }
 
-/* =============================== */
-/* HERO HEADER */
-/* =============================== */
+/* ===============================
+   HERO HEADER
+=============================== */
 .hero-header {
   text-align: center;
   margin-top: 5px;
@@ -65,9 +65,9 @@ select {
   font-size: 0.95rem;
 }
 
-/* =============================== */
-/* SECTION TITLES */
-/* =============================== */
+/* ===============================
+   SECTION TITLES
+=============================== */
 .section-title {
   color: var(--accent-color);
   border-bottom: 2px solid var(--accent-color);
@@ -77,9 +77,9 @@ select {
   font-weight: 600;
 }
 
-/* =============================== */
-/* POLLS SECTION */
-/* =============================== */
+/* ===============================
+   POLLS SECTION
+=============================== */
 .poll-title {
   display: flex;
   align-items: center;
@@ -129,12 +129,14 @@ select {
   }
 }
 
-/* Shrink poll logos to match checkmark size */
+/* No border or radius for poll logos */
 .team-logo {
-  width: 20px; /* Reduced from 40px */
+  width: 20px;
   height: 20px;
   margin-right: 0.75rem;
   object-fit: contain;
+  border: none;      /* removed border */
+  border-radius: 0;  /* removed radius */
 }
 
 .team-info {
@@ -147,9 +149,9 @@ select {
   font-weight: bold;
 }
 
-/* =============================== */
-/* MODERN GAME CARDS (Slider) */
-/* =============================== */
+/* ===============================
+   MODERN GAME CARDS (Slider)
+=============================== */
 .games-slider {
   display: flex;
   overflow-x: auto;
@@ -345,18 +347,18 @@ select {
   background: rgba(142, 0, 0, 0.4);
 }
 
-/* =============================== */
-/* LOADING & ERROR STATES */
-/* =============================== */
+/* ===============================
+   LOADING & ERROR STATES
+=============================== */
 .loading-container, .error-container {
   text-align: center;
   padding: 2rem;
   font-size: 1.1rem;
 }
 
-/* =============================== */
-/* FEATURED SECTION */
-/* =============================== */
+/* ===============================
+   FEATURED SECTION
+=============================== */
 .featured-section {
   margin-bottom: 2.5rem;
 }
@@ -462,9 +464,9 @@ select {
   }
 }
 
-/* =============================== */
-/* POLLS & RECRUITS SECTION (Two-Column Layout) */
-/* =============================== */
+/* ===============================
+   POLLS & RECRUITS SECTION (Two-Column Layout)
+=============================== */
 .polls-recruits-container {
   display: flex;
   gap: 2rem;
@@ -519,13 +521,13 @@ select {
   color: #333;
 }
 
-/* Committed team logo should be small (20px) */
+/* Committed team logo should be small (20px), no border */
 .committed-team-logo {
   width: 20px;
   height: 20px;
   object-fit: contain;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
+  border: none;
+  border-radius: 0;
 }
 
 .commit-check {
@@ -570,5 +572,6 @@ select {
   }
 }
 
-/* =============================== */
-/* END OF FILE */
+/* ===============================
+   END OF FILE
+=============================== */
