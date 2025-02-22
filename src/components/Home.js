@@ -46,7 +46,7 @@ const Home = () => {
         );
         setGames(fbsGames);
 
-        // Sort recruits by ranking and keep top 20 (adjust as desired)
+        // Sort recruits by ranking and keep top 20
         const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
         setTopRecruits(sortedRecruits.slice(0, 20));
       } catch (err) {
@@ -85,15 +85,13 @@ const Home = () => {
   };
 
   // Inline helper to render stars for recruits
-  const renderStars = (stars) => {
-    return (
-      <div className="stars-container">
-        {[...Array(stars)].map((_, index) => (
-          <FaStar key={index} className="star-icon" />
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (stars) => (
+    <div className="stars-container">
+      {[...Array(stars)].map((_, index) => (
+        <FaStar key={index} className="star-icon" />
+      ))}
+    </div>
+  );
 
   if (isLoading) return <div className="loading-container">Loading...</div>;
   if (error) return <div className="error-container">Error: {error}</div>;
@@ -177,7 +175,7 @@ const Home = () => {
 
       {/* Two-Column Layout for Polls & Top Recruits */}
       <div className="polls-recruits-container">
-        {/* Left Column: Coaches Poll */}
+        {/* Left Column: Polls */}
         <section className="polls-section left-column">
           <div className="polls-grid">
             {polls.map((poll) => (
@@ -190,21 +188,19 @@ const Home = () => {
                   />
                   {poll.name}
                 </h3>
+
                 <div className="rankings-list">
-                  {/* Show top 10 teams instead of 5 */}
-                  {poll.rankings.slice(0, 10).map((team, idx) => (
+                  {/* Show top 10 teams in a single line: #6 [logo] Team 1019 pts */}
+                  {poll.rankings.slice(0, 10).map((team) => (
                     <div key={team.school} className="ranking-item">
-                      {/* Smaller .team-logo per new CSS */}
+                      <span className="poll-rank">#{team.rank}</span>
                       <img
                         src={getTeamLogo(team.school)}
                         alt={team.school}
-                        className="team-logo"
+                        className="team-poll-logo" /* renamed for polls specifically */
                       />
-                      <div className="team-info">
-                        <span className="rank">#{team.rank}</span>
-                        <span className="team-name">{team.school}</span>
-                        <span className="points">{team.points} pts</span>
-                      </div>
+                      <span className="poll-team-name">{team.school}</span>
+                      <span className="poll-points">{team.points} pts</span>
                     </div>
                   ))}
                 </div>
@@ -213,7 +209,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Right Column: Top 10 Recruits */}
+        {/* Right Column: Top 20 Recruits */}
         <section className="recruits-section right-column">
           <h2 className="section-title">Top 20 Recruits</h2>
           <div className="recruits-list">
@@ -225,7 +221,6 @@ const Home = () => {
                 {prospect.stars && renderStars(prospect.stars)}
                 {prospect.committedTo && (
                   <span className="recruit-commit">
-                    {/* Smaller .committed-team-logo per new CSS */}
                     <img
                       src={getTeamLogo(prospect.committedTo)}
                       alt={`${prospect.committedTo} Logo`}
@@ -247,11 +242,7 @@ const Home = () => {
         </h2>
         <div className="games-slider">
           {games.map((game) => (
-            <Link
-              to={`/games/${game.id}`}
-              key={game.id}
-              className="game-card-link"
-            >
+            <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
               <div className="game-card">
                 <div className="game-header">
                   <div className="game-time">
@@ -270,10 +261,7 @@ const Home = () => {
                 </div>
                 <div className="teams-container">
                   <div className="team home-team">
-                    <img
-                      src={getTeamLogo(game.homeTeam)}
-                      alt={game.homeTeam}
-                    />
+                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
                     <div className="team-info">
                       <span className="team-name">{game.homeTeam}</span>
                       <span className="team-record">(8-2)</span>
@@ -288,10 +276,7 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="team away-team">
-                    <img
-                      src={getTeamLogo(game.awayTeam)}
-                      alt={game.awayTeam}
-                    />
+                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
                     <div className="team-info">
                       <span className="team-name">{game.awayTeam}</span>
                       <span className="team-record">(7-3)</span>
