@@ -46,9 +46,9 @@ const Home = () => {
         );
         setGames(fbsGames);
 
-        // Sort recruits by ranking and keep top 15 (adjust as desired)
+        // Sort recruits by ranking and keep top 20 (adjust as desired)
         const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
-        setTopRecruits(sortedRecruits.slice(0, 15));
+        setTopRecruits(sortedRecruits.slice(0, 20));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -217,7 +217,7 @@ const Home = () => {
         <section className="recruits-section right-column">
           <h2 className="section-title">Top 10 Recruits</h2>
           <div className="recruits-list">
-            {topRecruits.slice(0, 10).map((prospect) => (
+            {topRecruits.slice(0, 20).map((prospect) => (
               <div key={prospect.id} className="recruit-item">
                 <span className="recruit-rank">#{prospect.ranking}</span>
                 <span className="recruit-name">{prospect.name}</span>
