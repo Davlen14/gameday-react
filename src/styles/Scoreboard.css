@@ -12,49 +12,46 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Reduced padding for a smaller bar */
-    padding: 4px 8px;
+    padding: 4px 8px; /* Reduced padding */
     width: 100%;
     box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
   }
   
-/* Minimal Week Filter & NCAAF Label */
-.scoreboard-filters {
+  /* Minimal Week Filter & NCAAF Label */
+  .scoreboard-filters {
     display: flex;
     align-items: center;
     gap: 4px; /* Reduced gap */
     font-size: 12px; /* Smaller overall text */
   }
   
-  /* Thin vertical divider */
   .scoreboard-divider {
     border-left: 1px solid #ddd;
     height: 16px;
-    margin: 0 6px; /* smaller margin */
+    margin: 0 6px;
   }
   
-
   .scoreboard-ncaaf-dropdown {
     font-size: 12px;
-    font-weight: 400; /* Lighter weight for a subtler look */
-    color: #666; /* Softer color */
-    padding: 2px 4px; /* Minimal padding */
-    background: transparent; /* No background to blend in */
+    font-weight: 400;
+    color: #666;
+    padding: 2px 4px;
+    background: transparent;
+    transition: background-color 0.2s ease;
   }
   
   .scoreboard-ncaaf-dropdown:hover {
     background-color: #f0f0f0;
   }
   
-  /* Week dropdown */
   .scoreboard-week-dropdown {
     font-size: 12px;
     color: #666;
     cursor: pointer;
     border: 1px solid #ddd;
-    border-radius: 3px; /* Slightly rounded for a modern feel */
+    border-radius: 3px;
     background-color: #fafafa;
-    padding: 2px 6px; /* Minimal padding */
+    padding: 2px 6px;
     transition: background-color 0.2s ease;
   }
   
@@ -68,14 +65,13 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex: 1;
-    margin-left: 10px; /* slightly less space */
+    margin-left: 10px;
     scrollbar-width: none; /* Firefox */
   }
   .scoreboard-games::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
   }
   
-  /* Remove default link styles for scoreboard "cards" */
   .scoreboard-game-link {
     text-decoration: none;
     color: inherit;
@@ -84,12 +80,10 @@
   /* Game card styling */
   .scoreboard-game-card {
     flex: 0 0 auto;
-    /* Tighter min-width to fit more cards in one row */
-    min-width: 110px;
+    min-width: 110px; /* Tighter min-width */
     display: flex;
     flex-direction: column;
-    /* less padding for a smaller card */
-    padding: 4px 6px;
+    padding: 4px 6px; /* Less padding */
     border-right: 1px solid #ccc;
     background: none;
     transition: background-color 0.2s ease;
@@ -103,17 +97,17 @@
     background-color: #f9f9f9;
   }
   
-  /* Header row: e.g., "Final" or "Live" + TV icon */
+  /* Game header row (status + TV outlet) */
   .scoreboard-game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 2px; /* less spacing */
+    margin-bottom: 2px;
   }
   
   .scoreboard-game-time {
-    font-size: 10px; /* smaller */
+    font-size: 10px;
     font-weight: 400;
     color: #444;
   }
@@ -128,60 +122,59 @@
     gap: 4px;
   }
   
-  /* TV icon smaller font */
+  /* TV outlet and icon: outlet text is limited and subtle */
+  .scoreboard-tv-outlet {
+    font-size: 10px;
+    font-weight: 400;
+    color: #666;
+    display: inline-block;
+    max-width: 50px; /* Limit width so long names are truncated */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
   .scoreboard-tv-icon {
     font-size: 12px;
     color: #000;
   }
   
-  /* Away/Home team row */
+  /* Team rows: both away and home */
   .scoreboard-card-team {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Logo+name left, score right */
     align-items: center;
     width: 100%;
-    margin: 2px 0; /* tighter vertical spacing */
+    margin: 2px 0;
   }
   
   .scoreboard-team-info {
     display: flex;
     align-items: center;
-    gap: 2px; /* smaller gap */
+    gap: 2px;
   }
   
-  /* Smaller logos */
+  /* Smaller team logos */
   .scoreboard-team-logo {
-    width: 18px; /* reduce from 24px */
+    width: 18px;
     height: 18px;
     object-fit: contain;
     border-radius: 4px;
   }
   
   .scoreboard-team-name {
-    font-size: 11px; /* smaller text */
+    font-size: 11px;
     font-weight: 500;
     color: #333;
   }
   
   .scoreboard-team-score {
-    font-size: 11px; /* smaller text */
+    font-size: 11px;
     font-weight: 600;
     color: #111;
   }
   
-  /* TV outlet text: limit width & show ellipsis if too long */
-  .scoreboard-tv-outlet {
-    font-size: 10px; /* smaller text */
-    font-weight: 400;
-    color: #666;
-    display: inline-block;
-    max-width: 50px; /* limit width so "SEC NETWORK" won't stretch card */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  /* O/U or Spread info (optional) */
+  /* Optional: O/U or Spread info */
   .scoreboard-sportsbook.scoreboard-home-ou {
     display: flex;
     align-items: center;
@@ -189,7 +182,7 @@
   }
   
   .scoreboard-sportsbook-logo {
-    width: 12px; /* smaller icon */
+    width: 12px;
     height: 12px;
   }
   
@@ -205,38 +198,31 @@
       flex-wrap: wrap;
       padding: 4px;
     }
-  
     .scoreboard-filters,
     .scoreboard-games {
       width: 100%;
       margin-bottom: 4px;
     }
-  
     .scoreboard-games {
       margin-left: 0;
     }
-  
     .scoreboard-game-card {
-      min-width: 100px; /* even smaller for mobile */
+      min-width: 100px;
       padding: 3px 4px;
     }
-  
     .scoreboard-ncaaf-dropdown,
     .scoreboard-week-dropdown {
       font-size: 10px;
     }
-  
     .scoreboard-game-time,
     .scoreboard-team-name,
     .scoreboard-team-score {
       font-size: 9px;
     }
-  
     .scoreboard-tv-icon {
       font-size: 10px;
     }
-  
     .scoreboard-tv-outlet {
-      max-width: 40px; /* smaller max on mobile */
+      max-width: 40px;
     }
   }
