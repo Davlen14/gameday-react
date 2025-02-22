@@ -1,24 +1,29 @@
+/* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
+/* ===============================
+   COLOR SCHEME & GLOBALS
+=============================== */
 :root {
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
   --background-color: #f5f5f5;
-  --sidebar-background-color: #004c8c;
-  --text-color: #000;
-  --sidebar-text-color: #fff;
-  --light-gray: #e0e0e0;
-  --white: #fff;
-  --black: #000;
+  --border-color: #dddddd;
 }
 
-[data-theme="dark"] {
-  --background-color: #121212;
-  --sidebar-background-color: #1e1e1e;
-  --text-color: #fff;
-  --sidebar-text-color: #000;
-  --light-gray: #fff;
-  --white: #000;
-  --black: #fff;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #333333;
+    --text-color: #ffffff;
+    --background-color: #1e1e1e;
+    --border-color: #444444;
+  }
 }
 
-/* DASHBOARD LAYOUT WRAPPER */
+/* ===============================
+   TEAM ANALYTICS / DASHBOARD LAYOUT
+=============================== */
 .team-dashboard {
   display: flex;
   min-height: 100vh;
@@ -29,19 +34,18 @@
 /* SIDEBAR */
 .team-sidebar {
   width: 280px;
-  background-color: var(--sidebar-background-color);
-  color: var(--sidebar-text-color);
-  padding: 20px;
+  background-color: var(--sidebar-background-color, #004c8c);
+  color: var(--sidebar-text-color, #fff);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* BACK LINK */
 .back-to-teams {
-  color: var(--sidebar-text-color);
+  color: var(--sidebar-text-color, #fff);
   text-decoration: none;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-weight: bold;
   align-self: flex-start;
 }
@@ -51,7 +55,7 @@
   width: 120px;
   height: 120px;
   object-fit: contain;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 /* TEAM NAME & MASCOT */
@@ -65,13 +69,13 @@
   font-size: 1rem;
   margin: 0;
   text-align: center;
-  color: var(--light-gray);
+  color: var(--light-gray, #e0e0e0);
 }
 
 /* MAIN CONTENT AREA */
 .team-main-content {
   flex: 1;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
 }
 
@@ -79,18 +83,19 @@
 .team-ratings,
 .team-schedule,
 .team-roster {
-  background: var(--white);
-  margin-bottom: 20px;
+  background: var(--primary-color);
+  margin-bottom: 16px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .team-ratings h2,
 .team-schedule h2,
 .team-roster h2 {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   font-weight: bold;
 }
 
@@ -107,8 +112,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Style each gauge */
@@ -120,19 +125,16 @@
   margin: 0 auto;
 }
 
-/* Ensure the SVG is centered */
 .gauge svg {
   display: block;
   margin: 0 auto;
 }
 
-/* Center label within the gauge (if used inside SVG) */
 .gauge-label {
   font-size: 20px;
   font-weight: bold;
 }
 
-/* Title below the gauge */
 .gauge-title {
   margin-top: 0.5rem;
   font-size: 16px;
@@ -140,7 +142,6 @@
   text-align: center;
 }
 
-/* Tick labels inside the gauge (if not overridden inline) */
 .gauge svg text {
   font-family: Arial, sans-serif;
 }
@@ -149,18 +150,18 @@
 .ratings-explanation {
   margin-top: 1rem;
   background: #e8f0fe;
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   text-align: left;
 }
 
 /* SCHEDULE SECTION */
 .schedule-item {
-  padding: 15px 0;
-  border-bottom: 1px solid #ddd;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .schedule-item:last-child {
@@ -187,16 +188,15 @@
 }
 
 .team-roster li {
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
-  font-size: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 15px;
 }
 
 .team-roster li:last-child {
   border-bottom: none;
 }
-  
-  
-  
-  
-  
+
+/* =========================================
+   END OF TEAM ANALYTICS CSS
+========================================= */

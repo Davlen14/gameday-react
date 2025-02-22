@@ -1,55 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { RadialBarChart, RadialBar } from "recharts";
-import "../styles/TeamDetail.css"; // Update/add styles as needed
+import "../styles/TeamDetail.css";
 
-//
-// 1) We'll unify all gauges to the domain [1..45].
-//    Red:   1..15   => 14 units
-//    Yellow:15..30  => 15 units
-//    Green: 30..45  => 15 units
-//    Total range = 44
-//
-// 2) We'll convert [1..45] => [0..100] internally, and
-//    define arcs so that ~32% is Red, ~34% is Yellow, ~34% is Green.
-//
-
-// For convenience, define a single domain for all metrics:
+// --- Gauge Component for Ratings ---
 const GAUGE_MIN = 1;
 const GAUGE_MAX = 45;
-const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN; // 44
+const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN;
 
-// Calculate the exact fraction of the domain for each color segment:
-const RED_LENGTH = 15 - 1;    // => 14
-const YELLOW_LENGTH = 30 - 15; // => 15
-const GREEN_LENGTH = 45 - 30;  // => 15
+const RED_LENGTH = 15 - 1;    
+const YELLOW_LENGTH = 30 - 15; 
+const GREEN_LENGTH = 45 - 30;  
 
-// Convert each segment length to a percentage of [0..100]
-const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;     // ~31.82
-const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100; // ~34.09
-const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;  // ~34.09
+const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;
+const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100;
+const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;
 
-// Hard-code data for the color segments in "gauge space" 0..100
 const gaugeData = [
   { name: "Red", value: redPercent, fill: "#ff0000" },
   { name: "Yellow", value: yellowPercent, fill: "#fdbf00" },
   { name: "Green", value: greenPercent, fill: "#00b300" },
 ];
 
-// We'll place ticks exactly at [1, 15, 30, 45].
 const TICK_VALUES = [1, 15, 30, 45];
 
-// A reusable Gauge component
 const Gauge = ({ label, rawValue }) => {
-  // 1) Clamp the raw rating to [1..45]
   const clampedValue = Math.max(GAUGE_MIN, Math.min(rawValue, GAUGE_MAX));
-
-  // 2) Convert [1..45] => [0..100]
   const normalizedValue = ((clampedValue - GAUGE_MIN) / GAUGE_RANGE) * 100;
-
-  // 3) Needle calculation
-  //    0 => angle=180°, 100 => angle=0°
   const centerX = 75;
   const centerY = 75;
   const needleLength = 60;
@@ -58,8 +36,6 @@ const Gauge = ({ label, rawValue }) => {
   const needleX = centerX + needleLength * Math.cos(rad);
   const needleY = centerY - needleLength * Math.sin(rad);
 
-  // 4) Tick marks at [1, 15, 30, 45]
-  //    Each mapped into [0..100] for angle calc
   const ticks = TICK_VALUES.map((tickVal) => {
     const tickPercent = ((tickVal - GAUGE_MIN) / GAUGE_RANGE) * 100;
     const tickAngle = 180 - (tickPercent * 180) / 100;
@@ -118,7 +94,6 @@ const Gauge = ({ label, rawValue }) => {
         ))}
       </RadialBarChart>
 
-      {/* Value in red below the gauge center */}
       <text
         x={centerX}
         y={centerY + 100}
@@ -129,7 +104,6 @@ const Gauge = ({ label, rawValue }) => {
         {Math.round(clampedValue)}
       </text>
 
-      {/* Gauge label */}
       <div className="gauge-title" style={{ marginTop: "1rem", fontSize: "14px" }}>
         {label}
       </div>
@@ -138,10 +112,11 @@ const Gauge = ({ label, rawValue }) => {
 };
 
 //
-// TeamDetail component
+// TeamDetail Component
 //
 const TeamDetail = () => {
   const { teamId } = useParams();
+  const navigate = useNavigate();
   const [allTeams, setAllTeams] = useState([]); 
   const [team, setTeam] = useState(null);
   const [ratings, setRatings] = useState({});
@@ -155,7 +130,6 @@ const TeamDetail = () => {
   });
   const [error, setError] = useState(null);
 
-  // Helper to lookup team logo
   const getTeamLogo = (teamName) => {
     const foundTeam = allTeams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -219,24 +193,23 @@ const TeamDetail = () => {
   }, [teamId]);
 
   if (isLoading.team) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div className="error">{error}</div>;
   if (!team) return <div>Team not found</div>;
 
-  // Use the team's color if available; fallback to neutral
+  // Sidebar style using team color
   const sidebarStyle = {
     backgroundColor: team.color || "#f0f0f0",
   };
 
   return (
     <div className="team-dashboard">
-      {/* Sidebar / Header area */}
+      {/* Sidebar */}
       <aside className="team-sidebar" style={sidebarStyle}>
         <Link to="/teams" className="back-to-teams">
           ← Back to All Teams
         </Link>
-        {/* Team Logo */}
         <img
-          src={team.logos?.[0] || "/photos/default_team.png"}
+          src={getTeamLogo(team.school)}
           alt={team.school}
           className="team-logo-large"
           onError={(e) => {
@@ -244,26 +217,20 @@ const TeamDetail = () => {
             e.target.src = "/photos/default_team.png";
           }}
         />
-        {/* Basic Team Info */}
         <h1 className="team-name">{team.school}</h1>
         <p className="team-mascot">{team.mascot}</p>
       </aside>
 
-      {/* Main content area */}
+      {/* Main Content */}
       <main className="team-main-content">
         {/* Ratings Section */}
         <section className="team-ratings">
           <h2>SP+ Ratings</h2>
           <div className="gauges-container">
-            {/* 
-              We now pass the raw rating from 1..45 (if the API returns something else,
-              it will be clamped to 1..45).
-            */}
             <Gauge label="Overall" rawValue={ratings.overall || 1} />
             <Gauge label="Offense" rawValue={ratings.offense || 1} />
             <Gauge label="Defense" rawValue={ratings.defense || 1} />
           </div>
-          {/* Explanation Section */}
           <div className="ratings-explanation">
             <h3>How SP+ Ratings Work</h3>
             <p>
@@ -336,5 +303,3 @@ const TeamDetail = () => {
 };
 
 export default TeamDetail;
-
-
