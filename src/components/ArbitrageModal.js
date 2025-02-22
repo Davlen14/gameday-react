@@ -1,19 +1,36 @@
 import React, { useState, useMemo } from "react";
 import "../styles/ArbitrageModal.css";
 
+/* 
+  Convert American moneyline (e.g., -110, +200) to decimal odds.
+  +150 => 2.50, -120 => 1.83, etc.
+*/
 const convertMoneylineToDecimal = (ml) => {
   const m = parseFloat(ml);
+  if (Number.isNaN(m)) return null; // Handle bad data gracefully
   return m > 0 ? m / 100 + 1 : 100 / Math.abs(m) + 1;
 };
 
+/* 
+  Check all pairs of lines from different sportsbooks to see if
+  sum of implied probabilities < 1. The best (lowest sum) is chosen.
+*/
 const findBestArbitragePair = (lines) => {
   let bestPair = null;
   let bestSum = Infinity;
+
   for (let i = 0; i < lines.length; i++) {
     for (let j = 0; j < lines.length; j++) {
-      if (lines[i].provider === lines[j].provider) continue; // Ensure different sportsbooks
+      if (i === j) continue; 
+      // Ensure different sportsbooks for a 2-way arbitrage
+      if (lines[i].provider === lines[j].provider) continue;
+
       const decimalHome = convertMoneylineToDecimal(lines[i].homeMoneyline);
       const decimalAway = convertMoneylineToDecimal(lines[j].awayMoneyline);
+
+      // If we have invalid data, skip
+      if (!decimalHome || !decimalAway) continue;
+
       const sumProb = 1 / decimalHome + 1 / decimalAway;
       if (sumProb < 1 && sumProb < bestSum) {
         bestSum = sumProb;
@@ -31,10 +48,32 @@ const findBestArbitragePair = (lines) => {
   return bestPair;
 };
 
-const ArbitrageModal = ({ game, onClose, onPlaceBet, getTeamLogo, getSportsbookLogo }) => {
-  // game: { id, week, homeTeam, awayTeam, homeScore, awayScore, lines }
+const ArbitrageModal = ({
+  game,
+  onClose,
+  onPlaceBet,
+  getTeamLogo,
+  getSportsbookLogo,
+}) => {
+  /* Example game object shape:
+     {
+       id,
+       week,
+       homeTeam,
+       awayTeam,
+       homeScore,
+       awayScore,
+       lines: [
+         { provider, homeMoneyline, awayMoneyline, ... },
+         ...
+       ]
+     }
+  */
+
+  // State for user-input total stake
   const [totalStake, setTotalStake] = useState(100);
 
+  // Attempt to find a best arbitrage pair among the lines
   const bestPair = useMemo(() => {
     if (!game || !game.lines || game.lines.length === 0) return null;
     return findBestArbitragePair(game.lines);
@@ -44,33 +83,36 @@ const ArbitrageModal = ({ game, onClose, onPlaceBet, getTeamLogo, getSportsbookL
     setTotalStake(Number(e.target.value));
   };
 
-  // Calculate stakes if arbitrage exists
-  let stakeHome = 0, stakeAway = 0, guaranteedReturn = 0, profit = 0, calculatedProfitMargin = 0;
+  // If we found an arbitrage pair, calculate the stakes/returns
+  let stakeHome = 0,
+    stakeAway = 0,
+    guaranteedReturn = 0,
+    profit = 0,
+    calculatedProfitMargin = 0;
+
   if (bestPair) {
     const { decimalHome, decimalAway } = bestPair;
     const denom = 1 / decimalHome + 1 / decimalAway;
     stakeHome = (totalStake * (1 / decimalHome)) / denom;
     stakeAway = (totalStake * (1 / decimalAway)) / denom;
-    guaranteedReturn = stakeHome * decimalHome; // (or stakeAway * decimalAway)
+    guaranteedReturn = stakeHome * decimalHome; // same as stakeAway * decimalAway
     profit = guaranteedReturn - totalStake;
     calculatedProfitMargin = (profit / totalStake) * 100;
   }
 
+  // We'll use abbreviations or short forms if you have them;
+  // otherwise, fallback to the full name.
+  // For demonstration, we'll just use the full name:
+  const homeAbbr = game.homeTeam;
+  const awayAbbr = game.awayTeam;
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        {/* Modal Header */}
+        {/* Modal Header (Simplified) */}
         <div className="modal-header">
-          <div className="game-info">
-            <div className="team">
-              <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-              <span className="team-name">{game.homeTeam}</span>
-            </div>
-            <span className="versus">vs</span>
-            <div className="team">
-              <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-              <span className="team-name">{game.awayTeam}</span>
-            </div>
+          <div>
+            {/* If you'd like to keep "Week X", you can show it here */}
             <div className="game-week">Week {game.week}</div>
           </div>
           <button className="close-button" onClick={onClose}>
@@ -80,63 +122,115 @@ const ArbitrageModal = ({ game, onClose, onPlaceBet, getTeamLogo, getSportsbookL
 
         {/* Modal Body */}
         <div className="modal-body">
+          <h3>Arbitrage Opportunity</h3>
+
+          {/* Show a table of all lines from each sportsbook */}
+          {game.lines && game.lines.length > 0 ? (
+            <table className="odds-table">
+              <thead>
+                <tr>
+                  <th>Sportsbook</th>
+                  <th>{homeAbbr} ML</th>
+                  <th>{awayAbbr} ML</th>
+                </tr>
+              </thead>
+              <tbody>
+                {game.lines.map((line, index) => (
+                  <tr key={index}>
+                    <td>
+                      <img
+                        src={getSportsbookLogo(line.provider)}
+                        alt={line.provider}
+                        className="sportsbook-logo"
+                      />
+                      <span>{line.provider}</span>
+                    </td>
+                    <td>{line.homeMoneyline}</td>
+                    <td>{line.awayMoneyline}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No lines available from selected sportsbooks.</p>
+          )}
+
+          {/* If we found a valid arbitrage pair, show the calculator; otherwise, show a message */}
           {bestPair ? (
             <div className="arbitrage-calculator">
-              <h3>Arbitrage Opportunity</h3>
+              <p className="arbitrage-condition">
+                <strong>Sum of Implied Probabilities:</strong>{" "}
+                {bestPair.sumProb.toFixed(3)} <br />
+                <strong>Profit Margin:</strong>{" "}
+                {bestPair.profitMargin.toFixed(2)}%
+              </p>
+
               <div className="pair-details">
                 <div className="pair-item">
-                  <h4>Home Bet</h4>
+                  <h4>{homeAbbr}</h4>
                   <img
                     src={getSportsbookLogo(bestPair.homeLine.provider)}
                     alt={bestPair.homeLine.provider}
                     className="sportsbook-logo"
                   />
                   <p>{bestPair.homeLine.provider}</p>
-                  <p>Moneyline: {bestPair.homeLine.homeMoneyline}</p>
-                  <p>Decimal: {bestPair.decimalHome.toFixed(2)}</p>
+                  <p>ML: {bestPair.homeLine.homeMoneyline}</p>
+                  <p>
+                    Decimal: {bestPair.decimalHome ? bestPair.decimalHome.toFixed(2) : "N/A"}
+                  </p>
                 </div>
                 <div className="pair-item">
-                  <h4>Away Bet</h4>
+                  <h4>{awayAbbr}</h4>
                   <img
                     src={getSportsbookLogo(bestPair.awayLine.provider)}
                     alt={bestPair.awayLine.provider}
                     className="sportsbook-logo"
                   />
                   <p>{bestPair.awayLine.provider}</p>
-                  <p>Moneyline: {bestPair.awayLine.awayMoneyline}</p>
-                  <p>Decimal: {bestPair.decimalAway.toFixed(2)}</p>
+                  <p>ML: {bestPair.awayLine.awayMoneyline}</p>
+                  <p>
+                    Decimal: {bestPair.decimalAway ? bestPair.decimalAway.toFixed(2) : "N/A"}
+                  </p>
                 </div>
               </div>
-              <p className="arbitrage-condition">
-                Sum of Implied Probabilities: {bestPair.sumProb.toFixed(3)} <br />
-                Profit Margin: {bestPair.profitMargin.toFixed(2)}%
-              </p>
+
               <div className="stake-input">
                 <label>Total Stake ($):</label>
-                <input type="number" value={totalStake} onChange={handleStakeChange} />
+                <input
+                  type="number"
+                  value={totalStake}
+                  onChange={handleStakeChange}
+                />
               </div>
               <div className="calculation-results">
                 <p>
-                  Stake on {game.homeTeam}: ${stakeHome.toFixed(2)}
+                  Stake on {homeAbbr}: ${stakeHome.toFixed(2)}
                 </p>
                 <p>
-                  Stake on {game.awayTeam}: ${stakeAway.toFixed(2)}
+                  Stake on {awayAbbr}: ${stakeAway.toFixed(2)}
                 </p>
                 <p>Guaranteed Return: ${guaranteedReturn.toFixed(2)}</p>
                 <p>
-                  Profit: ${profit.toFixed(2)} ({calculatedProfitMargin.toFixed(2)}%)
+                  Profit: ${profit.toFixed(2)} (
+                  {calculatedProfitMargin.toFixed(2)}%)
                 </p>
               </div>
             </div>
           ) : (
-            <p>No arbitrage opportunity available for this game.</p>
+            <p style={{ marginTop: "1rem" }}>
+              <strong>No guaranteed arbitrage found.</strong>  
+            </p>
           )}
         </div>
 
         {/* Modal Footer */}
         <div className="modal-footer">
-          <button className="place-bet-button" onClick={onPlaceBet} disabled={!bestPair}>
-            Place Bet
+          <button
+            className="place-bet-button"
+            onClick={onPlaceBet}
+            disabled={!bestPair}
+          >
+            Save Bet
           </button>
           <button className="close-button-footer" onClick={onClose}>
             Close
