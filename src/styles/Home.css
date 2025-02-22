@@ -1,593 +1,208 @@
-/* Import Google Fonts: Orbitron and Titillium Web */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
-
-/* ===============================
-   COLOR SCHEME & GLOBALS
-=============================== */
-:root {
-  --primary-color: #ffffff;
-  --accent-color: #D4001C;
-  --text-color: #333333;
-  --background-color: #f5f5f5;
-  --border-color: #dddddd;
-}
-
-@media (prefers-color-scheme: dark) {
+/* Modern CSS Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Modern Google Fonts Import using display=swap for better performance */
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap&display=swap');
+  
+  /* Modern CSS Variables with fallbacks */
   :root {
-    --primary-color: #333333;
-    --text-color: #ffffff;
-    --background-color: #1e1e1e;
-    --border-color: #444444;
+    /* Base Colors */
+    --primary-color: #ffffff;
+    --accent-color: #D4001C;
+    --text-color: #333333;
+    --background-color: #f5f5f5;
+    --border-color: #dddddd;
+    
+    /* Spacing System */
+    --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+    --space-sm: clamp(0.5rem, 1vw, 1rem);
+    --space-md: clamp(1rem, 2vw, 2rem);
+    --space-lg: clamp(1.5rem, 3vw, 3rem);
+    
+    /* Typography */
+    --font-size-sm: clamp(0.75rem, 1vw, 0.875rem);
+    --font-size-base: clamp(0.875rem, 1.2vw, 1rem);
+    --font-size-lg: clamp(1.125rem, 1.5vw, 1.25rem);
+    --font-size-xl: clamp(1.25rem, 2vw, 1.5rem);
+    
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-normal: 300ms ease;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
   }
-}
-
-/* ===============================
-   HOME CONTAINER
-=============================== */
-.home-container {
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-  padding: 1rem 1.5rem;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  min-height: 100vh;
-}
-
-/* ===============================
-   HERO HEADER
-=============================== */
-.hero-header {
-  text-align: center;
-  margin-top: 5px;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.hero-header h1 {
-  margin-top: 0;
-  color: var(--accent-color);
-  font-size: 2.6rem; /* Slightly smaller than 2.8rem */
-  font-style: italic;
-}
-
-/* Optional Week Selector in Hero */
-.week-selector {
-  margin-top: 1rem;
-}
-
-select {
-  padding: 0.4rem;
-  margin-left: 0.5rem;
-  background: var(--primary-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 0.9rem; /* Slightly smaller than 0.95rem */
-}
-
-/* ===============================
-   SECTION TITLES
-=============================== */
-.section-title {
-  color: var(--accent-color);
-  border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 0.4rem; /* Slightly reduced */
-  margin-bottom: 1.2rem;  /* Slightly reduced */
-  font-size: 1.4rem;      /* Slightly smaller than 1.6rem */
-  font-weight: 600;
-}
-
-/* ===============================
-   POLLS SECTION
-=============================== */
-.poll-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;              /* Reduced gap */
-  font-size: 1.2rem;     /* Slightly smaller than 1.4rem */
-  font-weight: bold;
-}
-
-.poll-logo {
-  width: 1.2rem;         /* Reduced from 1.5rem */
-  height: 1.2rem;
-  object-fit: contain;
-}
-
-.polls-grid {
-  display: grid;
-  gap: 1rem;             /* Tighter gap than 1.5rem */
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  margin-bottom: 1.5rem; /* Slightly reduced bottom margin */
-}
-
-.poll-card {
-  background: #fff;
-  padding: 0.75rem;      /* Reduced from 1rem */
-  border-radius: 10px;   /* Smaller radius than 16px */
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ddd;
-}
-
-@media (prefers-color-scheme: dark) {
-  .poll-card {
-    background: #2e2e2e;
-    border: 1px solid #444;
+  
+  /* Modern Dark Mode using prefers-color-scheme */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary-color: #1a1a1a;
+      --text-color: #ffffff;
+      --background-color: #121212;
+      --border-color: #2a2a2a;
+      
+      /* Dark mode specific shadows */
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
+    }
   }
-}
-
-.ranking-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;         /* Add small horizontal gap for inline items */
-  padding: 0.5rem 0; 
-  border-bottom: 1px solid #ddd;
-  font-size: 0.85rem; /* Smaller text for poll items */
-}
-
-@media (prefers-color-scheme: dark) {
-  .ranking-item {
-    border-bottom: 1px solid #444;
+  
+  /* Modern Container with CSS Grid */
+  .home-container {
+    font-family: "Orbitron", "Titillium Web", system-ui, -apple-system, sans-serif;
+    padding: var(--space-md);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-md);
   }
-}
-
-/* Replacing .team-logo with .team-poll-logo for polls specifically */
-.team-poll-logo {
-  width: 18px;       /* Slightly smaller than 20px */
-  height: 18px;
-  object-fit: contain;
-  border: none;      /* No border */
-  border-radius: 0;  /* No radius */
-}
-
-.poll-rank {
-  color: var(--accent-color);
-  font-size: 0.85rem; /* Smaller rank text */
-  font-weight: bold;
-}
-
-.poll-team-name {
-  font-size: 0.8rem;  /* Make the team name smaller */
-  font-weight: 500;   /* Slightly lighter than 600 */
-  color: #333;
-}
-
-.poll-points {
-  font-size: 0.75rem; /* Smaller points text */
-  color: #666;
-}
-
-/* ===============================
-   MODERN GAME CARDS (Slider)
-=============================== */
-.games-slider {
-  display: flex;
-  overflow-x: auto;
-  gap: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-
-.game-card-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.game-card {
-  flex: 0 0 280px;
-  background: linear-gradient(145deg, #ffffff, #f8f8f8);
-  border-radius: 14px; 
-  padding: 0.8rem;     
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-card {
-    background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* Modern Hero Header with CSS Grid */
+  .hero-header {
+    display: grid;
+    place-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) 0;
   }
-}
-
-.game-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.8rem;
-  font-size: 0.8rem; 
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-header {
-    color: #aaa;
-  }
-}
-
-.network {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.network-icon {
-  font-size: 0.9rem;
-  color: var(--accent-color);
-}
-
-.network-name {
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.teams-container {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.8rem;
-}
-
-.team {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.team img {
-  width: 58px; 
-  height: 58px;
-  margin-bottom: 0.4rem;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.team-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.2rem;
-}
-
-.team-record {
-  font-size: 0.75rem;
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .team-record {
-    color: #aaa;
-  }
-}
-
-.vs-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.vs-circle {
-  background: linear-gradient(135deg, var(--accent-color), #b30000);
-  width: 36px; 
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: white;
-  font-size: 0.9rem; 
-  box-shadow: 0 3px 10px rgba(142, 0, 0, 0.2);
-  transition: transform 0.3s ease;
-}
-
-.game-card:hover .vs-circle {
-  transform: scale(1.06);
-}
-
-.score-container {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.score {
-  font-size: 1rem; 
-  font-weight: 700;
-  color: var(--text-color);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.04);
-}
-
-@media (prefers-color-scheme: dark) {
-  .score {
-    background: rgba(255, 255, 255, 0.1);
-  }
-}
-
-.score-divider {
-  font-weight: 500;
-  font-size: 0.9rem; 
-  color: #999;
-}
-
-@media (prefers-color-scheme: dark) {
-  .score-divider {
-    color: #777;
-  }
-}
-
-.game-footer {
-  padding-top: 0.5rem; 
-  margin-top: 0.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.75rem; 
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: #aaa;
-  }
-}
-
-/* Scrollbar Styling for Slider */
-.games-slider::-webkit-scrollbar {
-  height: 4px; 
-}
-.games-slider::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05);
-}
-.games-slider::-webkit-scrollbar-thumb {
-  background: rgba(142, 0, 0, 0.3);
-  border-radius: 4px;
-}
-.games-slider::-webkit-scrollbar-thumb:hover {
-  background: rgba(142, 0, 0, 0.4);
-}
-
-/* ===============================
-   LOADING & ERROR STATES
-=============================== */
-.loading-container, .error-container {
-  text-align: center;
-  padding: 1.5rem; 
-  font-size: 1rem; 
-}
-
-/* ===============================
-   FEATURED SECTION
-=============================== */
-.featured-section {
-  margin-bottom: 2rem; 
-}
-
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, auto);
-  grid-gap: 0.5rem; 
-  grid-template-areas:
-    "big big small1"
-    "big big small2"
-    "small3 small4 small5";
-}
-
-.featured-grid > :nth-child(1) {
-  grid-area: big;
-  position: relative;
-}
-.featured-grid > :nth-child(2) {
-  grid-area: small1;
-  position: relative;
-}
-.featured-grid > :nth-child(3) {
-  grid-area: small2;
-  position: relative;
-}
-.featured-grid > :nth-child(4) {
-  grid-area: small3;
-  position: relative;
-}
-.featured-grid > :nth-child(5) {
-  grid-area: small4;
-  position: relative;
-}
-.featured-grid > :nth-child(6) {
-  grid-area: small5;
-  position: relative;
-}
-
-.featured-card {
-  border-radius: 12px; 
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.featured-card img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.featured-card:hover img {
-  transform: scale(1.02);
-}
-
-.featured-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(212, 0, 28, 0.85);
-  color: #fff;
-  padding: 0.6rem; 
-}
-
-.featured-overlay h2,
-.featured-overlay h3 {
-  margin: 0 0 0.25rem;
-  font-weight: 600;
-  font-size: 0.95rem; 
-}
-
-.featured-overlay p {
-  margin: 0;
-  font-size: 0.75rem; 
-}
-
-@media (max-width: 992px) {
-  .featured-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, auto);
-    grid-gap: 0.5rem;
-    grid-template-areas:
-      "big big"
-      "small1 small2"
-      "small3 small4"
-      "small5 small5";
-  }
-}
-
-@media (max-width: 600px) {
-  .featured-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    grid-gap: 0.5rem;
-    grid-template-areas:
-      "big"
-      "small1"
-      "small2"
-      "small3"
-      "small4"
-      "small5";
-  }
-}
-
-/* ===============================
-   POLLS & RECRUITS SECTION (Two-Column Layout)
-=============================== */
-.polls-recruits-container {
-  display: flex;
-  gap: 1.5rem; 
-  margin-bottom: 1.5rem; 
-}
-
-.left-column,
-.right-column {
-  flex: 1;
-}
-
-.recruits-section .section-title {
-  margin-bottom: 0.8rem; 
-}
-
-.recruits-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem; 
-}
-
-/* ~~~~ RECRUIT ITEM 10% BIGGER ~~~~ */
-.recruit-item {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 7px 12px; /* was 6px 10px -> about 10% bigger */
-  display: flex;
-  align-items: center;
-  gap: 8px;          /* slightly bigger gap than 6px */
-  font-size: 0.95rem; /* was 0.85rem -> about 10% bigger */
-}
-
-.recruit-rank {
-  font-weight: bold;
-  color: var(--accent-color);
-  font-size: 0.95rem; /* was 0.85rem */
-}
-
-.recruit-name {
-  font-weight: 600;
-  font-size: 0.95rem; /* was 0.85rem */
-}
-
-.recruit-position {
-  color: #666;
-  font-size: 0.9rem;  /* was 0.8rem */
-}
-
-/* Committed team logo: 20px instead of 18px */
-.recruit-commit {
-  display: flex;
-  align-items: center;
-  gap: 4px;    /* slightly bigger gap than 3px */
-  margin-left: auto;
-  font-weight: 500;
-  color: #333;
-}
-
-.committed-team-logo {
-  width: 20px;  /* was 18px */
-  height: 20px;
-  object-fit: contain;
-  border: none;
-  border-radius: 0;
-}
-
-.commit-check {
-  font-size: 15px; /* was 14px */
-  color: green;
-}
-
-@media (prefers-color-scheme: dark) {
-  .recruit-item {
-    background: #2e2e2e;
-    border-color: #444;
-  }
-  .recruit-rank {
-    color: #ff4444;
-  }
-}
-
-/* Responsive: Stack polls and recruits on mobile */
-@media (max-width: 768px) {
-  .polls-recruits-container {
-    flex-direction: column;
-  }
-
-  .filters-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .filters-container select,
-  .team-search input {
-    width: 80%;
-  }
-
-  .player-cell {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .committed-cell {
-    flex-direction: column;
+  
+  .hero-header h1 {
+    font-size: var(--font-size-xl);
+    color: var(--accent-color);
+    font-style: italic;
     text-align: center;
   }
-}
-
-/* ===============================
-   END OF FILE
-=============================== */
+  
+  /* Modern Form Elements */
+  select {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    transition: border-color var(--transition-fast);
+    cursor: pointer;
+    
+    &:hover {
+      border-color: var(--accent-color);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
+    }
+  }
+  
+  /* Modern Game Cards using CSS Grid and Flexbox */
+  .games-slider {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 280px;
+    gap: var(--space-md);
+    overflow-x: auto;
+    padding-bottom: var(--space-md);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+  }
+  
+  .game-card {
+    scroll-snap-align: start;
+    background: var(--primary-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+  
+  /* Modern Grid Layout for Featured Section */
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-md);
+  }
+  
+  /* Modern Card Animations */
+  .featured-card {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      transition: transform var(--transition-normal);
+    }
+    
+    &:hover img {
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Modern Loading States with CSS */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  .loading-container {
+    background: linear-gradient(90deg, 
+      var(--background-color) 0%, 
+      var(--primary-color) 50%, 
+      var(--background-color) 100%);
+    background-size: 2000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+  
+  /* Modern Responsive Design using Container Queries */
+  @container (min-width: 768px) {
+    .polls-recruits-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+    }
+  }
+  
+  /* Modern Accessibility Improvements */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* Print Styles */
+  @media print {
+    .game-card,
+    .featured-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
