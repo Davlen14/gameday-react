@@ -191,7 +191,7 @@ const Home = () => {
 
                 <div className="rankings-list">
                   {/* Show top 10 teams in a single line: #6 [logo] Team 1019 pts */}
-                  {poll.rankings.slice(0, 10).map((team) => (
+                  {poll.rankings.slice(0, 25).map((team) => (
                     <div key={team.school} className="ranking-item">
                       <span className="poll-rank">#{team.rank}</span>
                       <img
