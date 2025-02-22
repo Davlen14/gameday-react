@@ -7,29 +7,28 @@
 .secondary-bar {
   background-color: #ffffff;
   color: #666666;
-  height: 50px; /* match the top bar's slim height */
+  height: 50px; /* slim height */
   display: flex;
   align-items: center;
   position: sticky;
-  top: 50px; /* so it sticks right below the top bar */
+  top: 50px; /* sticks below the top bar */
   width: 100%;
   z-index: 999;
-  border-bottom: 1px solid #e0e0e0; /* subtle divider */
+  border-bottom: 1px solid #e0e0e0;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
 .secondary-bar-container {
   display: flex;
-  justify-content: center; /* or space-between if you want */
+  justify-content: center; /* Center or space-between */
   align-items: center;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  height: 100%; /* fill the full 50px */
+  height: 100%; /* fill the 50px */
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* Nav Items: Home, Teams, Games, etc. */
 .nav-item {
   text-decoration: none;
   color: #666666;
@@ -46,10 +45,9 @@
 }
 
 .nav-item:hover {
-  color: #D4001C; /* text turns scarlet on hover */
+  color: #D4001C; /* scarlet on hover */
 }
 
-/* OPTIONAL Underline on hover */
 .nav-item::after {
   content: "";
   position: absolute;
@@ -63,21 +61,4 @@
 
 .nav-item:hover::after {
   width: 100%;
-}
-
-/* If you prefer a fill background on hover instead of just color change, 
-   you can add: background-color: #f2f2f2; to .nav-item:hover
-   or remove the ::after lines. 
-*/
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-  .secondary-bar-container {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .nav-item {
-    margin: 5px;
-  }
 }

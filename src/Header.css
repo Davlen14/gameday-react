@@ -20,7 +20,6 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
-/* CONTAINER: Ensures full width with flex layout */
 .top-bar-container {
   display: flex;
   align-items: center;
@@ -30,7 +29,6 @@
   padding: 0 20px;
 }
 
-/* LOGO - Push to the far left */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900;
@@ -43,24 +41,21 @@
   border-right: 1px solid #ffffff;
 }
 
-/* NAVIGATION - Centered */
 .top-bar-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-grow: 1; /* Allows nav to expand and center */
+  flex-grow: 1;
   gap: 20px;
 }
 
-/* BUTTONS - Push to the far right */
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: auto; /* Pushes buttons to the right */
+  margin-left: auto;
 }
 
-/* BUTTON STYLING */
 .top-bar-button {
   display: flex;
   align-items: center;
@@ -78,7 +73,6 @@
   cursor: pointer;
 }
 
-/* BUTTON HOVER EFFECT */
 .top-bar-button:hover {
   background-color: #D4001C;
   color: #ffffff;
@@ -90,33 +84,30 @@
   position: relative;
 }
 
-/* DROPDOWN GROUP */
 .dropdown-group {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-/* DROPDOWN BUTTON */
 .dropdown-button {
-    background-color: transparent;
-    border: none;
-    color: #ffffff;
-    font-size: 0.85rem;
-    font-weight: 300;
-    font-family: 'Orbitron', 'Titillium Web', sans-serif; /* Apply your fonts */
-    padding: 8px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
+  background-color: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 300;
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  padding: 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
 .dropdown-button:hover {
   background-color: #ffffff;
   color: #D4001C;
 }
 
-/* DROPDOWN MENU */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -143,3 +134,54 @@
   background-color: #f2f2f2;
 }
 
+/* =============================== */
+/* Responsive Adjustments */
+/* =============================== */
+@media (max-width: 768px) {
+  .secondary-bar-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-item {
+    margin: 5px;
+    font-size: 0.75rem;
+  }
+
+  .top-bar-container {
+    flex-direction: column;
+    padding: 0 10px;
+  }
+
+  .top-bar-logo {
+    font-size: 18px;
+    left: 5px;
+    padding-right: 10px;
+    border-right: 1px solid #ffffff;
+  }
+
+  .top-bar-nav {
+    gap: 10px;
+    font-size: 0.75rem;
+  }
+
+  .top-bar-actions {
+    gap: 5px;
+  }
+
+  .top-bar-button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Adjust dropdown menu for mobile */
+  .dropdown-button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .dropdown-menu {
+    font-size: 0.75rem;
+    min-width: 140px;
+  }
+}

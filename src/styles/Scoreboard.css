@@ -68,6 +68,7 @@
     margin-left: 10px;
     scrollbar-width: none; /* Firefox */
   }
+  
   .scoreboard-games::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
   }
@@ -198,31 +199,40 @@
       flex-wrap: wrap;
       padding: 4px;
     }
+    
     .scoreboard-filters,
     .scoreboard-games {
       width: 100%;
       margin-bottom: 4px;
     }
+    
     .scoreboard-games {
       margin-left: 0;
     }
+    
     .scoreboard-game-card {
       min-width: 100px;
       padding: 3px 4px;
     }
+    
     .scoreboard-ncaaf-dropdown,
     .scoreboard-week-dropdown {
       font-size: 10px;
+      padding: 2px 4px;
     }
+    
     .scoreboard-game-time,
     .scoreboard-team-name,
     .scoreboard-team-score {
       font-size: 9px;
     }
+    
     .scoreboard-tv-icon {
       font-size: 10px;
     }
+    
     .scoreboard-tv-outlet {
       max-width: 40px;
+      font-size: 9px;
     }
   }
