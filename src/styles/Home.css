@@ -29,7 +29,7 @@
 
 .home-container {
   font-family: "Orbitron", "Titillium Web", sans-serif; 
-  padding: 1rem 1.5rem; /* Slightly reduced side padding */
+  padding: 1rem 1.5rem;
   background-color: var(--background-color);
   color: var(--text-color);
   min-height: 100vh;
@@ -41,15 +41,15 @@
 
 .hero-header {
   text-align: center;
-  margin-top: 5px;      /* Reduced top margin */
-  margin-bottom: 2rem;  /* Slightly less bottom space */
+  margin-top: 5px;
+  margin-bottom: 2rem;
   position: relative;
 }
 
 .hero-header h1 {
   margin-top: 0;
   color: var(--accent-color);
-  font-size: 2.8rem;    /* Slightly smaller font */
+  font-size: 2.8rem;
   font-style: italic;
 }
 
@@ -76,8 +76,8 @@ select {
   color: var(--accent-color);
   border-bottom: 2px solid var(--accent-color);
   padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem; /* Reduced for tighter spacing */
-  font-size: 1.6rem;     /* Slightly smaller */
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
 }
 
@@ -89,7 +89,7 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.4rem; /* Slightly smaller */
+  font-size: 1.4rem;
   font-weight: bold;
 }
 
@@ -101,14 +101,14 @@ select {
 
 .polls-grid {
   display: grid;
-  gap: 1.5rem;  /* Slightly reduced gap */
+  gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  margin-bottom: 2rem;  /* Reduced spacing */
+  margin-bottom: 2rem;
 }
 
 .poll-card {
   background: #fff;
-  padding: 1rem;       /* Reduced padding */
+  padding: 1rem;
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #ddd;
@@ -124,7 +124,7 @@ select {
 .ranking-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem 0;  /* Tighter vertical space */
+  padding: 0.75rem 0;
   border-bottom: 1px solid #ddd;
 }
 
@@ -158,8 +158,8 @@ select {
 .games-slider {
   display: flex;
   overflow-x: auto;
-  gap: 1.5rem;         /* Reduced gap */
-  padding-bottom: 1.5rem; /* Slightly less padding */
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .game-card-link {
@@ -170,10 +170,10 @@ select {
 }
 
 .game-card {
-  flex: 0 0 280px; /* Slightly narrower than 300px */
+  flex: 0 0 280px;
   background: linear-gradient(145deg, #ffffff, #f8f8f8);
   border-radius: 16px;
-  padding: 1rem; /* Reduced padding */
+  padding: 1rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
@@ -197,7 +197,7 @@ select {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  font-size: 0.85rem; /* Slightly smaller */
+  font-size: 0.85rem;
   color: #666;
 }
 
@@ -226,8 +226,8 @@ select {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 1rem;          /* Slightly reduced */
-  margin-bottom: 1rem; 
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .team {
@@ -238,7 +238,7 @@ select {
 }
 
 .team img {
-  width: 64px; 
+  width: 64px;
   height: 64px;
   margin-bottom: 0.5rem;
   object-fit: contain;
@@ -335,7 +335,7 @@ select {
   }
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling for Slider */
 .games-slider::-webkit-scrollbar {
   height: 5px;
 }
@@ -388,14 +388,14 @@ select {
 /* =============================== */
 
 .featured-section {
-  margin-bottom: 2.5rem; /* Slightly reduced */
+  margin-bottom: 2.5rem;
 }
 
 .featured-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, auto);
-  grid-gap: 0.75rem; /* Slightly reduced gap */
+  grid-gap: 0.75rem;
   grid-template-areas:
     "big big small1"
     "big big small2"
@@ -452,7 +452,7 @@ select {
   width: 100%;
   background-color: rgba(212, 0, 28, 0.85);
   color: #fff;
-  padding: 0.75rem; /* Slightly smaller padding */
+  padding: 0.75rem;
 }
 
 .featured-overlay h2,
@@ -491,4 +491,95 @@ select {
       "small5";
   }
 }
-  
+
+/* =============================== */
+/* POLLS & RECRUITS SECTION (New Two-Column Layout) */
+/* =============================== */
+
+.polls-recruits-container {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.left-column,
+.right-column {
+  flex: 1;
+}
+
+.recruits-section .section-title {
+  margin-bottom: 1rem;
+}
+
+.recruits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recruit-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.recruit-rank {
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.recruit-name {
+  font-weight: 600;
+}
+
+.recruit-position {
+  color: #666;
+}
+
+.recruit-commit {
+  margin-left: auto;
+  color: #333;
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .recruit-item {
+    background: #2e2e2e;
+    border-color: #444;
+  }
+  .recruit-rank {
+    color: #ff4444;
+  }
+}
+
+/* Responsive: Stack polls and recruits on mobile */
+@media (max-width: 768px) {
+  .polls-recruits-container {
+    flex-direction: column;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filters-container select,
+  .team-search input {
+    width: 80%;
+  }
+
+  .player-cell {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .committed-cell {
+    flex-direction: column;
+    text-align: center;
+  }
+}
