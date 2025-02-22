@@ -18,11 +18,12 @@
     box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
   }
   
-  /* Container for NCAAF + Week filters */
-  .scoreboard-filters {
+/* Minimal Week Filter & NCAAF Label */
+.scoreboard-filters {
     display: flex;
     align-items: center;
-    gap: 8px; /* tighter gap */
+    gap: 4px; /* Reduced gap */
+    font-size: 12px; /* Smaller overall text */
   }
   
   /* Thin vertical divider */
@@ -32,15 +33,13 @@
     margin: 0 6px; /* smaller margin */
   }
   
-  /* "NCAAF" label */
+
   .scoreboard-ncaaf-dropdown {
-    font-size: 12px; /* smaller font */
-    font-weight: 500;
-    color: #333;
-    cursor: pointer;
-    padding: 2px 4px; /* less padding */
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    font-size: 12px;
+    font-weight: 400; /* Lighter weight for a subtler look */
+    color: #666; /* Softer color */
+    padding: 2px 4px; /* Minimal padding */
+    background: transparent; /* No background to blend in */
   }
   
   .scoreboard-ncaaf-dropdown:hover {
@@ -49,13 +48,13 @@
   
   /* Week dropdown */
   .scoreboard-week-dropdown {
-    font-size: 12px; /* smaller font */
-    color: #333;
+    font-size: 12px;
+    color: #666;
     cursor: pointer;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 3px; /* Slightly rounded for a modern feel */
     background-color: #fafafa;
-    padding: 2px 4px; /* less padding */
+    padding: 2px 6px; /* Minimal padding */
     transition: background-color 0.2s ease;
   }
   
