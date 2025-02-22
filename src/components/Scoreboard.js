@@ -117,10 +117,18 @@ const Scoreboard = ({ setScoreboardVisible }) => {
           </div>
         </div>
         <div className="scoreboard-card-team">
-          <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="scoreboard-team-logo" />
-          <span className="scoreboard-team-name">{getTeamAbbreviation(game.awayTeam)}</span>
-          <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
-        </div>
+            <div className="scoreboard-team-info">
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="scoreboard-team-logo"
+              />
+              <span className="scoreboard-team-name">
+                {getTeamAbbreviation(game.awayTeam)}
+              </span>
+            </div>
+            <span className="scoreboard-team-score">{game.awayPoints ?? ""}</span>
+          </div>
         <div className="scoreboard-home-row">
           <div className="scoreboard-card-team scoreboard-home-team">
             <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="scoreboard-team-logo" />

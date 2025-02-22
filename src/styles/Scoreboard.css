@@ -113,11 +113,12 @@
     margin-bottom: 4px;
   }
   
-  /* Team block */
-  .scoreboard-card-team {
+
+/* Group the logo and name together on the left */
+.scoreboard-team-info {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 4px; /* space between logo & name */
   }
   
   /* Team logo */
@@ -135,9 +136,10 @@
     color: #333;
   }
   
-  /* Team score */
-  .scoreboard-team-score {
-    font-size: 14px;
+/* Score on the far right */
+.scoreboard-team-score {
+    margin-left: auto; /* ensures score stays at the far right */
+    font-size: 13px;
     font-weight: 600;
     color: #111;
   }
@@ -181,6 +183,13 @@
     height: 14px;
   }
   
+/* Group the logo and name together on the left */
+.scoreboard-team-info {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* space between logo & name */
+  }
+
   .scoreboard-sportsbook-ou {
     font-size: 10px;
     font-weight: 500;
