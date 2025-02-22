@@ -91,8 +91,10 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     return team?.abbreviation || teamName;
   };
 
-  const getMediaForGame = (gameId) => media.find((m) => m.id === gameId) || null;
-  const getLinesForGame = (gameId) => lines.find((l) => l.id === gameId) || null;
+  const getMediaForGame = (gameId) =>
+    media.find((m) => m.id === gameId) || null;
+  const getLinesForGame = (gameId) =>
+    lines.find((l) => l.id === gameId) || null;
 
   if (isLoading) {
     return <div className="loading-container">Loading...</div>;
@@ -133,7 +135,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
               className="scoreboard-game-link"
             >
               <div className="scoreboard-game-card">
-                {/* Top row: status + TV network */}
+                {/* Top row: status + TV outlet */}
                 <div className="scoreboard-game-header">
                   <div
                     className={`scoreboard-game-time ${isFinal ? "final" : ""}`}
@@ -142,7 +144,11 @@ const Scoreboard = ({ setScoreboardVisible }) => {
                   </div>
                   <div className="scoreboard-game-network">
                     <FaTv className="scoreboard-tv-icon" />
-                    {mediaInfo?.network && <span>{mediaInfo.network}</span>}
+                    {mediaInfo?.outlet && (
+                      <span className="scoreboard-tv-outlet">
+                        {mediaInfo.outlet}
+                      </span>
+                    )}
                   </div>
                 </div>
 
