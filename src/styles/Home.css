@@ -1,477 +1,494 @@
+/* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
+/* =============================== */
+/* COLOR SCHEME & GLOBALS */
+/* =============================== */
+
 :root {
-    --primary-color: #ffffff;
-    --accent-color: #D4001C;
-    --text-color: #333333;
-    --background-color: #f5f5f5;
-    --border-color: #dddddd;
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --border-color: #dddddd;
 }
 
+/* Dark Mode */
 @media (prefers-color-scheme: dark) {
-    :root {
-        --primary-color: #333333;
-        --text-color: #ffffff;
-        --background-color: #1e1e1e;
-        --border-color: #444444;
-    }
+  :root {
+    --primary-color: #333333;
+    --text-color: #ffffff;
+    --background-color: #1e1e1e;
+    --border-color: #444444;
+  }
 }
+
+/* =============================== */
+/* HOME CONTAINER */
+/* =============================== */
 
 .home-container {
-    font-family: "Orbitron", "Titillium Web", sans-serif; 
-    padding: 1rem 2rem; /* Reduce top padding */
-    background-color: var(--background-color);
-    color: var(--text-color);
-    min-height: 100vh;
+  font-family: "Orbitron", "Titillium Web", sans-serif; 
+  padding: 1rem 1.5rem; /* Slightly reduced side padding */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
 }
 
+/* =============================== */
+/* HERO HEADER */
+/* =============================== */
+
 .hero-header {
-    text-align: center;
-    margin-top: 10px; /* Reduce from 50px */
-    margin-bottom: 3rem;
-    position: relative;
+  text-align: center;
+  margin-top: 5px;      /* Reduced top margin */
+  margin-bottom: 2rem;  /* Slightly less bottom space */
+  position: relative;
 }
 
 .hero-header h1 {
-    margin-top: 0;
-    color: #D4001C;
-    font-size: 3rem;
-    font-style: italic;
+  margin-top: 0;
+  color: var(--accent-color);
+  font-size: 2.8rem;    /* Slightly smaller font */
+  font-style: italic;
 }
 
+/* Optional Week Selector in Hero */
 .week-selector {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
 select {
-    padding: 0.5rem;
-    margin-left: 0.5rem;
-    background: var(--primary-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 1rem;
+  padding: 0.4rem;
+  margin-left: 0.5rem;
+  background: var(--primary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.95rem;
 }
+
+/* =============================== */
+/* SECTION TITLES */
+/* =============================== */
 
 .section-title {
-    color: var(--accent-color);
-    border-bottom: 2px solid var(--accent-color);
-    padding-bottom: 0.5rem;
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
-    font-weight: 600;
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem; /* Reduced for tighter spacing */
+  font-size: 1.6rem;     /* Slightly smaller */
+  font-weight: 600;
 }
 
-/* Polls Section */
+/* =============================== */
+/* POLLS SECTION */
+/* =============================== */
+
 .poll-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.4rem; /* Slightly smaller */
+  font-weight: bold;
 }
 
 .poll-logo {
-    width: 1.5rem; /* Matches text size */
-    height: 1.5rem;
-    object-fit: contain;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
 }
 
 .polls-grid {
-    display: grid;
-    gap: 2rem;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    margin-bottom: 3rem;
+  display: grid;
+  gap: 1.5rem;  /* Slightly reduced gap */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-bottom: 2rem;  /* Reduced spacing */
 }
 
 .poll-card {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border: 1px solid #ddd;
+  background: #fff;
+  padding: 1rem;       /* Reduced padding */
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ddd;
 }
 
 @media (prefers-color-scheme: dark) {
-    .poll-card {
-        background: #2e2e2e;
-        border: 1px solid #444;
-    }
+  .poll-card {
+    background: #2e2e2e;
+    border: 1px solid #444;
+  }
 }
 
 .ranking-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;  /* Tighter vertical space */
+  border-bottom: 1px solid #ddd;
 }
 
 @media (prefers-color-scheme: dark) {
-    .ranking-item {
-        border-bottom: 1px solid #444;
-    }
+  .ranking-item {
+    border-bottom: 1px solid #444;
+  }
 }
 
 .team-logo {
-    width: 40px;
-    height: 40px;
-    margin-right: 1rem;
-    object-fit: contain;
+  width: 40px;
+  height: 40px;
+  margin-right: 1rem;
+  object-fit: contain;
 }
 
 .team-info {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .rank {
-    color: #D4001C;
-    font-weight: bold;
+  color: var(--accent-color);
+  font-weight: bold;
 }
 
-/* Modern Game Cards */
+/* =============================== */
+/* MODERN GAME CARDS (Slider) */
+/* =============================== */
+
 .games-slider {
-    display: flex;
-    overflow-x: auto;
-    gap: 2rem;
-    padding-bottom: 2rem;
+  display: flex;
+  overflow-x: auto;
+  gap: 1.5rem;         /* Reduced gap */
+  padding-bottom: 1.5rem; /* Slightly less padding */
 }
 
 .game-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: transform 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.3s ease;
 }
 
 .game-card {
-    flex: 0 0 300px;
-    background: linear-gradient(145deg, #ffffff, #f8f8f8);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.3s ease;
+  flex: 0 0 280px; /* Slightly narrower than 300px */
+  background: linear-gradient(145deg, #ffffff, #f8f8f8);
+  border-radius: 16px;
+  padding: 1rem; /* Reduced padding */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 @media (prefers-color-scheme: dark) {
-    .game-card {
-        background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+  .game-card {
+    background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
 .game-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 .game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.85rem; /* Slightly smaller */
+  color: #666;
 }
 
 @media (prefers-color-scheme: dark) {
-    .game-header {
-        color: #aaa;
-    }
+  .game-header {
+    color: #aaa;
+  }
 }
 
 .network {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .network-icon {
-    font-size: 1.2rem;
-    color: var(--accent-color);
+  font-size: 1rem;
+  color: var(--accent-color);
 }
 
 .network-name {
-    font-weight: 500;
+  font-weight: 500;
 }
 
 .teams-container {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;          /* Slightly reduced */
+  margin-bottom: 1rem; 
 }
 
 .team {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .team img {
-    width: 72px;
-    height: 72px;
-    margin-bottom: 0.75rem;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  width: 64px; 
+  height: 64px;
+  margin-bottom: 0.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .team-name {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .team-record {
-    font-size: 0.85rem;
-    color: #666;
+  font-size: 0.8rem;
+  color: #666;
 }
 
 @media (prefers-color-scheme: dark) {
-    .team-record {
-        color: #aaa;
-    }
+  .team-record {
+    color: #aaa;
+  }
 }
 
 .vs-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .vs-circle {
-    background: linear-gradient(135deg, var(--accent-color), #b30000);
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 12px rgba(142, 0, 0, 0.2);
-    transition: transform 0.3s ease;
+  background: linear-gradient(135deg, var(--accent-color), #b30000);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(142, 0, 0, 0.2);
+  transition: transform 0.3s ease;
 }
 
 .game-card:hover .vs-circle {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .score-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .score {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text-color);
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.04);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
-    .score {
-        background: rgba(255, 255, 255, 0.1);
-    }
+  .score {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .score-divider {
-    font-weight: 500;
-    color: #999;
+  font-weight: 500;
+  color: #999;
 }
 
 @media (prefers-color-scheme: dark) {
-    .score-divider {
-        color: #777;
-    }
+  .score-divider {
+    color: #777;
+  }
 }
 
 .game-footer {
-    padding-top: 1rem;
-    margin-top: 1rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    font-size: 0.9rem;
-    color: #666;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.85rem;
+  color: #666;
 }
 
 @media (prefers-color-scheme: dark) {
-    .game-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        color: #aaa;
-    }
+  .game-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
 }
 
 /* Scrollbar Styling */
 .games-slider::-webkit-scrollbar {
-    height: 6px;
+  height: 5px;
 }
-
 .games-slider::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.05);
+  background: rgba(0,0,0,0.05);
 }
-
 .games-slider::-webkit-scrollbar-thumb {
-    background: rgba(142, 0, 0, 0.3);
-    border-radius: 4px;
+  background: rgba(142, 0, 0, 0.3);
+  border-radius: 4px;
 }
-
 .games-slider::-webkit-scrollbar-thumb:hover {
-    background: rgba(142, 0, 0, 0.4);
+  background: rgba(142, 0, 0, 0.4);
 }
 
+/* Loading & Error States */
 .loading-container, .error-container {
-    text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
 }
+
+/* =============================== */
+/* RESPONSIVE TWEAKS */
+/* =============================== */
 
 @media (max-width: 768px) {
-    .game-card {
-        flex: 0 0 280px;
-    }
+  .game-card {
+    flex: 0 0 260px;
+    padding: 1rem;
+  }
 
-    .team img {
-        width: 56px;
-        height: 56px;
-    }
+  .team img {
+    width: 52px;
+    height: 52px;
+  }
 
-    .vs-circle {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-    }
+  .vs-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
 
-    .score {
-        font-size: 1.2rem;
-    }
+  .score {
+    font-size: 1rem;
+  }
 }
 
+/* =============================== */
 /* FEATURED SECTION */
+/* =============================== */
+
 .featured-section {
-    margin-bottom: 3rem; /* Spacing before next section */
+  margin-bottom: 2.5rem; /* Slightly reduced */
 }
 
-/* 
-    We'll create a 3x3 grid:
-      Row 1: [big, big, small1]
-      Row 2: [big, big, small2]
-      Row 3: [small3, small4, small5]
-    The first child in the .featured-grid is the "big" Ohio State card;
-    the next five are small cards.
-*/
 .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, auto);
-    grid-gap: 1rem;
-    grid-template-areas:
-      "big big small1"
-      "big big small2"
-      "small3 small4 small5";
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, auto);
+  grid-gap: 0.75rem; /* Slightly reduced gap */
+  grid-template-areas:
+    "big big small1"
+    "big big small2"
+    "small3 small4 small5";
 }
 
-/* Assign each grid area by the element’s order */
 .featured-grid > :nth-child(1) {
-    grid-area: big;
-    position: relative;
+  grid-area: big;
+  position: relative;
 }
 .featured-grid > :nth-child(2) {
-    grid-area: small1;
-    position: relative;
+  grid-area: small1;
+  position: relative;
 }
 .featured-grid > :nth-child(3) {
-    grid-area: small2;
-    position: relative;
+  grid-area: small2;
+  position: relative;
 }
 .featured-grid > :nth-child(4) {
-    grid-area: small3;
-    position: relative;
+  grid-area: small3;
+  position: relative;
 }
 .featured-grid > :nth-child(5) {
-    grid-area: small4;
-    position: relative;
+  grid-area: small4;
+  position: relative;
 }
 .featured-grid > :nth-child(6) {
-    grid-area: small5;
-    position: relative;
+  grid-area: small5;
+  position: relative;
 }
 
-/* Card Styles */
 .featured-card {
-    border-radius: 16px;
-    overflow: hidden;
-    cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .featured-card img {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-/* Slight zoom on hover */
 .featured-card:hover img {
-    transform: scale(1.03);
+  transform: scale(1.03);
 }
 
-/* Text Overlay at Bottom */
 .featured-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(212, 0, 28, 0.85); /* uses your accent color with opacity */
-    color: #fff;
-    padding: 1rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(212, 0, 28, 0.85);
+  color: #fff;
+  padding: 0.75rem; /* Slightly smaller padding */
 }
 
 .featured-overlay h2,
 .featured-overlay h3 {
-    margin: 0 0 0.25rem;
-    font-weight: 600;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
 }
 
 .featured-overlay p {
-    margin: 0;
-    font-size: 0.9rem;
+  margin: 0;
+  font-size: 0.85rem;
 }
 
-/* 
-    Responsive Tweaks:
-    Adjust the grid layout on smaller screens so everything stacks nicely.
-*/
 @media (max-width: 992px) {
-    .featured-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: repeat(3, auto);
-        grid-template-areas:
-          "big big"
-          "small1 small2"
-          "small3 small4"
-          "small5 small5";
-    }
+  .featured-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, auto);
+    grid-template-areas:
+      "big big"
+      "small1 small2"
+      "small3 small4"
+      "small5 small5";
+  }
 }
 
 @media (max-width: 600px) {
-    .featured-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-        grid-template-areas:
-          "big"
-          "small1"
-          "small2"
-          "small3"
-          "small4"
-          "small5";
-    }
+  .featured-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "big"
+      "small1"
+      "small2"
+      "small3"
+      "small4"
+      "small5";
+  }
 }
   
