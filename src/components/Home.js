@@ -183,13 +183,22 @@ const Home = () => {
             {polls.map((poll) => (
               <div key={poll.id} className="poll-card">
                 <h3 className="poll-title">
-                  <img src="/photos/committee.png" alt="Committee Logo" className="poll-logo" />
+                  <img
+                    src="/photos/committee.png"
+                    alt="Committee Logo"
+                    className="poll-logo"
+                  />
                   {poll.name}
                 </h3>
                 <div className="rankings-list">
                   {poll.rankings.slice(0, 5).map((team) => (
                     <div key={team.school} className="ranking-item">
-                      <img src={getTeamLogo(team.school)} alt={team.school} className="team-logo" />
+                      {/* Smaller .team-logo per new CSS */}
+                      <img
+                        src={getTeamLogo(team.school)}
+                        alt={team.school}
+                        className="team-logo"
+                      />
                       <div className="team-info">
                         <span className="rank">#{team.rank}</span>
                         <span className="team-name">{team.school}</span>
@@ -215,6 +224,7 @@ const Home = () => {
                 {prospect.stars && renderStars(prospect.stars)}
                 {prospect.committedTo && (
                   <span className="recruit-commit">
+                    {/* Smaller .committed-team-logo per new CSS */}
                     <img
                       src={getTeamLogo(prospect.committedTo)}
                       alt={`${prospect.committedTo} Logo`}
@@ -236,7 +246,11 @@ const Home = () => {
         </h2>
         <div className="games-slider">
           {games.map((game) => (
-            <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
+            <Link
+              to={`/games/${game.id}`}
+              key={game.id}
+              className="game-card-link"
+            >
               <div className="game-card">
                 <div className="game-header">
                   <div className="game-time">
@@ -248,12 +262,17 @@ const Home = () => {
                   </div>
                   <div className="network">
                     {getNetworkLogo(game.network || "ESPN")}
-                    <span className="network-name">{game.network || "ESPN"}</span>
+                    <span className="network-name">
+                      {game.network || "ESPN"}
+                    </span>
                   </div>
                 </div>
                 <div className="teams-container">
                   <div className="team home-team">
-                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                    <img
+                      src={getTeamLogo(game.homeTeam)}
+                      alt={game.homeTeam}
+                    />
                     <div className="team-info">
                       <span className="team-name">{game.homeTeam}</span>
                       <span className="team-record">(8-2)</span>
@@ -268,7 +287,10 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="team away-team">
-                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                    <img
+                      src={getTeamLogo(game.awayTeam)}
+                      alt={game.awayTeam}
+                    />
                     <div className="team-info">
                       <span className="team-name">{game.awayTeam}</span>
                       <span className="team-record">(7-3)</span>
