@@ -500,53 +500,54 @@ select {
   gap: 0.6rem; 
 }
 
+/* ~~~~ RECRUIT ITEM 10% BIGGER ~~~~ */
 .recruit-item {
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 6px;
-  padding: 6px 10px; 
+  padding: 7px 12px; /* was 6px 10px -> about 10% bigger */
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem; 
+  gap: 8px;          /* slightly bigger gap than 6px */
+  font-size: 0.95rem; /* was 0.85rem -> about 10% bigger */
 }
 
 .recruit-rank {
   font-weight: bold;
   color: var(--accent-color);
-  font-size: 0.85rem;
+  font-size: 0.95rem; /* was 0.85rem */
 }
 
 .recruit-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.95rem; /* was 0.85rem */
 }
 
 .recruit-position {
   color: #666;
-  font-size: 0.8rem;
+  font-size: 0.9rem;  /* was 0.8rem */
 }
 
+/* Committed team logo: 20px instead of 18px */
 .recruit-commit {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;    /* slightly bigger gap than 3px */
   margin-left: auto;
   font-weight: 500;
   color: #333;
 }
 
-/* Committed team logo should be small, no border */
 .committed-team-logo {
-  width: 18px;
-  height: 18px;
+  width: 20px;  /* was 18px */
+  height: 20px;
   object-fit: contain;
   border: none;
   border-radius: 0;
 }
 
 .commit-check {
-  font-size: 14px; 
+  font-size: 15px; /* was 14px */
   color: green;
 }
 
