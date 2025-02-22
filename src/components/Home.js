@@ -188,7 +188,6 @@ const Home = () => {
                   />
                   {poll.name}
                 </h3>
-
                 <div className="rankings-list">
                   {/* Display top 10 teams inline */}
                   {poll.rankings.slice(0, 10).map((team) => (
@@ -260,12 +259,14 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="teams-container">
-                  {/* Home Team Block */}
                   <div className="team home-team">
                     <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                    <span className="team-details">
-                      {game.homeTeam} ({game.homeRecord || "N/A"})
-                    </span>
+                    <div className="team-info">
+                      <span className="team-name">{game.homeTeam}</span>
+                      <span className="team-record">
+                        {game.homeRecord || "(N/A)"}
+                      </span>
+                    </div>
                   </div>
                   <div className="vs-container">
                     <div className="vs-circle">VS</div>
@@ -275,12 +276,14 @@ const Home = () => {
                       <span className="score">{game.awayPoints || "-"}</span>
                     </div>
                   </div>
-                  {/* Away Team Block */}
                   <div className="team away-team">
                     <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                    <span className="team-details">
-                      {game.awayTeam} ({game.awayRecord || "N/A"})
-                    </span>
+                    <div className="team-info">
+                      <span className="team-name">{game.awayTeam}</span>
+                      <span className="team-record">
+                        {game.awayRecord || "(N/A)"}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="game-footer">
