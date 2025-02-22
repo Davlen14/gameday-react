@@ -188,16 +188,15 @@ const Home = () => {
                   />
                   {poll.name}
                 </h3>
-
                 <div className="rankings-list">
-                  {/* Show top 10 teams in a single line: #6 [logo] Team 1019 pts */}
-                  {poll.rankings.slice(0, 25).map((team) => (
+                  {/* Display top 10 teams inline */}
+                  {poll.rankings.slice(0, 10).map((team) => (
                     <div key={team.school} className="ranking-item">
                       <span className="poll-rank">#{team.rank}</span>
                       <img
                         src={getTeamLogo(team.school)}
                         alt={team.school}
-                        className="team-poll-logo" /* renamed for polls specifically */
+                        className="team-poll-logo"
                       />
                       <span className="poll-team-name">{team.school}</span>
                       <span className="poll-points">{team.points} pts</span>
@@ -264,7 +263,9 @@ const Home = () => {
                     <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
                     <div className="team-info">
                       <span className="team-name">{game.homeTeam}</span>
-                      <span className="team-record">(8-2)</span>
+                      <span className="team-record">
+                        {game.homeRecord || "(N/A)"}
+                      </span>
                     </div>
                   </div>
                   <div className="vs-container">
@@ -279,7 +280,9 @@ const Home = () => {
                     <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
                     <div className="team-info">
                       <span className="team-name">{game.awayTeam}</span>
-                      <span className="team-record">(7-3)</span>
+                      <span className="team-record">
+                        {game.awayRecord || "(N/A)"}
+                      </span>
                     </div>
                   </div>
                 </div>
