@@ -46,9 +46,9 @@ const Home = () => {
         );
         setGames(fbsGames);
 
-        // Sort recruits by ranking and keep top 10
+        // Sort recruits by ranking and keep top 15
         const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
-        setTopRecruits(sortedRecruits.slice(0, 10));
+        setTopRecruits(sortedRecruits.slice(0, 15));
       } catch (err) {
         setError(err.message);
       } finally {
