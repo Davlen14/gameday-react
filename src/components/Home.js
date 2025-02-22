@@ -38,7 +38,7 @@ const Home = () => {
         setTeams(teamsData);
         setPolls(pollsData);
 
-        // Filter games to include only FBS vs. FBS matchups
+        // Filter games to include only FBS vs. FBS matchup
         const fbsGames = gamesData.filter(
           (game) =>
             game.homeClassification === "fbs" &&
