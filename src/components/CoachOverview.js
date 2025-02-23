@@ -17,14 +17,6 @@ const aggregateCoachData = (seasons) => {
       acc.spOverall += season.spOverall || 0;
       acc.spOffense += season.spOffense || 0;
       acc.spDefense += season.spDefense || 0;
-      if (season.preseasonRank != null) {
-        acc.preseasonSum += season.preseasonRank;
-        acc.preseasonCount++;
-      }
-      if (season.postseasonRank != null) {
-        acc.postseasonSum += season.postseasonRank;
-        acc.postseasonCount++;
-      }
       acc.count++;
       return acc;
     },
@@ -37,10 +29,6 @@ const aggregateCoachData = (seasons) => {
       spOverall: 0,
       spOffense: 0,
       spDefense: 0,
-      preseasonSum: 0,
-      preseasonCount: 0,
-      postseasonSum: 0,
-      postseasonCount: 0,
       count: 0,
     }
   );
@@ -174,8 +162,7 @@ const CoachOverview = () => {
                   <th>Wins</th>
                   <th>Losses</th>
                   <th>Ties</th>
-                  <th>Preseason</th>
-                  <th>Postseason</th>
+                  <th>Win %</th>
                   <th>SRS</th>
                   <th>SP Overall</th>
                   <th>SP Offense</th>
@@ -188,8 +175,7 @@ const CoachOverview = () => {
                   // Aggregate all season data from the coach's full career
                   const agg = aggregateCoachData(coach.seasons);
                   // Use the most recent season for the school and logo
-                  const lastSeason =
-                    coach.seasons[coach.seasons.length - 1] || {};
+                  const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
                   const avgSrs =
                     agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
                   const avgSpOverall =
@@ -198,14 +184,9 @@ const CoachOverview = () => {
                     agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
                   const avgSpDefense =
                     agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const avgPreseason =
-                    agg.preseasonCount > 0
-                      ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
-                      : "N/A";
-                  const avgPostseason =
-                    agg.postseasonCount > 0
-                      ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
-                      : "N/A";
+                  // Calculate win percentage
+                  const winPct =
+                    agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
                   // Composite score is the sum of averages of the four stat categories
                   const compositeScore =
                     agg.count > 0
@@ -238,8 +219,7 @@ const CoachOverview = () => {
                       <td>{agg.wins}</td>
                       <td>{agg.losses}</td>
                       <td>{agg.ties}</td>
-                      <td>{avgPreseason}</td>
-                      <td>{avgPostseason}</td>
+                      <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
                       <td>{avgSrs}</td>
                       <td>{avgSpOverall}</td>
                       <td>{avgSpOffense}</td>
@@ -267,6 +247,9 @@ const CoachOverview = () => {
                 </li>
                 <li>
                   <strong>SP Defense:</strong> A rating of the team's defensive performance.
+                </li>
+                <li>
+                  <strong>Win %:</strong> The percentage of games won.
                 </li>
               </ul>
             </div>
