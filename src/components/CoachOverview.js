@@ -71,7 +71,7 @@ const CoachOverview = () => {
       try {
         const [
           teamsData,
-          coachesData, // now fetching full career resume (no year parameter)
+          coachesData, // full career resume
           coachNewsData,
           footballNewsData,
           youtubeResponse1,
@@ -86,7 +86,11 @@ const CoachOverview = () => {
         ]);
 
         setTeams(teamsData);
-        setCoachInfo(coachesData);
+        // Filter for active coaches only: at least one season with year 2024
+        const activeCoaches = coachesData.filter((coach) =>
+          coach.seasons.some((season) => season.year === 2024)
+        );
+        setCoachInfo(activeCoaches);
 
         const combinedNews = [
           ...(coachNewsData.articles || []),
@@ -119,7 +123,7 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Sort coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
+  // Sort active coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
   const sortedCoaches = [...coachInfo].sort((a, b) => {
     const aggA = aggregateCoachData(a.seasons);
     const aggB = aggregateCoachData(b.seasons);
@@ -253,8 +257,7 @@ const CoachOverview = () => {
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative
-                  to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
                 </li>
                 <li>
                   <strong>SP Overall:</strong> The overall statistical performance rating.
