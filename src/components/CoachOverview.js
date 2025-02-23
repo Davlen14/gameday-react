@@ -75,7 +75,7 @@ const generateImprovementNotes = (avgSrs, avgSpOverall, avgSpOffense, avgSpDefen
   return notes.length > 0 ? notes.join(", ") : "Excellent performance across all categories";
 };
 
-// Helper: Get a numeric metric value for a coach
+// Helper: Get a numeric metric value for a coach (including win percentage)
 const getMetricValue = (coach, metricKey) => {
   const agg = aggregateCoachData(coach.seasons);
   switch (metricKey) {
@@ -87,6 +87,8 @@ const getMetricValue = (coach, metricKey) => {
       return agg.losses;
     case "ties":
       return agg.ties;
+    case "winPct":
+      return agg.games > 0 ? Number(((agg.wins / agg.games) * 100).toFixed(1)) : null;
     case "preseason":
       return agg.preseasonCount > 0 ? Number((agg.preseasonSum / agg.preseasonCount).toFixed(1)) : null;
     case "postseason":
@@ -227,6 +229,7 @@ const CoachOverview = () => {
       { key: "wins", label: "Wins" },
       { key: "losses", label: "Losses" },
       { key: "ties", label: "Ties" },
+      { key: "winPct", label: "Win %" },
       { key: "preseason", label: "Preseason" },
       { key: "postseason", label: "Postseason" },
       { key: "srs", label: "SRS" },
@@ -273,22 +276,12 @@ const CoachOverview = () => {
                 </td>
                 {selectedCoaches.map((coach, idx) => {
                   const agg = aggregateCoachData(coach.seasons);
-                  const avgSrs =
-                    agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
-                  const avgSpOverall =
-                    agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
-                  const avgSpOffense =
-                    agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
-                  const avgSpDefense =
-                    agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const avgPreseason =
-                    agg.preseasonCount > 0
-                      ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
-                      : "N/A";
-                  const avgPostseason =
-                    agg.postseasonCount > 0
-                      ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
-                      : "N/A";
+                  const avgSrs = agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                  const avgSpOverall = agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
+                  const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
+                  const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
+                  const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
+                  const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
                   let value = "";
                   let numericValue = null;
                   switch (metric.key) {
@@ -307,6 +300,16 @@ const CoachOverview = () => {
                     case "ties":
                       value = agg.ties;
                       numericValue = agg.ties;
+                      break;
+                    case "winPct":
+                      value =
+                        agg.games > 0
+                          ? ((agg.wins / agg.games) * 100).toFixed(1) + "%"
+                          : "N/A";
+                      numericValue =
+                        agg.games > 0
+                          ? Number(((agg.wins / agg.games) * 100).toFixed(1))
+                          : null;
                       break;
                     case "preseason":
                       value = avgPreseason;
@@ -345,12 +348,7 @@ const CoachOverview = () => {
                       break;
                     }
                     case "notes": {
-                      value = generateImprovementNotes(
-                        avgSrs,
-                        avgSpOverall,
-                        avgSpOffense,
-                        avgSpDefense
-                      );
+                      value = generateImprovementNotes(avgSrs, avgSpOverall, avgSpOffense, avgSpDefense);
                       break;
                     }
                     default:
@@ -358,7 +356,6 @@ const CoachOverview = () => {
                   }
 
                   const cellStyle = {};
-                  // For numeric metrics, color the text green if it's the best value, red otherwise.
                   if (metric.key !== "status" && metric.key !== "notes") {
                     if (numericValue !== null && bestValues[metric.key] !== undefined) {
                       if (numericValue === bestValues[metric.key]) {
@@ -368,7 +365,6 @@ const CoachOverview = () => {
                       }
                     }
                   }
-                  
                   return (
                     <td key={idx} style={cellStyle}>
                       {value}
@@ -425,6 +421,7 @@ const CoachOverview = () => {
                   <th>Wins</th>
                   <th>Losses</th>
                   <th>Ties</th>
+                  <th>Win %</th>
                   <th>Preseason</th>
                   <th>Postseason</th>
                   <th>SRS</th>
@@ -445,6 +442,8 @@ const CoachOverview = () => {
                   const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
                   const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
                   const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
+                  const winPct =
+                    agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) + "%" : "N/A";
                   const compositeScore = agg.count > 0
                     ? parseFloat(avgSrs) +
                       parseFloat(avgSpOverall) +
@@ -477,6 +476,7 @@ const CoachOverview = () => {
                       <td>{agg.wins}</td>
                       <td>{agg.losses}</td>
                       <td>{agg.ties}</td>
+                      <td>{winPct}</td>
                       <td>{avgPreseason}</td>
                       <td>{avgPostseason}</td>
                       <td>{avgSrs}</td>
@@ -499,6 +499,7 @@ const CoachOverview = () => {
                 <li><strong>SP Overall:</strong> The overall statistical performance rating.</li>
                 <li><strong>SP Offense:</strong> A rating of the team's offensive performance.</li>
                 <li><strong>SP Defense:</strong> A rating of the team's defensive performance.</li>
+                <li><strong>Win %:</strong> Percentage of games won.</li>
               </ul>
             </div>
           </>
