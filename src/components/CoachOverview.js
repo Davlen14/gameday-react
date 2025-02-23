@@ -5,6 +5,58 @@ import teamsService from "../services/teamsService"; // getCoaches is here
 import youtubeService from "../services/youtubeService";
 import "../styles/CoachOverview.css";
 
+// Helper to aggregate season data for a coach
+const aggregateCoachData = (seasons) => {
+  return seasons.reduce(
+    (acc, season) => {
+      acc.games += season.games || 0;
+      acc.wins += season.wins || 0;
+      acc.losses += season.losses || 0;
+      acc.ties += season.ties || 0;
+      acc.srs += season.srs || 0;
+      acc.spOverall += season.spOverall || 0;
+      acc.spOffense += season.spOffense || 0;
+      acc.spDefense += season.spDefense || 0;
+      if (season.preseasonRank != null) {
+        acc.preseasonSum += season.preseasonRank;
+        acc.preseasonCount++;
+      }
+      if (season.postseasonRank != null) {
+        acc.postseasonSum += season.postseasonRank;
+        acc.postseasonCount++;
+      }
+      acc.count++;
+      return acc;
+    },
+    {
+      games: 0,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      srs: 0,
+      spOverall: 0,
+      spOffense: 0,
+      spDefense: 0,
+      preseasonSum: 0,
+      preseasonCount: 0,
+      postseasonSum: 0,
+      postseasonCount: 0,
+      count: 0,
+    }
+  );
+};
+
+// Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
+const getCoachStatus = (score) => {
+  if (score >= 60) {
+    return { text: "Premiere Coach", color: "green" };
+  } else if (score < 40) {
+    return { text: "On Hot Seat", color: "red" };
+  } else {
+    return { text: "Average", color: "blue" };
+  }
+};
+
 const CoachOverview = () => {
   const [coachInfo, setCoachInfo] = useState([]);
   const [news, setNews] = useState([]);
@@ -59,34 +111,32 @@ const CoachOverview = () => {
     fetchAllData();
   }, []);
 
-  // Helper: Get team logo based on school name
-  const getTeamLogo = (teamName) => {
+  // Helper: Get team logo based on school name (uses the most recent season's school)
+  const getTeamLogo = (school) => {
     const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+      (t) => t.school.toLowerCase() === school?.toLowerCase()
     );
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Calculate a composite score for the coach based on season metrics
-  const calculateCoachScore = (season) => {
-    return (season.srs || 0) + (season.spOverall || 0) + (season.spOffense || 0) + (season.spDefense || 0);
-  };
-
-  // Determine the coach status based on the score
-  const getCoachStatus = (score) => {
-    if (score >= 60) {
-      return { text: "Premiere Coach", color: "green" };
-    } else if (score < 40) {
-      return { text: "On Hot Seat", color: "red" };
-    } else {
-      return { text: "Average", color: "blue" };
-    }
-  };
-
-  // Sort coaches from best to worst based on their composite score
+  // Sort coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
   const sortedCoaches = [...coachInfo].sort((a, b) => {
-    const scoreA = calculateCoachScore(a.seasons?.[0] || {});
-    const scoreB = calculateCoachScore(b.seasons?.[0] || {});
+    const aggA = aggregateCoachData(a.seasons);
+    const aggB = aggregateCoachData(b.seasons);
+    const scoreA =
+      aggA.count > 0
+        ? aggA.srs / aggA.count +
+          aggA.spOverall / aggA.count +
+          aggA.spOffense / aggA.count +
+          aggA.spDefense / aggA.count
+        : 0;
+    const scoreB =
+      aggB.count > 0
+        ? aggB.srs / aggB.count +
+          aggB.spOverall / aggB.count +
+          aggB.spOffense / aggB.count +
+          aggB.spDefense / aggB.count
+        : 0;
     return scoreB - scoreA;
   });
 
@@ -131,37 +181,64 @@ const CoachOverview = () => {
               </thead>
               <tbody>
                 {sortedCoaches.map((coach, index) => {
-                  const season = coach.seasons?.[0] || {};
-                  const score = calculateCoachScore(season);
-                  const status = getCoachStatus(score);
+                  // Aggregate all season data
+                  const agg = aggregateCoachData(coach.seasons);
+                  const lastSeason =
+                    coach.seasons[coach.seasons.length - 1] || {};
+                  const avgSrs =
+                    agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                  const avgSpOverall =
+                    agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
+                  const avgSpOffense =
+                    agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
+                  const avgSpDefense =
+                    agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
+                  const avgPreseason =
+                    agg.preseasonCount > 0
+                      ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
+                      : "N/A";
+                  const avgPostseason =
+                    agg.postseasonCount > 0
+                      ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
+                      : "N/A";
+                  // Composite score is the sum of averages of the four stat categories
+                  const compositeScore =
+                    agg.count > 0
+                      ? parseFloat(avgSrs) +
+                        parseFloat(avgSpOverall) +
+                        parseFloat(avgSpOffense) +
+                        parseFloat(avgSpDefense)
+                      : 0;
+                  const status = getCoachStatus(compositeScore);
+
                   return (
                     <tr key={index}>
                       <td>
                         <img
-                          src={getTeamLogo(season.school)}
-                          alt={season.school}
+                          src={getTeamLogo(lastSeason.school)}
+                          alt={lastSeason.school}
                           className="coach-team-logo"
                         />
                       </td>
                       <td>
                         {coach.firstName} {coach.lastName}
                       </td>
-                      <td>{season.school}</td>
+                      <td>{lastSeason.school}</td>
                       <td>
                         {coach.hireDate
                           ? new Date(coach.hireDate).toLocaleDateString()
                           : "N/A"}
                       </td>
-                      <td>{season.games}</td>
-                      <td>{season.wins}</td>
-                      <td>{season.losses}</td>
-                      <td>{season.ties}</td>
-                      <td>{season.preseasonRank ?? "N/A"}</td>
-                      <td>{season.postseasonRank ?? "N/A"}</td>
-                      <td>{season.srs}</td>
-                      <td>{season.spOverall}</td>
-                      <td>{season.spOffense}</td>
-                      <td>{season.spDefense}</td>
+                      <td>{agg.games}</td>
+                      <td>{agg.wins}</td>
+                      <td>{agg.losses}</td>
+                      <td>{agg.ties}</td>
+                      <td>{avgPreseason}</td>
+                      <td>{avgPostseason}</td>
+                      <td>{avgSrs}</td>
+                      <td>{avgSpOverall}</td>
+                      <td>{avgSpOffense}</td>
+                      <td>{avgSpDefense}</td>
                       <td style={{ color: status.color, fontWeight: "bold" }}>
                         {status.text}
                       </td>
@@ -175,7 +252,8 @@ const CoachOverview = () => {
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance relative
+                  to its opponents.
                 </li>
                 <li>
                   <strong>SP Overall:</strong> The overall statistical performance rating.
