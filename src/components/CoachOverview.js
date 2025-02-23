@@ -223,7 +223,6 @@ const CoachOverview = () => {
                             alt={lastSeason.school}
                             className="coach-team-logo"
                           />
-                          <span>{lastSeason.school}</span>
                         </div>
                       </td>
                       <td>
@@ -252,8 +251,7 @@ const CoachOverview = () => {
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative
-                  to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
                 </li>
                 <li>
                   <strong>SP Overall:</strong> The overall statistical performance rating.
