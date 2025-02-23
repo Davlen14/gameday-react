@@ -79,44 +79,55 @@ const CoachOverview = () => {
         </p>
       </div>
 
-      {/* Coach Profiles Section */}
+      {/* Coach Profiles Section (Table View) */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
         ) : coachInfo.length > 0 ? (
-          <div className="coach-profiles-grid">
-            {coachInfo.map((coach, index) => {
-              const season = coach.seasons?.[0] || {};
-              return (
-                <div className="coach-card" key={index}>
-                  <img
-                    src={getTeamLogo(season.school)}
-                    alt={season.school}
-                    className="coach-team-logo"
-                  />
-                  <div className="coach-details">
-                    <h3>
+          <table className="coach-table">
+            <thead>
+              <tr>
+                <th>Logo</th>
+                <th>Coach Name</th>
+                <th>School</th>
+                <th>Hire Date</th>
+                <th>SRS</th>
+                <th>SP Overall</th>
+                <th>SP Offense</th>
+                <th>SP Defense</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coachInfo.map((coach, index) => {
+                const season = coach.seasons?.[0] || {};
+                return (
+                  <tr key={index}>
+                    <td>
+                      <img
+                        src={getTeamLogo(season.school)}
+                        alt={season.school}
+                        className="coach-team-logo"
+                      />
+                    </td>
+                    <td>
                       {coach.firstName} {coach.lastName}
-                    </h3>
-                    <p className="coach-school">School: {season.school}</p>
-                    <p className="coach-hire-date">
-                      Hire Date:{" "}
+                    </td>
+                    <td>{season.school}</td>
+                    <td>
                       {coach.hireDate
                         ? new Date(coach.hireDate).toLocaleDateString()
                         : "N/A"}
-                    </p>
-                    <div className="coach-stats">
-                      <span>SRS: {season.srs}</span>
-                      <span>SP Overall: {season.spOverall}</span>
-                      <span>SP Offense: {season.spOffense}</span>
-                      <span>SP Defense: {season.spDefense}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    </td>
+                    <td>{season.srs}</td>
+                    <td>{season.spOverall}</td>
+                    <td>{season.spOffense}</td>
+                    <td>{season.spDefense}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         ) : (
           <p>No coach profiles available.</p>
         )}

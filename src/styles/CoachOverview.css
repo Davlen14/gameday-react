@@ -23,12 +23,68 @@
   
   .coach-hero .icon {
     margin-right: 10px;
-    color: #007bff;
+    color: #D4001C;
   }
   
   .coach-hero p {
     font-size: 1.2rem;
     color: #555;
+  }
+  
+  /* Coach Profiles Section - Table View */
+  .coach-profiles-section {
+    margin-bottom: 40px;
+  }
+  
+  .coach-profiles-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .coach-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .coach-table th,
+  .coach-table td {
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+  }
+  
+  .coach-table th {
+    background-color: #f2f2f2;
+    font-size: 1rem;
+  }
+  
+  .coach-table td {
+    font-size: 0.95rem;
+  }
+  
+  .coach-table tr {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .coach-table tr:last-child {
+    border-bottom: none;
+  }
+  
+  .coach-table tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* Team logo styling for table view */
+  .coach-team-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
   }
   
   /* Coach News Section */
