@@ -166,10 +166,8 @@ const CoachOverview = () => {
             <table className="coach-table">
               <thead>
                 <tr>
-                  <th>Team</th>
+                  <th>Current Team</th>
                   <th>Coach Name</th>
-                  <th>School</th>
-                  <th>Hire Date</th>
                   <th>Games</th>
                   <th>Wins</th>
                   <th>Losses</th>
@@ -187,7 +185,7 @@ const CoachOverview = () => {
                 {sortedCoaches.map((coach, index) => {
                   // Aggregate all season data from the coach's full career
                   const agg = aggregateCoachData(coach.seasons);
-                  // Use the most recent season for the school and logo
+                  // Use the most recent season for the current team info
                   const lastSeason =
                     coach.seasons[coach.seasons.length - 1] || {};
                   const avgSrs =
@@ -219,20 +217,17 @@ const CoachOverview = () => {
                   return (
                     <tr key={index}>
                       <td>
-                        <img
-                          src={getTeamLogo(lastSeason.school)}
-                          alt={lastSeason.school}
-                          className="coach-team-logo"
-                        />
+                        <div className="current-team-cell">
+                          <img
+                            src={getTeamLogo(lastSeason.school)}
+                            alt={lastSeason.school}
+                            className="coach-team-logo"
+                          />
+                          <span>{lastSeason.school}</span>
+                        </div>
                       </td>
                       <td>
                         {coach.firstName} {coach.lastName}
-                      </td>
-                      <td>{lastSeason.school}</td>
-                      <td>
-                        {coach.hireDate
-                          ? new Date(coach.hireDate).toLocaleDateString()
-                          : "N/A"}
                       </td>
                       <td>{agg.games}</td>
                       <td>{agg.wins}</td>
@@ -257,7 +252,8 @@ const CoachOverview = () => {
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance relative
+                  to its opponents.
                 </li>
                 <li>
                   <strong>SP Overall:</strong> The overall statistical performance rating.
