@@ -88,7 +88,7 @@ const CoachOverview = () => {
           <table className="coach-table">
             <thead>
               <tr>
-                <th>Logo</th>
+                <th>Team</th>
                 <th>Coach Name</th>
                 <th>School</th>
                 <th>Hire Date</th>
