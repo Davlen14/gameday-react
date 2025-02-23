@@ -84,6 +84,8 @@ const CoachOverview = () => {
   const [loadingCoaches, setLoadingCoaches] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(true);
+  const [filterText, setFilterText] = useState("");
+  const [selectedCoaches, setSelectedCoaches] = useState([]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -163,6 +165,152 @@ const CoachOverview = () => {
     return scoreB - scoreA;
   });
 
+  // Filter sorted coaches based on filterText (first name, last name, or current team)
+  const filteredCoaches = sortedCoaches.filter((coach) => {
+    const fullName = `${coach.firstName} ${coach.lastName}`.toLowerCase();
+    const currentTeam =
+      coach.seasons[coach.seasons.length - 1]?.school.toLowerCase() || "";
+    return (
+      fullName.includes(filterText.toLowerCase()) ||
+      currentTeam.includes(filterText.toLowerCase())
+    );
+  });
+
+  // Handle selection of coaches for comparison
+  const handleCheckboxChange = (coach, isChecked) => {
+    if (isChecked) {
+      setSelectedCoaches([...selectedCoaches, coach]);
+    } else {
+      setSelectedCoaches(selectedCoaches.filter((c) => c !== coach));
+    }
+  };
+
+  // Render comparison table if two or more coaches are selected
+  const renderComparisonTable = () => {
+    return (
+      <div className="comparison-section">
+        <h2>Coach Comparison</h2>
+        <table className="comparison-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              {selectedCoaches.map((coach, index) => (
+                <th key={index}>{coach.firstName} {coach.lastName}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              "games",
+              "wins",
+              "losses",
+              "ties",
+              "preseason",
+              "postseason",
+              "srs",
+              "spOverall",
+              "spOffense",
+              "spDefense",
+              "status",
+              "notes",
+            ].map((metric) => {
+              return (
+                <tr key={metric}>
+                  <td style={{ fontWeight: "bold", textTransform: "capitalize" }}>
+                    {metric === "spOverall"
+                      ? "SP Overall"
+                      : metric === "spOffense"
+                      ? "SP Offense"
+                      : metric === "spDefense"
+                      ? "SP Defense"
+                      : metric}
+                  </td>
+                  {selectedCoaches.map((coach, idx) => {
+                    const agg = aggregateCoachData(coach.seasons);
+                    const lastSeason =
+                      coach.seasons[coach.seasons.length - 1] || {};
+                    const avgSrs =
+                      agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                    const avgSpOverall =
+                      agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
+                    const avgSpOffense =
+                      agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
+                    const avgSpDefense =
+                      agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
+                    const avgPreseason =
+                      agg.preseasonCount > 0
+                        ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
+                        : "N/A";
+                    const avgPostseason =
+                      agg.postseasonCount > 0
+                        ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
+                        : "N/A";
+                    const compositeScore =
+                      agg.count > 0
+                        ? parseFloat(avgSrs) +
+                          parseFloat(avgSpOverall) +
+                          parseFloat(avgSpOffense) +
+                          parseFloat(avgSpDefense)
+                        : 0;
+                    const status = getCoachStatus(compositeScore);
+                    const notes = generateImprovementNotes(
+                      avgSrs,
+                      avgSpOverall,
+                      avgSpOffense,
+                      avgSpDefense
+                    );
+                    let value = "";
+                    switch (metric) {
+                      case "games":
+                        value = agg.games;
+                        break;
+                      case "wins":
+                        value = agg.wins;
+                        break;
+                      case "losses":
+                        value = agg.losses;
+                        break;
+                      case "ties":
+                        value = agg.ties;
+                        break;
+                      case "preseason":
+                        value = avgPreseason;
+                        break;
+                      case "postseason":
+                        value = avgPostseason;
+                        break;
+                      case "srs":
+                        value = avgSrs;
+                        break;
+                      case "spOverall":
+                        value = avgSpOverall;
+                        break;
+                      case "spOffense":
+                        value = avgSpOffense;
+                        break;
+                      case "spDefense":
+                        value = avgSpDefense;
+                        break;
+                      case "status":
+                        value = status.text;
+                        break;
+                      case "notes":
+                        value = notes;
+                        break;
+                      default:
+                        value = "";
+                    }
+                    return <td key={idx} style={metric === "status" ? { color: status.color, fontWeight: "bold" } : {}}>{value}</td>;
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className="coach-overview-container">
       {/* Hero Section */}
@@ -175,16 +323,27 @@ const CoachOverview = () => {
         </p>
       </div>
 
+      {/* Filter Input */}
+      <div className="filter-section">
+        <input
+          type="text"
+          placeholder="Filter by coach name or current team..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+      </div>
+
       {/* Coach Profiles Section (Table View) */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
-        ) : sortedCoaches.length > 0 ? (
+        ) : filteredCoaches.length > 0 ? (
           <>
             <table className="coach-table">
               <thead>
                 <tr>
+                  <th>Select</th>
                   <th>Current Team</th>
                   <th>Coach Name</th>
                   <th>Games</th>
@@ -202,7 +361,7 @@ const CoachOverview = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedCoaches.map((coach, index) => {
+                {filteredCoaches.map((coach, index) => {
                   // Aggregate all season data from the coach's full career
                   const agg = aggregateCoachData(coach.seasons);
                   // Use the most recent season for the current team info
@@ -233,11 +392,19 @@ const CoachOverview = () => {
                         parseFloat(avgSpDefense)
                       : 0;
                   const status = getCoachStatus(compositeScore);
-                  // Generate improvement notes based on averages
                   const notes = generateImprovementNotes(avgSrs, avgSpOverall, avgSpOffense, avgSpDefense);
 
                   return (
                     <tr key={index}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          onChange={(e) =>
+                            handleCheckboxChange(coach, e.target.checked)
+                          }
+                          checked={selectedCoaches.includes(coach)}
+                        />
+                      </td>
                       <td>
                         <div className="current-team-cell">
                           <img
@@ -292,6 +459,128 @@ const CoachOverview = () => {
           <p>No coach profiles available.</p>
         )}
       </section>
+
+      {/* Comparison Table Section */}
+      {selectedCoaches.length >= 2 && (
+        <section className="comparison-section">
+          <h2>Coach Comparison</h2>
+          <table className="comparison-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                {selectedCoaches.map((coach, index) => (
+                  <th key={index}>
+                    {coach.firstName} {coach.lastName}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { key: "games", label: "Games" },
+                { key: "wins", label: "Wins" },
+                { key: "losses", label: "Losses" },
+                { key: "ties", label: "Ties" },
+                { key: "preseason", label: "Preseason" },
+                { key: "postseason", label: "Postseason" },
+                { key: "srs", label: "SRS" },
+                { key: "spOverall", label: "SP Overall" },
+                { key: "spOffense", label: "SP Offense" },
+                { key: "spDefense", label: "SP Defense" },
+                { key: "status", label: "Status" },
+                { key: "notes", label: "Notes" },
+              ].map((metric) => (
+                <tr key={metric.key}>
+                  <td style={{ fontWeight: "bold" }}>{metric.label}</td>
+                  {selectedCoaches.map((coach, idx) => {
+                    const agg = aggregateCoachData(coach.seasons);
+                    const avgSrs =
+                      agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                    const avgSpOverall =
+                      agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
+                    const avgSpOffense =
+                      agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
+                    const avgSpDefense =
+                      agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
+                    const avgPreseason =
+                      agg.preseasonCount > 0
+                        ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
+                        : "N/A";
+                    const avgPostseason =
+                      agg.postseasonCount > 0
+                        ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
+                        : "N/A";
+                    const compositeScore =
+                      agg.count > 0
+                        ? parseFloat(avgSrs) +
+                          parseFloat(avgSpOverall) +
+                          parseFloat(avgSpOffense) +
+                          parseFloat(avgSpDefense)
+                        : 0;
+                    const status = getCoachStatus(compositeScore);
+                    const notes = generateImprovementNotes(
+                      avgSrs,
+                      avgSpOverall,
+                      avgSpOffense,
+                      avgSpDefense
+                    );
+
+                    let value = "";
+                    switch (metric.key) {
+                      case "games":
+                        value = agg.games;
+                        break;
+                      case "wins":
+                        value = agg.wins;
+                        break;
+                      case "losses":
+                        value = agg.losses;
+                        break;
+                      case "ties":
+                        value = agg.ties;
+                        break;
+                      case "preseason":
+                        value = avgPreseason;
+                        break;
+                      case "postseason":
+                        value = avgPostseason;
+                        break;
+                      case "srs":
+                        value = avgSrs;
+                        break;
+                      case "spOverall":
+                        value = avgSpOverall;
+                        break;
+                      case "spOffense":
+                        value = avgSpOffense;
+                        break;
+                      case "spDefense":
+                        value = avgSpDefense;
+                        break;
+                      case "status":
+                        value = status.text;
+                        break;
+                      case "notes":
+                        value = notes;
+                        break;
+                      default:
+                        value = "";
+                    }
+                    return (
+                      <td
+                        key={idx}
+                        style={metric.key === "status" ? { color: status.color, fontWeight: "bold" } : {}}
+                      >
+                        {value}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {/* Coach News Section */}
       <section className="coach-news-section">
