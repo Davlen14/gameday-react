@@ -67,6 +67,29 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
+  // Calculate a composite score for the coach based on season metrics
+  const calculateCoachScore = (season) => {
+    return (season.srs || 0) + (season.spOverall || 0) + (season.spOffense || 0) + (season.spDefense || 0);
+  };
+
+  // Determine the coach status based on the score
+  const getCoachStatus = (score) => {
+    if (score >= 60) {
+      return { text: "Premiere Coach", color: "green" };
+    } else if (score < 40) {
+      return { text: "On Hot Seat", color: "red" };
+    } else {
+      return { text: "Average", color: "blue" };
+    }
+  };
+
+  // Sort coaches from best to worst based on their composite score
+  const sortedCoaches = [...coachInfo].sort((a, b) => {
+    const scoreA = calculateCoachScore(a.seasons?.[0] || {});
+    const scoreB = calculateCoachScore(b.seasons?.[0] || {});
+    return scoreB - scoreA;
+  });
+
   return (
     <div className="coach-overview-container">
       {/* Hero Section */}
@@ -84,84 +107,91 @@ const CoachOverview = () => {
         <h2>Coach Profiles</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
-        ) : coachInfo.length > 0 ? (
-          <table className="coach-table">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Coach Name</th>
-                <th>School</th>
-                <th>Hire Date</th>
-                <th>Games</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Ties</th>
-                <th>Preseason</th>
-                <th>Postseason</th>
-                <th>SRS</th>
-                <th>SP Overall</th>
-                <th>SP Offense</th>
-                <th>SP Defense</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coachInfo.map((coach, index) => {
-                const season = coach.seasons?.[0] || {};
-                return (
-                  <tr key={index}>
-                    <td>
-                      <img
-                        src={getTeamLogo(season.school)}
-                        alt={season.school}
-                        className="coach-team-logo"
-                      />
-                    </td>
-                    <td>
-                      {coach.firstName} {coach.lastName}
-                    </td>
-                    <td>{season.school}</td>
-                    <td>
-                      {coach.hireDate
-                        ? new Date(coach.hireDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>{season.games}</td>
-                    <td>{season.wins}</td>
-                    <td>{season.losses}</td>
-                    <td>{season.ties}</td>
-                    <td>{season.preseasonRank ?? "N/A"}</td>
-                    <td>{season.postseasonRank ?? "N/A"}</td>
-                    <td>{season.srs}</td>
-                    <td>{season.spOverall}</td>
-                    <td>{season.spOffense}</td>
-                    <td>{season.spDefense}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        ) : sortedCoaches.length > 0 ? (
+          <>
+            <table className="coach-table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Coach Name</th>
+                  <th>School</th>
+                  <th>Hire Date</th>
+                  <th>Games</th>
+                  <th>Wins</th>
+                  <th>Losses</th>
+                  <th>Ties</th>
+                  <th>Preseason</th>
+                  <th>Postseason</th>
+                  <th>SRS</th>
+                  <th>SP Overall</th>
+                  <th>SP Offense</th>
+                  <th>SP Defense</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedCoaches.map((coach, index) => {
+                  const season = coach.seasons?.[0] || {};
+                  const score = calculateCoachScore(season);
+                  const status = getCoachStatus(score);
+                  return (
+                    <tr key={index}>
+                      <td>
+                        <img
+                          src={getTeamLogo(season.school)}
+                          alt={season.school}
+                          className="coach-team-logo"
+                        />
+                      </td>
+                      <td>
+                        {coach.firstName} {coach.lastName}
+                      </td>
+                      <td>{season.school}</td>
+                      <td>
+                        {coach.hireDate
+                          ? new Date(coach.hireDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>{season.games}</td>
+                      <td>{season.wins}</td>
+                      <td>{season.losses}</td>
+                      <td>{season.ties}</td>
+                      <td>{season.preseasonRank ?? "N/A"}</td>
+                      <td>{season.postseasonRank ?? "N/A"}</td>
+                      <td>{season.srs}</td>
+                      <td>{season.spOverall}</td>
+                      <td>{season.spOffense}</td>
+                      <td>{season.spDefense}</td>
+                      <td style={{ color: status.color, fontWeight: "bold" }}>
+                        {status.text}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {/* Transparent Stat Definitions Card */}
+            <div className="stats-info-card">
+              <h3>Stat Definitions</h3>
+              <ul>
+                <li>
+                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
+                </li>
+                <li>
+                  <strong>SP Overall:</strong> The overall statistical performance rating.
+                </li>
+                <li>
+                  <strong>SP Offense:</strong> A rating of the team's offensive performance.
+                </li>
+                <li>
+                  <strong>SP Defense:</strong> A rating of the team's defensive performance.
+                </li>
+              </ul>
+            </div>
+          </>
         ) : (
           <p>No coach profiles available.</p>
         )}
-        {/* Transparent Stat Definitions Card */}
-        <div className="stats-info-card">
-          <h3>Stat Definitions</h3>
-          <ul>
-            <li>
-              <strong>SRS:</strong> A measure of a team's performance relative to
-              its opponents.
-            </li>
-            <li>
-              <strong>SP Overall:</strong> The overall statistical performance rating.
-            </li>
-            <li>
-              <strong>SP Offense:</strong> A rating of the team's offensive performance.
-            </li>
-            <li>
-              <strong>SP Defense:</strong> A rating of the team's defensive performance.
-            </li>
-          </ul>
-        </div>
       </section>
 
       {/* Coach News Section */}
