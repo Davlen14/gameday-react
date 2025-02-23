@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { FaUserTie } from "react-icons/fa";
 import newsService from "../services/newsService";
-import teamsService from "../services/teamsService";
+import teamsService from "../services/teamsService"; // getCoaches is here
 import youtubeService from "../services/youtubeService";
 import "../styles/CoachOverview.css";
 
 const CoachOverview = () => {
+  const [coachInfo, setCoachInfo] = useState([]);
   const [news, setNews] = useState([]);
   const [teams, setTeams] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [loadingCoaches, setLoadingCoaches] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       try {
         const [
           teamsData,
+          coachesData,
           coachNewsData,
           footballNewsData,
           youtubeResponse1,
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
+          teamsService.getCoaches(2024),
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -30,15 +34,14 @@ const CoachOverview = () => {
         ]);
 
         setTeams(teamsData);
+        setCoachInfo(coachesData);
 
-        // Combine news articles from both coach and football news
         const combinedNews = [
           ...(coachNewsData.articles || []),
           ...(footballNewsData.articles || []),
         ];
         setNews(combinedNews);
 
-        // Combine videos from both YouTube queries
         const combinedVideos = [
           ...(youtubeResponse1.items || []),
           ...(youtubeResponse2.items || []),
@@ -47,15 +50,16 @@ const CoachOverview = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
+        setLoadingCoaches(false);
         setLoadingNews(false);
         setLoadingVideos(false);
       }
     };
 
-    fetchData();
+    fetchAllData();
   }, []);
 
-  // Helper: Get team logo based on team name (if available)
+  // Helper: Get team logo based on school name
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -71,9 +75,52 @@ const CoachOverview = () => {
           <FaUserTie className="icon" /> Coach Overview
         </h1>
         <p>
-          Stay updated with the latest coach news, insights, and video highlights.
+          Stay updated with the latest coach profiles, news, and video highlights.
         </p>
       </div>
+
+      {/* Coach Profiles Section */}
+      <section className="coach-profiles-section">
+        <h2>Coach Profiles</h2>
+        {loadingCoaches ? (
+          <p className="loading-text">Loading coach profiles...</p>
+        ) : coachInfo.length > 0 ? (
+          <div className="coach-profiles-grid">
+            {coachInfo.map((coach, index) => {
+              const season = coach.seasons?.[0] || {};
+              return (
+                <div className="coach-card" key={index}>
+                  <img
+                    src={getTeamLogo(season.school)}
+                    alt={season.school}
+                    className="coach-team-logo"
+                  />
+                  <div className="coach-details">
+                    <h3>
+                      {coach.firstName} {coach.lastName}
+                    </h3>
+                    <p className="coach-school">School: {season.school}</p>
+                    <p className="coach-hire-date">
+                      Hire Date:{" "}
+                      {coach.hireDate
+                        ? new Date(coach.hireDate).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                    <div className="coach-stats">
+                      <span>SRS: {season.srs}</span>
+                      <span>SP Overall: {season.spOverall}</span>
+                      <span>SP Offense: {season.spOffense}</span>
+                      <span>SP Defense: {season.spDefense}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p>No coach profiles available.</p>
+        )}
+      </section>
 
       {/* Coach News Section */}
       <section className="coach-news-section">
