@@ -442,8 +442,7 @@ const CoachOverview = () => {
                   const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
                   const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
                   const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
-                  const winPct =
-                    agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) + "%" : "N/A";
+                  const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) + "%" : "N/A";
                   const compositeScore = agg.count > 0
                     ? parseFloat(avgSrs) +
                       parseFloat(avgSpOverall) +

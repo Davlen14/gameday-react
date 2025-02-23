@@ -39,10 +39,11 @@
   
   .filter-section input {
     width: 60%;
-    padding: 8px 12px;
-    font-size: 1rem;
+    padding: 10px 14px;
+    font-size: 1.1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   /* Coach Profiles Section (Table View) */
@@ -67,10 +68,10 @@
   
   .coach-table th,
   .coach-table td {
-    padding: 12px 15px;
+    padding: 15px 18px;
     border: 1px solid #e0e0e0;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   
   .coach-table th {
@@ -78,8 +79,12 @@
     font-weight: bold;
   }
   
-  .coach-table tr:hover {
+  .coach-table tr:nth-child(even) {
     background-color: #f9f9f9;
+  }
+  
+  .coach-table tr:hover {
+    background-color: #f1f1f1;
   }
   
   /* Checkbox styling in coach table */
@@ -268,10 +273,10 @@
   
   .comparison-table th,
   .comparison-table td {
-    padding: 12px 15px;
+    padding: 15px 18px;
     border: 1px solid #e0e0e0;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   
   .comparison-table th {
@@ -279,6 +284,33 @@
     font-weight: bold;
   }
   
-  .comparison-table tr:hover {
+  .comparison-table tr:nth-child(even) {
     background-color: #f9f9f9;
+  }
+  
+  .comparison-table tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .filter-section input {
+      width: 80%;
+    }
+    
+    .coach-table th,
+    .coach-table td,
+    .comparison-table th,
+    .comparison-table td {
+      padding: 10px 12px;
+      font-size: 0.85rem;
+    }
+    
+    .coach-hero h1 {
+      font-size: 2rem;
+    }
+    
+    .coach-hero p {
+      font-size: 1rem;
+    }
   }
