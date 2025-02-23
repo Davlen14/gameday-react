@@ -26,7 +26,7 @@ const CoachOverview = () => {
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(2024),
+          teamsService.getCoaches(2023),
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
