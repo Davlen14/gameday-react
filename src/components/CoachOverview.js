@@ -57,6 +57,25 @@ const getCoachStatus = (score) => {
   }
 };
 
+// Helper: Generate improvement notes based on average stats
+const generateImprovementNotes = (avgSrs, avgSpOverall, avgSpOffense, avgSpDefense) => {
+  const notes = [];
+  // Thresholds are arbitrary based on sample data:
+  if (avgSrs !== "N/A" && parseFloat(avgSrs) < 15) {
+    notes.push("Improve SRS");
+  }
+  if (avgSpOverall !== "N/A" && parseFloat(avgSpOverall) < 15) {
+    notes.push("Boost Overall Performance");
+  }
+  if (avgSpOffense !== "N/A" && parseFloat(avgSpOffense) < 30) {
+    notes.push("Enhance Offensive Production");
+  }
+  if (avgSpDefense !== "N/A" && parseFloat(avgSpDefense) < 30) {
+    notes.push("Strengthen Defensive Efficiency");
+  }
+  return notes.length > 0 ? notes.join(", ") : "Excellent performance across all categories";
+};
+
 const CoachOverview = () => {
   const [coachInfo, setCoachInfo] = useState([]);
   const [news, setNews] = useState([]);
@@ -179,6 +198,7 @@ const CoachOverview = () => {
                   <th>SP Offense</th>
                   <th>SP Defense</th>
                   <th>Status</th>
+                  <th>Notes</th>
                 </tr>
               </thead>
               <tbody>
@@ -213,6 +233,8 @@ const CoachOverview = () => {
                         parseFloat(avgSpDefense)
                       : 0;
                   const status = getCoachStatus(compositeScore);
+                  // Generate improvement notes based on averages
+                  const notes = generateImprovementNotes(avgSrs, avgSpOverall, avgSpOffense, avgSpDefense);
 
                   return (
                     <tr key={index}>
@@ -241,6 +263,7 @@ const CoachOverview = () => {
                       <td style={{ color: status.color, fontWeight: "bold" }}>
                         {status.text}
                       </td>
+                      <td>{notes}</td>
                     </tr>
                   );
                 })}
