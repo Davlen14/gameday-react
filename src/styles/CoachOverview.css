@@ -1,0 +1,149 @@
+/* Container & Global Layout */
+.coach-overview-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: "Roboto", sans-serif;
+    color: #333;
+  }
+  
+  /* Hero Section */
+  .coach-hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .coach-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .coach-hero .icon {
+    margin-right: 10px;
+    color: #007bff;
+  }
+  
+  .coach-hero p {
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
+  /* Coach News Section */
+  .coach-news-section {
+    margin-bottom: 40px;
+  }
+  
+  .coach-news-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .featured-news {
+    display: flex;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .featured-news-card {
+    display: flex;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+  }
+  
+  .featured-image {
+    width: 40%;
+    object-fit: cover;
+  }
+  
+  .featured-news-details {
+    padding: 15px;
+    width: 60%;
+  }
+  
+  .featured-news-details h3 {
+    margin: 0 0 10px;
+    font-size: 1.5rem;
+  }
+  
+  .featured-news-details p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  
+  .news-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+  }
+  
+  .news-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .news-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+  
+  .news-details {
+    padding: 10px;
+  }
+  
+  .news-details h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  
+  .news-source {
+    font-size: 0.8rem;
+    color: #777;
+  }
+  
+  /* Coach Videos Section */
+  .coach-videos-section {
+    margin-bottom: 40px;
+  }
+  
+  .coach-videos-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .video-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* Loading Text */
+  .loading-text {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #777;
+  }

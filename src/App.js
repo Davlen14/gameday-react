@@ -19,6 +19,9 @@ import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysi
 // New ArbitrageEV Component Import
 import ArbitrageEV from "./components/ArbitrageEV";
 
+// NEW: Import CoachOverview Component
+import CoachOverview from "./components/CoachOverview";
+
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -171,6 +174,8 @@ function App() {
                         <Link to="/top-prospects">Top Prospects</Link>
                         <Link to="/commitments">Commitments</Link>
                         <Link to="/transfer-portal">Transfer Portal</Link>
+                        {/* NEW: Coach Overview link */}
+                        <Link to="/coach-overview">Coach Overview</Link>
                       </div>
                     )}
                   </div>
@@ -244,6 +249,9 @@ function App() {
               <Route path="/top-prospects" element={<TopProspects />} />
               <Route path="/commitments" element={<Commitments />} />
               <Route path="/transfer-portal" element={<TransferPortal />} />
+
+              {/* NEW: Coach Overview Route */}
+              <Route path="/coach-overview" element={<CoachOverview />} />
 
               {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
