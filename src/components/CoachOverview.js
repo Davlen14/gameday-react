@@ -17,14 +17,6 @@ const aggregateCoachData = (seasons) => {
       acc.spOverall += season.spOverall || 0;
       acc.spOffense += season.spOffense || 0;
       acc.spDefense += season.spDefense || 0;
-      if (season.preseasonRank != null) {
-        acc.preseasonSum += season.preseasonRank;
-        acc.preseasonCount++;
-      }
-      if (season.postseasonRank != null) {
-        acc.postseasonSum += season.postseasonRank;
-        acc.postseasonCount++;
-      }
       acc.count++;
       return acc;
     },
@@ -37,10 +29,6 @@ const aggregateCoachData = (seasons) => {
       spOverall: 0,
       spOffense: 0,
       spDefense: 0,
-      preseasonSum: 0,
-      preseasonCount: 0,
-      postseasonSum: 0,
-      postseasonCount: 0,
       count: 0,
     }
   );
@@ -89,10 +77,6 @@ const getMetricValue = (coach, metricKey) => {
       return agg.ties;
     case "winPct":
       return agg.games > 0 ? Number(((agg.wins / agg.games) * 100).toFixed(1)) : null;
-    case "preseason":
-      return agg.preseasonCount > 0 ? Number((agg.preseasonSum / agg.preseasonCount).toFixed(1)) : null;
-    case "postseason":
-      return agg.postseasonCount > 0 ? Number((agg.postseasonSum / agg.postseasonCount).toFixed(1)) : null;
     case "srs":
       return agg.count > 0 ? Number((agg.srs / agg.count).toFixed(1)) : null;
     case "spOverall":
@@ -230,8 +214,6 @@ const CoachOverview = () => {
       { key: "losses", label: "Losses" },
       { key: "ties", label: "Ties" },
       { key: "winPct", label: "Win %" },
-      { key: "preseason", label: "Preseason" },
-      { key: "postseason", label: "Postseason" },
       { key: "srs", label: "SRS" },
       { key: "spOverall", label: "SP Overall" },
       { key: "spOffense", label: "SP Offense" },
@@ -280,8 +262,8 @@ const CoachOverview = () => {
                   const avgSpOverall = agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
                   const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
                   const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
-                  const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
+                  const avgPreseason = "N/A";  // Removed
+                  const avgPostseason = "N/A"; // Removed
                   let value = "";
                   let numericValue = null;
                   switch (metric.key) {
@@ -310,14 +292,6 @@ const CoachOverview = () => {
                         agg.games > 0
                           ? Number(((agg.wins / agg.games) * 100).toFixed(1))
                           : null;
-                      break;
-                    case "preseason":
-                      value = avgPreseason;
-                      numericValue = avgPreseason !== "N/A" ? Number(avgPreseason) : null;
-                      break;
-                    case "postseason":
-                      value = avgPostseason;
-                      numericValue = avgPostseason !== "N/A" ? Number(avgPostseason) : null;
                       break;
                     case "srs":
                       value = avgSrs;
@@ -422,8 +396,6 @@ const CoachOverview = () => {
                   <th>Losses</th>
                   <th>Ties</th>
                   <th>Win %</th>
-                  <th>Preseason</th>
-                  <th>Postseason</th>
                   <th>SRS</th>
                   <th>SP Overall</th>
                   <th>SP Offense</th>
@@ -440,8 +412,6 @@ const CoachOverview = () => {
                   const avgSpOverall = agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
                   const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
                   const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
-                  const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
                   const winPct =
                     agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) + "%" : "N/A";
                   const compositeScore = agg.count > 0
@@ -477,8 +447,6 @@ const CoachOverview = () => {
                       <td>{agg.losses}</td>
                       <td>{agg.ties}</td>
                       <td>{winPct}</td>
-                      <td>{avgPreseason}</td>
-                      <td>{avgPostseason}</td>
                       <td>{avgSrs}</td>
                       <td>{avgSpOverall}</td>
                       <td>{avgSpOffense}</td>
