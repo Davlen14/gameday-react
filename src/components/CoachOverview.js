@@ -71,14 +71,14 @@ const CoachOverview = () => {
       try {
         const [
           teamsData,
-          coachesData,
+          coachesData, // now fetching full career resume (no year parameter)
           coachNewsData,
           footballNewsData,
           youtubeResponse1,
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(2023),
+          teamsService.getCoaches(), // Removed the year parameter
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -154,7 +154,7 @@ const CoachOverview = () => {
 
       {/* Coach Profiles Section (Table View) */}
       <section className="coach-profiles-section">
-        <h2>Coach Profiles</h2>
+        <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
         ) : sortedCoaches.length > 0 ? (
@@ -181,8 +181,9 @@ const CoachOverview = () => {
               </thead>
               <tbody>
                 {sortedCoaches.map((coach, index) => {
-                  // Aggregate all season data
+                  // Aggregate all season data from the coach's full career
                   const agg = aggregateCoachData(coach.seasons);
+                  // Use the most recent season for the school and logo
                   const lastSeason =
                     coach.seasons[coach.seasons.length - 1] || {};
                   const avgSrs =
