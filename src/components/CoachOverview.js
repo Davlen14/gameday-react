@@ -92,6 +92,12 @@ const CoachOverview = () => {
                 <th>Coach Name</th>
                 <th>School</th>
                 <th>Hire Date</th>
+                <th>Games</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Ties</th>
+                <th>Preseason</th>
+                <th>Postseason</th>
                 <th>SRS</th>
                 <th>SP Overall</th>
                 <th>SP Offense</th>
@@ -119,6 +125,12 @@ const CoachOverview = () => {
                         ? new Date(coach.hireDate).toLocaleDateString()
                         : "N/A"}
                     </td>
+                    <td>{season.games}</td>
+                    <td>{season.wins}</td>
+                    <td>{season.losses}</td>
+                    <td>{season.ties}</td>
+                    <td>{season.preseasonRank ?? "N/A"}</td>
+                    <td>{season.postseasonRank ?? "N/A"}</td>
                     <td>{season.srs}</td>
                     <td>{season.spOverall}</td>
                     <td>{season.spOffense}</td>
@@ -131,6 +143,25 @@ const CoachOverview = () => {
         ) : (
           <p>No coach profiles available.</p>
         )}
+        {/* Transparent Stat Definitions Card */}
+        <div className="stats-info-card">
+          <h3>Stat Definitions</h3>
+          <ul>
+            <li>
+              <strong>SRS:</strong> A measure of a team's performance relative to
+              its opponents.
+            </li>
+            <li>
+              <strong>SP Overall:</strong> The overall statistical performance rating.
+            </li>
+            <li>
+              <strong>SP Offense:</strong> A rating of the team's offensive performance.
+            </li>
+            <li>
+              <strong>SP Defense:</strong> A rating of the team's defensive performance.
+            </li>
+          </ul>
+        </div>
       </section>
 
       {/* Coach News Section */}
@@ -181,9 +212,7 @@ const CoachOverview = () => {
                   )}
                   <div className="news-details">
                     <h4>{article.title}</h4>
-                    <span className="news-source">
-                      {article.source.name}
-                    </span>
+                    <span className="news-source">{article.source.name}</span>
                   </div>
                 </a>
               ))}
