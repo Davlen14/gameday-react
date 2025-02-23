@@ -60,7 +60,6 @@ const getCoachStatus = (score) => {
 // Helper: Generate improvement notes based on average stats
 const generateImprovementNotes = (avgSrs, avgSpOverall, avgSpOffense, avgSpDefense) => {
   const notes = [];
-  // Thresholds are arbitrary based on sample data:
   if (avgSrs !== "N/A" && parseFloat(avgSrs) < 15) {
     notes.push("Improve SRS");
   }
@@ -214,7 +213,7 @@ const CoachOverview = () => {
     }
   };
 
-  // Helper: Determine if lower is better for a given metric
+  // Define which metrics are better when lower
   const lowerBetter = {
     losses: true,
     ties: true,
@@ -238,7 +237,7 @@ const CoachOverview = () => {
       { key: "notes", label: "Notes" },
     ];
 
-    // Compute best value for each metric among selected coaches
+    // Compute best value for each metric among selected coaches (for numeric metrics)
     const bestValues = {};
     metrics.forEach((metric) => {
       if (metric.key === "status" || metric.key === "notes") return;
@@ -311,13 +310,11 @@ const CoachOverview = () => {
                       break;
                     case "preseason":
                       value = avgPreseason;
-                      numericValue =
-                        avgPreseason !== "N/A" ? Number(avgPreseason) : null;
+                      numericValue = avgPreseason !== "N/A" ? Number(avgPreseason) : null;
                       break;
                     case "postseason":
                       value = avgPostseason;
-                      numericValue =
-                        avgPostseason !== "N/A" ? Number(avgPostseason) : null;
+                      numericValue = avgPostseason !== "N/A" ? Number(avgPostseason) : null;
                       break;
                     case "srs":
                       value = avgSrs;
@@ -325,18 +322,15 @@ const CoachOverview = () => {
                       break;
                     case "spOverall":
                       value = avgSpOverall;
-                      numericValue =
-                        avgSpOverall !== "N/A" ? Number(avgSpOverall) : null;
+                      numericValue = avgSpOverall !== "N/A" ? Number(avgSpOverall) : null;
                       break;
                     case "spOffense":
                       value = avgSpOffense;
-                      numericValue =
-                        avgSpOffense !== "N/A" ? Number(avgSpOffense) : null;
+                      numericValue = avgSpOffense !== "N/A" ? Number(avgSpOffense) : null;
                       break;
                     case "spDefense":
                       value = avgSpDefense;
-                      numericValue =
-                        avgSpDefense !== "N/A" ? Number(avgSpDefense) : null;
+                      numericValue = avgSpDefense !== "N/A" ? Number(avgSpDefense) : null;
                       break;
                     case "status": {
                       const compositeScore =
@@ -363,27 +357,21 @@ const CoachOverview = () => {
                       value = "";
                   }
 
-                  // Determine if this value is the best for this metric
-                  let arrow = "";
-                  if (numericValue !== null && bestValues[metric.key] !== undefined) {
-                    if (lowerBetter[metric.key]) {
+                  const cellStyle = {};
+                  // For numeric metrics, color the text green if it's the best value, red otherwise.
+                  if (metric.key !== "status" && metric.key !== "notes") {
+                    if (numericValue !== null && bestValues[metric.key] !== undefined) {
                       if (numericValue === bestValues[metric.key]) {
-                        arrow = " ↓";
-                      }
-                    } else {
-                      if (numericValue === bestValues[metric.key]) {
-                        arrow = " ↑";
+                        cellStyle.color = "green";
+                      } else {
+                        cellStyle.color = "red";
                       }
                     }
                   }
-
+                  
                   return (
-                    <td
-                      key={idx}
-                      style={metric.key === "status" ? { color: getCoachStatus(numericValue).color, fontWeight: "bold" } : {}}
-                    >
+                    <td key={idx} style={cellStyle}>
                       {value}
-                      {arrow && <span style={{ color: "green" }}>{arrow}</span>}
                     </td>
                   );
                 })}
@@ -450,31 +438,19 @@ const CoachOverview = () => {
               <tbody>
                 {filteredCoaches.map((coach, index) => {
                   const agg = aggregateCoachData(coach.seasons);
-                  const lastSeason =
-                    coach.seasons[coach.seasons.length - 1] || {};
-                  const avgSrs =
-                    agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
-                  const avgSpOverall =
-                    agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
-                  const avgSpOffense =
-                    agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
-                  const avgSpDefense =
-                    agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const avgPreseason =
-                    agg.preseasonCount > 0
-                      ? (agg.preseasonSum / agg.preseasonCount).toFixed(1)
-                      : "N/A";
-                  const avgPostseason =
-                    agg.postseasonCount > 0
-                      ? (agg.postseasonSum / agg.postseasonCount).toFixed(1)
-                      : "N/A";
-                  const compositeScore =
-                    agg.count > 0
-                      ? parseFloat(avgSrs) +
-                        parseFloat(avgSpOverall) +
-                        parseFloat(avgSpOffense) +
-                        parseFloat(avgSpDefense)
-                      : 0;
+                  const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
+                  const avgSrs = agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                  const avgSpOverall = agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
+                  const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
+                  const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
+                  const avgPreseason = agg.preseasonCount > 0 ? (agg.preseasonSum / agg.preseasonCount).toFixed(1) : "N/A";
+                  const avgPostseason = agg.postseasonCount > 0 ? (agg.postseasonSum / agg.postseasonCount).toFixed(1) : "N/A";
+                  const compositeScore = agg.count > 0
+                    ? parseFloat(avgSrs) +
+                      parseFloat(avgSpOverall) +
+                      parseFloat(avgSpOffense) +
+                      parseFloat(avgSpDefense)
+                    : 0;
                   const status = getCoachStatus(compositeScore);
                   const notes = generateImprovementNotes(avgSrs, avgSpOverall, avgSpOffense, avgSpDefense);
 
@@ -483,9 +459,7 @@ const CoachOverview = () => {
                       <td>
                         <input
                           type="checkbox"
-                          onChange={(e) =>
-                            handleCheckboxChange(coach, e.target.checked)
-                          }
+                          onChange={(e) => handleCheckboxChange(coach, e.target.checked)}
                           checked={selectedCoaches.includes(coach)}
                         />
                       </td>
@@ -498,9 +472,7 @@ const CoachOverview = () => {
                           />
                         </div>
                       </td>
-                      <td>
-                        {coach.firstName} {coach.lastName}
-                      </td>
+                      <td>{coach.firstName} {coach.lastName}</td>
                       <td>{agg.games}</td>
                       <td>{agg.wins}</td>
                       <td>{agg.losses}</td>
@@ -523,18 +495,10 @@ const CoachOverview = () => {
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
-                <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
-                </li>
-                <li>
-                  <strong>SP Overall:</strong> The overall statistical performance rating.
-                </li>
-                <li>
-                  <strong>SP Offense:</strong> A rating of the team's offensive performance.
-                </li>
-                <li>
-                  <strong>SP Defense:</strong> A rating of the team's defensive performance.
-                </li>
+                <li><strong>SRS:</strong> A measure of a team's performance relative to its opponents.</li>
+                <li><strong>SP Overall:</strong> The overall statistical performance rating.</li>
+                <li><strong>SP Offense:</strong> A rating of the team's offensive performance.</li>
+                <li><strong>SP Defense:</strong> A rating of the team's defensive performance.</li>
               </ul>
             </div>
           </>
@@ -551,18 +515,9 @@ const CoachOverview = () => {
         ) : news.length > 0 ? (
           <>
             <div className="featured-news">
-              <a
-                href={news[0].url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="featured-news-card"
-              >
+              <a href={news[0].url} target="_blank" rel="noopener noreferrer" className="featured-news-card">
                 {news[0].image && (
-                  <img
-                    src={news[0].image}
-                    alt={news[0].title}
-                    className="featured-image"
-                  />
+                  <img src={news[0].image} alt={news[0].title} className="featured-image" />
                 )}
                 <div className="featured-news-details">
                   <h3>{news[0].title}</h3>
@@ -573,19 +528,9 @@ const CoachOverview = () => {
             </div>
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
-                <a
-                  key={idx}
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="news-card"
-                >
+                <a key={idx} href={article.url} target="_blank" rel="noopener noreferrer" className="news-card">
                   {article.image && (
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                      className="news-image"
-                    />
+                    <img src={article.image} alt={article.title} className="news-image" />
                   )}
                   <div className="news-details">
                     <h4>{article.title}</h4>
