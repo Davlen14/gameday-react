@@ -1,7 +1,7 @@
 /* Container & Global Layout */
 .coach-overview-container {
-    max-width: 1200px;   /* Limits total width on larger screens */
-    margin: 0 auto;
+    max-width: 1200px;      /* Limits total width on large screens */
+    margin: 0 auto;         /* Centers the container */
     padding: 20px;
     font-family: "Roboto", sans-serif;
     color: #333;
@@ -46,10 +46,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Coach Profiles Section */
+/* Coach Profiles Section (centers heading + table) */
 .coach-profiles-section {
     margin-bottom: 40px;
-    text-align: center; /* So the container and heading are centered */
+    text-align: center; /* ensures the heading is centered */
 }
 
 .coach-profiles-section h2 {
@@ -58,43 +58,102 @@
 }
 
 /* 
-   🔹🔹🔹 TABLE CONTAINER FOR SCROLLING 🔹🔹🔹
-   Wrap your table(s) in a .table-container to allow horizontal scroll if needed.
+   🔹🔹🔹 TABLE LAYOUT FIXED 🔹🔹🔹
+   Forces columns to stay on one line, no horizontal scroll
+   and ensures 100% width. Then we define each column width below.
 */
-.table-container {
-    width: 100%;
-    overflow-x: auto;  /* If table is wider than screen, show horizontal scrollbar */
-    margin: 0 auto;
-    text-align: center; /* Centers the container’s contents */
-    /* white-space: nowrap; 
-       If you want the table to never wrap text, uncomment this. 
-       Typically not needed unless you have very wide columns.
-    */
-}
-
-/* Table styling for a clean, rounded look */
 .coach-table {
+    width: 100%;           /* Fills the screen */
+    table-layout: fixed;   /* Use fixed layout for consistent column widths */
     border-collapse: collapse;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin: 0 auto;        /* Center the table in its container */
+    text-align: left;      /* Keep text left-aligned in cells */
+}
 
-    /*
-       🔹🔹🔹 ALLOW TABLE TO EXPAND 🔹🔹🔹
-       min-width ensures columns can expand 
-       to fit content, while still responsive
-    */
-    min-width: 900px;  /* Or 1000px, adjust as needed */
-    margin: 0 auto;    /* Centers the table horizontally */
-    text-align: left;  /* Keep cell text left-aligned */
+/* Define EXACT widths for each column to avoid cut-off
+   Assuming columns are:
+   1) Select
+   2) Current Team
+   3) Coach Name
+   4) Games
+   5) Wins
+   6) Losses
+   7) Ties
+   8) Win %
+   9) SRS
+   10) SP Overall
+   11) SP Offense
+   12) SP Defense
+   13) Status
+   14) Notes
+   The widths below sum to ~100%.
+*/
+.coach-table th:nth-child(1),
+.coach-table td:nth-child(1) {
+    width: 3%;
+}
+.coach-table th:nth-child(2),
+.coach-table td:nth-child(2) {
+    width: 8%;
+}
+.coach-table th:nth-child(3),
+.coach-table td:nth-child(3) {
+    width: 12%;
+}
+.coach-table th:nth-child(4),
+.coach-table td:nth-child(4) {
+    width: 5%;
+}
+.coach-table th:nth-child(5),
+.coach-table td:nth-child(5) {
+    width: 5%;
+}
+.coach-table th:nth-child(6),
+.coach-table td:nth-child(6) {
+    width: 5%;
+}
+.coach-table th:nth-child(7),
+.coach-table td:nth-child(7) {
+    width: 5%;
+}
+.coach-table th:nth-child(8),
+.coach-table td:nth-child(8) {
+    width: 5%;
+}
+.coach-table th:nth-child(9),
+.coach-table td:nth-child(9) {
+    width: 8%;
+}
+.coach-table th:nth-child(10),
+.coach-table td:nth-child(10) {
+    width: 8%;
+}
+.coach-table th:nth-child(11),
+.coach-table td:nth-child(11) {
+    width: 8%;
+}
+.coach-table th:nth-child(12),
+.coach-table td:nth-child(12) {
+    width: 8%;
+}
+.coach-table th:nth-child(13),
+.coach-table td:nth-child(13) {
+    width: 8%;
+}
+.coach-table th:nth-child(14),
+.coach-table td:nth-child(14) {
+    width: 12%;
 }
 
 .coach-table th,
 .coach-table td {
     padding: 15px 18px;
     border: 1px solid #e0e0e0;
-    text-align: left;
     font-size: 1rem;
+    vertical-align: middle;  /* Keep content vertically centered */
 }
 
 .coach-table th {
@@ -125,10 +184,9 @@
 
 /* Team logo styling for table view */
 .coach-team-logo {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
-    display: block;
     margin: 0 auto;
 }
 
@@ -276,7 +334,7 @@
 /* Comparison Section */
 .comparison-section {
     margin-top: 40px;
-    text-align: center; /* So the heading is centered */
+    text-align: center; /* so heading is centered */
 }
 
 .comparison-section h2 {
@@ -285,25 +343,76 @@
 }
 
 /* 
-   Another container for the comparison table 
-   if you want to allow scrolling there as well
+   If you want the comparison table also to be full screen, 
+   no scrolling, do the same approach as the coach-table:
 */
-.comparison-section .table-container {
-    width: 100%;
-    overflow-x: auto;
-    margin: 0 auto;
-    text-align: center;
-}
-
 .comparison-table {
+    width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin-bottom: 40px;
-    display: inline-block;
+    margin: 0 auto;
     text-align: center;
-    min-width: 900px; /* so columns don't get cramped */
+}
+
+/* Define the same 14 columns for comparison if you removed preseason & postseason there too */
+.comparison-table th:nth-child(1),
+.comparison-table td:nth-child(1) {
+    width: 3%;
+}
+.comparison-table th:nth-child(2),
+.comparison-table td:nth-child(2) {
+    width: 8%;
+}
+.comparison-table th:nth-child(3),
+.comparison-table td:nth-child(3) {
+    width: 12%;
+}
+.comparison-table th:nth-child(4),
+.comparison-table td:nth-child(4) {
+    width: 5%;
+}
+.comparison-table th:nth-child(5),
+.comparison-table td:nth-child(5) {
+    width: 5%;
+}
+.comparison-table th:nth-child(6),
+.comparison-table td:nth-child(6) {
+    width: 5%;
+}
+.comparison-table th:nth-child(7),
+.comparison-table td:nth-child(7) {
+    width: 5%;
+}
+.comparison-table th:nth-child(8),
+.comparison-table td:nth-child(8) {
+    width: 5%;
+}
+.comparison-table th:nth-child(9),
+.comparison-table td:nth-child(9) {
+    width: 8%;
+}
+.comparison-table th:nth-child(10),
+.comparison-table td:nth-child(10) {
+    width: 8%;
+}
+.comparison-table th:nth-child(11),
+.comparison-table td:nth-child(11) {
+    width: 8%;
+}
+.comparison-table th:nth-child(12),
+.comparison-table td:nth-child(12) {
+    width: 8%;
+}
+.comparison-table th:nth-child(13),
+.comparison-table td:nth-child(13) {
+    width: 8%;
+}
+.comparison-table th:nth-child(14),
+.comparison-table td:nth-child(14) {
+    width: 12%;
 }
 
 .comparison-table th,
@@ -332,27 +441,21 @@
     .filter-section input {
       width: 80%;
     }
-
+    
     .coach-hero h1 {
       font-size: 2rem;
     }
-
+    
     .coach-hero p {
       font-size: 1rem;
     }
-
-    /* Reduce padding and font sizes on smaller screens */
+    
+    /* Decrease cell padding and font size on smaller screens */
     .coach-table th,
     .coach-table td,
     .comparison-table th,
     .comparison-table td {
       padding: 10px 12px;
       font-size: 0.85rem;
-    }
-
-    .table-container {
-      /* Optional: let tables break if you want them narrower on small screens 
-         or keep horizontal scroll by leaving it as is
-      */
     }
 }
