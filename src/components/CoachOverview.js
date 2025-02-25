@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { FaUserTie } from "react-icons/fa";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService"; // getCoaches is here
@@ -12,7 +13,7 @@ const aggregateCoachData = (seasons) => {
       acc.games += season.games || 0;
       acc.wins += season.wins || 0;
       acc.losses += season.losses || 0;
-      // Ties still counted internally but not displayed
+      // Ties still counted internally but not displayed:
       acc.ties += season.ties || 0;
       acc.srs += season.srs || 0;
       acc.spOverall += season.spOverall || 0;
@@ -146,7 +147,7 @@ const CoachOverview = () => {
     fetchAllData();
   }, []);
 
-  // Return a team logo if found
+  // Helper: Get team logo based on school name
   const getTeamLogo = (school) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === school?.toLowerCase()
@@ -171,8 +172,6 @@ const CoachOverview = () => {
     const coachKey = coach.firstName + " " + coach.lastName;
     return selectedCoaches.some((c) => c.firstName + " " + c.lastName === coachKey);
   };
-
-  // We do NOT want a master select checkbox in the header, so let's do nothing or keep an empty cell
 
   // Sorting
   const handleSort = (field) => {
@@ -224,7 +223,7 @@ const CoachOverview = () => {
     };
   });
 
-  // Sort them
+  // Sort processed coaches based on sortField/sortDirection or default composite descending
   let displayedCoaches = [...processedCoaches];
   if (sortField) {
     displayedCoaches.sort((a, b) => {
@@ -243,11 +242,10 @@ const CoachOverview = () => {
       return 0;
     });
   } else {
-    // default by composite desc
     displayedCoaches.sort((a, b) => b.composite - a.composite);
   }
 
-  // Ranking for numeric categories, with spDefense "lower is better"
+  // Build ranking maps for numeric categories (spDefense: lower is better)
   const categoriesForRanking = [
     { key: "wins", better: "higher" },
     { key: "losses", better: "lower" },
@@ -255,7 +253,7 @@ const CoachOverview = () => {
     { key: "srs", better: "higher" },
     { key: "spOverall", better: "higher" },
     { key: "spOffense", better: "higher" },
-    { key: "spDefense", better: "lower" }, // Defense: lower is better
+    { key: "spDefense", better: "lower" },
   ];
   const rankingMap = {};
   categoriesForRanking.forEach((cat) => {
@@ -294,7 +292,7 @@ const CoachOverview = () => {
     };
   });
 
-  // Comparison categories
+  // Define comparison categories for the comparison table
   const comparisonCategories = [
     { key: "wins", label: "Wins", better: "higher" },
     { key: "losses", label: "Losses", better: "lower" },
@@ -302,10 +300,10 @@ const CoachOverview = () => {
     { key: "srs", label: "SRS", better: "higher" },
     { key: "spOverall", label: "SP Overall", better: "higher" },
     { key: "spOffense", label: "SP Offense", better: "higher" },
-    { key: "spDefense", label: "SP Defense", better: "lower" }, // again, defense is "lower is better"
+    { key: "spDefense", label: "SP Defense", better: "lower" },
   ];
 
-  // Identify best/worst for comparison table
+  // For each category, determine best and worst among selected coaches
   const getBestWorst = (key, better) => {
     const values = comparisonData.map((data) => data.stats[key]);
     if (values.length === 0) return { best: null, worst: null };
@@ -356,7 +354,7 @@ const CoachOverview = () => {
               <table className="coach-table">
                 <thead>
                   <tr>
-                    {/* Empty header cell (no master checkbox) */}
+                    {/* Empty header cell for checkboxes */}
                     <th></th>
                     <th onClick={() => handleSort("team")}>Team</th>
                     <th onClick={() => handleSort("coachName")}>Coach Name</th>
@@ -375,8 +373,7 @@ const CoachOverview = () => {
                 </thead>
                 <tbody>
                   {displayedCoaches.map((item, index) => {
-                    // Show "League best," "League worst," "Top 5" for each numeric column
-                    // according to rankingMap
+                    // Calculate extra ranking info per numeric category:
                     const rankWins = rankingMap["wins"][item.coachName];
                     const rankLosses = rankingMap["losses"][item.coachName];
                     const rankWinPct = rankingMap["winPct"][item.coachName];
@@ -387,7 +384,7 @@ const CoachOverview = () => {
 
                     return (
                       <tr key={index}>
-                        {/* Single row checkbox */}
+                        {/* Row checkbox */}
                         <td>
                           <input
                             type="checkbox"
@@ -395,12 +392,31 @@ const CoachOverview = () => {
                             onChange={() => handleSelectCoach(item.coach)}
                           />
                         </td>
+                        {/* Team logo clickable: if team data exists, wrap in Link */}
                         <td>
-                          <img
-                            src={getTeamLogo(item.school)}
-                            alt={item.school}
-                            className="coach-team-logo"
-                          />
+                          {(() => {
+                            const teamData = teams.find(
+                              (t) =>
+                                t.school.toLowerCase() ===
+                                item.school.toLowerCase()
+                            );
+                            const logo = getTeamLogo(item.school);
+                            return teamData ? (
+                              <Link to={`/teams/${teamData.id}`}>
+                                <img
+                                  src={logo}
+                                  alt={item.school}
+                                  className="coach-team-logo"
+                                />
+                              </Link>
+                            ) : (
+                              <img
+                                src={logo}
+                                alt={item.school}
+                                className="coach-team-logo"
+                              />
+                            );
+                          })()}
                         </td>
                         <td>{item.coachName}</td>
                         <td>{item.school}</td>
@@ -411,17 +427,17 @@ const CoachOverview = () => {
                         <td>
                           {item.wins}
                           {rankWins === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankWins === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankWins > 1 && rankWins <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -431,17 +447,17 @@ const CoachOverview = () => {
                         <td>
                           {item.losses}
                           {rankLosses === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankLosses === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankLosses > 1 && rankLosses <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -451,17 +467,17 @@ const CoachOverview = () => {
                         <td>
                           {item.winPct !== 0 ? `${item.winPct}%` : "N/A"}
                           {rankWinPct === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankWinPct === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankWinPct > 1 && rankWinPct <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -471,17 +487,17 @@ const CoachOverview = () => {
                         <td>
                           {item.srs}
                           {rankSrs === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankSrs === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankSrs > 1 && rankSrs <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -491,17 +507,17 @@ const CoachOverview = () => {
                         <td>
                           {item.spOverall}
                           {rankOverall === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankOverall === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankOverall > 1 && rankOverall <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -511,17 +527,17 @@ const CoachOverview = () => {
                         <td>
                           {item.spOffense}
                           {rankOffense === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankOffense === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankOffense > 1 && rankOffense <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
@@ -531,24 +547,25 @@ const CoachOverview = () => {
                         <td>
                           {item.spDefense}
                           {rankDefense === 1 && (
-                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                            <div className="extra-info" style={{ color: "gold" }}>
                               League Best 🏆
                             </div>
                           )}
                           {rankDefense === totalCoaches && (
-                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "red" }}>
                               League Worst
                             </div>
                           )}
                           {rankDefense > 1 && rankDefense <= 5 && (
-                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                            <div className="extra-info" style={{ color: "green" }}>
                               Top 5
                             </div>
                           )}
                         </td>
 
-                        {/* Status (Premiere, On Hot Seat, Average) */}
+                        {/* Status */}
                         <td
+                          className="status-label"
                           style={{
                             color: item.status.color,
                             fontStyle: "italic",
@@ -564,7 +581,7 @@ const CoachOverview = () => {
               </table>
             </div>
 
-            {/* Stat Definitions Card */}
+            {/* Stat Definitions */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
@@ -657,7 +674,6 @@ const CoachOverview = () => {
           <p className="loading-text">Loading news...</p>
         ) : news.length > 0 ? (
           <>
-            {/* Featured Article */}
             <div className="featured-news">
               <a
                 href={news[0].url}
@@ -679,7 +695,6 @@ const CoachOverview = () => {
                 </div>
               </a>
             </div>
-            {/* Additional News List */}
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
                 <a
