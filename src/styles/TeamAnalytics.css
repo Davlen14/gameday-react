@@ -1,280 +1,268 @@
-:root {
-  --primary-bg: #ffffff;
-  --secondary-bg: #f9f9f9;
-  --primary-color: #333;
-  --secondary-color: #555;
-  --accent-color: #0077cc;
-  --border-color: #e0e0e0;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-}
-
 /* Base/Reset */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  color: var(--primary-color);
-  background-color: #f3f3f3;
-}
-
-/* Team Analytics Container */
-.team-analytics-container {
-  text-align: center;
-  padding: 30px;
-  max-width: 1000px;
-  width: 90%;
-  margin: 40px auto;
-  background: var(--primary-bg);
-  border-radius: 16px;
-  color: var(--primary-color);
-  box-shadow: 0px 6px 18px var(--shadow-color);
-  border: 1px solid var(--border-color);
-}
-
-/* Team Selector Dropdown */
-.team-selector {
-  margin-bottom: 30px;
-}
-
-.team-dropdown {
-  padding: 14px;
-  font-size: 16px;
-  border-radius: 8px;
-  background: var(--secondary-bg);
-  color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease-in-out;
-}
-
-.team-dropdown:hover {
-  border-color: var(--accent-color);
-}
-
-.team-dropdown:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 5px rgba(0, 123, 204, 0.5);
-}
-
-/* Team Info Section */
-.team-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin: 20px 0;
-}
-
-.team-logo {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  margin: 10px;
-  transition: transform 0.2s ease-in-out;
-}
-
-.team-logo:hover {
-  transform: scale(1.1);
-}
-
-/* Schedule Section */
-.schedule {
-  text-align: left;
-  margin-top: 20px;
-  background: var(--secondary-bg);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
-  max-width: 100%;
-}
-
-/* Game List & Items */
-.game-list {
-  list-style: none;
-  padding: 0;
-}
-
-.game-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
-  transition: background 0.2s ease-in-out;
-  width: 100%;
-}
-
-.game-item:hover {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-/* Game Teams */
-.game-teams {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-
-.vs {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--secondary-color);
-}
-
-/* Game Info */
-.game-info {
-  font-size: 14px;
-  color: var(--secondary-color);
-  margin-top: 5px;
-  text-align: center;
-}
-
-.venue {
-  font-weight: bold;
-  color: var(--primary-color);
-}
-
-/* Modernized Chart Container */
-.chart-container {
-  background: var(--primary-bg);
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.08);
-  color: var(--primary-color);
-  text-align: center;
-  max-width: 100%;
-  width: 95%;
-  margin: 40px auto;
-  border: 1px solid var(--border-color);
-}
-
-.chart-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: var(--primary-color);
-}
-
-/* Tooltip Styling */
-.recharts-tooltip-wrapper {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--border-color);
-}
-
-/* Team Logos Container */
-.team-logos-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 40px;
-  margin-top: 20px;
-}
-
-/* Team Logos Under Chart */
-.team-logo-chart {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-
-/* Player Stats Section */
-.player-stats-section {
-  margin-top: 30px;
-  padding: 20px;
-  background: var(--secondary-bg);
-  border-radius: 12px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--border-color);
-  max-width: 100%;
-}
-
-.player-stats-section h2 {
-  font-size: 22px;
-  margin-bottom: 15px;
-  color: var(--primary-color);
-}
-
-.player-stats-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: auto;
-}
-
-.player-stats-table th,
-.player-stats-table td {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  text-align: left;
-}
-
-.player-stats-table th {
-  background-color: var(--primary-bg);
-  font-weight: bold;
-}
-
-.player-stats-table tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-/* Responsiveness */
-@media (max-width: 1024px) {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f3f3f3;
+  }
+  
+  /* Team Analytics Container */
   .team-analytics-container {
-    max-width: 95%;
-    width: 95%;
-  }
-  
-  .chart-container {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .team-analytics-container {
-    max-width: 100%;
-    padding: 15px;
-  }
-  
-  .game-item {
-    padding: 10px;
-  }
-  
-  .chart-container {
-    width: 100%;
+    text-align: center;
     padding: 20px;
+    max-width: 90%;
+    width: 90%;
+    margin: auto;
+    background: #ffffff;
+    border-radius: 12px;
+    color: #333;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+  }
+  
+  /* Team Selector Dropdown */
+  .team-selector {
+    margin-bottom: 20px;
+  }
+  
+  .team-dropdown {
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    color: #333;
+    border: 1px solid #ccc;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .team-dropdown:hover {
+    border-color: #888;
+  }
+  
+  .team-dropdown:focus {
+    outline: none;
+    border-color: #555;
+  }
+  
+  /* Team Info Section */
+  .team-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 20px 0;
   }
   
   .team-logo {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin: 5px;
+    transition: transform 0.2s ease-in-out;
   }
   
-  .team-logo-chart {
-    width: 50px;
-    height: 50px;
+  .team-logo:hover {
+    transform: scale(1.1);
   }
-}
-
-/* New Class for Axis Logos */
-.chart-axis-logo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border: none;
-  background: transparent;
-  margin: 0 auto;
-  transition: transform 0.2s ease;
-}
-
-.chart-axis-logo:hover {
-  transform: scale(1.05);
-}
+  
+  /* Schedule Section */
+  .schedule {
+    text-align: left;
+    margin-top: 20px;
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ddd;
+    max-width: 100%;
+  }
+  
+  /* Game List */
+  .game-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  /* Game Item */
+  .game-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    transition: background 0.2s ease-in-out;
+    width: 100%;
+  }
+  
+  .game-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Game Teams */
+  .game-teams {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .vs {
+    font-size: 18px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  /* Game Info */
+  .game-info {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+    text-align: center;
+  }
+  
+  .venue {
+    font-weight: bold;
+    color: #444;
+  }
+  
+  /* Modernized Chart Container */
+  .chart-container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08);
+    color: #333;
+    text-align: center;
+    max-width: 100%;
+    width: 95%;
+    margin: 30px auto;
+    border: 1px solid #ddd;
+  }
+  
+  /* Chart Title */
+  .chart-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #222;
+  }
+  
+  /* Tooltip Styling */
+  .recharts-tooltip-wrapper {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ddd;
+  }
+  
+  /* Team Logos Container */
+  .team-logos-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-top: 20px;
+    max-width: 100%;
+  }
+  
+  /* Team Logos under Chart */
+  .team-logo-chart {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+  }
+  
+  /* New Player Stats Section */
+  .player-stats-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #ddd;
+    max-width: 100%;
+  }
+  .player-stats-section h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  .player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: auto;
+  }
+  .player-stats-table th,
+  .player-stats-table td {
+    padding: 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+  .player-stats-table th {
+    background-color: #ffffff;
+    font-weight: bold;
+  }
+  .player-stats-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  /* Responsiveness */
+  @media (max-width: 1024px) {
+    .team-analytics-container {
+      max-width: 95%;
+      width: 95%;
+    }
+  
+    .chart-container {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .team-analytics-container {
+      max-width: 100%;
+      padding: 15px;
+    }
+  
+    .game-item {
+      padding: 10px;
+    }
+  
+    .chart-container {
+      width: 100%;
+      padding: 20px;
+    }
+  
+    .team-logo {
+      width: 80px;
+      height: 80px;
+    }
+  
+    .team-logo-chart {
+      width: 50px;
+      height: 50px;
+    }
+  }
+  
+  /* =========================================
+     NEW CLASS FOR AXIS LOGOS
+     ========================================= */
+  .chart-axis-logo {
+    width: 32px; /* Adjust as desired */
+    height: 32px;
+    object-fit: contain;
+    border: none;
+    background: transparent;
+    margin: 0 auto; /* Centers under the bar if used in an axis tick */
+    transition: transform 0.2s ease;
+  }
+  
+  .chart-axis-logo:hover {
+    transform: scale(1.05);
+  }
