@@ -132,6 +132,8 @@ body {
 
 /* Modernized Chart Container */
 .chart-container {
+  position: relative;
+  margin: 2rem 0;
   background: #ffffff;
   padding: 30px;
   border-radius: 12px;
@@ -140,15 +142,15 @@ body {
   text-align: center;
   max-width: 100%;
   width: 95%;
-  margin: 30px auto;
   border: 1px solid #ddd;
 }
 
 /* Chart Title */
 .chart-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 20px;
   color: #222;
 }
 
@@ -161,7 +163,7 @@ body {
   border: 1px solid #ddd;
 }
 
-/* Team Logos Container */
+/* Team Logos Container (unused by chart now) */
 .team-logos-container {
   display: flex;
   justify-content: center;
@@ -171,7 +173,7 @@ body {
   max-width: 100%;
 }
 
-/* Team Logos under Chart */
+/* Team Logos under Chart (unused by chart now) */
 .team-logo-chart {
   width: 60px;
   height: 60px;
@@ -215,54 +217,48 @@ body {
 /* Responsiveness */
 @media (max-width: 1024px) {
   .team-analytics-container {
-      max-width: 95%;
-      width: 95%;
+    max-width: 95%;
+    width: 95%;
   }
-
   .chart-container {
-      width: 100%;
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
   .team-analytics-container {
-      max-width: 100%;
-      padding: 15px;
+    max-width: 100%;
+    padding: 15px;
   }
-
   .game-item {
-      padding: 10px;
+    padding: 10px;
   }
-
   .chart-container {
-      width: 100%;
-      padding: 20px;
+    width: 100%;
+    padding: 20px;
   }
-
   .team-logo {
-      width: 80px;
-      height: 80px;
+    width: 80px;
+    height: 80px;
   }
-
   .team-logo-chart {
-      width: 50px;
-      height: 50px;
+    width: 50px;
+    height: 50px;
   }
 }
 
 /* =========================================
- NEW CLASS FOR AXIS LOGOS
+ NEW CLASS FOR AXIS LOGOS (unused by chart now)
  ========================================= */
 .chart-axis-logo {
-  width: 32px; /* Adjust as desired */
+  width: 32px;
   height: 32px;
   object-fit: contain;
   border: none;
   background: transparent;
-  margin: 0 auto; /* Centers under the bar if used in an axis tick */
+  margin: 0 auto;
   transition: transform 0.2s ease;
 }
-
 .chart-axis-logo:hover {
   transform: scale(1.05);
 }
@@ -270,51 +266,8 @@ body {
 /* -----------------------------------------------------------
  Additional Styles for Enhanced Chart Layout and Interaction
  -----------------------------------------------------------
- These new classes and updates improve the positioning, layout, 
- and interaction of chart components.
 */
-
-/* Updated Chart Container: set position and margin */
-.chart-container {
-  position: relative; /* Added: positions the chart container relatively */
-  margin: 2rem 0;      /* Added: applies vertical margin for spacing */
-}
-
-/* New Chart Wrapper: creates a relative positioning context for charts */
 .chart-wrapper {
-  position: relative;  /* Added: ensures any absolute children are positioned correctly */
-  width: 100%;         /* Added: ensures the wrapper spans the full width */
-}
-
-/* Updated Chart Title: centers text and adjusts margin */
-.chart-title {
-  text-align: center;       /* Added: centers the title text */
-  margin-bottom: 1.5rem;      /* Added: reduces bottom margin for closer spacing */
-  color: #333;              /* Added: sets the title color to primary text color */
-}
-
-/* New Chart Logo Container: layouts logos vertically under charts */
-.chart-logo-container {
-  display: flex;               /* Added: uses flexbox layout */
-  flex-direction: column;      /* Added: stacks logos vertically */
-  gap: 8px;                    /* Added: applies spacing between logos */
-  align-items: center;         /* Added: centers logos horizontally */
-}
-
-/* New Chart Logo: styles for individual logos displayed with charts */
-.chart-logo {
-  width: 35px;              /* Added: sets fixed width for logos */
-  height: 35px;             /* Added: sets fixed height for logos */
-  object-fit: contain;      /* Added: ensures logos fit within the logo dimensions */
-  border-radius: 50%;       /* Added: makes the logos circular */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);  /* Added: adds a subtle shadow for depth */
-}
-
-/* New Hover Effects for Recharts Bars */
-.recharts-bar-rectangle {
-  transition: all 0.3s ease;  /* Added: applies smooth transition for hover state */
-}
-
-.recharts-bar-rectangle:hover {
-  opacity: 0.8;              /* Added: decreases opacity when hovering for interactive feedback */
+  position: relative;
+  width: 100%;
 }

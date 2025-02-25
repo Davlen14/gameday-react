@@ -35,7 +35,10 @@ const TeamAnalytics = () => {
       const teamData = teams.find((team) => team.id === parseInt(teamId));
       setSelectedTeam(teamData);
 
-      const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
+      const scheduleData = await teamsService.getTeamSchedule(
+        teamData.school,
+        2024
+      );
       setSchedule(scheduleData);
     } catch (err) {
       setError("Failed to load schedule.");
@@ -45,7 +48,9 @@ const TeamAnalytics = () => {
   };
 
   const getTeamLogo = (teamName) => {
-    const team = teams.find((t) => t.school.toLowerCase() === teamName.toLowerCase());
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
     return team?.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
@@ -127,18 +132,6 @@ const TeamAnalytics = () => {
 
           {/* The Bar Chart */}
           <TeamScheduleChart teamName={selectedTeam.school} />
-
-          {/* Logos Under the Chart */}
-          <div className="team-logos-container">
-            {schedule.map((game) => (
-              <img
-                key={game.id}
-                src={getTeamLogo(game.awayTeam)}
-                alt={game.awayTeam}
-                className="chart-axis-logo" // 🔥 Use new .chart-axis-logo class
-              />
-            ))}
-          </div>
         </>
       )}
     </div>
