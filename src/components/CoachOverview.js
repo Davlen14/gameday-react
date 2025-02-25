@@ -262,20 +262,13 @@ const CoachOverview = () => {
         </p>
       </div>
 
-      {/* ================ */}
       {/* PROFILES SECTION */}
-      {/* ================ */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
-
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
         ) : sortedCoaches.length > 0 ? (
           <>
-            {/* 
-              The table below has exactly 15 <th> columns, 
-              matching the 15 columns in the CSS (nth-child(1) through nth-child(15)).
-            */}
             <table className="coach-table">
               <thead>
                 <tr>
@@ -298,35 +291,18 @@ const CoachOverview = () => {
               </thead>
               <tbody>
                 {sortedCoaches.map((coach, index) => {
-                  // Aggregate all season data from the coach's full career
                   const agg = aggregateCoachData(coach.seasons);
-
-                  // Use the most recent season for the "school" and logo
-                  const lastSeason =
-                    coach.seasons[coach.seasons.length - 1] || {};
-
+                  const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
                   const avgSrs =
-                    agg.count > 0
-                      ? (agg.srs / agg.count).toFixed(1)
-                      : "N/A";
+                    agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
                   const avgSpOverall =
-                    agg.count > 0
-                      ? (agg.spOverall / agg.count).toFixed(1)
-                      : "N/A";
+                    agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
                   const avgSpOffense =
-                    agg.count > 0
-                      ? (agg.spOffense / agg.count).toFixed(1)
-                      : "N/A";
+                    agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
                   const avgSpDefense =
-                    agg.count > 0
-                      ? (agg.spDefense / agg.count).toFixed(1)
-                      : "N/A";
-                  // Calculate win percentage
+                    agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
                   const winPct =
-                    agg.games > 0
-                      ? ((agg.wins / agg.games) * 100).toFixed(1)
-                      : "N/A";
-                  // Composite score is the sum of those 4 average stats
+                    agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
                   const compositeScore =
                     agg.count > 0
                       ? parseFloat(avgSrs) +
@@ -334,7 +310,6 @@ const CoachOverview = () => {
                         parseFloat(avgSpOffense) +
                         parseFloat(avgSpDefense)
                       : 0;
-
                   const status = getCoachStatus(compositeScore);
 
                   return (
@@ -351,24 +326,24 @@ const CoachOverview = () => {
                           src={getTeamLogo(lastSeason.school)}
                           alt={lastSeason.school}
                           className="coach-team-logo"
+                          style={{ width: "60px", height: "60px", background: "none" }} 
                         />
                       </td>
-                      <td>
-                        {coach.firstName} {coach.lastName}
-                      </td>
+                      <td>{coach.firstName} {coach.lastName}</td>
                       <td>{lastSeason.school}</td>
                       <td>
                         {coach.hireDate
-                          ? new Date(coach.hireDate).toLocaleDateString()
+                          ? new Date(coach.hireDate).toLocaleDateString("en-US", {
+                              month: "2-digit",
+                              year: "numeric",
+                            })
                           : "N/A"}
                       </td>
                       <td>{agg.games}</td>
                       <td>{agg.wins}</td>
                       <td>{agg.losses}</td>
                       <td>{agg.ties}</td>
-                      <td>
-                        {winPct !== "N/A" ? `${winPct}%` : "N/A"}
-                      </td>
+                      <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
                       <td>{avgSrs}</td>
                       <td>{avgSpOverall}</td>
                       <td>{avgSpOffense}</td>
@@ -381,26 +356,21 @@ const CoachOverview = () => {
                 })}
               </tbody>
             </table>
-
             {/* Transparent Stat Definitions Card */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance
-                  relative to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
                 </li>
                 <li>
-                  <strong>SP Overall:</strong> The overall statistical
-                  performance rating.
+                  <strong>SP Overall:</strong> The overall statistical performance rating.
                 </li>
                 <li>
-                  <strong>SP Offense:</strong> A rating of the team's
-                  offensive performance.
+                  <strong>SP Offense:</strong> A rating of the team's offensive performance.
                 </li>
                 <li>
-                  <strong>SP Defense:</strong> A rating of the team's
-                  defensive performance.
+                  <strong>SP Defense:</strong> A rating of the team's defensive performance.
                 </li>
                 <li>
                   <strong>Win %:</strong> The percentage of games won.
@@ -413,9 +383,7 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* ===================== */}
-      {/* COMPARISON SECTION   */}
-      {/* ===================== */}
+      {/* COMPARISON SECTION */}
       {selectedCoaches.length > 1 && (
         <section className="coach-comparison-section">
           <h2>Coach Comparison</h2>
@@ -458,16 +426,13 @@ const CoachOverview = () => {
         </section>
       )}
 
-      {/* ===================== */}
-      {/* COACH NEWS SECTION   */}
-      {/* ===================== */}
+      {/* COACH NEWS SECTION */}
       <section className="coach-news-section">
         <h2>Coach News</h2>
         {loadingNews ? (
           <p className="loading-text">Loading news...</p>
         ) : news.length > 0 ? (
           <>
-            {/* Featured Article */}
             <div className="featured-news">
               <a
                 href={news[0].url}
@@ -485,13 +450,10 @@ const CoachOverview = () => {
                 <div className="featured-news-details">
                   <h3>{news[0].title}</h3>
                   <p>{news[0].description}</p>
-                  <span className="news-source">
-                    {news[0].source.name}
-                  </span>
+                  <span className="news-source">{news[0].source.name}</span>
                 </div>
               </a>
             </div>
-            {/* Additional News List */}
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
                 <a
@@ -510,9 +472,7 @@ const CoachOverview = () => {
                   )}
                   <div className="news-details">
                     <h4>{article.title}</h4>
-                    <span className="news-source">
-                      {article.source.name}
-                    </span>
+                    <span className="news-source">{article.source.name}</span>
                   </div>
                 </a>
               ))}
@@ -523,9 +483,7 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* ===================== */}
       {/* COACH VIDEOS SECTION */}
-      {/* ===================== */}
       <section className="coach-videos-section">
         <h2>Coach Videos</h2>
         {loadingVideos ? (
