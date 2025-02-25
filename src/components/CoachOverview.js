@@ -337,7 +337,9 @@ const CoachOverview = () => {
               <tr>
                 <th>Category</th>
                 {comparisonData.map((data, idx) => (
-                  <th key={idx}>{data.coach.firstName} {data.coach.lastName}</th>
+                  <th key={idx}>
+                    {data.coach.firstName} {data.coach.lastName}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -355,7 +357,11 @@ const CoachOverview = () => {
                       } else if (value === worst) {
                         style = { color: "red", fontWeight: "bold" };
                       }
-                      return <td key={idx} style={style}>{value}</td>;
+                      return (
+                        <td key={idx} style={style}>
+                          {value}
+                        </td>
+                      );
                     })}
                   </tr>
                 );
