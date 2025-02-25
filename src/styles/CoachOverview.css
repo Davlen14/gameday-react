@@ -1,267 +1,275 @@
-/* Container & Global Layout */
+/* ============================= */
+/*      GLOBAL / LAYOUT CSS      */
+/* ============================= */
+
 .coach-overview-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 1200px; /* Limits total width on large screens */
+    margin: 0 auto;    /* Centers the container */
     padding: 20px;
     font-family: "Roboto", sans-serif;
     color: #333;
-    background: #f7f9fc;
-}
-
-/* Hero Section */
-.coach-hero {
+  }
+  
+  .coach-hero {
     text-align: center;
     margin-bottom: 40px;
-}
-
-.coach-hero h1 {
+  }
+  
+  .coach-hero h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.coach-hero .icon {
+  }
+  
+  .coach-hero .icon {
     margin-right: 10px;
     color: #D4001C;
-}
-
-.coach-hero p {
+  }
+  
+  .coach-hero p {
     font-size: 1.2rem;
     color: #555;
-}
-
-/* Filter Section */
-.filter-section {
+  }
+  
+  .filter-section {
     margin-bottom: 20px;
     text-align: center;
-}
-
-.filter-section input {
+  }
+  
+  .filter-section input {
     width: 60%;
     padding: 10px 14px;
     font-size: 1.1rem;
     border: 1px solid #c2c2c2;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Coach Profiles Section */
-.coach-profiles-section {
+  }
+  
+  /* ============================= */
+  /*   TABLE & COACH PROFILES CSS  */
+  /* ============================= */
+  
+  /* 
+    This section is responsible for:
+    - Centering the "Coach Profiles" heading
+    - Providing an overflow-x scroll in case the table is too wide
+  */
+  .coach-profiles-section {
     margin-bottom: 40px;
-    text-align: center;
-}
-
-.coach-profiles-section h2 {
+    text-align: center; /* Ensures the heading is centered */
+    overflow-x: auto;   /* Allows horizontal scroll if the table content overflows */
+  }
+  
+  .coach-profiles-section h2 {
     font-size: 2rem;
     margin-bottom: 20px;
-}
-
-/* Responsive Table Wrapper */
-.table-wrapper {
-    max-width: 100%;
-    overflow-x: auto;
-    margin: 0 auto;
-}
-
-/* Simplified Table Styling for 10 Columns */
-.coach-table {
+  }
+  
+  /* 
+     TABLE LAYOUT FIXED:
+     - We define exact widths for each column.
+     - table-layout: fixed ensures columns remain consistent in width.
+     - We keep the total under 100% so there's no overflow from borders/padding.
+  */
+  .coach-table {
     width: 100%;
+    table-layout: fixed;   /* Use fixed layout for consistent column widths */
     border-collapse: collapse;
     background: #fff;
-    table-layout: auto;
-    border-radius: 12px;
+    border-radius: 12px;   /* Rounded corners on the entire table */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.coach-table th,
-.coach-table td {
-    padding: 10px 12px;
+    margin: 0 auto;        /* Centers the table in its container */
+    text-align: left;      /* Keep text left-aligned in cells */
+  }
+  
+  /* 
+     15 columns total:
+     We use nth-child(1) through nth-child(15).
+     The widths below sum to 97% (slightly under 100%)
+     to prevent any border/padding overflow.
+  */
+  .coach-table th:nth-child(1),
+  .coach-table td:nth-child(1) {
+    width: 3%;
+  }
+  .coach-table th:nth-child(2),
+  .coach-table td:nth-child(2) {
+    width: 6%;
+  }
+  .coach-table th:nth-child(3),
+  .coach-table td:nth-child(3) {
+    width: 12%;
+  }
+  .coach-table th:nth-child(4),
+  .coach-table td:nth-child(4) {
+    width: 7%;
+  }
+  .coach-table th:nth-child(5),
+  .coach-table td:nth-child(5) {
+    width: 7%;
+  }
+  .coach-table th:nth-child(6),
+  .coach-table td:nth-child(6) {
+    width: 5%;
+  }
+  .coach-table th:nth-child(7),
+  .coach-table td:nth-child(7) {
+    width: 5%;
+  }
+  .coach-table th:nth-child(8),
+  .coach-table td:nth-child(8) {
+    width: 5%;
+  }
+  .coach-table th:nth-child(9),
+  .coach-table td:nth-child(9) {
+    width: 5%;
+  }
+  .coach-table th:nth-child(10),
+  .coach-table td:nth-child(10) {
+    width: 5%;
+  }
+  .coach-table th:nth-child(11),
+  .coach-table td:nth-child(11) {
+    width: 8%;
+  }
+  .coach-table th:nth-child(12),
+  .coach-table td:nth-child(12) {
+    width: 8%;
+  }
+  .coach-table th:nth-child(13),
+  .coach-table td:nth-child(13) {
+    width: 8%;
+  }
+  .coach-table th:nth-child(14),
+  .coach-table td:nth-child(14) {
+    width: 8%;
+  }
+  .coach-table th:nth-child(15),
+  .coach-table td:nth-child(15) {
+    width: 5%;
+  }
+  
+  /* General table cell styling */
+  .coach-table th,
+  .coach-table td {
+    padding: 14px 16px;
     border: 1px solid #e0e0e0;
-    font-size: 12px;
-    text-align: center;
-    vertical-align: middle;
-}
-
-/* Define new column widths for 10 columns */
-.coach-table th:nth-child(1),
-.coach-table td:nth-child(1) {
-    width: 10%; /* Team Logo */
-}
-.coach-table th:nth-child(2),
-.coach-table td:nth-child(2) {
-    width: 15%; /* Coach Name */
-}
-.coach-table th:nth-child(3),
-.coach-table td:nth-child(3) {
-    width: 15%; /* School */
-}
-.coach-table th:nth-child(4),
-.coach-table td:nth-child(4) {
-    width: 10%; /* Hire Date */
-}
-.coach-table th:nth-child(5),
-.coach-table td:nth-child(5) {
-    width: 10%; /* Games */
-}
-.coach-table th:nth-child(6),
-.coach-table td:nth-child(6) {
-    width: 10%; /* Wins */
-}
-.coach-table th:nth-child(7),
-.coach-table td:nth-child(7) {
-    width: 10%; /* Losses */
-}
-.coach-table th:nth-child(8),
-.coach-table td:nth-child(8) {
-    width: 10%; /* Win % */
-}
-.coach-table th:nth-child(9),
-.coach-table td:nth-child(9) {
-    width: 5%; /* SRS */
-}
-.coach-table th:nth-child(10),
-.coach-table td:nth-child(10) {
-    width: 5%; /* Status */
-}
-
-.coach-table th {
+    font-size: 0.95rem; /* Slightly smaller text for clarity */
+    vertical-align: middle; /* Keep content vertically centered */
+  }
+  
+  .coach-table th {
     background-color: #f2f2f2;
-    font-size: 14px;
     font-weight: bold;
-}
-
-.coach-table tr:nth-child(even) {
+  }
+  
+  .coach-table tr:nth-child(even) {
     background-color: #f9f9f9;
-}
-
-.coach-table tr:hover {
+  }
+  
+  .coach-table tr:hover {
     background-color: #f1f1f1;
-}
-
-/* Freeze the first column (Team logo) */
-.coach-table th:first-child,
-.coach-table td:first-child {
-    position: sticky;
-    left: 0;
-    background: #fff;
-    z-index: 1;
-    border-right: 1px solid #ccc;
-}
-
-/* Team logo styling */
-.coach-team-logo {
-    width: 30px;
-    height: 30px;
+  }
+  
+  /* Checkbox styling in coach table */
+  .coach-table input[type="checkbox"] {
+    transform: scale(1.2);
+    margin: 0;
+  }
+  
+  /* Team logo styling for table view */
+  .coach-team-logo {
+    width: 40px;
+    height: 40px;
     object-fit: contain;
-    display: block;
     margin: 0 auto;
-    border-radius: 50%;
-    border: 1px solid #ddd;
-}
-
-/* Status Label with Colored Dots */
-.status-label {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.status-label.green::before {
-    content: "🟢";
-    margin-right: 4px;
-}
-
-.status-label.blue::before {
-    content: "🔵";
-    margin-right: 4px;
-}
-
-.status-label.red::before {
-    content: "🔴";
-    margin-right: 4px;
-}
-
-/* Transparent Stat Definitions Card (for tooltips or extra info) */
-.stats-info-card {
+  }
+  
+  /* 
+    Transparent Stat Definitions Card 
+    (just below the table)
+  */
+  .stats-info-card {
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 15px;
     margin-top: 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.stats-info-card h3 {
+  }
+  
+  .stats-info-card h3 {
     margin-top: 0;
-}
-
-.stats-info-card ul {
+  }
+  
+  .stats-info-card ul {
     list-style: none;
     padding-left: 0;
-}
-
-.stats-info-card li {
+  }
+  
+  .stats-info-card li {
     margin-bottom: 8px;
     font-size: 0.9rem;
-}
-
-/* Coach News Section */
-.coach-news-section {
+  }
+  
+  /* ============================= */
+  /*     NEWS & VIDEOS SECTIONS    */
+  /* ============================= */
+  
+  .coach-news-section {
     margin-bottom: 40px;
-}
-
-.coach-news-section h2 {
+  }
+  
+  .coach-news-section h2 {
     font-size: 2rem;
     margin-bottom: 20px;
-}
-
-.featured-news {
+  }
+  
+  .featured-news {
     display: flex;
     margin-bottom: 20px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
-}
-
-.featured-news-card {
+  }
+  
+  .featured-news-card {
     display: flex;
     text-decoration: none;
     color: inherit;
     width: 100%;
-}
-
-.featured-image {
+  }
+  
+  .featured-image {
     width: 40%;
     object-fit: cover;
-}
-
-.featured-news-details {
+  }
+  
+  .featured-news-details {
     padding: 15px;
     width: 60%;
-}
-
-.featured-news-details h3 {
+  }
+  
+  .featured-news-details h3 {
     margin: 0 0 10px;
     font-size: 1.5rem;
-}
-
-.featured-news-details p {
+  }
+  
+  .featured-news-details p {
     font-size: 0.95rem;
     color: #555;
     margin-bottom: 10px;
-}
-
-.news-list {
+  }
+  
+  .news-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
-}
-
-.news-card {
+  }
+  
+  .news-card {
     display: flex;
     flex-direction: column;
     text-decoration: none;
@@ -270,90 +278,96 @@
     border-radius: 8px;
     overflow: hidden;
     transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.news-card:hover {
+  }
+  
+  .news-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.news-image {
+  }
+  
+  .news-image {
     width: 100%;
     height: 120px;
     object-fit: cover;
-}
-
-.news-details {
+  }
+  
+  .news-details {
     padding: 10px;
-}
-
-.news-details h4 {
+  }
+  
+  .news-details h4 {
     margin: 0 0 8px;
     font-size: 1rem;
-}
-
-.news-source {
+  }
+  
+  .news-source {
     font-size: 0.8rem;
     color: #777;
-}
-
-/* Coach Videos Section */
-.coach-videos-section {
+  }
+  
+  /* Coach Videos Section */
+  .coach-videos-section {
     margin-bottom: 40px;
-}
-
-.coach-videos-section h2 {
+  }
+  
+  .coach-videos-section h2 {
     font-size: 2rem;
     margin-bottom: 20px;
-}
-
-.video-grid {
+  }
+  
+  .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-}
-
-.video-card {
+  }
+  
+  .video-card {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
-}
-
-/* Loading Text */
-.loading-text {
+  }
+  
+  /* Loading Text */
+  .loading-text {
     font-size: 1.2rem;
     text-align: center;
     color: #777;
-}
-
-/* Comparison Section */
-.coach-comparison-section {
+  }
+  
+  /* ============================= */
+  /*    COMPARISON SECTION CSS     */
+  /* ============================= */
+  
+  .coach-comparison-section {
     margin-top: 40px;
-    text-align: center;
-}
-
-.coach-comparison-section h2 {
+    text-align: center; /* ensures the heading is centered */
+  }
+  
+  .coach-comparison-section h2 {
     font-size: 2rem;
     margin-bottom: 20px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
+  }
+  
+  /* ============================= */
+  /*   RESPONSIVE ADJUSTMENTS      */
+  /* ============================= */
+  @media (max-width: 768px) {
     .filter-section input {
-        width: 80%;
+      width: 80%;
     }
-    
+  
     .coach-hero h1 {
-        font-size: 2rem;
+      font-size: 2rem;
     }
-    
+  
     .coach-hero p {
-        font-size: 1rem;
+      font-size: 1rem;
     }
-    
+  
+    /* Decrease cell padding and font size on smaller screens */
     .coach-table th,
     .coach-table td {
-        padding: 8px 10px;
-        font-size: 0.85rem;
+      padding: 10px 12px;
+      font-size: 0.85rem;
     }
-}
+  }
