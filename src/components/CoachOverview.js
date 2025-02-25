@@ -12,7 +12,9 @@ const aggregateCoachData = (seasons) => {
       acc.games += season.games || 0;
       acc.wins += season.wins || 0;
       acc.losses += season.losses || 0;
+      // Ties still counted internally but not displayed:
       acc.ties += season.ties || 0;
+
       acc.srs += season.srs || 0;
       acc.spOverall += season.spOverall || 0;
       acc.spOffense += season.spOffense || 0;
@@ -24,7 +26,7 @@ const aggregateCoachData = (seasons) => {
       games: 0,
       wins: 0,
       losses: 0,
-      ties: 0,
+      ties: 0,        // Not displayed, but included in aggregator
       srs: 0,
       spOverall: 0,
       spOffense: 0,
@@ -34,7 +36,8 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-// Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
+// Determine coach status based on composite score 
+// (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { text: "Premiere Coach", color: "green" };
@@ -67,7 +70,7 @@ const CoachOverview = () => {
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(),
+          teamsService.getCoaches(), // Removed the year parameter
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -112,7 +115,8 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Toggle selection of a coach for comparison
+  // Toggle selection of a coach for comparison 
+  // (Not displayed in table, but logic is kept if you want to re-add checkboxes)
   const handleSelectCoach = (coach) => {
     const coachKey = coach.firstName + coach.lastName;
     if (selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey)) {
@@ -126,33 +130,41 @@ const CoachOverview = () => {
 
   const isCoachSelected = (coach) => {
     const coachKey = coach.firstName + coach.lastName;
-    return selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey);
+    return selectedCoaches.some(
+      (c) => (c.firstName + c.lastName) === coachKey
+    );
   };
 
-  // Sort active coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
+  // Sort active coaches by composite score (SRS + SP Overall + SP Offense + SP Defense)
   const sortedCoaches = [...coachInfo].sort((a, b) => {
     const aggA = aggregateCoachData(a.seasons);
     const aggB = aggregateCoachData(b.seasons);
+
     const scoreA =
       aggA.count > 0
-        ? aggA.srs / aggA.count +
-          aggA.spOverall / aggA.count +
-          aggA.spOffense / aggA.count +
-          aggA.spDefense / aggA.count
+        ? (aggA.srs + aggA.spOverall + aggA.spOffense + aggA.spDefense) / aggA.count
         : 0;
     const scoreB =
       aggB.count > 0
-        ? aggB.srs / aggB.count +
-          aggB.spOverall / aggB.count +
-          aggB.spOffense / aggB.count +
-          aggB.spDefense / aggB.count
+        ? (aggB.srs + aggB.spOverall + aggB.spOffense + aggB.spDefense) / aggB.count
         : 0;
-    return scoreB - scoreA;
+
+    return scoreB - scoreA; // Highest composite score first
   });
 
   // Prepare comparison data for selected coaches
   const comparisonData = selectedCoaches.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
+
+    const avgSrs =
+      agg.count > 0 ? parseFloat((agg.srs / agg.count).toFixed(1)) : 0;
+    const avgSpOverall =
+      agg.count > 0 ? parseFloat((agg.spOverall / agg.count).toFixed(1)) : 0;
+    const avgSpOffense =
+      agg.count > 0 ? parseFloat((agg.spOffense / agg.count).toFixed(1)) : 0;
+    const avgSpDefense =
+      agg.count > 0 ? parseFloat((agg.spDefense / agg.count).toFixed(1)) : 0;
+
     return {
       coach,
       stats: {
@@ -162,20 +174,23 @@ const CoachOverview = () => {
           agg.games > 0
             ? parseFloat(((agg.wins / agg.games) * 100).toFixed(1))
             : 0,
-        avgSrs:
-          agg.count > 0
-            ? parseFloat((agg.srs / agg.count).toFixed(1))
-            : 0
+        avgSrs,
+        avgSpOverall,
+        avgSpOffense,
+        avgSpDefense,
       },
     };
   });
 
-  // Define simplified comparison categories and whether higher values are better
+  // Define comparison categories and whether higher values are better
   const comparisonCategories = [
     { key: "wins", label: "Wins", better: "higher" },
     { key: "losses", label: "Losses", better: "lower" },
     { key: "winPct", label: "Win %", better: "higher" },
     { key: "avgSrs", label: "SRS", better: "higher" },
+    { key: "avgSpOverall", label: "SP Overall", better: "higher" },
+    { key: "avgSpOffense", label: "SP Offense", better: "higher" },
+    { key: "avgSpDefense", label: "SP Defense", better: "higher" },
   ];
 
   // For each category, figure out best and worst among selected coaches
@@ -206,7 +221,7 @@ const CoachOverview = () => {
         </p>
       </div>
 
-      {/* Coach Profiles Section (Table View) */}
+      {/* Coach Profiles Section (No Ties Column) */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
@@ -217,7 +232,6 @@ const CoachOverview = () => {
               <table className="coach-table">
                 <thead>
                   <tr>
-                    <th>Select</th>
                     <th>Team</th>
                     <th>Coach Name</th>
                     <th>School</th>
@@ -225,47 +239,63 @@ const CoachOverview = () => {
                     <th>Games</th>
                     <th>Wins</th>
                     <th>Losses</th>
-                    <th>Ties</th>
                     <th>Win %</th>
-                    <th>SRS <span title="Simple Rating System">[?]</span></th>
+                    <th>SRS</th>
+                    <th>SP Overall</th>
+                    <th>SP Offense</th>
+                    <th>SP Defense</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedCoaches.map((coach, index) => {
                     const agg = aggregateCoachData(coach.seasons);
-                    const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
+                    // Use the most recent season for the school + logo
+                    const lastSeason =
+                      coach.seasons[coach.seasons.length - 1] || {};
+
+                    // Averages for the 4 advanced stats
                     const avgSrs =
                       agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                    const avgSpOverall =
+                      agg.count > 0
+                        ? (agg.spOverall / agg.count).toFixed(1)
+                        : "N/A";
+                    const avgSpOffense =
+                      agg.count > 0
+                        ? (agg.spOffense / agg.count).toFixed(1)
+                        : "N/A";
+                    const avgSpDefense =
+                      agg.count > 0
+                        ? (agg.spDefense / agg.count).toFixed(1)
+                        : "N/A";
+
+                    // Win percentage
                     const winPct =
                       agg.games > 0
                         ? ((agg.wins / agg.games) * 100).toFixed(1)
                         : "N/A";
-                    const hireDate = coach.hireDate
-                      ? new Date(coach.hireDate).toLocaleDateString("en-US", {
-                          month: "2-digit",
-                          year: "numeric"
-                        })
-                      : "N/A";
+
+                    // Composite score: sum of the 4 average stats
                     const compositeScore =
                       agg.count > 0
                         ? parseFloat(avgSrs) +
-                          parseFloat(agg.spOverall / agg.count).toFixed(1) +
-                          parseFloat(agg.spOffense / agg.count).toFixed(1) +
-                          parseFloat(agg.spDefense / agg.count).toFixed(1)
+                          parseFloat(avgSpOverall) +
+                          parseFloat(avgSpOffense) +
+                          parseFloat(avgSpDefense)
                         : 0;
                     const status = getCoachStatus(compositeScore);
-                    const statusText =
-                      status.text === "Premiere Coach" ? "Premiere" : status.text;
+
+                    // Format hire date to MM/YYYY
+                    const hireDate = coach.hireDate
+                      ? new Date(coach.hireDate).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "N/A";
+
                     return (
                       <tr key={index}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={isCoachSelected(coach)}
-                            onChange={() => handleSelectCoach(coach)}
-                          />
-                        </td>
                         <td>
                           <img
                             src={getTeamLogo(lastSeason.school)}
@@ -279,11 +309,20 @@ const CoachOverview = () => {
                         <td>{agg.games}</td>
                         <td>{agg.wins}</td>
                         <td>{agg.losses}</td>
-                        <td>{agg.ties}</td>
-                        <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
+                        <td>
+                          {winPct !== "N/A" ? `${winPct}%` : "N/A"}
+                        </td>
                         <td>{avgSrs}</td>
-                        <td style={{ color: status.color, fontWeight: "bold" }}>
-                          {statusText}
+                        <td>{avgSpOverall}</td>
+                        <td>{avgSpOffense}</td>
+                        <td>{avgSpDefense}</td>
+                        <td
+                          style={{
+                            color: status.color,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {status.text}
                         </td>
                       </tr>
                     );
@@ -291,11 +330,23 @@ const CoachOverview = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Stat Definitions */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
-                  <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
+                  <strong>SRS:</strong> A measure of a team's performance
+                  relative to its opponents.
+                </li>
+                <li>
+                  <strong>SP Overall:</strong> The overall statistical rating.
+                </li>
+                <li>
+                  <strong>SP Offense:</strong> A rating of the team's offensive performance.
+                </li>
+                <li>
+                  <strong>SP Defense:</strong> A rating of the team's defensive performance.
                 </li>
                 <li>
                   <strong>Win %:</strong> The percentage of games won.
@@ -308,7 +359,7 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* Comparison Section */}
+      {/* Comparison Section (Now includes SP columns) */}
       {selectedCoaches.length > 1 && (
         <section className="coach-comparison-section">
           <h2>Coach Comparison</h2>
@@ -360,6 +411,7 @@ const CoachOverview = () => {
           <p className="loading-text">Loading news...</p>
         ) : news.length > 0 ? (
           <>
+            {/* Featured Article */}
             <div className="featured-news">
               <a
                 href={news[0].url}
@@ -377,10 +429,13 @@ const CoachOverview = () => {
                 <div className="featured-news-details">
                   <h3>{news[0].title}</h3>
                   <p>{news[0].description}</p>
-                  <span className="news-source">{news[0].source.name}</span>
+                  <span className="news-source">
+                    {news[0].source.name}
+                  </span>
                 </div>
               </a>
             </div>
+            {/* Additional News List */}
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
                 <a
@@ -399,7 +454,9 @@ const CoachOverview = () => {
                   )}
                   <div className="news-details">
                     <h4>{article.title}</h4>
-                    <span className="news-source">{article.source.name}</span>
+                    <span className="news-source">
+                      {article.source.name}
+                    </span>
                   </div>
                 </a>
               ))}
