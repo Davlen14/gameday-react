@@ -12,7 +12,7 @@ const aggregateCoachData = (seasons) => {
       acc.games += season.games || 0;
       acc.wins += season.wins || 0;
       acc.losses += season.losses || 0;
-      // Ties are still counted internally but not displayed:
+      // Ties still counted internally but not displayed:
       acc.ties += season.ties || 0;
       acc.srs += season.srs || 0;
       acc.spOverall += season.spOverall || 0;
@@ -25,7 +25,7 @@ const aggregateCoachData = (seasons) => {
       games: 0,
       wins: 0,
       losses: 0,
-      ties: 0,
+      ties: 0, // Not displayed, but included in aggregator
       srs: 0,
       spOverall: 0,
       spOffense: 0,
@@ -47,6 +47,46 @@ const getCoachStatus = (score) => {
   }
 };
 
+// Helper: returns sortable value based on field
+const getSortableValue = (coach, field) => {
+  const agg = aggregateCoachData(coach.seasons);
+  const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
+  switch(field) {
+    case "team":
+      return lastSeason.school ? lastSeason.school.toLowerCase() : "";
+    case "coachName":
+      return (coach.firstName + " " + coach.lastName).toLowerCase();
+    case "school":
+      return lastSeason.school ? lastSeason.school.toLowerCase() : "";
+    case "hireDate":
+      return coach.hireDate ? new Date(coach.hireDate).getTime() : 0;
+    case "games":
+      return agg.games;
+    case "wins":
+      return agg.wins;
+    case "losses":
+      return agg.losses;
+    case "winPct":
+      return agg.games > 0 ? (agg.wins / agg.games) * 100 : 0;
+    case "srs":
+      return agg.count > 0 ? (agg.srs / agg.count) : 0;
+    case "spOverall":
+      return agg.count > 0 ? (agg.spOverall / agg.count) : 0;
+    case "spOffense":
+      return agg.count > 0 ? (agg.spOffense / agg.count) : 0;
+    case "spDefense":
+      return agg.count > 0 ? (agg.spDefense / agg.count) : 0;
+    case "status":
+      const avgSrs = agg.count > 0 ? (agg.srs / agg.count) : 0;
+      const avgSpOverall = agg.count > 0 ? (agg.spOverall / agg.count) : 0;
+      const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count) : 0;
+      const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count) : 0;
+      return avgSrs + avgSpOverall + avgSpOffense + avgSpDefense;
+    default:
+      return 0;
+  }
+};
+
 const CoachOverview = () => {
   const [coachInfo, setCoachInfo] = useState([]);
   const [news, setNews] = useState([]);
@@ -56,27 +96,22 @@ const CoachOverview = () => {
   const [loadingNews, setLoadingNews] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [selectedCoaches, setSelectedCoaches] = useState([]);
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
 
-  // Sorting configuration state:
-  const [sortConfig, setSortConfig] = useState({
-    key: "composite",
-    direction: "descending",
-  });
-
-  // Fetch data on mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         const [
           teamsData,
-          coachesData,
+          coachesData, // full career resume
           coachNewsData,
           footballNewsData,
           youtubeResponse1,
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(),
+          teamsService.getCoaches(), // Removed the year parameter
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -84,7 +119,6 @@ const CoachOverview = () => {
         ]);
 
         setTeams(teamsData);
-
         // Filter for active coaches only: at least one season with year 2024
         const activeCoaches = coachesData.filter((coach) =>
           coach.seasons.some((season) => season.year === 2024)
@@ -114,7 +148,7 @@ const CoachOverview = () => {
     fetchAllData();
   }, []);
 
-  // Helper: Get team logo based on school name
+  // Helper: Get team logo based on school name (uses the most recent season's school)
   const getTeamLogo = (school) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === school?.toLowerCase()
@@ -124,111 +158,109 @@ const CoachOverview = () => {
 
   // Toggle selection of a coach for comparison
   const handleSelectCoach = (coach) => {
-    const coachKey = coach.firstName + " " + coach.lastName;
-    if (
-      selectedCoaches.some(
-        (c) => c.firstName + " " + c.lastName === coachKey
-      )
-    ) {
+    const coachKey = coach.firstName + coach.lastName;
+    if (selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey)) {
       setSelectedCoaches(
-        selectedCoaches.filter(
-          (c) => c.firstName + " " + c.lastName !== coachKey
-        )
+        selectedCoaches.filter((c) => (c.firstName + c.lastName) !== coachKey)
       );
     } else {
       setSelectedCoaches([...selectedCoaches, coach]);
     }
   };
 
-  // Master select/deselect for all coaches
-  const handleSelectAll = () => {
-    if (selectedCoaches.length === coachInfo.length) {
-      setSelectedCoaches([]);
+  const isCoachSelected = (coach) => {
+    const coachKey = coach.firstName + coach.lastName;
+    return selectedCoaches.some(
+      (c) => (c.firstName + c.lastName) === coachKey
+    );
+  };
+
+  // Handle sorting by column header
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSelectedCoaches([...coachInfo]);
+      setSortField(field);
+      setSortDirection("asc");
     }
   };
 
-  // Sorting handler for column headers
-  const handleSort = (key) => {
-    let direction = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
+  // Sort active coaches based on sortField and sortDirection
+  const sortedCoaches = [...coachInfo].sort((a, b) => {
+    if (sortField) {
+      const valA = getSortableValue(a, sortField);
+      const valB = getSortableValue(b, sortField);
+      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    } else {
+      // Default sort by composite score
+      const aggA = aggregateCoachData(a.seasons);
+      const aggB = aggregateCoachData(b.seasons);
+      const scoreA =
+        aggA.count > 0
+          ? (aggA.srs + aggA.spOverall + aggA.spOffense + aggA.spDefense) /
+            aggA.count
+          : 0;
+      const scoreB =
+        aggB.count > 0
+          ? (aggB.srs + aggB.spOverall + aggB.spOffense + aggB.spDefense) /
+            aggB.count
+          : 0;
+      return scoreB - scoreA;
     }
-    setSortConfig({ key, direction });
-  };
+  });
 
-  // Process coaches into a new array with computed values for sorting and display
-  const processedCoaches = coachInfo.map((coach) => {
+  // Prepare comparison data for selected coaches
+  const comparisonData = selectedCoaches.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
-    const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
-    const avgSrs = agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
-    const avgSpOverall =
-      agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
-    const avgSpOffense =
-      agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
-    const avgSpDefense =
-      agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-    const winPct =
-      agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-    const composite =
-      agg.count > 0
-        ? parseFloat(avgSrs) +
-          parseFloat(avgSpOverall) +
-          parseFloat(avgSpOffense) +
-          parseFloat(avgSpDefense)
-        : 0;
     return {
       coach,
-      team: lastSeason.school || "",
-      coachName: coach.firstName + " " + coach.lastName,
-      school: lastSeason.school || "",
-      hireDate: coach.hireDate ? new Date(coach.hireDate) : null,
-      games: agg.games,
-      wins: agg.wins,
-      losses: agg.losses,
-      winPct: winPct === "N/A" ? 0 : parseFloat(winPct),
-      srs: avgSrs === "N/A" ? 0 : parseFloat(avgSrs),
-      spOverall: avgSpOverall === "N/A" ? 0 : parseFloat(avgSpOverall),
-      spOffense: avgSpOffense === "N/A" ? 0 : parseFloat(avgSpOffense),
-      spDefense: avgSpDefense === "N/A" ? 0 : parseFloat(avgSpDefense),
-      composite,
-      status: getCoachStatus(composite),
-      // For display, format hireDate as MM/YYYY if available
-      hireDateFormatted: coach.hireDate
-        ? new Date(coach.hireDate).toLocaleDateString("en-US", {
-            month: "2-digit",
-            year: "numeric",
-          })
-        : "N/A",
+      stats: {
+        wins: agg.wins,
+        losses: agg.losses,
+        winPct:
+          agg.games > 0
+            ? parseFloat(((agg.wins / agg.games) * 100).toFixed(1))
+            : 0,
+        avgSrs:
+          agg.count > 0 ? parseFloat((agg.srs / agg.count).toFixed(1)) : 0,
+        avgSpOverall:
+          agg.count > 0 ? parseFloat((agg.spOverall / agg.count).toFixed(1)) : 0,
+        avgSpOffense:
+          agg.count > 0 ? parseFloat((agg.spOffense / agg.count).toFixed(1)) : 0,
+        avgSpDefense:
+          agg.count > 0 ? parseFloat((agg.spDefense / agg.count).toFixed(1)) : 0,
+      },
     };
   });
 
-  // Sort processed coaches based on sortConfig
-  let displayedCoaches = [...processedCoaches];
-  if (sortConfig.key !== null) {
-    displayedCoaches.sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-      // For hireDate, compare time values (if null, treat as 0)
-      if (sortConfig.key === "hireDate") {
-        aValue = aValue ? aValue.getTime() : 0;
-        bValue = bValue ? bValue.getTime() : 0;
-      }
-      // For strings, compare case-insensitively
-      if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-      if (aValue < bValue) {
-        return sortConfig.direction === "ascending" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === "ascending" ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+  // Define comparison categories and whether higher values are better
+  const comparisonCategories = [
+    { key: "wins", label: "Wins", better: "higher" },
+    { key: "losses", label: "Losses", better: "lower" },
+    { key: "winPct", label: "Win %", better: "higher" },
+    { key: "avgSrs", label: "SRS", better: "higher" },
+    { key: "avgSpOverall", label: "SP Overall", better: "higher" },
+    { key: "avgSpOffense", label: "SP Offense", better: "higher" },
+    { key: "avgSpDefense", label: "SP Defense", better: "higher" },
+  ];
+
+  // For each category, figure out best and worst among selected coaches
+  const getBestWorst = (key, better) => {
+    const values = comparisonData.map((data) => data.stats[key]);
+    if (values.length === 0) return { best: null, worst: null };
+
+    let best, worst;
+    if (better === "higher") {
+      best = Math.max(...values);
+      worst = Math.min(...values);
+    } else {
+      best = Math.min(...values);
+      worst = Math.max(...values);
+    }
+    return { best, worst };
+  };
 
   return (
     <div className="coach-overview-container">
@@ -238,34 +270,34 @@ const CoachOverview = () => {
           <FaUserTie className="icon" /> Coach Overview
         </h1>
         <p>
-          Stay updated with the latest coach profiles, news, and video
-          highlights.
+          Stay updated with the latest coach profiles, news, and video highlights.
         </p>
       </div>
 
-      {/* Coach Profiles Section (With Checkbox column and Sorting) */}
+      {/* Display selected coaches for comparison at the top */}
+      {selectedCoaches.length > 0 && (
+        <div className="selected-coaches">
+          <h3>Selected for Comparison:</h3>
+          <ul>
+            {selectedCoaches.map((coach, idx) => (
+              <li key={idx}>{coach.firstName} {coach.lastName}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Coach Profiles Section */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
-        ) : displayedCoaches.length > 0 ? (
+        ) : sortedCoaches.length > 0 ? (
           <>
             <div className="table-wrapper">
               <table className="coach-table">
                 <thead>
                   <tr>
-                    {/* Master checkbox column */}
-                    <th onClick={handleSelectAll}>
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedCoaches.length === coachInfo.length &&
-                          coachInfo.length > 0
-                        }
-                        readOnly
-                      />{" "}
-                      Select
-                    </th>
+                    <th>Select</th>
                     <th onClick={() => handleSort("team")}>Team</th>
                     <th onClick={() => handleSort("coachName")}>Coach Name</th>
                     <th onClick={() => handleSort("school")}>School</th>
@@ -274,58 +306,105 @@ const CoachOverview = () => {
                     <th onClick={() => handleSort("wins")}>Wins</th>
                     <th onClick={() => handleSort("losses")}>Losses</th>
                     <th onClick={() => handleSort("winPct")}>Win %</th>
-                    <th onClick={() => handleSort("srs")}>SRS</th>
+                    <th onClick={() => handleSort("srs")}>SRS <span title="Simple Rating System">[?]</span></th>
                     <th onClick={() => handleSort("spOverall")}>SP Overall</th>
                     <th onClick={() => handleSort("spOffense")}>SP Offense</th>
                     <th onClick={() => handleSort("spDefense")}>SP Defense</th>
-                    <th onClick={() => handleSort("composite")}>Status</th>
+                    <th onClick={() => handleSort("status")}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedCoaches.map((item, index) => (
-                    <tr key={index}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedCoaches.some(
-                            (c) =>
-                              c.firstName + " " + c.lastName === item.coachName
-                          )}
-                          onChange={() => handleSelectCoach(item.coach)}
-                        />
-                      </td>
-                      <td>
-                        <img
-                          src={getTeamLogo(item.school)}
-                          alt={item.school}
-                          className="coach-team-logo"
-                        />
-                      </td>
-                      <td>{item.coachName}</td>
-                      <td>{item.school}</td>
-                      <td>{item.hireDateFormatted}</td>
-                      <td>{item.games}</td>
-                      <td>{item.wins}</td>
-                      <td>{item.losses}</td>
-                      <td>
-                        {item.winPct !== 0 ? `${item.winPct}%` : "N/A"}
-                      </td>
-                      <td>{item.srs}</td>
-                      <td>{item.spOverall}</td>
-                      <td>{item.spOffense}</td>
-                      <td>{item.spDefense}</td>
-                      <td className={`status-label ${item.status.color}`}>
-                        {item.status.text === "Premiere Coach"
-                          ? "Premiere"
-                          : item.status.text}
-                      </td>
-                    </tr>
-                  ))}
+                  {sortedCoaches.map((coach, index) => {
+                    const agg = aggregateCoachData(coach.seasons);
+                    // Use the most recent season for the school + logo
+                    const lastSeason =
+                      coach.seasons[coach.seasons.length - 1] || {};
+
+                    // Averages for the 4 advanced stats
+                    const avgSrs =
+                      agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                    const avgSpOverall =
+                      agg.count > 0
+                        ? (agg.spOverall / agg.count).toFixed(1)
+                        : "N/A";
+                    const avgSpOffense =
+                      agg.count > 0
+                        ? (agg.spOffense / agg.count).toFixed(1)
+                        : "N/A";
+                    const avgSpDefense =
+                      agg.count > 0
+                        ? (agg.spDefense / agg.count).toFixed(1)
+                        : "N/A";
+
+                    // Win percentage
+                    const winPct =
+                      agg.games > 0
+                        ? ((agg.wins / agg.games) * 100).toFixed(1)
+                        : "N/A";
+
+                    // Composite score: sum of the 4 average stats
+                    const compositeScore =
+                      agg.count > 0
+                        ? parseFloat(avgSrs) +
+                          parseFloat(avgSpOverall) +
+                          parseFloat(avgSpOffense) +
+                          parseFloat(avgSpDefense)
+                        : 0;
+                    const status = getCoachStatus(compositeScore);
+
+                    // Format hire date to MM/YYYY
+                    const hireDate = coach.hireDate
+                      ? new Date(coach.hireDate).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "N/A";
+
+                    return (
+                      <tr key={index}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={isCoachSelected(coach)}
+                            onChange={() => handleSelectCoach(coach)}
+                          />
+                        </td>
+                        <td>
+                          <img
+                            src={getTeamLogo(lastSeason.school)}
+                            alt={lastSeason.school}
+                            className="coach-team-logo"
+                          />
+                        </td>
+                        <td>{coach.firstName} {coach.lastName}</td>
+                        <td>{lastSeason.school}</td>
+                        <td>{hireDate}</td>
+                        <td>{agg.games}</td>
+                        <td>{agg.wins}</td>
+                        <td>{agg.losses}</td>
+                        <td>
+                          {winPct !== "N/A" ? `${winPct}%` : "N/A"}
+                        </td>
+                        <td>{avgSrs}</td>
+                        <td>{avgSpOverall}</td>
+                        <td>{avgSpOffense}</td>
+                        <td>{avgSpDefense}</td>
+                        <td
+                          style={{
+                            color: status.color,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {status.text}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
-            {/* Stat Definitions Card */}
+            {/* Stat Definitions */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
@@ -352,7 +431,7 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* Comparison Section */}
+      {/* Comparison Section (Now includes SP columns) */}
       {selectedCoaches.length > 1 && (
         <section className="coach-comparison-section">
           <h2>Coach Comparison</h2>
@@ -404,6 +483,7 @@ const CoachOverview = () => {
           <p className="loading-text">Loading news...</p>
         ) : news.length > 0 ? (
           <>
+            {/* Featured Article */}
             <div className="featured-news">
               <a
                 href={news[0].url}
@@ -421,10 +501,13 @@ const CoachOverview = () => {
                 <div className="featured-news-details">
                   <h3>{news[0].title}</h3>
                   <p>{news[0].description}</p>
-                  <span className="news-source">{news[0].source.name}</span>
+                  <span className="news-source">
+                    {news[0].source.name}
+                  </span>
                 </div>
               </a>
             </div>
+            {/* Additional News List */}
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
                 <a
@@ -443,7 +526,9 @@ const CoachOverview = () => {
                   )}
                   <div className="news-details">
                     <h4>{article.title}</h4>
-                    <span className="news-source">{article.source.name}</span>
+                    <span className="news-source">
+                      {article.source.name}
+                    </span>
                   </div>
                 </a>
               ))}
