@@ -67,7 +67,7 @@ const CoachOverview = () => {
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(), // Removed the year parameter
+          teamsService.getCoaches(),
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -112,7 +112,7 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Toggle selection of a coach for comparison (retained but not rendered in simplified view)
+  // Toggle selection of a coach for comparison
   const handleSelectCoach = (coach) => {
     const coachKey = coach.firstName + coach.lastName;
     if (selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey)) {
@@ -126,9 +126,7 @@ const CoachOverview = () => {
 
   const isCoachSelected = (coach) => {
     const coachKey = coach.firstName + coach.lastName;
-    return selectedCoaches.some(
-      (c) => (c.firstName + c.lastName) === coachKey
-    );
+    return selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey);
   };
 
   // Sort active coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
@@ -149,7 +147,7 @@ const CoachOverview = () => {
           aggB.spOffense / aggB.count +
           aggB.spDefense / aggB.count
         : 0;
-    return scoreB - scoreA; // Highest composite score first
+    return scoreB - scoreA;
   });
 
   // Prepare comparison data for selected coaches
@@ -208,19 +206,18 @@ const CoachOverview = () => {
         </p>
       </div>
 
-      {/* Coach Profiles Section (Simplified Table View) */}
+      {/* Coach Profiles Section (Table View) */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
         ) : sortedCoaches.length > 0 ? (
           <>
-            {/* Responsive Table Wrapper */}
             <div className="table-wrapper">
               <table className="coach-table">
                 <thead>
                   <tr>
-                    {/* Removed Select checkbox column */}
+                    <th>Select</th>
                     <th>Team</th>
                     <th>Coach Name</th>
                     <th>School</th>
@@ -228,6 +225,7 @@ const CoachOverview = () => {
                     <th>Games</th>
                     <th>Wins</th>
                     <th>Losses</th>
+                    <th>Ties</th>
                     <th>Win %</th>
                     <th>SRS <span title="Simple Rating System">[?]</span></th>
                     <th>Status</th>
@@ -235,31 +233,39 @@ const CoachOverview = () => {
                 </thead>
                 <tbody>
                   {sortedCoaches.map((coach, index) => {
-                    // Aggregate all season data from the coach's full career
                     const agg = aggregateCoachData(coach.seasons);
-                    // Use the most recent season for the school and logo
                     const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
-                    const avgSrs = agg.count > 0
-                      ? (agg.srs / agg.count).toFixed(1)
-                      : "N/A";
-                    // Calculate win percentage
-                    const winPct = agg.games > 0
-                      ? ((agg.wins / agg.games) * 100).toFixed(1)
-                      : "N/A";
-                    // Format hire date to MM/YYYY
+                    const avgSrs =
+                      agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
+                    const winPct =
+                      agg.games > 0
+                        ? ((agg.wins / agg.games) * 100).toFixed(1)
+                        : "N/A";
                     const hireDate = coach.hireDate
-                      ? new Date(coach.hireDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
+                      ? new Date(coach.hireDate).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          year: "numeric"
+                        })
                       : "N/A";
-                    // Composite score is the sum of the averaged SRS (others removed)
-                    const compositeScore = agg.count > 0
-                      ? parseFloat(avgSrs)
-                      : 0;
-                    let status = getCoachStatus(compositeScore);
-                    // Abbreviate status text if needed
-                    const statusText = status.text === "Premiere Coach" ? "Premiere" : status.text;
-                    
+                    const compositeScore =
+                      agg.count > 0
+                        ? parseFloat(avgSrs) +
+                          parseFloat(agg.spOverall / agg.count).toFixed(1) +
+                          parseFloat(agg.spOffense / agg.count).toFixed(1) +
+                          parseFloat(agg.spDefense / agg.count).toFixed(1)
+                        : 0;
+                    const status = getCoachStatus(compositeScore);
+                    const statusText =
+                      status.text === "Premiere Coach" ? "Premiere" : status.text;
                     return (
                       <tr key={index}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={isCoachSelected(coach)}
+                            onChange={() => handleSelectCoach(coach)}
+                          />
+                        </td>
                         <td>
                           <img
                             src={getTeamLogo(lastSeason.school)}
@@ -273,16 +279,18 @@ const CoachOverview = () => {
                         <td>{agg.games}</td>
                         <td>{agg.wins}</td>
                         <td>{agg.losses}</td>
+                        <td>{agg.ties}</td>
                         <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
                         <td>{avgSrs}</td>
-                        <td className={`status-label ${status.color}`}>{statusText}</td>
+                        <td style={{ color: status.color, fontWeight: "bold" }}>
+                          {statusText}
+                        </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-            {/* Transparent Stat Definitions Card (kept as is; consider using tooltips in future) */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
