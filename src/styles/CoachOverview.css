@@ -1,10 +1,11 @@
 /* Container & Global Layout */
 .coach-overview-container {
-    max-width: 1200px;      /* Limits total width on large screens */
-    margin: 0 auto;         /* Centers the container */
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
     font-family: "Roboto", sans-serif;
     color: #333;
+    background: #f7f9fc;
 }
 
 /* Hero Section */
@@ -46,10 +47,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Coach Profiles Section (centers heading + table) */
+/* Coach Profiles Section */
 .coach-profiles-section {
     margin-bottom: 40px;
-    text-align: center; /* ensures the heading is centered */
+    text-align: center;
 }
 
 .coach-profiles-section h2 {
@@ -57,100 +58,77 @@
     margin-bottom: 20px;
 }
 
-/* TABLE LAYOUT FIXED:
-   - Forces columns to stay on one line (no horizontal scroll).
-   - Ensures 100% width. Then we define each column width below.
-*/
-.coach-table {
-    width: 100%;           
-    table-layout: fixed;   
-    border-collapse: collapse;
-    background: #fff;
-    /* Rounded corners for the entire table: */
-    border-radius: 12px;  
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin: 0 auto;        
-    text-align: left;      
+/* Responsive Table Wrapper */
+.table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0 auto;
 }
 
-/* IMPORTANT:
-   You have 15 columns in your table, so we must define
-   widths for columns 1 through 15 that sum to 100%.
-*/
+/* Simplified Table Styling for 10 Columns */
+.coach-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    table-layout: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.coach-table th,
+.coach-table td {
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 12px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Define new column widths for 10 columns */
 .coach-table th:nth-child(1),
 .coach-table td:nth-child(1) {
-    width: 3%;
+    width: 10%; /* Team Logo */
 }
 .coach-table th:nth-child(2),
 .coach-table td:nth-child(2) {
-    width: 7%;
+    width: 15%; /* Coach Name */
 }
 .coach-table th:nth-child(3),
 .coach-table td:nth-child(3) {
-    width: 12%;
+    width: 15%; /* School */
 }
 .coach-table th:nth-child(4),
 .coach-table td:nth-child(4) {
-    width: 8%;
+    width: 10%; /* Hire Date */
 }
 .coach-table th:nth-child(5),
 .coach-table td:nth-child(5) {
-    width: 8%;
+    width: 10%; /* Games */
 }
 .coach-table th:nth-child(6),
 .coach-table td:nth-child(6) {
-    width: 5%;
+    width: 10%; /* Wins */
 }
 .coach-table th:nth-child(7),
 .coach-table td:nth-child(7) {
-    width: 5%;
+    width: 10%; /* Losses */
 }
 .coach-table th:nth-child(8),
 .coach-table td:nth-child(8) {
-    width: 5%;
+    width: 10%; /* Win % */
 }
 .coach-table th:nth-child(9),
 .coach-table td:nth-child(9) {
-    width: 5%;
+    width: 5%; /* SRS */
 }
 .coach-table th:nth-child(10),
 .coach-table td:nth-child(10) {
-    width: 5%;
-}
-.coach-table th:nth-child(11),
-.coach-table td:nth-child(11) {
-    width: 8%;
-}
-.coach-table th:nth-child(12),
-.coach-table td:nth-child(12) {
-    width: 8%;
-}
-.coach-table th:nth-child(13),
-.coach-table td:nth-child(13) {
-    width: 8%;
-}
-.coach-table th:nth-child(14),
-.coach-table td:nth-child(14) {
-    width: 8%;
-}
-.coach-table th:nth-child(15),
-.coach-table td:nth-child(15) {
-    width: 5%;
-}
-
-/* General Table Styling */
-.coach-table th,
-.coach-table td {
-    padding: 14px 16px; 
-    border: 1px solid #e0e0e0;
-    font-size: 0.95rem;    /* Slightly smaller text for clarity */
-    vertical-align: middle;  
-    /* Make sure corners remain rounded at edges of the table: */
-    /* This ensures the top-left and top-right corners remain curved on the <th> row. */
+    width: 5%; /* Status */
 }
 
 .coach-table th {
     background-color: #f2f2f2;
+    font-size: 14px;
     font-weight: bold;
 }
 
@@ -162,28 +140,52 @@
     background-color: #f1f1f1;
 }
 
-/* Checkbox styling in coach table */
-.coach-table input[type="checkbox"] {
-    transform: scale(1.2);
-    margin: 0;
+/* Freeze the first column (Team logo) */
+.coach-table th:first-child,
+.coach-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 1;
+    border-right: 1px solid #ccc;
 }
 
-/* Current team cell styling */
-.current-team-cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Team logo styling for table view */
+/* Team logo styling */
 .coach-team-logo {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
+    display: block;
     margin: 0 auto;
+    border-radius: 50%;
+    border: 1px solid #ddd;
 }
 
-/* Transparent Stat Definitions Card */
+/* Status Label with Colored Dots */
+.status-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-label.green::before {
+    content: "🟢";
+    margin-right: 4px;
+}
+
+.status-label.blue::before {
+    content: "🔵";
+    margin-right: 4px;
+}
+
+.status-label.red::before {
+    content: "🔴";
+    margin-right: 4px;
+}
+
+/* Transparent Stat Definitions Card (for tooltips or extra info) */
 .stats-info-card {
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid #e0e0e0;
@@ -327,7 +329,7 @@
 /* Comparison Section */
 .coach-comparison-section {
     margin-top: 40px;
-    text-align: center; /* so heading is centered */
+    text-align: center;
 }
 
 .coach-comparison-section h2 {
@@ -349,10 +351,9 @@
         font-size: 1rem;
     }
     
-    /* Decrease cell padding and font size on smaller screens */
     .coach-table th,
     .coach-table td {
-        padding: 10px 12px;
+        padding: 8px 10px;
         font-size: 0.85rem;
     }
 }
