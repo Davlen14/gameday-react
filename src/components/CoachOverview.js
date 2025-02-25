@@ -410,183 +410,141 @@ const CoachOverview = () => {
                         {/* Wins */}
                         <td>
                           {item.wins}
-                          {(() => {
-                            if (rankWins === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankWins === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankWins <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankWins === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankWins === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankWins > 1 && rankWins <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* Losses */}
                         <td>
                           {item.losses}
-                          {(() => {
-                            if (rankLosses === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankLosses === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankLosses <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankLosses === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankLosses === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankLosses > 1 && rankLosses <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* Win % */}
                         <td>
                           {item.winPct !== 0 ? `${item.winPct}%` : "N/A"}
-                          {(() => {
-                            if (rankWinPct === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankWinPct === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankWinPct <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankWinPct === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankWinPct === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankWinPct > 1 && rankWinPct <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* SRS */}
                         <td>
                           {item.srs}
-                          {(() => {
-                            if (rankSrs === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankSrs === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankSrs <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankSrs === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankSrs === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankSrs > 1 && rankSrs <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* SP Overall */}
                         <td>
                           {item.spOverall}
-                          {(() => {
-                            if (rankOverall === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankOverall === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankOverall <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankOverall === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankOverall === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankOverall > 1 && rankOverall <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* SP Offense */}
                         <td>
                           {item.spOffense}
-                          {(() => {
-                            if (rankOffense === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankOffense === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankOffense <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankOffense === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankOffense === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankOffense > 1 && rankOffense <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* SP Defense (lower is better) */}
                         <td>
                           {item.spDefense}
-                          {(() => {
-                            if (rankDefense === 1)
-                              return (
-                                <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
-                                  <span style={{ marginRight: "5px" }}>🏆</span> League Best
-                                </div>
-                              );
-                            if (rankDefense === totalCoaches)
-                              return (
-                                <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
-                                  League Worst
-                                </div>
-                              );
-                            if (rankDefense <= 5)
-                              return (
-                                <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
-                                  Top 5
-                                </div>
-                              );
-                            return null;
-                          })()}
+                          {rankDefense === 1 && (
+                            <div className="extra-info" style={{ color: "gold", fontWeight: "bold", display: "flex", alignItems: "center" }}>
+                              League Best 🏆
+                            </div>
+                          )}
+                          {rankDefense === totalCoaches && (
+                            <div className="extra-info" style={{ color: "red", fontWeight: "bold" }}>
+                              League Worst
+                            </div>
+                          )}
+                          {rankDefense > 1 && rankDefense <= 5 && (
+                            <div className="extra-info" style={{ color: "green", fontWeight: "bold" }}>
+                              Top 5
+                            </div>
+                          )}
                         </td>
 
                         {/* Status (Premiere, On Hot Seat, Average) */}
