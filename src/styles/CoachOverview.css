@@ -181,6 +181,14 @@
     margin-right: 4px;
 }
 
+.extra-info {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: normal;
+    margin-top: 2px;
+  }
+  
 /* Transparent Stat Definitions Card (for tooltips or extra info) */
 .stats-info-card {
     background: rgba(255, 255, 255, 0.85);
