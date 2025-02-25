@@ -190,7 +190,7 @@ const Home = () => {
                 </h3>
                 <div className="rankings-list">
                   {/* Display top 10 teams inline */}
-                  {poll.rankings.slice(0, 10).map((team) => (
+                  {poll.rankings.slice(0, 25).map((team) => (
                     <div key={team.school} className="ranking-item">
                       <span className="poll-rank">#{team.rank}</span>
                       <img
