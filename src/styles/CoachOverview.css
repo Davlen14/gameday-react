@@ -57,24 +57,23 @@
     margin-bottom: 20px;
 }
 
-/* 
-   TABLE LAYOUT FIXED
-   Forces columns to stay on one line, no horizontal scroll,
-   and ensures 100% width. Then we define each column width below.
+/* TABLE LAYOUT FIXED:
+   - Forces columns to stay on one line (no horizontal scroll).
+   - Ensures 100% width. Then we define each column width below.
 */
 .coach-table {
-    width: 100%;           /* Fills the screen (within the 1200px container) */
-    table-layout: fixed;   /* Use fixed layout for consistent column widths */
+    width: 100%;           
+    table-layout: fixed;   
     border-collapse: collapse;
     background: #fff;
-    border-radius: 8px;
+    /* Rounded corners for the entire table: */
+    border-radius: 12px;  
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin: 0 auto;        /* Center the table in its container */
-    text-align: left;      /* Keep text left-aligned in cells */
+    margin: 0 auto;        
+    text-align: left;      
 }
 
-/* 
-   IMPORTANT:
+/* IMPORTANT:
    You have 15 columns in your table, so we must define
    widths for columns 1 through 15 that sum to 100%.
 */
@@ -142,10 +141,12 @@
 /* General Table Styling */
 .coach-table th,
 .coach-table td {
-    padding: 15px 18px;
+    padding: 14px 16px; 
     border: 1px solid #e0e0e0;
-    font-size: 1rem;
-    vertical-align: middle;  /* Keep content vertically centered */
+    font-size: 0.95rem;    /* Slightly smaller text for clarity */
+    vertical-align: middle;  
+    /* Make sure corners remain rounded at edges of the table: */
+    /* This ensures the top-left and top-right corners remain curved on the <th> row. */
 }
 
 .coach-table th {
@@ -337,21 +338,21 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .filter-section input {
-      width: 80%;
+        width: 80%;
     }
     
     .coach-hero h1 {
-      font-size: 2rem;
+        font-size: 2rem;
     }
     
     .coach-hero p {
-      font-size: 1rem;
+        font-size: 1rem;
     }
     
     /* Decrease cell padding and font size on smaller screens */
     .coach-table th,
     .coach-table td {
-      padding: 10px 12px;
-      font-size: 0.85rem;
+        padding: 10px 12px;
+        font-size: 0.85rem;
     }
 }
