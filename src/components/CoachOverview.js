@@ -12,7 +12,7 @@ const aggregateCoachData = (seasons) => {
       acc.games += season.games || 0;
       acc.wins += season.wins || 0;
       acc.losses += season.losses || 0;
-      // Ties still counted internally but not displayed:
+      // Ties still counted internally but not displayed
       acc.ties += season.ties || 0;
       acc.srs += season.srs || 0;
       acc.spOverall += season.spOverall || 0;
@@ -35,8 +35,7 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-// Determine coach status based on composite score 
-// (average of SRS, SP Overall, SP Offense, SP Defense)
+// Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { text: "Premiere Coach", color: "green" };
@@ -47,7 +46,7 @@ const getCoachStatus = (score) => {
   }
 };
 
-// Helper: returns sortable value for a given field
+// Helper: returns a sortable value for each column
 const getSortableValue = (coach, field) => {
   const agg = aggregateCoachData(coach.seasons);
   const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
@@ -109,7 +108,7 @@ const CoachOverview = () => {
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(), // Removed the year parameter
+          teamsService.getCoaches(),
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -117,6 +116,8 @@ const CoachOverview = () => {
         ]);
 
         setTeams(teamsData);
+
+        // Filter for active coaches only (must have a 2024 season)
         const activeCoaches = coachesData.filter((coach) =>
           coach.seasons.some((season) => season.year === 2024)
         );
@@ -145,7 +146,7 @@ const CoachOverview = () => {
     fetchAllData();
   }, []);
 
-  // Helper: Get team logo based on school name
+  // Return a team logo if found
   const getTeamLogo = (school) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === school?.toLowerCase()
@@ -153,7 +154,7 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Toggle selection of a coach for comparison
+  // Toggle selection of a single coach
   const handleSelectCoach = (coach) => {
     const coachKey = coach.firstName + " " + coach.lastName;
     if (selectedCoaches.some((c) => c.firstName + " " + c.lastName === coachKey)) {
@@ -165,21 +166,15 @@ const CoachOverview = () => {
     }
   };
 
+  // Check if a coach is selected
   const isCoachSelected = (coach) => {
     const coachKey = coach.firstName + " " + coach.lastName;
     return selectedCoaches.some((c) => c.firstName + " " + c.lastName === coachKey);
   };
 
-  // Master select/deselect all coaches
-  const handleSelectAll = () => {
-    if (selectedCoaches.length === coachInfo.length) {
-      setSelectedCoaches([]);
-    } else {
-      setSelectedCoaches([...coachInfo]);
-    }
-  };
+  // We do NOT want a master select checkbox in the header, so let's do nothing or keep an empty cell
 
-  // Handle sorting by clicking a header
+  // Sorting
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -189,7 +184,7 @@ const CoachOverview = () => {
     }
   };
 
-  // Process coaches for display and sorting
+  // Process coaches for display
   const processedCoaches = coachInfo.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
     const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
@@ -229,7 +224,7 @@ const CoachOverview = () => {
     };
   });
 
-  // Sort processed coaches based on sortField and sortDirection
+  // Sort them
   let displayedCoaches = [...processedCoaches];
   if (sortField) {
     displayedCoaches.sort((a, b) => {
@@ -248,11 +243,11 @@ const CoachOverview = () => {
       return 0;
     });
   } else {
+    // default by composite desc
     displayedCoaches.sort((a, b) => b.composite - a.composite);
   }
 
-  // Build ranking maps for each numeric category among all processed coaches.
-  // This enables us to display extra info (League best, League worst, Top 5)
+  // Ranking for numeric categories, with spDefense "lower is better"
   const categoriesForRanking = [
     { key: "wins", better: "higher" },
     { key: "losses", better: "lower" },
@@ -260,7 +255,7 @@ const CoachOverview = () => {
     { key: "srs", better: "higher" },
     { key: "spOverall", better: "higher" },
     { key: "spOffense", better: "higher" },
-    { key: "spDefense", better: "higher" },
+    { key: "spDefense", better: "lower" }, // Defense: lower is better
   ];
   const rankingMap = {};
   categoriesForRanking.forEach((cat) => {
@@ -278,7 +273,7 @@ const CoachOverview = () => {
   });
   const totalCoaches = processedCoaches.length;
 
-  // Prepare comparison data for selected coaches
+  // Build comparison data for selected coaches
   const comparisonData = selectedCoaches.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
     const avgSrs = agg.count > 0 ? parseFloat((agg.srs / agg.count).toFixed(1)) : 0;
@@ -299,7 +294,7 @@ const CoachOverview = () => {
     };
   });
 
-  // Define comparison categories for the comparison table
+  // Comparison categories
   const comparisonCategories = [
     { key: "wins", label: "Wins", better: "higher" },
     { key: "losses", label: "Losses", better: "lower" },
@@ -307,10 +302,10 @@ const CoachOverview = () => {
     { key: "srs", label: "SRS", better: "higher" },
     { key: "spOverall", label: "SP Overall", better: "higher" },
     { key: "spOffense", label: "SP Offense", better: "higher" },
-    { key: "spDefense", label: "SP Defense", better: "higher" },
+    { key: "spDefense", label: "SP Defense", better: "lower" }, // again, defense is "lower is better"
   ];
 
-  // For each category, determine best and worst among selected coaches
+  // Identify best/worst for comparison table
   const getBestWorst = (key, better) => {
     const values = comparisonData.map((data) => data.stats[key]);
     if (values.length === 0) return { best: null, worst: null };
@@ -326,15 +321,14 @@ const CoachOverview = () => {
   };
 
   return (
-    <div className="coach-overview-container">
+    <div
+      className="coach-overview-container"
+      style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}
+    >
       {/* Hero Section */}
       <div className="coach-hero">
-        <h1>
-          <FaUserTie className="icon" /> Coach Overview
-        </h1>
-        <p>
-          Stay updated with the latest coach profiles, news, and video highlights.
-        </p>
+        <h1>Coach Overview</h1>
+        <p>Stay updated with the latest coach profiles, news, and video highlights.</p>
       </div>
 
       {/* Display selected coaches for comparison */}
@@ -362,17 +356,8 @@ const CoachOverview = () => {
               <table className="coach-table">
                 <thead>
                   <tr>
-                    <th onClick={handleSelectAll}>
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedCoaches.length === coachInfo.length &&
-                          coachInfo.length > 0
-                        }
-                        readOnly
-                      />{" "}
-                      Select
-                    </th>
+                    {/* Empty header cell (no master checkbox) */}
+                    <th></th>
                     <th onClick={() => handleSort("team")}>Team</th>
                     <th onClick={() => handleSort("coachName")}>Coach Name</th>
                     <th onClick={() => handleSort("school")}>School</th>
@@ -381,9 +366,7 @@ const CoachOverview = () => {
                     <th onClick={() => handleSort("wins")}>Wins</th>
                     <th onClick={() => handleSort("losses")}>Losses</th>
                     <th onClick={() => handleSort("winPct")}>Win %</th>
-                    <th onClick={() => handleSort("srs")}>
-                      SRS <span title="Simple Rating System">[?]</span>
-                    </th>
+                    <th onClick={() => handleSort("srs")}>SRS</th>
                     <th onClick={() => handleSort("spOverall")}>SP Overall</th>
                     <th onClick={() => handleSort("spOffense")}>SP Offense</th>
                     <th onClick={() => handleSort("spDefense")}>SP Defense</th>
@@ -391,133 +374,134 @@ const CoachOverview = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedCoaches.map((item, index) => (
-                    <tr key={index}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedCoaches.some(
-                            (c) =>
-                              c.firstName + " " + c.lastName === item.coachName
-                          )}
-                          onChange={() => handleSelectCoach(item.coach)}
-                        />
-                      </td>
-                      <td>
-                        <img
-                          src={getTeamLogo(item.school)}
-                          alt={item.school}
-                          className="coach-team-logo"
-                        />
-                      </td>
-                      <td>{item.coachName}</td>
-                      <td>{item.school}</td>
-                      <td>{item.hireDateFormatted}</td>
-                      <td>{item.games}</td>
-                      <td>
-                        {item.wins}
-                        {(() => {
-                          const rank = rankingMap["wins"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.losses}
-                        {(() => {
-                          const rank = rankingMap["losses"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.winPct !== 0 ? `${item.winPct}%` : "N/A"}
-                        {(() => {
-                          const rank = rankingMap["winPct"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.srs}
-                        {(() => {
-                          const rank = rankingMap["srs"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.spOverall}
-                        {(() => {
-                          const rank = rankingMap["spOverall"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.spOffense}
-                        {(() => {
-                          const rank = rankingMap["spOffense"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td>
-                        {item.spDefense}
-                        {(() => {
-                          const rank = rankingMap["spDefense"][item.coachName];
-                          if (rank === 1)
-                            return <div className="extra-info">League best</div>;
-                          if (rank === totalCoaches)
-                            return <div className="extra-info">League worst</div>;
-                          if (rank <= 5)
-                            return <div className="extra-info">Top 5</div>;
-                          return null;
-                        })()}
-                      </td>
-                      <td className="status-label" style={{
-                        fontStyle: "italic",
-                        fontWeight: "normal",
-                        fontFamily: '"Orbitron", "Titillium Web", sans-serif'
-                      }}>
-                        {item.status.text === "Premiere Coach" ? "Premiere" : item.status.text}
-                      </td>
-                    </tr>
-                  ))}
+                  {displayedCoaches.map((item, index) => {
+                    // Show "League best," "League worst," "Top 5" for each numeric column
+                    // according to rankingMap
+                    const rankWins = rankingMap["wins"][item.coachName];
+                    const rankLosses = rankingMap["losses"][item.coachName];
+                    const rankWinPct = rankingMap["winPct"][item.coachName];
+                    const rankSrs = rankingMap["srs"][item.coachName];
+                    const rankOverall = rankingMap["spOverall"][item.coachName];
+                    const rankOffense = rankingMap["spOffense"][item.coachName];
+                    const rankDefense = rankingMap["spDefense"][item.coachName];
+
+                    return (
+                      <tr key={index}>
+                        {/* Single row checkbox */}
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={isCoachSelected(item.coach)}
+                            onChange={() => handleSelectCoach(item.coach)}
+                          />
+                        </td>
+                        <td>
+                          <img
+                            src={getTeamLogo(item.school)}
+                            alt={item.school}
+                            className="coach-team-logo"
+                          />
+                        </td>
+                        <td>{item.coachName}</td>
+                        <td>{item.school}</td>
+                        <td>{item.hireDateFormatted}</td>
+                        <td>{item.games}</td>
+
+                        {/* Wins */}
+                        <td>
+                          {item.wins}
+                          {(() => {
+                            if (rankWins === 1) return <div className="extra-info">League best</div>;
+                            if (rankWins === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankWins <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* Losses */}
+                        <td>
+                          {item.losses}
+                          {(() => {
+                            if (rankLosses === 1) return <div className="extra-info">League best</div>;
+                            if (rankLosses === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankLosses <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* Win % */}
+                        <td>
+                          {item.winPct !== 0 ? `${item.winPct}%` : "N/A"}
+                          {(() => {
+                            if (rankWinPct === 1) return <div className="extra-info">League best</div>;
+                            if (rankWinPct === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankWinPct <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* SRS */}
+                        <td>
+                          {item.srs}
+                          {(() => {
+                            if (rankSrs === 1) return <div className="extra-info">League best</div>;
+                            if (rankSrs === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankSrs <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* SP Overall */}
+                        <td>
+                          {item.spOverall}
+                          {(() => {
+                            if (rankOverall === 1) return <div className="extra-info">League best</div>;
+                            if (rankOverall === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankOverall <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* SP Offense */}
+                        <td>
+                          {item.spOffense}
+                          {(() => {
+                            if (rankOffense === 1) return <div className="extra-info">League best</div>;
+                            if (rankOffense === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankOffense <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* SP Defense (lower is better) */}
+                        <td>
+                          {item.spDefense}
+                          {(() => {
+                            if (rankDefense === 1) return <div className="extra-info">League best</div>;
+                            if (rankDefense === totalCoaches) return <div className="extra-info">League worst</div>;
+                            if (rankDefense <= 5) return <div className="extra-info">Top 5</div>;
+                            return null;
+                          })()}
+                        </td>
+
+                        {/* Status (Premiere, On Hot Seat, Average) */}
+                        <td
+                          style={{
+                            color: item.status.color,
+                            fontStyle: "italic",
+                            fontWeight: "normal",
+                          }}
+                        >
+                          {item.status.text}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
+            {/* Stat Definitions Card */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
@@ -544,6 +528,7 @@ const CoachOverview = () => {
         )}
       </section>
 
+      {/* Comparison Section */}
       {selectedCoaches.length > 1 && (
         <section className="coach-comparison-section">
           <h2>Coach Comparison</h2>
@@ -561,11 +546,25 @@ const CoachOverview = () => {
               </thead>
               <tbody>
                 {comparisonCategories.map((cat) => {
-                  const { best, worst } = getBestWorst(cat.key, cat.better);
+                  const values = comparisonData.map((d) => d.stats[cat.key]);
+                  let best, worst;
+                  if (values.length > 0) {
+                    if (cat.better === "higher") {
+                      best = Math.max(...values);
+                      worst = Math.min(...values);
+                    } else {
+                      best = Math.min(...values);
+                      worst = Math.max(...values);
+                    }
+                  } else {
+                    best = null;
+                    worst = null;
+                  }
+
                   return (
                     <tr key={cat.key}>
                       <td>{cat.label}</td>
-                      {comparisonData.map((data, idx) => {
+                      {comparisonData.map((data, idx2) => {
                         const value = data.stats[cat.key];
                         let style = {};
                         if (value === best) {
@@ -574,7 +573,7 @@ const CoachOverview = () => {
                           style = { color: "red", fontWeight: "bold" };
                         }
                         return (
-                          <td key={idx} style={style}>
+                          <td key={idx2} style={style}>
                             {value}
                           </td>
                         );
@@ -588,12 +587,14 @@ const CoachOverview = () => {
         </section>
       )}
 
+      {/* Coach News Section */}
       <section className="coach-news-section">
         <h2>Coach News</h2>
         {loadingNews ? (
           <p className="loading-text">Loading news...</p>
         ) : news.length > 0 ? (
           <>
+            {/* Featured Article */}
             <div className="featured-news">
               <a
                 href={news[0].url}
@@ -615,6 +616,7 @@ const CoachOverview = () => {
                 </div>
               </a>
             </div>
+            {/* Additional News List */}
             <div className="news-list">
               {news.slice(1, 5).map((article, idx) => (
                 <a
@@ -644,6 +646,7 @@ const CoachOverview = () => {
         )}
       </section>
 
+      {/* Coach Videos Section */}
       <section className="coach-videos-section">
         <h2>Coach Videos</h2>
         {loadingVideos ? (
