@@ -99,7 +99,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="hero-header">
-        <h1>GAMEDAY+</h1>
+        <h1 style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>GAMEDAY+</h1>
       </header>
 
       {/* Featured Section */}
@@ -116,7 +116,7 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Featured Card: Arch Manning Buzz */}
+          {/* Additional Featured Cards */}
           <div className="featured-card small-card">
             <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
             <div className="featured-overlay">
@@ -126,8 +126,6 @@ const Home = () => {
               </p>
             </div>
           </div>
-
-          {/* Featured Card: Oregon's Next Move */}
           <div className="featured-card small-card">
             <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
             <div className="featured-overlay">
@@ -137,8 +135,6 @@ const Home = () => {
               </p>
             </div>
           </div>
-
-          {/* Featured Card: Colorado on the Rise */}
           <div className="featured-card small-card">
             <img src="/photos/CU.jpg" alt="Colorado" />
             <div className="featured-overlay">
@@ -148,8 +144,6 @@ const Home = () => {
               </p>
             </div>
           </div>
-
-          {/* Featured Card: Penn State Prospects */}
           <div className="featured-card small-card">
             <img src="/photos/Pennst.jpg" alt="Penn State" />
             <div className="featured-overlay">
@@ -159,8 +153,6 @@ const Home = () => {
               </p>
             </div>
           </div>
-
-          {/* Featured Card: Georgia Article */}
           <div className="featured-card small-card">
             <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
             <div className="featured-overlay">
@@ -180,7 +172,7 @@ const Home = () => {
           <div className="polls-grid">
             {polls.map((poll) => (
               <div key={poll.id} className="poll-card">
-                <h3 className="poll-title">
+                <h3 className="poll-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
                   <img
                     src="/photos/committee.png"
                     alt="Committee Logo"
@@ -189,19 +181,35 @@ const Home = () => {
                   {poll.name}
                 </h3>
                 <div className="rankings-list">
-                  {/* Display top 10 teams inline */}
-                  {poll.rankings.slice(0, 25).map((team) => (
-                    <div key={team.school} className="ranking-item">
-                      <span className="poll-rank">#{team.rank}</span>
-                      <img
-                        src={getTeamLogo(team.school)}
-                        alt={team.school}
-                        className="team-poll-logo"
-                      />
-                      <span className="poll-team-name">{team.school}</span>
-                      <span className="poll-points">{team.points} pts</span>
-                    </div>
-                  ))}
+                  {/* Display top teams inline */}
+                  {poll.rankings.slice(0, 25).map((team) => {
+                    const teamData = teams.find(
+                      (t) => t.school.toLowerCase() === team.school.toLowerCase()
+                    );
+                    const logo = getTeamLogo(team.school);
+                    return (
+                      <div key={team.school} className="ranking-item">
+                        <span className="poll-rank">#{team.rank}</span>
+                        {teamData ? (
+                          <Link to={`/teams/${teamData.id}`}>
+                            <img
+                              src={logo}
+                              alt={team.school}
+                              className="team-poll-logo"
+                            />
+                          </Link>
+                        ) : (
+                          <img
+                            src={logo}
+                            alt={team.school}
+                            className="team-poll-logo"
+                          />
+                        )}
+                        <span className="poll-team-name">{team.school}</span>
+                        <span className="poll-points">{team.points} pts</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -210,7 +218,7 @@ const Home = () => {
 
         {/* Right Column: Top 20 Recruits */}
         <section className="recruits-section right-column">
-          <h2 className="section-title">Top 20 Recruits</h2>
+          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>Top 20 Recruits</h2>
           <div className="recruits-list">
             {topRecruits.slice(0, 20).map((prospect) => (
               <div key={prospect.id} className="recruit-item">
@@ -236,7 +244,7 @@ const Home = () => {
 
       {/* Games Section */}
       <section className="games-section">
-        <h2 className="section-title">
+        <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
           {week === "postseason" ? "Postseason Matchups" : `Week ${week} Matchups`}
         </h2>
         <div className="games-slider">
