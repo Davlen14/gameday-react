@@ -5,11 +5,7 @@ import teamsService from "../services/teamsService"; // getCoaches is here
 import youtubeService from "../services/youtubeService";
 import "../styles/CoachOverview.css";
 
-/**
- * aggregateCoachData
- * Helper to aggregate all season data for a coach,
- * summing up games, wins, losses, etc.
- */
+// Helper to aggregate season data for a coach
 const aggregateCoachData = (seasons) => {
   return seasons.reduce(
     (acc, season) => {
@@ -38,11 +34,7 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-/**
- * getCoachStatus
- * Determines the "status" label (Premiere Coach, Average, On Hot Seat)
- * based on a composite score of the coach's SRS and SP ratings.
- */
+// Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { text: "Premiere Coach", color: "green" };
@@ -68,14 +60,14 @@ const CoachOverview = () => {
       try {
         const [
           teamsData,
-          coachesData, // Full career data for each coach
+          coachesData, // full career resume
           coachNewsData,
           footballNewsData,
           youtubeResponse1,
           youtubeResponse2,
         ] = await Promise.all([
           teamsService.getTeams(),
-          teamsService.getCoaches(),
+          teamsService.getCoaches(), // Removed the year parameter
           newsService.fetchCollegeCoachNews(),
           newsService.fetchCollegeFootballNews(),
           youtubeService.fetchYoutubeData("college coach interviews"),
@@ -83,7 +75,6 @@ const CoachOverview = () => {
         ]);
 
         setTeams(teamsData);
-
         // Filter for active coaches only: at least one season with year 2024
         const activeCoaches = coachesData.filter((coach) =>
           coach.seasons.some((season) => season.year === 2024)
@@ -113,11 +104,7 @@ const CoachOverview = () => {
     fetchAllData();
   }, []);
 
-  /**
-   * getTeamLogo
-   * Looks up a team's logo by matching the school name
-   * to the "teams" data we fetched. Defaults to a placeholder if not found.
-   */
+  // Helper: Get team logo based on school name (uses the most recent season's school)
   const getTeamLogo = (school) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === school?.toLowerCase()
@@ -125,22 +112,14 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  /**
-   * handleSelectCoach
-   * Adds or removes a coach from the "selectedCoaches" array
-   * for side-by-side comparison.
-   */
+  // Toggle selection of a coach for comparison (retained but not rendered in simplified view)
   const handleSelectCoach = (coach) => {
     const coachKey = coach.firstName + coach.lastName;
     if (selectedCoaches.some((c) => (c.firstName + c.lastName) === coachKey)) {
-      // Already selected, so remove
       setSelectedCoaches(
-        selectedCoaches.filter(
-          (c) => (c.firstName + c.lastName) !== coachKey
-        )
+        selectedCoaches.filter((c) => (c.firstName + c.lastName) !== coachKey)
       );
     } else {
-      // Not selected, so add
       setSelectedCoaches([...selectedCoaches, coach]);
     }
   };
@@ -152,10 +131,7 @@ const CoachOverview = () => {
     );
   };
 
-  /**
-   * Sort coaches by composite score:
-   * The sum of (SRS + SP Overall + SP Offense + SP Defense) / # of seasons.
-   */
+  // Sort active coaches by composite score (average of SRS, SP Overall, SP Offense, SP Defense)
   const sortedCoaches = [...coachInfo].sort((a, b) => {
     const aggA = aggregateCoachData(a.seasons);
     const aggB = aggregateCoachData(b.seasons);
@@ -173,15 +149,10 @@ const CoachOverview = () => {
           aggB.spOffense / aggB.count +
           aggB.spDefense / aggB.count
         : 0;
-    // Higher score first
-    return scoreB - scoreA;
+    return scoreB - scoreA; // Highest composite score first
   });
 
-  /**
-   * comparisonData
-   * Gathers aggregated stats for each selected coach
-   * so we can show them side by side in a comparison table.
-   */
+  // Prepare comparison data for selected coaches
   const comparisonData = selectedCoaches.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
     return {
@@ -189,7 +160,6 @@ const CoachOverview = () => {
       stats: {
         wins: agg.wins,
         losses: agg.losses,
-        ties: agg.ties,
         winPct:
           agg.games > 0
             ? parseFloat(((agg.wins / agg.games) * 100).toFixed(1))
@@ -197,44 +167,20 @@ const CoachOverview = () => {
         avgSrs:
           agg.count > 0
             ? parseFloat((agg.srs / agg.count).toFixed(1))
-            : 0,
-        avgSpOverall:
-          agg.count > 0
-            ? parseFloat((agg.spOverall / agg.count).toFixed(1))
-            : 0,
-        avgSpOffense:
-          agg.count > 0
-            ? parseFloat((agg.spOffense / agg.count).toFixed(1))
-            : 0,
-        avgSpDefense:
-          agg.count > 0
-            ? parseFloat((agg.spDefense / agg.count).toFixed(1))
-            : 0,
+            : 0
       },
     };
   });
 
-  /**
-   * comparisonCategories
-   * An array of stat categories we'll show in the comparison table,
-   * along with whether a higher or lower value is considered "better."
-   */
+  // Define simplified comparison categories and whether higher values are better
   const comparisonCategories = [
     { key: "wins", label: "Wins", better: "higher" },
     { key: "losses", label: "Losses", better: "lower" },
-    { key: "ties", label: "Ties", better: "lower" },
     { key: "winPct", label: "Win %", better: "higher" },
     { key: "avgSrs", label: "SRS", better: "higher" },
-    { key: "avgSpOverall", label: "SP Overall", better: "higher" },
-    { key: "avgSpOffense", label: "SP Offense", better: "higher" },
-    { key: "avgSpDefense", label: "SP Defense", better: "higher" },
   ];
 
-  /**
-   * getBestWorst
-   * For a given stat key (e.g., "wins") and whether "higher" or "lower" is better,
-   * returns the best and worst values among all selected coaches.
-   */
+  // For each category, figure out best and worst among selected coaches
   const getBestWorst = (key, better) => {
     const values = comparisonData.map((data) => data.stats[key]);
     if (values.length === 0) return { best: null, worst: null };
@@ -262,115 +208,86 @@ const CoachOverview = () => {
         </p>
       </div>
 
-      {/* PROFILES SECTION */}
+      {/* Coach Profiles Section (Simplified Table View) */}
       <section className="coach-profiles-section">
         <h2>Coach Profiles (Full Career)</h2>
         {loadingCoaches ? (
           <p className="loading-text">Loading coach profiles...</p>
         ) : sortedCoaches.length > 0 ? (
           <>
-            <table className="coach-table">
-              <thead>
-                <tr>
-                  <th>Select</th>
-                  <th>Team</th>
-                  <th>Coach Name</th>
-                  <th>School</th>
-                  <th>Hire Date</th>
-                  <th>Games</th>
-                  <th>Wins</th>
-                  <th>Losses</th>
-                  <th>Ties</th>
-                  <th>Win %</th>
-                  <th>SRS</th>
-                  <th>SP Overall</th>
-                  <th>SP Offense</th>
-                  <th>SP Defense</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedCoaches.map((coach, index) => {
-                  const agg = aggregateCoachData(coach.seasons);
-                  const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
-                  const avgSrs =
-                    agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
-                  const avgSpOverall =
-                    agg.count > 0 ? (agg.spOverall / agg.count).toFixed(1) : "N/A";
-                  const avgSpOffense =
-                    agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
-                  const avgSpDefense =
-                    agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
-                  const winPct =
-                    agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-                  const compositeScore =
-                    agg.count > 0
-                      ? parseFloat(avgSrs) +
-                        parseFloat(avgSpOverall) +
-                        parseFloat(avgSpOffense) +
-                        parseFloat(avgSpDefense)
+            {/* Responsive Table Wrapper */}
+            <div className="table-wrapper">
+              <table className="coach-table">
+                <thead>
+                  <tr>
+                    {/* Removed Select checkbox column */}
+                    <th>Team</th>
+                    <th>Coach Name</th>
+                    <th>School</th>
+                    <th>Hire Date</th>
+                    <th>Games</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Win %</th>
+                    <th>SRS <span title="Simple Rating System">[?]</span></th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedCoaches.map((coach, index) => {
+                    // Aggregate all season data from the coach's full career
+                    const agg = aggregateCoachData(coach.seasons);
+                    // Use the most recent season for the school and logo
+                    const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
+                    const avgSrs = agg.count > 0
+                      ? (agg.srs / agg.count).toFixed(1)
+                      : "N/A";
+                    // Calculate win percentage
+                    const winPct = agg.games > 0
+                      ? ((agg.wins / agg.games) * 100).toFixed(1)
+                      : "N/A";
+                    // Format hire date to MM/YYYY
+                    const hireDate = coach.hireDate
+                      ? new Date(coach.hireDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
+                      : "N/A";
+                    // Composite score is the sum of the averaged SRS (others removed)
+                    const compositeScore = agg.count > 0
+                      ? parseFloat(avgSrs)
                       : 0;
-                  const status = getCoachStatus(compositeScore);
-
-                  return (
-                    <tr key={index}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={isCoachSelected(coach)}
-                          onChange={() => handleSelectCoach(coach)}
-                        />
-                      </td>
-                      <td>
-                        <img
-                          src={getTeamLogo(lastSeason.school)}
-                          alt={lastSeason.school}
-                          className="coach-team-logo"
-                          style={{ width: "60px", height: "60px", background: "none" }} 
-                        />
-                      </td>
-                      <td>{coach.firstName} {coach.lastName}</td>
-                      <td>{lastSeason.school}</td>
-                      <td>
-                        {coach.hireDate
-                          ? new Date(coach.hireDate).toLocaleDateString("en-US", {
-                              month: "2-digit",
-                              year: "numeric",
-                            })
-                          : "N/A"}
-                      </td>
-                      <td>{agg.games}</td>
-                      <td>{agg.wins}</td>
-                      <td>{agg.losses}</td>
-                      <td>{agg.ties}</td>
-                      <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
-                      <td>{avgSrs}</td>
-                      <td>{avgSpOverall}</td>
-                      <td>{avgSpOffense}</td>
-                      <td>{avgSpDefense}</td>
-                      <td style={{ color: status.color, fontWeight: "bold" }}>
-                        {status.text}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {/* Transparent Stat Definitions Card */}
+                    let status = getCoachStatus(compositeScore);
+                    // Abbreviate status text if needed
+                    const statusText = status.text === "Premiere Coach" ? "Premiere" : status.text;
+                    
+                    return (
+                      <tr key={index}>
+                        <td>
+                          <img
+                            src={getTeamLogo(lastSeason.school)}
+                            alt={lastSeason.school}
+                            className="coach-team-logo"
+                          />
+                        </td>
+                        <td>{coach.firstName} {coach.lastName}</td>
+                        <td>{lastSeason.school}</td>
+                        <td>{hireDate}</td>
+                        <td>{agg.games}</td>
+                        <td>{agg.wins}</td>
+                        <td>{agg.losses}</td>
+                        <td>{winPct !== "N/A" ? `${winPct}%` : "N/A"}</td>
+                        <td>{avgSrs}</td>
+                        <td className={`status-label ${status.color}`}>{statusText}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {/* Transparent Stat Definitions Card (kept as is; consider using tooltips in future) */}
             <div className="stats-info-card">
               <h3>Stat Definitions</h3>
               <ul>
                 <li>
                   <strong>SRS:</strong> A measure of a team's performance relative to its opponents.
-                </li>
-                <li>
-                  <strong>SP Overall:</strong> The overall statistical performance rating.
-                </li>
-                <li>
-                  <strong>SP Offense:</strong> A rating of the team's offensive performance.
-                </li>
-                <li>
-                  <strong>SP Defense:</strong> A rating of the team's defensive performance.
                 </li>
                 <li>
                   <strong>Win %:</strong> The percentage of games won.
@@ -383,50 +300,52 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* COMPARISON SECTION */}
+      {/* Comparison Section */}
       {selectedCoaches.length > 1 && (
         <section className="coach-comparison-section">
           <h2>Coach Comparison</h2>
-          <table className="coach-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                {comparisonData.map((data, idx) => (
-                  <th key={idx}>
-                    {data.coach.firstName} {data.coach.lastName}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {comparisonCategories.map((cat) => {
-                const { best, worst } = getBestWorst(cat.key, cat.better);
-                return (
-                  <tr key={cat.key}>
-                    <td>{cat.label}</td>
-                    {comparisonData.map((data, idx) => {
-                      const value = data.stats[cat.key];
-                      let style = {};
-                      if (value === best) {
-                        style = { color: "green", fontWeight: "bold" };
-                      } else if (value === worst) {
-                        style = { color: "red", fontWeight: "bold" };
-                      }
-                      return (
-                        <td key={idx} style={style}>
-                          {value}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="table-wrapper">
+            <table className="coach-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  {comparisonData.map((data, idx) => (
+                    <th key={idx}>
+                      {data.coach.firstName} {data.coach.lastName}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonCategories.map((cat) => {
+                  const { best, worst } = getBestWorst(cat.key, cat.better);
+                  return (
+                    <tr key={cat.key}>
+                      <td>{cat.label}</td>
+                      {comparisonData.map((data, idx) => {
+                        const value = data.stats[cat.key];
+                        let style = {};
+                        if (value === best) {
+                          style = { color: "green", fontWeight: "bold" };
+                        } else if (value === worst) {
+                          style = { color: "red", fontWeight: "bold" };
+                        }
+                        return (
+                          <td key={idx} style={style}>
+                            {value}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 
-      {/* COACH NEWS SECTION */}
+      {/* Coach News Section */}
       <section className="coach-news-section">
         <h2>Coach News</h2>
         {loadingNews ? (
@@ -483,7 +402,7 @@ const CoachOverview = () => {
         )}
       </section>
 
-      {/* COACH VIDEOS SECTION */}
+      {/* Coach Videos Section */}
       <section className="coach-videos-section">
         <h2>Coach Videos</h2>
         {loadingVideos ? (
