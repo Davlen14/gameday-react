@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom"; // 🔥 Import navigation
 import teamsService from "../services/teamsService";
 import TeamScheduleChart from "./TeamScheduleChart";
 import "../styles/TeamAnalytics.css";
@@ -10,7 +10,7 @@ const TeamAnalytics = () => {
   const [schedule, setSchedule] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 🔥 Use React Router navigation
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -49,8 +49,9 @@ const TeamAnalytics = () => {
     return team?.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
-  // Navigate to game details when clicking a game card
+  // 🔥 Navigate to game details when clicking a game card
   const handleGameClick = (gameId) => {
+    // Navigate to TeamAnalyticsDetail view, passing team & game info:
     navigate(`/team-metrics/${selectedTeam.id}?gameId=${gameId}`);
   };
 
@@ -124,12 +125,20 @@ const TeamAnalytics = () => {
             </ul>
           </div>
 
-          {/* Pass schedule & getTeamLogo to the chart */}
-          <TeamScheduleChart
-            teamName={selectedTeam.school}
-            schedule={schedule}
-            getTeamLogo={getTeamLogo}
-          />
+          {/* The Bar Chart */}
+          <TeamScheduleChart teamName={selectedTeam.school} />
+
+          {/* Logos Under the Chart */}
+          <div className="team-logos-container">
+            {schedule.map((game) => (
+              <img
+                key={game.id}
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                className="chart-axis-logo" // 🔥 Use new .chart-axis-logo class
+              />
+            ))}
+          </div>
         </>
       )}
     </div>
