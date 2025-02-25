@@ -41,8 +41,8 @@ const TeamScheduleChart = ({ teamName }) => {
         awayPoints: game.awayPoints || 0,
         homeColor: getTeamData(game.homeTeam).color || "#999999",
         awayColor: getTeamData(game.awayTeam).color || "#888888",
-        homeLogo: getTeamData(game.homeTeam).logos ? getTeamData(game.homeTeam).logos[0] : "/photos/default_team.png",
-        awayLogo: getTeamData(game.awayTeam).logos ? getTeamData(game.awayTeam).logos[0] : "/photos/default_team.png",
+        homeLogo: getTeamData(game.homeTeam).logos?.[0] || "/photos/default_team.png",
+        awayLogo: getTeamData(game.awayTeam).logos?.[0] || "/photos/default_team.png",
     }));
 
     if (isLoading) return <p>Loading schedule...</p>;
@@ -51,36 +51,54 @@ const TeamScheduleChart = ({ teamName }) => {
     return (
         <div className="chart-container">
             <h2 className="chart-title">{teamName} 2024 Schedule - Points Scored</h2>
-            <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={formattedData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
-                    <XAxis dataKey="week" tick={{ fill: "#333" }} />
-                    <YAxis tick={{ fill: "#333" }} />
-                    <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
-                    
-                    {/* Home Team Bar with logo above */}
-                    <Bar dataKey="homePoints" name="Home" fill="#ffffff">
-                        {formattedData.map((game, index) => (
-                            <Cell key={`home-${index}`} fill={game.homeColor} />
-                        ))}
-                    </Bar>
+            <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height={400}>
+                    <BarChart 
+                        data={formattedData} 
+                        margin={{ top: 60, right: 30, left: 20, bottom: 50 }}
+                    >
+                        <XAxis dataKey="week" tick={{ fill: "#333" }} />
+                        <YAxis tick={{ fill: "#333" }} />
+                        <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
+                        
+                        {/* Home Team Bar */}
+                        <Bar dataKey="homePoints" name="Home">
+                            {formattedData.map((game, index) => (
+                                <Cell key={`home-${index}`} fill={game.homeColor} />
+                            ))}
+                        </Bar>
 
-                    {/* Away Team Bar with logo above */}
-                    <Bar dataKey="awayPoints" name="Away" fill="#ffffff">
-                        {formattedData.map((game, index) => (
-                            <Cell key={`away-${index}`} fill={game.awayColor} />
-                        ))}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
+                        {/* Away Team Bar */}
+                        <Bar dataKey="awayPoints" name="Away">
+                            {formattedData.map((game, index) => (
+                                <Cell key={`away-${index}`} fill={game.awayColor} />
+                            ))}
+                        </Bar>
 
-            {/* 🔥 Custom Team Logos Above Bars */}
-            <div className="team-logos-container">
-                {formattedData.map((game, index) => (
-                    <div key={index} className="team-logos">
-                        <img src={game.homeLogo} alt={game.homeTeam} className="team-logo-chart" />
-                        <img src={game.awayLogo} alt={game.awayTeam} className="team-logo-chart" />
-                    </div>
-                ))}
+                        {/* Custom Logos rendered in SVG */}
+                        {formattedData.map((game, index) => {
+                            const xPosition = ((index + 0.5) * 100) / formattedData.length;
+                            return (
+                                <g key={`logos-${index}`} transform={`translate(${xPosition}%, -20)`}>
+                                    <foreignObject x="-25" y="0" width="50" height="50">
+                                        <div className="chart-logo-container">
+                                            <img 
+                                                src={game.awayLogo} 
+                                                alt={game.awayTeam} 
+                                                className="chart-logo"
+                                            />
+                                            <img 
+                                                src={game.homeLogo} 
+                                                alt={game.homeTeam} 
+                                                className="chart-logo"
+                                            />
+                                        </div>
+                                    </foreignObject>
+                                </g>
+                            );
+                        })}
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );
