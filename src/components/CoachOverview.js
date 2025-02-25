@@ -390,13 +390,15 @@ const CoachOverview = () => {
                         <td>{avgSpOffense}</td>
                         <td>{avgSpDefense}</td>
                         <td
-                          style={{
-                            color: status.color,
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {status.text}
-                        </td>
+                        style={{
+                          color: status.color,
+                          fontStyle: "italic",
+                          fontWeight: "normal",
+                          fontFamily: '"Orbitron", "Titillium Web", sans-serif'
+                        }}
+                      >
+                        {status.text}
+                      </td>
                       </tr>
                     );
                   })}
