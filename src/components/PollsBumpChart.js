@@ -2,6 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import teamsService from "../services/teamsService";
 
+// Helper function to return team info.
+// You can modify this mapping or replace it with a dynamic fetch from your teams service.
+const getTeamInfo = (teamName) => {
+  const mapping = {
+    "Georgia": { color: "#A00000", logo: "/photos/Georgia.png" },
+    "Michigan": { color: "#00274C", logo: "/photos/Michigan.png" },
+    // Add additional teams as needed.
+  };
+  return mapping[teamName] || { color: "gray", logo: "/photos/default_team.png" };
+};
+
 const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   const chartRef = useRef();
   const [chartData, setChartData] = useState([]);
@@ -130,39 +141,51 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .curve(d3.curveMonotoneX);
 
     // Draw a line for each team.
-    chartData.forEach((teamData, index) => {
+    chartData.forEach((teamData) => {
+      // Get team info for color and logo.
+      const teamInfo = getTeamInfo(teamData.team);
+
       const path = g
         .append("path")
         .datum(teamData.ranks)
         .attr("fill", "none")
-        .attr("stroke", index % 2 === 0 ? "steelblue" : "orange")
+        .attr("stroke", teamInfo.color)
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing (set duration to 5000 ms for slower animation)
+      // Animate the line drawing (e.g., 5000ms for 5 seconds).
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", totalLength + " " + totalLength)
         .attr("stroke-dashoffset", totalLength)
         .transition()
-        .duration(5000)  // Changed duration from 1500 to 5000 ms
+        .duration(5000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Add team label at the end of the line.
+      // Find the last non-null rank index.
       const lastIndex = teamData.ranks
         .map((d, i) => ({ d, i }))
         .filter((item) => item.d !== null)
         .pop()?.i;
       if (lastIndex !== undefined) {
         const lastRank = teamData.ranks[lastIndex];
+        // Append team text label.
         g.append("text")
           .attr("x", xScale(lastIndex + startWeek) + 5) // offset to right
           .attr("y", yScale(lastRank))
           .attr("dy", "0.35em")
           .attr("font-size", "10px")
-          .attr("fill", index % 2 === 0 ? "steelblue" : "orange")
+          .attr("fill", teamInfo.color)
           .text(teamData.team);
+
+        // Append team logo image.
+        g.append("image")
+          .attr("xlink:href", teamInfo.logo)
+          .attr("width", 20)
+          .attr("height", 20)
+          .attr("x", xScale(lastIndex + startWeek) + 5)
+          .attr("y", yScale(lastRank) - 25); // adjust vertical position as needed
       }
     });
   }, [chartData, height, width, weekRange]);
