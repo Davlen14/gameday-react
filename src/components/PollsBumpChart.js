@@ -189,7 +189,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Use d3.timer to update the logo's position along the path while the line is drawing.
+      // Update logo's position along the path for 13 seconds.
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
@@ -199,7 +199,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       });
     });
 
-    // Tooltip logic (unchanged, except for container selection)
+    // Tooltip logic: position tooltip so it never overflows the container.
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     const tooltip = container
       .append("div")
@@ -254,13 +254,25 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
                    </div>`;
         });
 
-        const containerX = event.clientX - rect.left;
-        const containerY = event.clientY - rect.top;
+        // Default tooltip position relative to the container.
+        let left = event.clientX - rect.left + 15;
+        let top = event.clientY - rect.top + 15;
+
+        // Ensure the tooltip does not overflow the container.
+        const tooltipNode = tooltip.node();
+        const ttWidth = tooltipNode.offsetWidth;
+        const ttHeight = tooltipNode.offsetHeight;
+        if (left + ttWidth > rect.width) {
+          left = rect.width - ttWidth - 15;
+        }
+        if (top + ttHeight > rect.height) {
+          top = rect.height - ttHeight - 15;
+        }
 
         tooltip
           .html(html)
-          .style("left", containerX + 15 + "px")
-          .style("top", containerY + 15 + "px")
+          .style("left", left + "px")
+          .style("top", top + "px")
           .transition()
           .duration(200)
           .style("opacity", 1);
