@@ -3,27 +3,34 @@ import "../styles/VisualizeTrends.css";
 import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
 
 const VisualizeTrends = () => {
-  // State to track which modal is open (null means no modal is open)
+  // State to track which modal is open
   const [activeModal, setActiveModal] = useState(null);
 
-  // Handler to open a specific modal
+  // State to store poll filters
+  const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
+  const [selectedPollType, setSelectedPollType] = useState("AP Poll");
+
+  // Handlers for opening/closing modals
   const openModal = (modalType) => {
     setActiveModal(modalType);
   };
-
-  // Handler to close the modal
   const closeModal = () => {
     setActiveModal(null);
+  };
+
+  // Handlers for updating filter selections
+  const handleWeekRangeChange = (e) => {
+    setSelectedWeekRange(e.target.value);
+  };
+  const handlePollTypeChange = (e) => {
+    setSelectedPollType(e.target.value);
   };
 
   return (
     <div className="visualize-container">
       <header className="visualize-header">
         <h1>Visualize Trends</h1>
-        <p>
-          Explore animated trends, polls, player stats, team points, and more
-          over the season.
-        </p>
+        <p>Explore animated trends, polls, player stats, team points, and more over the season.</p>
       </header>
 
       {/* Dashboard Cards: Click to Open Modals */}
@@ -32,36 +39,28 @@ const VisualizeTrends = () => {
           <div className="chart-header">
             <h2>Animated Poll Rankings</h2>
           </div>
-          <div className="chart-placeholder">
-            [Click to Open Modal]
-          </div>
+          <div className="chart-placeholder">[Click to Open Modal]</div>
         </div>
 
         <div className="chart-card" onClick={() => openModal("playerStats")}>
           <div className="chart-header">
             <h2>Player Stats Over Weeks</h2>
           </div>
-          <div className="chart-placeholder">
-            [Click to Open Modal]
-          </div>
+          <div className="chart-placeholder">[Click to Open Modal]</div>
         </div>
 
         <div className="chart-card" onClick={() => openModal("teamPoints")}>
           <div className="chart-header">
             <h2>Team Points Per Game</h2>
           </div>
-          <div className="chart-placeholder">
-            [Click to Open Modal]
-          </div>
+          <div className="chart-placeholder">[Click to Open Modal]</div>
         </div>
 
         <div className="chart-card" onClick={() => openModal("offenseDefense")}>
           <div className="chart-header">
             <h2>Offense vs. Defense Trends</h2>
           </div>
-          <div className="chart-placeholder">
-            [Click to Open Modal]
-          </div>
+          <div className="chart-placeholder">[Click to Open Modal]</div>
         </div>
       </section>
 
@@ -80,7 +79,7 @@ const VisualizeTrends = () => {
                 <div className="modal-filters">
                   <div className="filter-group">
                     <label>Week Range</label>
-                    <select>
+                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                       <option>Week 1 - 5</option>
                       <option>Week 6 - 10</option>
                       <option>Week 11 - 15</option>
@@ -88,7 +87,7 @@ const VisualizeTrends = () => {
                   </div>
                   <div className="filter-group">
                     <label>Poll Type</label>
-                    <select>
+                    <select value={selectedPollType} onChange={handlePollTypeChange}>
                       <option>AP Poll</option>
                       <option>Coaches Poll</option>
                       <option>Playoff Rankings</option>
@@ -96,9 +95,14 @@ const VisualizeTrends = () => {
                   </div>
                 </div>
 
-                {/* Chart Wrapper */}
+                {/* Pass the filter selections to PollsBumpChart */}
                 <div className="chart-wrapper">
-                  <PollsBumpChart width={700} height={450} />
+                  <PollsBumpChart
+                    width={700}
+                    height={450}
+                    pollType={selectedPollType}
+                    weekRange={selectedWeekRange}
+                  />
                 </div>
               </>
             )}
@@ -126,9 +130,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">
-                  [Line Chart Placeholder]
-                </div>
+                <div className="chart-wrapper">[Line Chart Placeholder]</div>
               </>
             )}
 
@@ -146,9 +148,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">
-                  [Bar Chart Placeholder]
-                </div>
+                <div className="chart-wrapper">[Bar Chart Placeholder]</div>
               </>
             )}
 
@@ -174,9 +174,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">
-                  [Dual-Axis Chart Placeholder]
-                </div>
+                <div className="chart-wrapper">[Dual-Axis Chart Placeholder]</div>
               </>
             )}
           </div>
