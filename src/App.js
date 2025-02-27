@@ -33,7 +33,7 @@ import Commitments from "./components/Commitments";
 import TransferPortal from "./components/TransferPortal";
 
 // ------------------------
-// Conference Logos & List
+// Conference Logos, Full Names & Abbreviations
 // ------------------------
 const conferenceLogos = {
   "ACC": "ACC.png",
@@ -60,6 +60,20 @@ const conferenceList = [
   "Mid-American",
   "FBS Independents",
 ];
+
+// Abbreviations for conferences
+const conferenceAbbr = {
+  "SEC": "SEC",
+  "Big Ten": "BT",
+  "ACC": "ACC",
+  "Pac-12": "Pac-12",
+  "Big 12": "B12",
+  "American Athletic": "AA",
+  "Mountain West": "MW",
+  "Conference USA": "C-USA",
+  "Mid-American": "MAC",
+  "FBS Independents": "FBS",
+};
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -103,14 +117,23 @@ function App() {
                           <Link
                             to={`/${conf.toLowerCase().replace(/ /g, "")}`} // e.g., '/sec'
                             key={conf}
-                            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "0.8rem"
+                            }}
                           >
                             <img
                               src={`/photos/${conferenceLogos[conf]}`}
                               alt={conf}
-                              style={{ width: "20px", height: "20px", objectFit: "contain" }}
+                              style={{
+                                width: "30px",
+                                height: "30px",
+                                objectFit: "contain"
+                              }}
                             />
-                            {conf}
+                            {conferenceAbbr[conf] || conf}
                           </Link>
                         ))}
                       </div>
@@ -280,7 +303,10 @@ function App() {
               <Route path="/games/:gameId" element={<GameDetailView />} />
               <Route path="/game/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
-              <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
+              <Route
+                path="/fan-hub"
+                element={<FanHub scoreboardVisible={scoreboardVisible} />}
+              />
 
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
