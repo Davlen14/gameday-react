@@ -50,10 +50,8 @@ const TeamScheduleChart = ({ teamName }) => {
     awayPoints: game.awayPoints || 0,
     homeColor: getTeamData(game.homeTeam).color || "#999999",
     awayColor: getTeamData(game.awayTeam).color || "#888888",
-    homeLogo:
-      getTeamData(game.homeTeam).logos?.[0] || "/photos/default_team.png",
-    awayLogo:
-      getTeamData(game.awayTeam).logos?.[0] || "/photos/default_team.png",
+    homeLogo: getTeamData(game.homeTeam).logos?.[0] || "/photos/default_team.png",
+    awayLogo: getTeamData(game.awayTeam).logos?.[0] || "/photos/default_team.png",
   }));
 
   // Custom label function for home team logos
