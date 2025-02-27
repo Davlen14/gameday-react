@@ -1,10 +1,9 @@
 /* Import Google Fonts: Orbitron and Titillium Web */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200..900&display=swap');
 
-/* =============================== */
-/* TOP BAR (Bright Scarlet) */
-/* =============================== */
-
+/* ===============================
+   TOP BAR (Bright Scarlet + Transparent Buttons)
+=============================== */
 .top-bar {
   background-color: #D4001C; /* Bright scarlet */
   color: #ffffff;
@@ -15,7 +14,7 @@
   top: 0;
   width: 100%;
 
-  /* X CHANGED: Lowered from 1100 to 1000 so modal can appear above */
+  /* Lowered so modals can appear above */
   z-index: 1000;
 
   border-bottom: 1px solid #e0e0e0;
@@ -30,6 +29,7 @@
   width: 100%;
   height: 100%;
   padding: 0 20px;
+  position: relative;
 }
 
 .top-bar-logo {
@@ -59,6 +59,10 @@
   margin-left: auto;
 }
 
+/* ===============================
+   TOP-BAR BUTTONS
+   (Transparent with slight rounding)
+=============================== */
 .top-bar-button {
   display: flex;
   align-items: center;
@@ -67,22 +71,26 @@
   font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 8px 12px;
-  border-radius: 3px;
+  border-radius: 6px; /* Slightly rounded corners */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   font-size: 0.85rem;
-  background-color: #ffffff;
-  color: #D4001C;
-  border: 1px solid #ffffff;
+
+  /* Semi-transparent to blend with the scarlet background */
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
 }
 
 .top-bar-button:hover {
-  background-color: #D4001C;
+  background-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
   box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
 }
 
-/* DROPDOWN */
+/* ===============================
+   DROPDOWN
+=============================== */
 .dropdown {
   position: relative;
 }
@@ -94,30 +102,35 @@
 }
 
 .dropdown-button {
-  background-color: transparent;
-  border: none;
+  /* Same style as .top-bar-button, but for dropdown triggers */
+  background-color: rgba(255, 255, 255, 0.15);
   color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 8px 12px;
-  border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .dropdown-button:hover {
-  background-color: #ffffff;
-  color: #D4001C;
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
 }
 
+/* The dropdown menu itself */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #ffffff;
+  /* Semi-transparent so it blends with the top bar */
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  border-radius: 6px;
   z-index: 2000;
   padding: 6px 0;
   min-width: 160px;
@@ -129,17 +142,18 @@
   display: block;
   padding: 6px 10px;
   text-decoration: none;
-  color: #333333;
+  /* White text on semi-transparent background */
+  color: #ffffff;
   transition: background-color 0.3s ease;
 }
 
 .dropdown-menu a:hover {
-  background-color: #f2f2f2;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* =============================== */
-/* Responsive Adjustments */
-/* =============================== */
+/* ===============================
+   RESPONSIVE ADJUSTMENTS
+=============================== */
 @media (max-width: 768px) {
   .secondary-bar-container {
     flex-wrap: wrap;
@@ -172,12 +186,7 @@
     gap: 5px;
   }
 
-  .top-bar-button {
-    padding: 6px 10px;
-    font-size: 0.75rem;
-  }
-
-  /* Adjust dropdown menu for mobile */
+  .top-bar-button,
   .dropdown-button {
     padding: 6px 10px;
     font-size: 0.75rem;
