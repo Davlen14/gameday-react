@@ -14,7 +14,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return "ap"; // fallback
   };
 
-  // Convert "Week 1 - 5" to actual numeric range or param your API can handle
+  // Convert "Week 1 - 5" to an object with numeric ranges
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -29,13 +29,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   useEffect(() => {
-    // Example: fetch poll data each time user changes pollType or weekRange
     const fetchPollData = async () => {
       try {
         const { startWeek, endWeek } = mapWeekRange(weekRange);
         const apiPollType = mapPollType(pollType);
 
-        // This is a hypothetical service call: adjust to match your actual API
+        // Adjust the API call as per your actual service contract.
         const response = await teamsService.getPollsRange(
           2024, 
           apiPollType, 
@@ -43,14 +42,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           endWeek
         );
 
-        // Transform response data to a format suitable for the bump chart
-        // e.g., [{ team: 'Georgia', ranks: [1,2,1, ...] }, { team: 'Michigan', ... }, ...]
+        // Transform the API data into the bump chart format.
         const transformed = transformPollsToBumpData(response);
         setChartData(transformed);
       } catch (error) {
         console.error("Error fetching poll data:", error);
         setChartData([
-          // fallback sample data
           { team: "Georgia", ranks: [1, 1, 2, 1, 1] },
           { team: "Michigan", ranks: [2, 2, 1, 2, 2] },
         ]);
@@ -60,47 +57,50 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Example transform function, adapt to your actual data structure
+  // Example transform function, adapt to your actual data structure.
   const transformPollsToBumpData = (apiData) => {
-    // Suppose apiData is an array of objects, each with { week, rankings: [...] }
-    // You'd group by team and build the "ranks" array in order
-    // For brevity, here's a mock example:
+    // For this demo, we'll assume the API returns data already in the correct format.
     return apiData;
   };
 
   useEffect(() => {
-    // Clear any previous chart:
     d3.select(chartRef.current).selectAll("*").remove();
 
     if (!chartData || chartData.length === 0) return;
 
-    // Set up margins:
+    const { startWeek, endWeek } = mapWeekRange(weekRange);
+    const totalWeeks = endWeek - startWeek + 1;
+
     const margin = { top: 20, right: 40, bottom: 30, left: 40 },
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
-    // Create the SVG container:
     const svg = d3
       .select(chartRef.current)
       .attr("width", width)
       .attr("height", height)
       .style("background", "#f5f5f5");
 
-    // Append group element:
     const g = svg
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // Suppose each "ranks" array has (endWeek - startWeek + 1) items
-    // X scale domain is # of weeks
-    const totalWeeks = chartData[0].ranks.length;
-    const xScale = d3.scaleLinear().domain([1, totalWeeks]).range([0, innerWidth]);
+    // Set x-axis domain from startWeek to endWeek
+    const xScale = d3
+      .scaleLinear()
+      .domain([startWeek, endWeek])
+      .range([0, innerWidth]);
 
-    // Y scale: rank 1 at top, rank ~25 at bottom
-    const yScale = d3.scaleLinear().domain([25, 1]).range([innerHeight, 0]);
+    // For y-axis, we assume a ranking range of 1 to 25 (or adjust as needed)
+    const yScale = d3
+      .scaleLinear()
+      .domain([25, 1])
+      .range([innerHeight, 0]);
 
-    // Axes
-    const xAxis = d3.axisBottom(xScale).ticks(totalWeeks).tickFormat(d3.format("d"));
+    const xAxis = d3
+      .axisBottom(xScale)
+      .ticks(totalWeeks)
+      .tickFormat(d3.format("d"));
     const yAxis = d3.axisLeft(yScale).ticks(25);
 
     g.append("g")
@@ -109,14 +109,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
     g.append("g").call(yAxis);
 
-    // D3 line generator
+    // Create a line generator using i + startWeek for x values.
     const line = d3
       .line()
-      .x((d, i) => xScale(i + 1))
+      .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw lines
+    // Draw and animate a line for each team
     chartData.forEach((teamData, index) => {
       const path = g
         .append("path")
@@ -126,7 +126,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -136,7 +135,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
     });
-  }, [chartData, height, width]);
+  }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
 };
