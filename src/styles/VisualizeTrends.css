@@ -108,12 +108,12 @@ body {
   align-items: center;
   justify-content: center;
 
-  /* X CHANGED: Over everything except we lowered navbars, so this is fine. */
+  /* Must remain very high to appear above (if desired) */
   z-index: 9999999 !important;
 }
 
 .modal-content {
-  /* Transparent + subtle blur for modern look */
+  /* Transparent + subtle blur for a modern look */
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
 
@@ -127,12 +127,12 @@ body {
   width: 90%;
   max-width: 1100px;
 
-  /* X CHANGED: Increased top margin so it sits below navbars more,
-     plus more bottom margin for extra space. */
-  margin: 150px auto 80px auto; /* top=150, bottom=80 => total vertical=230 */
+  /* X CHANGED: Increased top margin to push it down, and bottom margin for extra space.
+     So total vertical margin = 200 (top) + 100 (bottom) = 300. */
+  margin: 200px auto 100px auto;
 
-  /* Adjust max-height to fit that total margin of 230px */
-  max-height: calc(100vh - 230px);
+  /* X CHANGED: Since total vertical margin is 300, subtract that from 100vh. */
+  max-height: calc(100vh - 300px);
 
   padding: 2rem;
 
