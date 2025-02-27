@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../styles/VisualizeTrends.css";
-import PollsBumpChart from "./PollsBumpChart"; // New component for the D3 chart
+import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
 
 const VisualizeTrends = () => {
   // State to track which modal is open (null means no modal is open)
@@ -81,9 +81,9 @@ const VisualizeTrends = () => {
                   <div className="filter-group">
                     <label>Week Range</label>
                     <select>
-                      <option>Preseason - Week 5</option>
-                      <option>Week 6 - Week 10</option>
-                      <option>Week 11 - Week 15</option>
+                      <option>Week 1 - 5</option>
+                      <option>Week 6 - 10</option>
+                      <option>Week 11 - 15</option>
                     </select>
                   </div>
                   <div className="filter-group">
@@ -95,9 +95,10 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-placeholder modal-chart">
-                  {/* Render the D3 bump chart */}
-                  <PollsBumpChart width={700} height={400} />
+
+                {/* Chart Wrapper */}
+                <div className="chart-wrapper">
+                  <PollsBumpChart width={700} height={450} />
                 </div>
               </>
             )}
@@ -125,7 +126,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-placeholder modal-chart">
+                <div className="chart-wrapper">
                   [Line Chart Placeholder]
                 </div>
               </>
@@ -145,7 +146,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-placeholder modal-chart">
+                <div className="chart-wrapper">
                   [Bar Chart Placeholder]
                 </div>
               </>
@@ -173,7 +174,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                 </div>
-                <div className="chart-placeholder modal-chart">
+                <div className="chart-wrapper">
                   [Dual-Axis Chart Placeholder]
                 </div>
               </>
