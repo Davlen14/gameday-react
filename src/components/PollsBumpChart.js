@@ -120,7 +120,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
-      const svg = d3
+    const svg = d3
       .select(chartRef.current)
       .attr("width", "100%")
       .attr("height", "100%")
@@ -212,7 +212,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("border", "1px solid #ccc")
       .style("border-radius", "4px")
       .style("pointer-events", "none")
-      .style("opacity", 0);
+      .style("opacity", 0)
+      .style("z-index", "10000");
 
     // Overlay rectangle to capture mouse events.
     g.append("rect")
@@ -226,23 +227,41 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Determine the week based on mouse x position.
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
+        const weekIndex = week - startWeek;
 
         // Build tooltip content.
-        let html = `<strong>Week ${week}</strong><br/><br/>`;
+        let html = `<strong style="font-size:0.9rem;">Week ${week}</strong><br/><br/>`;
         chartData.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
-          const rank = teamData.ranks[week - startWeek] || "N/A";
+          const currentRank = teamData.ranks[weekIndex];
+          if (currentRank === null) return; // Skip if not ranked this week
+
+          let diffHTML = "";
+          if (weekIndex > 0) {
+            const prevRank = teamData.ranks[weekIndex - 1];
+            if (prevRank === null) {
+              diffHTML = ` <span style="color:green; font-size:0.8rem;">(newly ranked)</span>`;
+            } else {
+              const change = prevRank - currentRank; // positive if improved
+              if (change > 0) {
+                diffHTML = ` <span style="color:green; font-size:0.8rem;">↑ ${change}</span>`;
+              } else if (change < 0) {
+                diffHTML = ` <span style="color:red; font-size:0.8rem;">↓ ${Math.abs(change)}</span>`;
+              }
+            }
+          }
           html += `<div style="display:flex; align-items:center; margin-bottom:4px;">
                      <img src="${teamInfo.logo}" width="16" height="16" style="margin-right:4px;" />
-                     <span style="margin-right:4px;">${teamData.team}:</span>
-                     <strong>${rank}</strong>
+                     <span style="font-size:0.8rem; margin-right:4px;">${teamData.team}:</span>
+                     <strong style="font-size:0.8rem;">${currentRank}</strong>
+                     ${diffHTML}
                    </div>`;
         });
 
         tooltip
           .html(html)
-          .style("left", (event.pageX + 15) + "px")
-          .style("top", (event.pageY + 15) + "px")
+          .style("left", event.pageX + 15 + "px")
+          .style("top", event.pageY + 15 + "px")
           .transition()
           .duration(200)
           .style("opacity", 1);
@@ -250,7 +269,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .on("mouseout", () => {
         tooltip.transition().duration(200).style("opacity", 0);
       });
-
   }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
