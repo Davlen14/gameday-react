@@ -192,7 +192,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
       // Use d3.timer to update the logo's position along the path while the line is drawing.
       d3.timer((elapsed) => {
-        const t = Math.min(elapsed / 8000, 1);
+        const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
