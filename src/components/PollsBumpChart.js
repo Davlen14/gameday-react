@@ -51,7 +51,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     if (foundTeam) {
       return {
         color: foundTeam.color || "gray",
-        logo: foundTeam.logos && foundTeam.logos[0] ? foundTeam.logos[0] : "/photos/default_team.png",
+        logo:
+          foundTeam.logos && foundTeam.logos[0]
+            ? foundTeam.logos[0]
+            : "/photos/default_team.png",
       };
     }
     return { color: "gray", logo: "/photos/default_team.png" };
@@ -179,23 +182,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Add team label and logo at the end of the line.
+      // Append team logo image at the end of the line.
       const lastIndex = teamData.ranks
         .map((d, i) => ({ d, i }))
         .filter((item) => item.d !== null)
         .pop()?.i;
       if (lastIndex !== undefined) {
         const lastRank = teamData.ranks[lastIndex];
-        // Append team text label.
-        g.append("text")
-          .attr("x", xScale(lastIndex + startWeek) + 5)
-          .attr("y", yScale(lastRank))
-          .attr("dy", "0.35em")
-          .attr("font-size", "10px")
-          .attr("fill", teamInfo.color)
-          .text(teamData.team);
-
-        // Append team logo image.
         g.append("image")
           .attr("xlink:href", teamInfo.logo)
           .attr("width", 20)
