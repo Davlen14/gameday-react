@@ -101,15 +101,13 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
 
-  /* Center the modal horizontally & vertically by default */
+  /* Center the modal horizontally and vertically */
   display: flex;
   align-items: center;
   justify-content: center;
-
   z-index: 999;
-  /* Removed any padding-top so the overlay stays at the top */
 }
 
 .modal-content {
@@ -118,15 +116,14 @@ body {
   padding: 2rem;
   border-radius: 8px;
   width: 90%;
-  max-width: 900px;
+  max-width: 1000px; /* Increased max-width for a wider modal */
   position: relative;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
 
-  /* Push the modal below your fixed navbars by 120px */
-  margin-top: 120px;
-  /* Prevent the bottom from being cut off on small screens */
-  max-height: calc(90vh - 120px);
+  /* Push the modal down further to clear fixed navbars */
+  margin-top: 180px;
+  max-height: calc(90vh - 180px);
 }
 
 .close-button {
@@ -174,21 +171,24 @@ body {
 
 /* Chart Wrapper in Modal */
 .chart-wrapper {
-    margin-top: 1rem;
-    background-color: transparent;
-    border: none;
-    border-radius: 4px;
-    padding: 0.5rem;
-    width: 100%;            /* Ensure the wrapper takes full width */
-    height: 500px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;       /* Prevent overflow issues */
-  }
-  
-  /* Force any SVG inside the wrapper to occupy its full space */
-  .chart-wrapper svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
+  margin-top: 1rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 650px;  /* Increased height for a larger chart area */
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Ensure any SVG inside the wrapper fills the space */
+.chart-wrapper svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
