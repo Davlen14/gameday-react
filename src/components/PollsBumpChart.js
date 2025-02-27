@@ -122,6 +122,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .select(chartRef.current)
       .attr("width", "100%")
       .attr("height", "100%")
+      // The key change: remove "xMidYMid meet" and use "none"
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "none");
 
@@ -150,7 +151,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Define line generator that ignores null values.
+    // Define line generator
     const line = d3
       .line()
       .defined((d) => d !== null)
@@ -158,7 +159,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team.
+    // Draw a line for each team
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
@@ -170,52 +171,29 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing (8 seconds).
+      // Animate line drawing
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
         .attr("stroke-dashoffset", totalLength)
         .transition()
-        .duration(8000)
+        .duration(5000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Final team logo attachment and centering at the end.
-      // Use the final week value if defined, otherwise the last defined point.
-      const finalWeekIndex = teamData.ranks.length - 1;
-      const finalRank =
-        teamData.ranks[finalWeekIndex] !== null
-          ? teamData.ranks[finalWeekIndex]
-          : teamData.ranks.slice().reverse().find((r) => r !== null);
-
-      // Get the last defined index from the data for initial logo position.
-      const lastDefined = teamData.ranks
+      // Final team logo
+      const lastIndex = teamData.ranks
         .map((d, i) => ({ d, i }))
         .filter((item) => item.d !== null)
-        .pop();
-
-      if (lastDefined && finalRank !== undefined) {
-        const initialX = xScale(lastDefined.i + startWeek) - 10;
-        const initialY = yScale(lastDefined.d) - 10;
-        // Force logo to be centered at final week position.
-        const finalX = xScale(endWeek) - 10;
-        const finalY = yScale(finalRank) - 10;
-
-        const logo = g
-          .append("image")
+        .pop()?.i;
+      if (lastIndex !== undefined) {
+        const lastRank = teamData.ranks[lastIndex];
+        g.append("image")
           .attr("xlink:href", teamInfo.logo)
           .attr("width", 20)
           .attr("height", 20)
-          .attr("x", initialX)
-          .attr("y", initialY)
-          .style("opacity", 0);
-
-        logo.transition()
-          .delay(8000) // wait until line animation completes
-          .duration(500)
-          .style("opacity", 1)
-          .attr("x", finalX)
-          .attr("y", finalY);
+          .attr("x", xScale(lastIndex + startWeek) - 10)
+          .attr("y", yScale(lastRank) - 10);
       }
     });
 
