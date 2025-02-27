@@ -7,10 +7,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   const [chartData, setChartData] = useState([]);
   const [teams, setTeams] = useState([]);
 
-  // NEW: State for dropped-out teams
-  const [droppedOutTeams, setDroppedOutTeams] = useState([]);
-
-  // Fetch teams data on mount
+  // Fetch teams data on mount so we can look up team info.
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -23,15 +20,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchTeams();
   }, []);
 
-  // Convert pollType from dropdown to API value
+  // Convert pollType string from dropdown to API value.
   const mapPollType = (type) => {
     if (type === "AP Poll") return "ap";
     if (type === "Coaches Poll") return "coaches";
     if (type === "Playoff Rankings") return "cfp";
-    return "ap";
+    return "ap"; // fallback.
   };
 
-  // Convert weekRange string to numeric start/end weeks
+  // Convert weekRange string to numeric start and end weeks.
+  // Options: "Week 1 - 5", "Week 1 - 10", "Week 1 - 15"
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -45,7 +43,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     }
   };
 
-  // Helper: Look up team info (logo/color)
+  // Helper function to look up team info from the fetched teams data.
   const getTeamInfo = (teamName) => {
     const foundTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -62,21 +60,20 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return { color: "gray", logo: "/photos/default_team.png" };
   };
 
-  // Fetch poll data & transform
   useEffect(() => {
+    // Fetch polls for each week in the selected range and transform data.
     const fetchPollData = async () => {
       try {
         const { startWeek, endWeek } = mapWeekRange(weekRange);
         const apiPollType = mapPollType(pollType);
         const weeks = [];
-
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
-          // Assume pollForWeek[0] is the poll group for that week
+          // Assume pollForWeek[0] is the poll group for that week.
           weeks.push(pollForWeek[0]);
         }
 
-        // Build team-centric data: each team => array of ranks or null
+        // Transform weekly polls into a team-centric format.
         const teamsMap = {};
         weeks.forEach((pollGroup, i) => {
           pollGroup.rankings.forEach((team) => {
@@ -93,40 +90,34 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         }));
 
         setChartData(transformedData);
-
-        // After we have data, compute which teams dropped out
-        const droppedOut = findDroppedOutTeams(transformedData, startWeek);
-        setDroppedOutTeams(droppedOut);
       } catch (error) {
         console.error("Error fetching poll data:", error);
-        // Fallback sample data
-        const fallback = [
+        // Fallback sample data for 5 weeks.
+        setChartData([
           { team: "Georgia", ranks: [1, 1, 2, 1, 1] },
           { team: "Michigan", ranks: [2, 2, 1, 2, 2] },
-        ];
-        setChartData(fallback);
-
-        // Also compute fallback "dropped out"
-        const droppedOut = findDroppedOutTeams(fallback, 1);
-        setDroppedOutTeams(droppedOut);
+        ]);
       }
     };
 
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // D3 chart effect
   useEffect(() => {
+    // Clear previous chart.
     d3.select(chartRef.current).selectAll("*").remove();
+
     if (!chartData || chartData.length === 0) return;
 
     const { startWeek, endWeek } = mapWeekRange(weekRange);
     const totalWeeks = endWeek - startWeek + 1;
 
-    const margin = { top: 40, right: 100, bottom: 40, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    // Margins & inner dimensions
+    const margin = { top: 40, right: 100, bottom: 40, left: 50 },
+      innerWidth = width - margin.left - margin.right,
+      innerHeight = height - margin.top - margin.bottom;
 
+    // Create the responsive SVG
     const svg = d3
       .select(chartRef.current)
       .attr("width", "100%")
@@ -144,7 +135,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([startWeek, endWeek])
       .range([0, innerWidth]);
 
-    // Y scale
+    // Y scale (1 is top, 25 is bottom)
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
@@ -159,7 +150,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // line generator
+    // Define line generator that ignores null values.
     const line = d3
       .line()
       .defined((d) => d !== null)
@@ -167,7 +158,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // For each team, draw line & animate
+    // Draw a line for each team.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
@@ -179,6 +170,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
+      // Animate the line drawing (13 seconds).
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -188,13 +180,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Animate the team logo along the line
+      // Attach the team logo to the line.
+      // The logo will stick to the drawn portion of the line by continuously updating its position.
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
         .attr("width", 20)
-        .attr("height", 20);
+        .attr("height", 20)
+        .style("opacity", 1);
 
+      // Update logo's position along the path for 13 seconds.
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
@@ -204,7 +199,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       });
     });
 
-    // Tooltip
+    // Tooltip logic: position tooltip so it never overflows the container.
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     const tooltip = container
       .append("div")
@@ -259,15 +254,20 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
                    </div>`;
         });
 
-        // Position the tooltip
+        // Default tooltip position relative to the container.
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
-        const ttWidth = tooltip.node().offsetWidth;
-        const ttHeight = tooltip.node().offsetHeight;
 
-        // Adjust to prevent overflow
-        if (left + ttWidth > rect.width) left = rect.width - ttWidth - 15;
-        if (top + ttHeight > rect.height) top = rect.height - ttHeight - 15;
+        // Ensure the tooltip does not overflow the container.
+        const tooltipNode = tooltip.node();
+        const ttWidth = tooltipNode.offsetWidth;
+        const ttHeight = tooltipNode.offsetHeight;
+        if (left + ttWidth > rect.width) {
+          left = rect.width - ttWidth - 15;
+        }
+        if (top + ttHeight > rect.height) {
+          top = rect.height - ttHeight - 15;
+        }
 
         tooltip
           .html(html)
@@ -282,66 +282,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       });
   }, [chartData, height, width, weekRange]);
 
-  // ---------------
-  // RENDER
-  // ---------------
-  return (
-    <div className="chart-container">
-      {/* Left side: the D3 SVG */}
-      <div className="chart-wrapper" style={{ flex: 1 }}>
-        <svg ref={chartRef}></svg>
-      </div>
-
-      {/* Right side: Dropped-Out Teams */}
-      <div className="dropped-out-panel">
-        <h3 style={{ marginBottom: "0.5rem" }}>Dropped Out Teams</h3>
-        {droppedOutTeams.length === 0 ? (
-          <div style={{ fontSize: "0.9rem", fontStyle: "italic" }}>
-            None dropped out
-          </div>
-        ) : (
-          droppedOutTeams.map((item) => (
-            <div
-              key={item.team}
-              style={{ fontSize: "0.9rem", marginBottom: "6px" }}
-            >
-              <strong>{item.team}</strong> <br />
-              Dropped after Week {item.droppedWeek}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
+  return <svg ref={chartRef}></svg>;
 };
-
-/**
- * Determine which teams dropped out, and the week they dropped out.
- * A team is considered "dropped out" if its last non-null rank is NOT in
- * the final index of the array. We'll say they dropped out the next week.
- */
-function findDroppedOutTeams(chartData, startWeek) {
-  const results = [];
-
-  chartData.forEach((teamObj) => {
-    const ranks = teamObj.ranks; // e.g. [1, 2, null, null, ...]
-    // lastNonNullIndex => index of last rank that isn't null
-    let lastNonNullIndex = -1;
-    for (let i = ranks.length - 1; i >= 0; i--) {
-      if (ranks[i] !== null) {
-        lastNonNullIndex = i;
-        break;
-      }
-    }
-    // If lastNonNullIndex < ranks.length - 1 => they dropped out before final week
-    if (lastNonNullIndex !== -1 && lastNonNullIndex < ranks.length - 1) {
-      // They dropped out on the next week => startWeek + lastNonNullIndex + 1
-      const droppedWeek = startWeek + lastNonNullIndex + 1;
-      results.push({ team: teamObj.team, droppedWeek });
-    }
-  });
-
-  return results;
-}
 
 export default PollsBumpChart;
