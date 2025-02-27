@@ -105,7 +105,7 @@ body {
 
   /* Center the modal horizontally and vertically */
   display: flex;
-  align-items: center;
+  align-items: flex-start;  /* If you want it near the top, otherwise center */
   justify-content: center;
   z-index: 999;
 }
@@ -113,20 +113,23 @@ body {
 .modal-content {
   background: var(--primary-color);
   color: var(--text-color);
-  padding: 2rem;
   border-radius: 8px;
-
-  /* Make the modal larger */
-  width: 95%;
-  max-width: 1200px; /* Increased width for a larger modal */
-  
-  /* Push the modal down further to clear fixed navbars */
-  margin-top: 250px;
-  max-height: calc(90vh - 250px);
-  
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
+
+  /* Force the modal to be almost full screen width */
+  width: 98%;
+  max-width: none; /* Remove max-width constraint */
+
+  /* Push the modal down further to clear fixed navbars */
+  margin-top: 250px;
+
+  /* Let it fill most of the vertical space */
+  max-height: calc(100vh - 250px);
+
+  /* Add some padding inside the modal for content spacing */
+  padding: 2rem;
 }
 
 .close-button {
@@ -179,10 +182,10 @@ body {
   border: none;
   border-radius: 4px;
   padding: 0.5rem;
-  
+
   /* Fill the modal's width */
   width: 100%;
-  height: 750px;  /* Increased height for a larger chart area */
+  height: 800px;  /* Increase chart height for a bigger display */
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
