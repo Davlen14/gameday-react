@@ -2,35 +2,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200..900&display=swap');
 
 /* =============================== */
-/* TOP BAR (Modern Glassy Gradient)
+/* TOP BAR (Bright Scarlet) */
 /* =============================== */
 
 .top-bar {
-  /* Instead of a solid scarlet, use a semi-transparent gradient + blur for a glassy effect */
-  background: linear-gradient(
-    135deg,
-    rgba(212, 0, 28, 0.8) 0%,
-    rgba(150, 0, 20, 0.8) 100%
-  );
-  backdrop-filter: blur(8px);
+  background-color: #D4001C; /* Bright scarlet */
   color: #ffffff;
-  height: 60px; /* Slightly taller for a modern feel */
+  height: 50px;
   display: flex;
   align-items: center;
   position: sticky;
   top: 0;
   width: 100%;
 
-  /* Lowered from 1100 so your modal can appear above it */
+  /* X CHANGED: Lowered from 1100 to 1000 so modal can appear above */
   z-index: 1000;
 
-  /* Soft border at the bottom */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-
-  /* Add a subtle box-shadow for depth */
-  box-shadow: 0 2px 10px rgba(212, 0, 28, 0.2);
 }
 
 .top-bar-container {
@@ -40,20 +30,18 @@
   width: 100%;
   height: 100%;
   padding: 0 20px;
-  position: relative; /* For the absolute-positioned logo */
 }
 
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900;
-  font-size: 1.4rem; /* Slightly larger for emphasis */
+  font-size: 22px;
   font-style: italic;
   color: #ffffff;
   position: absolute;
   left: 10px;
   padding-right: 20px;
-  /* A translucent border to match the glass effect */
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid #ffffff;
 }
 
 .top-bar-nav {
@@ -71,39 +59,30 @@
   margin-left: auto;
 }
 
-/* =============================== */
-/* Modernized Buttons
-/* =============================== */
-
 .top-bar-button {
   display: flex;
   align-items: center;
   gap: 5px;
   text-decoration: none;
-  font-weight: 400;
+  font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  padding: 8px 14px;
-  border-radius: 20px; /* Pill-shaped for a modern style */
+  padding: 8px 12px;
+  border-radius: 3px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   font-size: 0.85rem;
-
-  /* Semi-transparent white background + subtle border for glass effect */
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #D4001C;
+  border: 1px solid #ffffff;
   cursor: pointer;
 }
 
 .top-bar-button:hover {
-  /* On hover, slightly brighten the background */
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: #D4001C;
+  color: #ffffff;
   box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
 }
 
-/* =============================== */
-/* DROPDOWN (Glassy Modern Style)
-/* =============================== */
-
+/* DROPDOWN */
 .dropdown {
   position: relative;
 }
@@ -119,32 +98,26 @@
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 400;
+  font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  padding: 8px 14px;
-  border-radius: 20px;
+  padding: 8px 12px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* Glassy style: semi-transparent */
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .dropdown-button:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.3);
+  background-color: #ffffff;
+  color: #D4001C;
 }
 
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  /* Glass-like background for the dropdown as well */
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
+  background-color: #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 3px;
   z-index: 2000;
   padding: 6px 0;
   min-width: 160px;
@@ -154,16 +127,14 @@
 
 .dropdown-menu a {
   display: block;
-  padding: 8px 14px;
+  padding: 6px 10px;
   text-decoration: none;
   color: #333333;
   transition: background-color 0.3s ease;
-  font-family: 'Titillium Web', sans-serif;
-  border-radius: 4px;
 }
 
 .dropdown-menu a:hover {
-  background-color: rgba(212, 0, 28, 0.15);
+  background-color: #f2f2f2;
 }
 
 /* =============================== */
@@ -186,10 +157,10 @@
   }
 
   .top-bar-logo {
-    font-size: 1rem;
+    font-size: 18px;
     left: 5px;
     padding-right: 10px;
-    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    border-right: 1px solid #ffffff;
   }
 
   .top-bar-nav {
@@ -201,7 +172,12 @@
     gap: 5px;
   }
 
-  .top-bar-button,
+  .top-bar-button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Adjust dropdown menu for mobile */
   .dropdown-button {
     padding: 6px 10px;
     font-size: 0.75rem;
