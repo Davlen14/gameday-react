@@ -102,41 +102,37 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-
-  /* Overlap everything except navbars (lower z-index than navbars) */
+  
+  /* Push content down by aligning at the bottom */
   display: flex;
-  align-items: flex-start; /* Start near top */
+  align-items: flex-end;
   justify-content: center;
 
-  /* X CHANGED: lowered overlay so navbars remain on top */
-  z-index: 800 !important; /* e.g., navbars at 1100, overlay at 800 */
+  /* Lower z-index so that navbars (if any) remain above */
+  z-index: 800 !important;
 }
 
 .modal-content {
   /* Modern translucent background + subtle blur */
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
-
   color: var(--text-color);
   border-radius: 8px;
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
 
-  /* Fill most of screen width, but not all */
+  /* Fill most of the screen width, but not all */
   width: 90%;
   max-width: 1100px;
 
-  /* X CHANGED: increased top margin & bottom margin to push modal down 
-     below navbars & add space at bottom */
-  margin: 150px auto 70px auto; 
-  /* total vertical margin = 220px => reduce max-height accordingly */
-
-  max-height: calc(100vh - 220px);
-
+  /* Push modal content almost to the bottom.
+     Leaving only about 1-2% margin at the top and bottom */
+  margin: 2% auto;
+  max-height: calc(100vh - 4%);
   padding: 2rem;
 
-  /* Center everything inside */
+  /* Center content */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -194,7 +190,7 @@ body {
   border: none;
   border-radius: 4px;
   padding: 0.5rem;
-
+  
   width: 100%;
   height: 650px;
   box-sizing: border-box;
