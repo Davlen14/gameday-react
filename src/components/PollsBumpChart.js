@@ -115,15 +115,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const { startWeek, endWeek } = mapWeekRange(weekRange);
     const totalWeeks = endWeek - startWeek + 1;
 
-    const margin = { top: 20, right: 80, bottom: 30, left: 40 },
+    // Increase right margin to give space for logos.
+    const margin = { top: 20, right: 100, bottom: 30, left: 40 },
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
     const svg = d3
       .select(chartRef.current)
       .attr("width", width)
-      .attr("height", height)
-      .style("background", "#f5f5f5");
+      .attr("height", height);
+      // Removed explicit background styling to let the modal's CSS apply
 
     const g = svg
       .append("g")
@@ -189,12 +190,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .pop()?.i;
       if (lastIndex !== undefined) {
         const lastRank = teamData.ranks[lastIndex];
+        // Center the logo: subtract half of logo width/height (assume 20px).
         g.append("image")
           .attr("xlink:href", teamInfo.logo)
           .attr("width", 20)
           .attr("height", 20)
-          .attr("x", xScale(lastIndex + startWeek) + 5)
-          .attr("y", yScale(lastRank) - 25);
+          .attr("x", xScale(lastIndex + startWeek) - 10)
+          .attr("y", yScale(lastRank) - 10);
       }
     });
   }, [chartData, height, width, weekRange]);
