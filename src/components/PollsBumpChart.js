@@ -139,18 +139,17 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing.
+      // Animate the line drawing (set duration to 5000 ms for slower animation)
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", totalLength + " " + totalLength)
         .attr("stroke-dashoffset", totalLength)
         .transition()
-        .duration(1500)
+        .duration(5000)  // Changed duration from 1500 to 5000 ms
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
       // Add team label at the end of the line.
-      // Find last non-null rank index.
       const lastIndex = teamData.ranks
         .map((d, i) => ({ d, i }))
         .filter((item) => item.d !== null)
