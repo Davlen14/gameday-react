@@ -127,11 +127,11 @@ body {
 
   /* X CHANGED: increased top margin from 20px to 100px, 
      and bottom margin from 20px to 50px, to push modal down more. */
-  margin: 100px auto 50px auto;
+  margin: 150px auto 50px auto;
 
   /* X CHANGED: increased total vertical margin from 40px to 150px,
      so we must reduce max-height accordingly. */
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 250px);
 
   padding: 2rem;
 
