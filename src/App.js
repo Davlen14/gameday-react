@@ -22,6 +22,9 @@ import ArbitrageEV from "./components/ArbitrageEV";
 // NEW: Import CoachOverview Component
 import CoachOverview from "./components/CoachOverview";
 
+// NEW: Import VisualizeTrends Component (for Visualize Trends route)
+import VisualizeTrends from "./components/VisualizeTrends";
+
 // Conference Components
 import SEC from "./conferences/SEC";
 import BigTen from "./conferences/BigTen";
@@ -213,6 +216,7 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/team-metrics">Team Analytics</Link>
                         <Link to="/player-metrics">Player Stats</Link>
+                        {/* NEW: Added Visualize Trends link */}
                         <Link to="/betting-models">Visualize Trends</Link>
                       </div>
                     )}
@@ -346,6 +350,9 @@ function App() {
               <Route path="/conferenceusa" element={<ConferenceUSA />} />
               <Route path="/mid-american" element={<MidAmerican />} />
               <Route path="/fbsindependents" element={<FBSIndependents />} />
+
+              {/* NEW: Visualize Trends Route */}
+              <Route path="/betting-models" element={<VisualizeTrends />} />
             </Routes>
           </main>
         </div>
