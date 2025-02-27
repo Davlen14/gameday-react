@@ -107,7 +107,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+
+  /* Ensure it's above any navbars */
+  z-index: 9999999; 
 }
 
 .modal-content {
@@ -126,8 +128,8 @@ body {
   max-width: 1100px;
 
   /* Adjust top/bottom margins so it's not too high or too low */
-  margin: 150px auto 50px auto; /* top: 150px, bottom: 50px */
-  max-height: calc(100vh - 200px);
+  margin: 50px auto;
+  max-height: calc(100vh - 100px);
 
   padding: 2rem;
 
@@ -192,7 +194,7 @@ body {
 
   /* Let the chart fill the wrapper without negative margins */
   width: 100%;
-  height: 650px; /* Slightly smaller than 800px for a cleaner look */
+  height: 650px; /* A comfortable height for your chart */
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
