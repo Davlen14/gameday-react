@@ -64,15 +64,15 @@ const conferenceList = [
 // Abbreviations for conferences
 const conferenceAbbr = {
   "SEC": "SEC",
-  "Big Ten": "BT",
+  "Big Ten": "B1G",
   "ACC": "ACC",
   "Pac-12": "Pac-12",
   "Big 12": "B12",
-  "American Athletic": "AA",
-  "Mountain West": "MW",
+  "American Athletic Conference": "AAC",
+  "Mountain West": "MWC",
   "Conference USA": "C-USA",
   "Mid-American": "MAC",
-  "FBS Independents": "FBS",
+  "FBS Independents": "FBS Independents",
 };
 
 function App() {
