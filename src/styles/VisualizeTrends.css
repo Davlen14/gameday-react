@@ -103,10 +103,10 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
 
-  /* Center the modal horizontally and vertically */
+  /* Align near the top-left instead of center */
   display: flex;
-  align-items: flex-start;  /* If you want it near the top, otherwise center */
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   z-index: 999;
 }
 
@@ -118,17 +118,17 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
 
-  /* Force the modal to be almost full screen width */
-  width: 98%;
-  max-width: none; /* Remove max-width constraint */
+  /* Fill most of the screen horizontally */
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
 
-  /* Push the modal down further to clear fixed navbars */
+  /* Push the modal down to clear fixed navbars */
   margin-top: 250px;
-
-  /* Let it fill most of the vertical space */
   max-height: calc(100vh - 250px);
 
-  /* Add some padding inside the modal for content spacing */
+  /* Padding inside the modal for content spacing */
   padding: 2rem;
 }
 
@@ -185,7 +185,7 @@ body {
 
   /* Fill the modal's width */
   width: 100%;
-  height: 800px;  /* Increase chart height for a bigger display */
+  height: 800px; /* Increase chart height for a bigger display */
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
