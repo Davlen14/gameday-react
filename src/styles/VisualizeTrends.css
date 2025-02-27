@@ -93,6 +93,33 @@ body {
 }
 
 /* ===============================
+   DROPPED-OUT TEAMS CARD
+=============================== */
+.dropped-out-teams {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.dropped-out-teams h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.dropped-out-teams ul {
+  list-style-type: disc;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.dropped-out-teams li {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ===============================
    MODAL STYLES
 =============================== */
 .modal-overlay {
@@ -102,40 +129,25 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-
-  /* Center the modal horizontally & vertically */
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* Must remain very high to appear above (if desired) */
   z-index: 9999999 !important;
 }
 
 .modal-content {
-  /* Transparent + subtle blur for a modern look */
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
-
   color: var(--text-color);
   border-radius: 8px;
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
-
-  /* Good width for the modal */
   width: 90%;
   max-width: 1100px;
-
-  /* X CHANGED: Increased top margin to push it down, and bottom margin for extra space.
-     So total vertical margin = 200 (top) + 100 (bottom) = 300. */
   margin: 200px auto 50px auto;
-  /* X CHANGED: Since total vertical margin is 300, subtract that from 100vh. */
   max-height: calc(100vh - 250px);
-
   padding: 2rem;
-
-  /* Center internal content */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -193,7 +205,6 @@ body {
   border: none;
   border-radius: 4px;
   padding: 0.5rem;
-
   width: 100%;
   height: 650px;
   box-sizing: border-box;
@@ -201,7 +212,6 @@ body {
   overflow: hidden;
 }
 
-/* Ensure any SVG inside the wrapper fills the space */
 .chart-wrapper svg {
   display: block;
   width: 100%;
