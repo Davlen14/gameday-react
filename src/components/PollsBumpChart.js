@@ -6,7 +6,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   const chartRef = useRef();
   const [chartData, setChartData] = useState([]);
 
-  // Convert pollType string from dropdown to the one your API expects
+  // Convert pollType string from dropdown to API value
   const mapPollType = (type) => {
     if (type === "AP Poll") return "ap";
     if (type === "Coaches Poll") return "coaches";
@@ -14,7 +14,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return "ap"; // fallback
   };
 
-  // Convert "Week 1 - 5" to an object with numeric ranges
+  // Convert weekRange string to numeric start and end weeks
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -29,24 +29,43 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   useEffect(() => {
+    // Fetch polls for each week in the selected range and transform data.
     const fetchPollData = async () => {
       try {
         const { startWeek, endWeek } = mapWeekRange(weekRange);
         const apiPollType = mapPollType(pollType);
+        const weeks = [];
+        for (let w = startWeek; w <= endWeek; w++) {
+          // Fetch poll data for week w; using regular season.
+          const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
+          // Assume pollForWeek[0] is the poll group for that week.
+          weeks.push(pollForWeek[0]);
+        }
 
-        // Adjust the API call as per your actual service contract.
-        const response = await teamsService.getPollsRange(
-          2024, 
-          apiPollType, 
-          startWeek, 
-          endWeek
-        );
+        // Transform weekly polls into a team-centric format:
+        // Create a mapping from team name to an array of ranks (one per week)
+        const teamsMap = {};
+        weeks.forEach((pollGroup, i) => {
+          // For each week, iterate over rankings.
+          pollGroup.rankings.forEach((team) => {
+            if (!teamsMap[team.school]) {
+              // Initialize an array of length equal to the number of weeks, filled with null.
+              teamsMap[team.school] = new Array(weeks.length).fill(null);
+            }
+            teamsMap[team.school][i] = team.rank;
+          });
+        });
 
-        // Transform the API data into the bump chart format.
-        const transformed = transformPollsToBumpData(response);
-        setChartData(transformed);
+        // Convert the mapping into an array.
+        const transformedData = Object.keys(teamsMap).map((teamName) => ({
+          team: teamName,
+          ranks: teamsMap[teamName],
+        }));
+
+        setChartData(transformedData);
       } catch (error) {
         console.error("Error fetching poll data:", error);
+        // Fallback sample data (for 5 weeks)
         setChartData([
           { team: "Georgia", ranks: [1, 1, 2, 1, 1] },
           { team: "Michigan", ranks: [2, 2, 1, 2, 2] },
@@ -57,13 +76,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Example transform function, adapt to your actual data structure.
-  const transformPollsToBumpData = (apiData) => {
-    // For this demo, we'll assume the API returns data already in the correct format.
-    return apiData;
-  };
-
   useEffect(() => {
+    // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
 
     if (!chartData || chartData.length === 0) return;
@@ -85,13 +99,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // Set x-axis domain from startWeek to endWeek
+    // X scale: domain is from startWeek to endWeek
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, endWeek])
       .range([0, innerWidth]);
 
-    // For y-axis, we assume a ranking range of 1 to 25 (or adjust as needed)
+    // Y scale: Assume ranking goes from 1 to 25 (1 is best)
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
@@ -106,17 +120,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     g.append("g")
       .attr("transform", `translate(0, ${innerHeight})`)
       .call(xAxis);
-
     g.append("g").call(yAxis);
 
-    // Create a line generator using i + startWeek for x values.
+    // Create a line generator; note that index i corresponds to week (startWeek + i)
     const line = d3
       .line()
       .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw and animate a line for each team
+    // Draw a line for each team
     chartData.forEach((teamData, index) => {
       const path = g
         .append("path")
