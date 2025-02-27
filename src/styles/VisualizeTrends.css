@@ -129,9 +129,9 @@ body {
 
   /* X CHANGED: Increased top margin to push it down, and bottom margin for extra space.
      So total vertical margin = 200 (top) + 100 (bottom) = 300. */
-  margin: 250px auto 50px auto;
+  margin: 200px auto 50px auto;
   /* X CHANGED: Since total vertical margin is 300, subtract that from 100vh. */
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 250px);
 
   padding: 2rem;
 
