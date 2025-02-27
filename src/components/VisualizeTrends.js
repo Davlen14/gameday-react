@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import "../styles/VisualizeTrends.css";
-import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
+import PollsBumpChart from "./PollsBumpChart";
 
 const VisualizeTrends = () => {
-  // State to track which modal is open
   const [activeModal, setActiveModal] = useState(null);
-
-  // State to store poll filters
   const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
   const [selectedPollType, setSelectedPollType] = useState("AP Poll");
 
-  // Handlers for opening/closing modals
   const openModal = (modalType) => {
     setActiveModal(modalType);
   };
@@ -18,7 +14,6 @@ const VisualizeTrends = () => {
     setActiveModal(null);
   };
 
-  // Handlers for updating filter selections
   const handleWeekRangeChange = (e) => {
     setSelectedWeekRange(e.target.value);
   };
@@ -31,12 +26,11 @@ const VisualizeTrends = () => {
       <header className="visualize-header">
         <h1>Visualize Trends</h1>
         <p>
-          Explore animated trends, polls, player stats, team points, and more over
-          the season.
+          Explore animated trends, polls, player stats, team points, and more over the
+          season.
         </p>
       </header>
 
-      {/* Dashboard Cards: Click to Open Modals */}
       <section className="visualize-dashboard">
         <div className="chart-card" onClick={() => openModal("pollRankings")}>
           <div className="chart-header">
@@ -67,7 +61,6 @@ const VisualizeTrends = () => {
         </div>
       </section>
 
-      {/* Modal Overlay (only visible if a modal is active) */}
       {activeModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -75,17 +68,13 @@ const VisualizeTrends = () => {
               &times;
             </button>
 
-            {/* 1. Poll Rankings Modal */}
             {activeModal === "pollRankings" && (
               <>
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
                     <label>Week Range</label>
-                    <select
-                      value={selectedWeekRange}
-                      onChange={handleWeekRangeChange}
-                    >
+                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                       <option value="Week 1 - 5">Week 1 - 5</option>
                       <option value="Week 1 - 10">Week 1 - 10</option>
                       <option value="Week 1 - 15">Week 1 - 15</option>
@@ -93,18 +82,13 @@ const VisualizeTrends = () => {
                   </div>
                   <div className="filter-group">
                     <label>Poll Type</label>
-                    <select
-                      value={selectedPollType}
-                      onChange={handlePollTypeChange}
-                    >
+                    <select value={selectedPollType} onChange={handlePollTypeChange}>
                       <option value="AP Poll">AP Poll</option>
                       <option value="Coaches Poll">Coaches Poll</option>
                       <option value="Playoff Rankings">Playoff Rankings</option>
                     </select>
                   </div>
                 </div>
-
-                {/* Pass the filter selections to PollsBumpChart */}
                 <div className="chart-wrapper">
                   <PollsBumpChart
                     width={700}
@@ -116,7 +100,6 @@ const VisualizeTrends = () => {
               </>
             )}
 
-            {/* 2. Player Stats Modal */}
             {activeModal === "playerStats" && (
               <>
                 <h2>Player Stats Over Weeks</h2>
@@ -143,7 +126,6 @@ const VisualizeTrends = () => {
               </>
             )}
 
-            {/* 3. Team Points Modal */}
             {activeModal === "teamPoints" && (
               <>
                 <h2>Team Points Per Game</h2>
@@ -161,7 +143,6 @@ const VisualizeTrends = () => {
               </>
             )}
 
-            {/* 4. Offense vs. Defense Modal */}
             {activeModal === "offenseDefense" && (
               <>
                 <h2>Offense vs. Defense Trends</h2>
