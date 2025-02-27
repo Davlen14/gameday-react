@@ -103,11 +103,13 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
 
-  /* Overlap everything, including navbars */
+  /* Overlap everything except navbars (lower z-index than navbars) */
   display: flex;
   align-items: flex-start; /* Start near top */
   justify-content: center;
-  z-index: 9999999;
+
+  /* X CHANGED: lowered overlay so navbars remain on top */
+  z-index: 800 !important; /* e.g., navbars at 1100, overlay at 800 */
 }
 
 .modal-content {
@@ -125,13 +127,12 @@ body {
   width: 90%;
   max-width: 1100px;
 
-  /* X CHANGED: increased top margin from 20px to 100px, 
-     and bottom margin from 20px to 50px, to push modal down more. */
-  margin: 150px auto 50px auto;
+  /* X CHANGED: increased top margin & bottom margin to push modal down 
+     below navbars & add space at bottom */
+  margin: 150px auto 70px auto; 
+  /* total vertical margin = 220px => reduce max-height accordingly */
 
-  /* X CHANGED: increased total vertical margin from 40px to 150px,
-     so we must reduce max-height accordingly. */
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 220px);
 
   padding: 2rem;
 
