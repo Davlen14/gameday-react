@@ -122,7 +122,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .select(chartRef.current)
       .attr("width", "100%")
       .attr("height", "100%")
-      // The key change: remove "xMidYMid meet" and use "none"
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "none");
 
@@ -151,7 +150,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Define line generator
+    // Define line generator that ignores null values.
     const line = d3
       .line()
       .defined((d) => d !== null)
@@ -159,7 +158,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team
+    // Draw a line for each team.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
@@ -171,30 +170,34 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate line drawing
+      // Animate the line drawing (8 seconds).
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
         .attr("stroke-dashoffset", totalLength)
         .transition()
-        .duration(5000)
+        .duration(8000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Final team logo
-      const lastIndex = teamData.ranks
-        .map((d, i) => ({ d, i }))
-        .filter((item) => item.d !== null)
-        .pop()?.i;
-      if (lastIndex !== undefined) {
-        const lastRank = teamData.ranks[lastIndex];
-        g.append("image")
-          .attr("xlink:href", teamInfo.logo)
-          .attr("width", 20)
-          .attr("height", 20)
-          .attr("x", xScale(lastIndex + startWeek) - 10)
-          .attr("y", yScale(lastRank) - 10);
-      }
+      // Attach the team logo to the line.
+      // The logo will "stick" to the drawn portion of the line by updating its position
+      // as the line is being drawn.
+      const logo = g
+        .append("image")
+        .attr("xlink:href", teamInfo.logo)
+        .attr("width", 20)
+        .attr("height", 20)
+        .style("opacity", 1);
+
+      // Use d3.timer to update the logo's position along the path while the line is drawing.
+      d3.timer((elapsed) => {
+        const t = Math.min(elapsed / 8000, 1);
+        const currentLength = totalLength * t;
+        const point = path.node().getPointAtLength(currentLength);
+        logo.attr("x", point.x - 10).attr("y", point.y - 10);
+        return t === 1; // Stop the timer when t reaches 1.
+      });
     });
 
     // Tooltip logic (unchanged, except for container selection)
