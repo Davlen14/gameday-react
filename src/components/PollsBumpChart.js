@@ -2,27 +2,30 @@ import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import teamsService from "../services/teamsService";
 
-// Helper function to return team info.
-// You can modify this mapping or replace it with a dynamic fetch from your teams service.
-const getTeamInfo = (teamName) => {
-  const mapping = {
-    "Georgia": { color: "#A00000", logo: "/photos/Georgia.png" },
-    "Michigan": { color: "#00274C", logo: "/photos/Michigan.png" },
-    // Add additional teams as needed.
-  };
-  return mapping[teamName] || { color: "gray", logo: "/photos/default_team.png" };
-};
-
 const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   const chartRef = useRef();
   const [chartData, setChartData] = useState([]);
+  const [teams, setTeams] = useState([]);
 
-  // Convert pollType string from dropdown to API value
+  // Fetch teams data on mount so we can look up team info.
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams();
+        setTeams(teamsData);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      }
+    };
+    fetchTeams();
+  }, []);
+
+  // Convert pollType string from dropdown to API value.
   const mapPollType = (type) => {
     if (type === "AP Poll") return "ap";
     if (type === "Coaches Poll") return "coaches";
     if (type === "Playoff Rankings") return "cfp";
-    return "ap"; // fallback
+    return "ap"; // fallback.
   };
 
   // Convert weekRange string to numeric start and end weeks.
@@ -38,6 +41,20 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       default:
         return { startWeek: 1, endWeek: 5 };
     }
+  };
+
+  // Helper function to look up team info from the fetched teams data.
+  const getTeamInfo = (teamName) => {
+    const foundTeam = teams.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    if (foundTeam) {
+      return {
+        color: foundTeam.color || "gray",
+        logo: foundTeam.logos && foundTeam.logos[0] ? foundTeam.logos[0] : "/photos/default_team.png",
+      };
+    }
+    return { color: "gray", logo: "/photos/default_team.png" };
   };
 
   useEffect(() => {
@@ -87,7 +104,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   }, [pollType, weekRange]);
 
   useEffect(() => {
-    // Clear previous chart
+    // Clear previous chart.
     d3.select(chartRef.current).selectAll("*").remove();
 
     if (!chartData || chartData.length === 0) return;
@@ -142,7 +159,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
     // Draw a line for each team.
     chartData.forEach((teamData) => {
-      // Get team info for color and logo.
       const teamInfo = getTeamInfo(teamData.team);
 
       const path = g
@@ -153,7 +169,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing (e.g., 5000ms for 5 seconds).
+      // Animate the line drawing (5 seconds).
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -163,7 +179,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Find the last non-null rank index.
+      // Add team label and logo at the end of the line.
       const lastIndex = teamData.ranks
         .map((d, i) => ({ d, i }))
         .filter((item) => item.d !== null)
@@ -172,7 +188,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const lastRank = teamData.ranks[lastIndex];
         // Append team text label.
         g.append("text")
-          .attr("x", xScale(lastIndex + startWeek) + 5) // offset to right
+          .attr("x", xScale(lastIndex + startWeek) + 5)
           .attr("y", yScale(lastRank))
           .attr("dy", "0.35em")
           .attr("font-size", "10px")
@@ -185,7 +201,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           .attr("width", 20)
           .attr("height", 20)
           .attr("x", xScale(lastIndex + startWeek) + 5)
-          .attr("y", yScale(lastRank) - 25); // adjust vertical position as needed
+          .attr("y", yScale(lastRank) - 25);
       }
     });
   }, [chartData, height, width, weekRange]);
