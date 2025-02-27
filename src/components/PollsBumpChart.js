@@ -14,15 +14,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return "ap"; // fallback
   };
 
-  // Convert weekRange string to numeric start and end weeks
+  // Convert weekRange string to numeric start and end weeks.
+  // Options: "Week 1 - 5", "Week 1 - 10", "Week 1 - 15"
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
         return { startWeek: 1, endWeek: 5 };
-      case "Week 6 - 10":
-        return { startWeek: 6, endWeek: 10 };
-      case "Week 11 - 15":
-        return { startWeek: 11, endWeek: 15 };
+      case "Week 1 - 10":
+        return { startWeek: 1, endWeek: 10 };
+      case "Week 1 - 15":
+        return { startWeek: 1, endWeek: 15 };
       default:
         return { startWeek: 1, endWeek: 5 };
     }
@@ -36,27 +37,25 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const apiPollType = mapPollType(pollType);
         const weeks = [];
         for (let w = startWeek; w <= endWeek; w++) {
-          // Fetch poll data for week w; using regular season.
+          // Fetch poll data for week w (regular season).
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           // Assume pollForWeek[0] is the poll group for that week.
           weeks.push(pollForWeek[0]);
         }
 
-        // Transform weekly polls into a team-centric format:
-        // Create a mapping from team name to an array of ranks (one per week)
+        // Transform weekly polls into a team-centric format.
         const teamsMap = {};
         weeks.forEach((pollGroup, i) => {
           // For each week, iterate over rankings.
           pollGroup.rankings.forEach((team) => {
             if (!teamsMap[team.school]) {
-              // Initialize an array of length equal to the number of weeks, filled with null.
+              // Initialize an array of length equal to number of weeks with null.
               teamsMap[team.school] = new Array(weeks.length).fill(null);
             }
             teamsMap[team.school][i] = team.rank;
           });
         });
 
-        // Convert the mapping into an array.
         const transformedData = Object.keys(teamsMap).map((teamName) => ({
           team: teamName,
           ranks: teamsMap[teamName],
@@ -65,7 +64,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         setChartData(transformedData);
       } catch (error) {
         console.error("Error fetching poll data:", error);
-        // Fallback sample data (for 5 weeks)
+        // Fallback sample data for 5 weeks.
         setChartData([
           { team: "Georgia", ranks: [1, 1, 2, 1, 1] },
           { team: "Michigan", ranks: [2, 2, 1, 2, 2] },
@@ -85,7 +84,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const { startWeek, endWeek } = mapWeekRange(weekRange);
     const totalWeeks = endWeek - startWeek + 1;
 
-    const margin = { top: 20, right: 40, bottom: 30, left: 40 },
+    const margin = { top: 20, right: 80, bottom: 30, left: 40 },
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
@@ -99,13 +98,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale: domain is from startWeek to endWeek
+    // X scale: domain from startWeek to endWeek.
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, endWeek])
       .range([0, innerWidth]);
 
-    // Y scale: Assume ranking goes from 1 to 25 (1 is best)
+    // Y scale: ranking from 1 (best) to 25.
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
@@ -122,14 +121,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Create a line generator; note that index i corresponds to week (startWeek + i)
+    // Define line generator that ignores null values.
     const line = d3
       .line()
+      .defined((d) => d !== null)
       .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team
+    // Draw a line for each team.
     chartData.forEach((teamData, index) => {
       const path = g
         .append("path")
@@ -139,6 +139,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
+      // Animate the line drawing.
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -147,6 +148,23 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .duration(1500)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
+
+      // Add team label at the end of the line.
+      // Find last non-null rank index.
+      const lastIndex = teamData.ranks
+        .map((d, i) => ({ d, i }))
+        .filter((item) => item.d !== null)
+        .pop()?.i;
+      if (lastIndex !== undefined) {
+        const lastRank = teamData.ranks[lastIndex];
+        g.append("text")
+          .attr("x", xScale(lastIndex + startWeek) + 5) // offset to right
+          .attr("y", yScale(lastRank))
+          .attr("dy", "0.35em")
+          .attr("font-size", "10px")
+          .attr("fill", index % 2 === 0 ? "steelblue" : "orange")
+          .text(teamData.team);
+      }
     });
   }, [chartData, height, width, weekRange]);
 
