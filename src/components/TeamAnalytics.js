@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // 🔥 Import navigation
 import teamsService from "../services/teamsService";
-import TeamScheduleChart from "./TeamScheduleChart";
+// Removed TeamScheduleChart import for now
 import "../styles/TeamAnalytics.css";
 
 const TeamAnalytics = () => {
@@ -35,10 +35,7 @@ const TeamAnalytics = () => {
       const teamData = teams.find((team) => team.id === parseInt(teamId));
       setSelectedTeam(teamData);
 
-      const scheduleData = await teamsService.getTeamSchedule(
-        teamData.school,
-        2024
-      );
+      const scheduleData = await teamsService.getTeamSchedule(teamData.school, 2024);
       setSchedule(scheduleData);
     } catch (err) {
       setError("Failed to load schedule.");
@@ -130,8 +127,7 @@ const TeamAnalytics = () => {
             </ul>
           </div>
 
-          {/* The Bar Chart */}
-          <TeamScheduleChart teamName={selectedTeam.school} />
+          {/* Removed the TeamScheduleChart component for now */}
         </>
       )}
     </div>
