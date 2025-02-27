@@ -22,6 +22,18 @@ import ArbitrageEV from "./components/ArbitrageEV";
 // NEW: Import CoachOverview Component
 import CoachOverview from "./components/CoachOverview";
 
+// Conference Components
+import SEC from "./conferences/SEC";
+import BigTen from "./conferences/BigTen";
+import ACC from "./conferences/ACC";
+import Pac12 from "./conferences/Pac12";
+import Big12 from "./conferences/Big12";
+import AmericanAthletic from "./conferences/AmericanAthletic";
+import MountainWest from "./conferences/MountainWest";
+import ConferenceUSA from "./conferences/ConferenceUSA";
+import MidAmerican from "./conferences/MidAmerican";
+import FBSIndependents from "./conferences/FBSIndependents";
+
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
@@ -121,7 +133,7 @@ function App() {
                               display: "flex",
                               alignItems: "center",
                               gap: "6px",
-                              fontSize: "0.8rem"
+                              fontSize: "0.8rem",
                             }}
                           >
                             <img
@@ -130,7 +142,7 @@ function App() {
                               style={{
                                 width: "30px",
                                 height: "30px",
-                                objectFit: "contain"
+                                objectFit: "contain",
                               }}
                             />
                             {conferenceAbbr[conf] || conf}
@@ -303,10 +315,7 @@ function App() {
               <Route path="/games/:gameId" element={<GameDetailView />} />
               <Route path="/game/:gameId" element={<GameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
-              <Route
-                path="/fan-hub"
-                element={<FanHub scoreboardVisible={scoreboardVisible} />}
-              />
+              <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
 
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
@@ -325,6 +334,18 @@ function App() {
 
               {/* New Route for Arbitrage + EV */}
               <Route path="/arbitrage-ev" element={<ArbitrageEV />} />
+
+              {/* Conference Routes */}
+              <Route path="/sec" element={<SEC />} />
+              <Route path="/bigten" element={<BigTen />} />
+              <Route path="/acc" element={<ACC />} />
+              <Route path="/pac12" element={<Pac12 />} />
+              <Route path="/big12" element={<Big12 />} />
+              <Route path="/americanathletic" element={<AmericanAthletic />} />
+              <Route path="/mountainwest" element={<MountainWest />} />
+              <Route path="/conferenceusa" element={<ConferenceUSA />} />
+              <Route path="/mid-american" element={<MidAmerican />} />
+              <Route path="/fbsindependents" element={<FBSIndependents />} />
             </Routes>
           </main>
         </div>
