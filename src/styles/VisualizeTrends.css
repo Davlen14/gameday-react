@@ -122,14 +122,14 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
 
-  /* Fill most of the screen width, but not all */
+  /* Fill most of the screen width, but leave ample top margin */
   width: 90%;
   max-width: 1100px;
 
-  /* Push modal content almost to the bottom.
-     Leaving only about 1-2% margin at the top and bottom */
-  margin: 2% auto;
-  max-height: calc(100vh - 4%);
+  /* Increased top margin to push the modal below navbars */
+  margin: 10% auto 5% auto;
+  /* Reduce modal height to ensure it doesn't overlap navbars */
+  max-height: calc(100vh - 15%);
   padding: 2rem;
 
   /* Center content */
