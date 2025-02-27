@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200..900&display=swap');
 
 /* =============================== */
 /* SECONDARY BAR (White) */
@@ -13,7 +13,10 @@
   position: sticky;
   top: 50px; /* sticks below the top bar */
   width: 100%;
-  z-index: 999;
+
+  /* X CHANGED: lowered from 999 to 900 so modal can appear above if needed */
+  z-index: 900;
+
   border-bottom: 1px solid #e0e0e0;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }

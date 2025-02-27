@@ -1,5 +1,5 @@
 /* Import Google Fonts: Orbitron and Titillium Web */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200..900&display=swap');
 
 /* =============================== */
 /* TOP BAR (Bright Scarlet) */
@@ -14,7 +14,10 @@
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: 1100;
+
+  /* X CHANGED: Lowered from 1100 to 1000 so modal can appear above */
+  z-index: 1000;
+
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
