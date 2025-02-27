@@ -103,7 +103,7 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
 
-  /* Center the modal horizontally & vertically by default */
+  /* Center the modal horizontally and vertically */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,16 +116,17 @@ body {
   padding: 2rem;
   border-radius: 8px;
 
-  /* Make the modal bigger & push it further down */
+  /* Make the modal larger */
   width: 95%;
-  max-width: 1200px; /* Increase width for a larger modal */
-  margin-top: 200px; /* Increase to push below navbars */
-
+  max-width: 1200px; /* Increased width for a larger modal */
+  
+  /* Push the modal down further to clear fixed navbars */
+  margin-top: 250px;
+  max-height: calc(90vh - 250px);
+  
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
-  /* Increase the vertical space inside the modal */
-  max-height: calc(90vh - 200px);
 }
 
 .close-button {
@@ -178,11 +179,10 @@ body {
   border: none;
   border-radius: 4px;
   padding: 0.5rem;
-
+  
   /* Fill the modal's width */
   width: 100%;
-  height: 700px; /* Increase chart height for a bigger display */
-
+  height: 750px;  /* Increased height for a larger chart area */
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;

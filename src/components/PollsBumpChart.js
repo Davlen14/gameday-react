@@ -68,7 +68,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const apiPollType = mapPollType(pollType);
         const weeks = [];
         for (let w = startWeek; w <= endWeek; w++) {
-          // Fetch poll data for week w (regular season).
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           // Assume pollForWeek[0] is the poll group for that week.
           weeks.push(pollForWeek[0]);
@@ -201,9 +200,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       }
     });
 
-    // NEW: Add hover overlay to show week and team ranks with logos.
-    const tooltip = d3
-      .select("body")
+    // ========================
+    //   UPDATED TOOLTIP LOGIC
+    // ========================
+
+    // 1) Select the parent container of this chart (the .chart-wrapper).
+    //    We'll append the tooltip there instead of <body>.
+    const container = d3.select(chartRef.current.closest(".chart-wrapper"));
+
+    // 2) Create a tooltip inside the .chart-wrapper container.
+    const tooltip = container
       .append("div")
       .attr("class", "tooltip")
       .style("position", "absolute")
@@ -215,26 +221,30 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("opacity", 0)
       .style("z-index", "10000");
 
-    // Overlay rectangle to capture mouse events.
+    // 3) We'll compute mouse coordinates relative to the .chart-wrapper.
     g.append("rect")
       .attr("width", innerWidth)
       .attr("height", innerHeight)
       .attr("fill", "none")
       .attr("pointer-events", "all")
       .on("mousemove", (event) => {
-        const pointer = d3.pointer(event, g.node());
-        const mouseX = pointer[0];
-        // Determine the week based on mouse x position.
+        // boundingClientRect for the container
+        const rect = container.node().getBoundingClientRect();
+        // pointer inside the chart <g> (local coords)
+        const [mouseX, mouseY] = d3.pointer(event, g.node());
+
+        // Convert local coords to "week"
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // Build tooltip content.
+        // Build tooltip content
         let html = `<strong style="font-size:0.9rem;">Week ${week}</strong><br/><br/>`;
+
         chartData.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
           const currentRank = teamData.ranks[weekIndex];
-          if (currentRank === null) return; // Skip if not ranked this week
+          if (currentRank === null) return; // skip if not ranked this week
 
           let diffHTML = "";
           if (weekIndex > 0) {
@@ -258,10 +268,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
                    </div>`;
         });
 
+        // 4) Position the tooltip inside the .chart-wrapper
+        //    We'll base it on the mouse coords relative to the container.
+        //    event.clientX/Y are page coords, so subtract rect.left/top.
+        const containerX = event.clientX - rect.left;
+        const containerY = event.clientY - rect.top;
+
         tooltip
           .html(html)
-          .style("left", event.pageX + 15 + "px")
-          .style("top", event.pageY + 15 + "px")
+          .style("left", containerX + 15 + "px")
+          .style("top", containerY + 15 + "px")
           .transition()
           .duration(200)
           .style("opacity", 1);
