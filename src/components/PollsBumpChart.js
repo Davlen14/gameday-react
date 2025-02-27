@@ -201,6 +201,57 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           .attr("y", yScale(lastRank) - 10);
       }
     });
+
+    // NEW: Add hover overlay to show week and team ranks with logos.
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("padding", "8px")
+      .style("background", "rgba(255, 255, 255, 0.9)")
+      .style("border", "1px solid #ccc")
+      .style("border-radius", "4px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+
+    // Overlay rectangle to capture mouse events.
+    g.append("rect")
+      .attr("width", innerWidth)
+      .attr("height", innerHeight)
+      .attr("fill", "none")
+      .attr("pointer-events", "all")
+      .on("mousemove", (event) => {
+        const pointer = d3.pointer(event, g.node());
+        const mouseX = pointer[0];
+        // Determine the week based on mouse x position.
+        let week = Math.round(xScale.invert(mouseX));
+        week = Math.max(startWeek, Math.min(week, endWeek));
+
+        // Build tooltip content.
+        let html = `<strong>Week ${week}</strong><br/><br/>`;
+        chartData.forEach((teamData) => {
+          const teamInfo = getTeamInfo(teamData.team);
+          const rank = teamData.ranks[week - startWeek] || "N/A";
+          html += `<div style="display:flex; align-items:center; margin-bottom:4px;">
+                     <img src="${teamInfo.logo}" width="16" height="16" style="margin-right:4px;" />
+                     <span style="margin-right:4px;">${teamData.team}:</span>
+                     <strong>${rank}</strong>
+                   </div>`;
+        });
+
+        tooltip
+          .html(html)
+          .style("left", (event.pageX + 15) + "px")
+          .style("top", (event.pageY + 15) + "px")
+          .transition()
+          .duration(200)
+          .style("opacity", 1);
+      })
+      .on("mouseout", () => {
+        tooltip.transition().duration(200).style("opacity", 0);
+      });
+
   }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
