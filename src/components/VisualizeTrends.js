@@ -81,8 +81,8 @@ const VisualizeTrends = () => {
                     <label>Week Range</label>
                     <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                       <option>Week 1 - 5</option>
-                      <option>Week 6 - 10</option>
-                      <option>Week 11 - 15</option>
+                      <option>Week 1 - 10</option>
+                      <option>Week 1 - 15</option>
                     </select>
                   </div>
                   <div className="filter-group">
