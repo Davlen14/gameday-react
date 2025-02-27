@@ -30,7 +30,10 @@ const VisualizeTrends = () => {
     <div className="visualize-container">
       <header className="visualize-header">
         <h1>Visualize Trends</h1>
-        <p>Explore animated trends, polls, player stats, team points, and more over the season.</p>
+        <p>
+          Explore animated trends, polls, player stats, team points, and more over
+          the season.
+        </p>
       </header>
 
       {/* Dashboard Cards: Click to Open Modals */}
@@ -79,18 +82,24 @@ const VisualizeTrends = () => {
                 <div className="modal-filters">
                   <div className="filter-group">
                     <label>Week Range</label>
-                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
-                      <option>Week 1 - 5</option>
-                      <option>Week 1 - 10</option>
-                      <option>Week 1 - 15</option>
+                    <select
+                      value={selectedWeekRange}
+                      onChange={handleWeekRangeChange}
+                    >
+                      <option value="Week 1 - 5">Week 1 - 5</option>
+                      <option value="Week 1 - 10">Week 1 - 10</option>
+                      <option value="Week 1 - 15">Week 1 - 15</option>
                     </select>
                   </div>
                   <div className="filter-group">
                     <label>Poll Type</label>
-                    <select value={selectedPollType} onChange={handlePollTypeChange}>
-                      <option>AP Poll</option>
-                      <option>Coaches Poll</option>
-                      <option>Playoff Rankings</option>
+                    <select
+                      value={selectedPollType}
+                      onChange={handlePollTypeChange}
+                    >
+                      <option value="AP Poll">AP Poll</option>
+                      <option value="Coaches Poll">Coaches Poll</option>
+                      <option value="Playoff Rankings">Playoff Rankings</option>
                     </select>
                   </div>
                 </div>
