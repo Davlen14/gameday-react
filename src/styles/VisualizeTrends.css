@@ -111,29 +111,29 @@ body {
 }
 
 .modal-content {
-  background: rgba(255, 255, 255, 0.95); /* Semi-transparent white */
-  backdrop-filter: blur(4px); /* Subtle blur for a modern feel */
-  color: var(--text-color);
-  border-radius: 8px;
-  position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  overflow-y: auto;
-
-  /* Slightly reduced width for a cleaner look */
-  width: 90%;
-  max-width: 1100px;
+    background: rgba(255, 255, 255, 0.95); /* Semi-transparent white */
+    backdrop-filter: blur(4px); /* Subtle blur for a modern feel */
+    color: var(--text-color);
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
   
-  /* Center modal vertically with some margin at top and bottom */
-  margin: 100px auto 50px auto;
-  max-height: calc(90vh - 150px);
-
-  padding: 2rem;
-
-  /* Center internal content */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    /* Slightly reduced width for a cleaner look */
+    width: 90%;
+    max-width: 1100px;
+    
+    /* Push modal further down to clear navbars */
+    margin: 250px auto 50px auto;
+    max-height: calc(90vh - 250px);
+  
+    padding: 2rem;
+  
+    /* Center internal content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
 .close-button {
   position: absolute;
