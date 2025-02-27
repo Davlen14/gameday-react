@@ -117,7 +117,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
-    // Create the responsive SVG
+    // Create the responsive SVG.
     const svg = d3
       .select(chartRef.current)
       .attr("width", "100%")
@@ -129,19 +129,19 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale
+    // X scale.
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, endWeek])
       .range([0, innerWidth]);
 
-    // Y scale (1 is top, 25 is bottom)
+    // Y scale (1 is top, 25 is bottom).
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes
+    // Axes.
     const xAxis = d3.axisBottom(xScale).ticks(totalWeeks).tickFormat(d3.format("d"));
     const yAxis = d3.axisLeft(yScale).ticks(25);
 
@@ -199,9 +199,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       });
     });
 
-    // Tooltip logic: position tooltip so it never overflows the container.
-    const container = d3.select(chartRef.current.closest(".chart-wrapper"));
-    const tooltip = container
+    // Tooltip logic: position tooltip so it always stays inside the container.
+    const containerEl = d3.select(chartRef.current.closest(".chart-wrapper"));
+    const tooltip = containerEl
       .append("div")
       .attr("class", "tooltip")
       .style("position", "absolute")
@@ -219,7 +219,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("fill", "none")
       .attr("pointer-events", "all")
       .on("mousemove", (event) => {
-        const rect = container.node().getBoundingClientRect();
+        const rect = containerEl.node().getBoundingClientRect();
         const [mouseX, mouseY] = d3.pointer(event, g.node());
 
         let week = Math.round(xScale.invert(mouseX));
@@ -231,7 +231,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           const teamInfo = getTeamInfo(teamData.team);
           const currentRank = teamData.ranks[weekIndex];
           if (currentRank === null) return;
-
           let diffHTML = "";
           if (weekIndex > 0) {
             const prevRank = teamData.ranks[weekIndex - 1];
@@ -257,8 +256,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Default tooltip position relative to the container.
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
-
-        // Ensure the tooltip does not overflow the container.
         const tooltipNode = tooltip.node();
         const ttWidth = tooltipNode.offsetWidth;
         const ttHeight = tooltipNode.offsetHeight;
@@ -282,7 +279,34 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       });
   }, [chartData, height, width, weekRange]);
 
-  return <svg ref={chartRef}></svg>;
+  // Calculate dropped-out teams.
+  // A team is considered to have dropped out if there is any null value in its ranks.
+  // We use the first occurrence of null to indicate when they dropped out.
+  const { startWeek } = mapWeekRange(weekRange);
+  const dropOuts = chartData
+    .filter((team) => team.ranks.some((r) => r === null))
+    .map((team) => {
+      const dropIndex = team.ranks.findIndex((r) => r === null);
+      return { team: team.team, dropWeek: dropIndex + startWeek };
+    });
+
+  return (
+    <div className="polls-bump-chart">
+      <svg ref={chartRef}></svg>
+      {dropOuts.length > 0 && (
+        <div className="dropped-out-teams" style={{ marginTop: "1rem" }}>
+          <h3>Dropped Out Teams</h3>
+          <ul>
+            {dropOuts.map((item) => (
+              <li key={item.team}>
+                {item.team} dropped out on week {item.dropWeek}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PollsBumpChart;
