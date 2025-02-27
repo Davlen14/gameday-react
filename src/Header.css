@@ -67,7 +67,7 @@
   font-size: 0.9rem;
   letter-spacing: 0.5px;
   padding: 10px 20px;
-  border-radius: 25px;
+  border-radius: 8px;  /* Less rounded than originally (was 25px) */
   background: linear-gradient(135deg, #ffffff, #f8f8f8);
   color: #D4001C;
   border: 2px solid #ffffff;
@@ -100,7 +100,7 @@
   font-weight: 300;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 8px 12px;
-  border-radius: 3px;
+  border-radius: 4px; /* Slightly rounded */
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -118,7 +118,7 @@
   background-color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(10px) saturate(120%);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  border-radius: 6px;  /* Slightly rounded corners */
   z-index: 2000;
   padding: 6px 0;
   min-width: 160px;
