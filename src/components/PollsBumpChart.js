@@ -170,19 +170,18 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-      // Animate the line drawing (8 seconds).
+      // Animate the line drawing (13 seconds).
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
         .attr("stroke-dashoffset", totalLength)
         .transition()
-        .duration(8000)
+        .duration(13000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
       // Attach the team logo to the line.
-      // The logo will "stick" to the drawn portion of the line by updating its position
-      // as the line is being drawn.
+      // The logo will stick to the drawn portion of the line by continuously updating its position.
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -196,7 +195,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
-        return t === 1; // Stop the timer when t reaches 1.
+        return t === 1;
       });
     });
 
