@@ -29,6 +29,14 @@ body {
 }
 
 /* ===============================
+   OVERRIDE NAVBAR Z-INDEX
+=============================== */
+/* Force the navbars to have a lower z-index than the modal overlay */
+.top-bar, .secondary-bar {
+  z-index: 1000 !important; /* or any value < 9999999 */
+}
+
+/* ===============================
    VISUALIZE TRENDS CONTAINER
 =============================== */
 .visualize-container {
@@ -105,9 +113,9 @@ body {
 
   /* Overlap everything, including navbars */
   display: flex;
-  align-items: flex-start; /* Start at very top */
+  align-items: flex-start; /* Start at the very top */
   justify-content: center;
-  z-index: 9999999; /* Higher than any navbars */
+  z-index: 9999999 !important; /* Highest priority */
 }
 
 .modal-content {
@@ -125,13 +133,13 @@ body {
   width: 90%;
   max-width: 1100px;
 
-  /* Minimal top margin so it appears near top edge */
-  margin: 20px auto 20px auto;
+  /* Minimal margins so it's near the top */
+  margin: 20px auto; /* top & bottom margin */
   max-height: calc(100vh - 40px);
 
   padding: 2rem;
 
-  /* Center everything inside */
+  /* Center internal content */
   display: flex;
   flex-direction: column;
   align-items: center;
