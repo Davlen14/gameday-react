@@ -127,21 +127,22 @@ body {
   width: 90%;
   max-width: 1100px;
 
-  /* X CHANGED: margin to push it down from top and add some bottom space. */
-  /* total vertical margin = 200 (top) + 50 (bottom) = 250. Adjust as you wish. */
-  margin: 200px auto 50px auto;
-  max-height: calc(100vh - 250px);
+  /* X CHANGED: Increase top margin to push it down further and increase bottom margin to take up more space.
+     Here, top margin remains 200px, and bottom margin is increased to 150px,
+     so total vertical margin = 200 + 150 = 350px. */
+  margin: 200px auto 150px auto;
+  /* X CHANGED: Adjust max-height to account for 350px vertical margin */
+  max-height: calc(100vh - 350px);
 
   padding: 2rem;
 
-  /* Instead of column, we want to allow the container inside
-     to handle left-right layout. So let's keep it as column
-     if you prefer the filters & close button at the top. */
+  /* Center internal content */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Close Button */
 .close-button {
   position: absolute;
   top: 1rem;
@@ -199,16 +200,13 @@ body {
 .chart-container {
   display: flex;           /* left-right layout */
   width: 100%;
-  gap: 1.5rem;            /* some spacing between chart & panel */
+  gap: 1.5rem;            /* spacing between chart & panel */
   margin-top: 1rem;       /* separate from filters above */
 }
 
-/* 
-   We'll re-use .chart-wrapper for the left side (chart).
-   We can override the width/height if needed.
-*/
+/* Re-use .chart-wrapper for the left side (chart). */
 .chart-wrapper {
-  flex: 1;                /* let it expand to fill remaining space */
+  flex: 1;                /* expand to fill remaining space */
   background-color: transparent;
   border: none;
   border-radius: 4px;
@@ -216,28 +214,42 @@ body {
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-
-  /* If you want a fixed height, keep 650px or remove to let it auto-size. */
-  height: 650px; 
+  height: 650px;          /* fixed height for chart */
 }
 
 /* NEW: Right side panel for dropped-out teams. */
 .dropped-out-panel {
-  width: 250px;            /* fixed width, tweak as needed */
+  width: 250px;           /* fixed width */
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   padding: 0.75rem;
-  overflow-y: auto;        /* in case the list is long */
+  overflow-y: auto;
 }
 
 .dropped-out-panel h3 {
   margin-top: 0;
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  color: red;  /* header in red */
 }
 
-/* The chart itself (SVG) fills the .chart-wrapper */
+/* NEW: Style for each dropped-out team entry */
+.dropped-out-panel .team-item {
+  font-size: 0.8rem;  /* smaller text */
+  color: red;         /* red text */
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.dropped-out-panel .team-item .down-arrow {
+  margin-left: 4px;
+  color: red;
+  font-size: 1rem; /* adjust as needed */
+}
+
+/* Ensure any SVG inside the wrapper fills the space */
 .chart-wrapper svg {
   display: block;
   width: 100%;
