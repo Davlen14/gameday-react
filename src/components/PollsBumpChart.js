@@ -42,7 +42,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchTeams();
   }, []);
 
-  // Helper: Look up team info from teams data.
+  // Helper: Look up team info (color, logo) from teams data.
   const getTeamInfo = (teamName) => {
     const foundTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -98,7 +98,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Build the ECharts option when chartData updates.
+  // Build the ECharts option whenever chartData updates.
   useEffect(() => {
     if (!chartData.length) return;
 
@@ -142,6 +142,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     });
 
     const newOption = {
+      // Remove legend to avoid clutter.
+      legend: {
+        show: false,
+      },
       tooltip: {
         trigger: "axis",
         formatter: (params) => {
@@ -151,11 +155,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           });
           return tooltip;
         },
-      },
-      legend: {
-        data: chartData.map((team) => team.team),
-        top: 30,
-        textStyle: { color: "#333" },
       },
       grid: {
         left: "5%",
@@ -172,15 +171,18 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           lineStyle: { color: "#888" },
         },
       },
+      // yAxis on the right, inverted for rank #1 at top.
       yAxis: {
+        position: "right",
         type: "value",
         inverse: true,
         min: 1,
         max: 25,
-        name: "Rank",
         axisLine: {
           lineStyle: { color: "#888" },
         },
+        // Remove the 'Rank' label for a cleaner look
+        name: "",
       },
       series: series,
     };
