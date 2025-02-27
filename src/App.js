@@ -32,6 +32,35 @@ import TopProspects from "./components/TopProspects";
 import Commitments from "./components/Commitments";
 import TransferPortal from "./components/TransferPortal";
 
+// ------------------------
+// Conference Logos & List
+// ------------------------
+const conferenceLogos = {
+  "ACC": "ACC.png",
+  "American Athletic": "American Athletic.png",
+  "Big 12": "Big 12.png",
+  "Big Ten": "Big Ten.png",
+  "Conference USA": "Conference USA.png",
+  "FBS Independents": "FBS Independents.png",
+  "Mid-American": "Mid-American.png",
+  "Mountain West": "Mountain West.png",
+  "Pac-12": "Pac-12.png",
+  "SEC": "SEC.png",
+};
+
+const conferenceList = [
+  "SEC",
+  "Big Ten",
+  "ACC",
+  "Pac-12",
+  "Big 12",
+  "American Athletic",
+  "Mountain West",
+  "Conference USA",
+  "Mid-American",
+  "FBS Independents",
+];
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -70,12 +99,20 @@ function App() {
                     <button className="dropdown-button">Conferences</button>
                     {dropdownOpen === "conferences" && (
                       <div className="dropdown-menu">
-                        <Link to="/sec">SEC</Link>
-                        <Link to="/bigten">Big Ten</Link>
-                        <Link to="/acc">ACC</Link>
-                        <Link to="/pac12">Pac-12</Link>
-                        <Link to="/big12">Big 12</Link>
-                        <Link to="/others">Others</Link>
+                        {conferenceList.map((conf) => (
+                          <Link
+                            to={`/${conf.toLowerCase().replace(/ /g, "")}`} // e.g., '/sec'
+                            key={conf}
+                            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                          >
+                            <img
+                              src={`/photos/${conferenceLogos[conf]}`}
+                              alt={conf}
+                              style={{ width: "20px", height: "20px", objectFit: "contain" }}
+                            />
+                            {conf}
+                          </Link>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -141,7 +178,7 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/team-metrics">Team Analytics</Link>
                         <Link to="/player-metrics">Player Stats</Link>
-                        <Link to="/betting-models">Betting Models</Link>
+                        <Link to="/betting-models">Visualize Trends</Link>
                       </div>
                     )}
                   </div>
