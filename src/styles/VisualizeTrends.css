@@ -96,30 +96,32 @@ body {
    MODAL STYLES
 =============================== */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal-content {
-  background: var(--primary-color);
-  color: var(--text-color);
-  padding: 2rem;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 900px;
-  position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  overflow-y: auto;
-  max-height: 90vh;
-}
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    /* Instead of center, align to flex-start and add padding */
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 999;
+    padding-top: 80px; /* Push the modal ~80px down, adjust as needed */
+  }
+  
+  .modal-content {
+    background: var(--primary-color);
+    color: var(--text-color);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px; /* Slightly wider for bigger charts */
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    max-height: calc(90vh - 80px); /* So the content doesn't overflow below the screen */
+  }
 
 .close-button {
   position: absolute;
