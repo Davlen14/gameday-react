@@ -59,7 +59,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return { color: "gray", logo: "/photos/default_team.png" };
   };
 
-  // Fetch poll data for the given pollType and weekRange
+  // Fetch poll data for the given pollType and weekRange.
   useEffect(() => {
     const fetchPollData = async () => {
       try {
@@ -103,9 +103,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Render / update the chart
+  // Render / update the chart.
   useEffect(() => {
-    // Clear previous chart
+    // Clear previous chart.
     d3.select(chartRef.current).selectAll("*").remove();
 
     if (!chartData || chartData.length === 0) return;
@@ -113,12 +113,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const { startWeek, endWeek } = mapWeekRange(weekRange);
     const totalWeeks = endWeek - startWeek + 1;
 
-    // Margins & inner dimensions
+    // Margins & inner dimensions.
     const margin = { top: 40, right: 100, bottom: 40, left: 50 },
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
-    // Create the responsive SVG
+    // Create the responsive SVG.
     const svg = d3
       .select(chartRef.current)
       .attr("width", "100%")
@@ -126,23 +126,24 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "none");
 
+    // Add a group for chart content.
     const g = svg
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale
+    // X scale.
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, endWeek])
       .range([0, innerWidth]);
 
-    // Y scale (1 is top, 25 is bottom)
+    // Y scale (1 is top, 25 is bottom).
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes
+    // Axes.
     const xAxis = d3.axisBottom(xScale).ticks(totalWeeks).tickFormat(d3.format("d"));
     const yAxis = d3.axisLeft(yScale).ticks(25);
 
@@ -151,14 +152,43 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Line generator
+    // NEW: Add the static poll logo and label to the top right of the SVG.
+    const pollLogos = {
+      "AP Poll": "/photos/AP25.jpg",
+      "Coaches Poll": "/photos/USA-Today-Logo.png",
+      "Playoff Rankings": "/photos/committee.png",
+    };
+    const pollLogoPath = pollLogos[pollType] || pollLogos["AP Poll"];
+
+    // Define dimensions and padding for the logo.
+    const logoWidth = 40;
+    const logoHeight = 40;
+    const logoPadding = 10;
+
+    // Append the image to the SVG (positioned relative to the overall SVG dimensions).
+    svg.append("image")
+      .attr("xlink:href", pollLogoPath)
+      .attr("width", logoWidth)
+      .attr("height", logoHeight)
+      .attr("x", width - margin.right - logoWidth - logoPadding)
+      .attr("y", logoPadding);
+
+    // Append a text label for the poll type.
+    svg.append("text")
+      .text(pollType)
+      .attr("x", width - margin.right - logoWidth - logoPadding)
+      .attr("y", logoPadding + logoHeight + 15)
+      .style("font-size", "14px")
+      .style("fill", "#000");
+
+    // Line generator.
     const lineGen = d3
       .line()
       .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Create a shared tooltip element in the container (if it doesn't exist)
+    // Create a shared tooltip element in the container (if it doesn't exist).
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     let tooltip = container.select(".tooltip");
     if (tooltip.empty()) {
@@ -180,7 +210,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
-      // Draw the line
+      // Draw the line.
       const path = g
         .append("path")
         .datum(normalizedRanks)
@@ -233,7 +263,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return t === 1; // stop timer after 13 seconds.
       });
 
-      // NEW: Attach team-specific tooltip events to the team’s path.
+      // Attach team-specific tooltip events to the team’s path.
       path.on("mousemove", function (event) {
         // Determine the hovered week based on mouse x coordinate relative to g.
         const [mx] = d3.pointer(event, g.node());
