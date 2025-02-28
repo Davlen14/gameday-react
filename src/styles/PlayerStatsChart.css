@@ -4,7 +4,7 @@
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
-  max-width: 900px;
+  max-width: 800px;
   margin: 20px auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -21,37 +21,45 @@
 .filters {
   display: flex;
   justify-content: center;
+  gap: 15px;
   margin-bottom: 20px;
 }
 
 .filters input[type="text"] {
   padding: 8px 10px;
+  width: 250px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
   outline: none;
   transition: border 0.2s ease;
-  width: 300px;
 }
 
 .filters input[type="text"]:focus {
   border-color: #0077cc;
 }
 
-/* Table Styles */
+/* Chart Area */
+.chart-wrapper {
+  width: 100%;
+  height: 400px;
+  /* This container will be used by D3 to render the chart */
+}
+
+/* (Optional) Table styling in case you need it later */
 .stats-table-container {
   overflow-x: auto;
+  margin-top: 20px;
 }
 
 .stats-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
 }
 
 .stats-table th,
 .stats-table td {
-  padding: 12px 10px;
+  padding: 10px;
   border: 1px solid #ddd;
   text-align: left;
   font-size: 14px;
@@ -60,13 +68,4 @@
 
 .stats-table th {
   background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.stats-table tbody tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
-.stats-table tbody tr:hover {
-  background-color: #f1f1f1;
 }
