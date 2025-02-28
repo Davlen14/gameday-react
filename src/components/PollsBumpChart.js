@@ -151,14 +151,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Line generator (no .defined() so that null => 25 can be drawn)
+    // Line generator
     const lineGen = d3
       .line()
       .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // For each team, replace null ranks with 25 so the line goes all the way down.
+    // For each team, replace null ranks with 25 so that the line goes to the bottom.
+    // Also, later we fade out the line if the team has fallen out.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
@@ -182,7 +183,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Attach the team logo
+      // If the team falls out (its final week is null), then fade out the line after drawing.
+      const finalRank = teamData.ranks[teamData.ranks.length - 1];
+      if (finalRank === null) {
+        path.transition().delay(13000).duration(1000).style("opacity", 0);
+      }
+
+      // Attach the team logo and animate its movement along the path.
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -190,29 +197,24 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Update logo's position along the path for 13 seconds
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
 
-        // Move the logo to this point
+        // Move the logo to this point.
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // If near bottom (rank ~25), fade out the logo
-        // Compare y-position to yScale(24.5) as a threshold
-        const fadeThresholdY = yScale(24.5); 
+        // Fade out the logo when near the bottom (e.g., rank ~25).
+        const fadeThresholdY = yScale(24.5);
         if (point.y >= fadeThresholdY) {
-          // Determine how close we are to the very bottom
           const bottomY = yScale(25);
-          const fraction =
-            (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
+          const fraction = (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
           logo.style("opacity", 1 - fraction);
         } else {
           logo.style("opacity", 1);
         }
-
-        return t === 1; // stop timer after 13s
+        return t === 1; // stop timer after 13 seconds.
       });
     });
 
@@ -230,7 +232,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("opacity", 0)
       .style("z-index", "10000");
 
-    // Invisible rectangle to capture mouse events for the tooltip
+    // Invisible rectangle to capture mouse events for the tooltip.
     g.append("rect")
       .attr("width", innerWidth)
       .attr("height", innerHeight)
@@ -240,30 +242,28 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const rect = container.node().getBoundingClientRect();
         const [mouseX, mouseY] = d3.pointer(event, g.node());
 
-        // Figure out which week we're hovering over
+        // Figure out which week we're hovering over.
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // Build a sorted list of teams by their current rank
+        // Build a sorted list of teams by their current rank,
+        // and filter so only teams in the top 25 appear.
         const sortedTeams = chartData
           .map((teamData) => ({
             ...teamData,
             currentRank: teamData.ranks[weekIndex],
             prevRank: weekIndex > 0 ? teamData.ranks[weekIndex - 1] : null,
           }))
-          // Exclude unranked (null) teams from tooltip
-          .filter((d) => d.currentRank !== null)
-          // Sort ascending by current rank
+          .filter((d) => d.currentRank !== null && d.currentRank <= 25)
           .sort((a, b) => a.currentRank - b.currentRank);
 
-        // Build tooltip HTML
+        // Build tooltip HTML.
         let html = `<strong style="font-size:0.9rem;">Week ${week}</strong><br/><br/>`;
         sortedTeams.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
           const { currentRank, prevRank } = teamData;
 
-          // Figure out how many spots changed from last week
           let diffHTML = "";
           if (prevRank === null) {
             diffHTML = ` <span style="color:green; font-size:0.8rem;">(newly ranked)</span>`;
@@ -284,11 +284,11 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
                    </div>`;
         });
 
-        // Default tooltip position relative to the container
+        // Default tooltip position relative to the container.
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
 
-        // Ensure the tooltip does not overflow the container
+        // Ensure the tooltip does not overflow the container.
         tooltip.html(html);
         const ttWidth = tooltip.node().offsetWidth;
         const ttHeight = tooltip.node().offsetHeight;
