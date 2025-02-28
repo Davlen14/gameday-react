@@ -39,7 +39,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
       case "Week 1 - Postseason":
-        // Regular season is weeks 1-16; we add an extra week for postseason
         return { startWeek: 1, endWeek: 16 };
       default:
         return { startWeek: 1, endWeek: 5 };
@@ -75,7 +74,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           if (!pollForWeek || pollForWeek.length === 0) continue;
-          weeks.push(pollForWeek[0]); // assume pollForWeek[0] is the poll group
+          weeks.push(pollForWeek[0]);
         }
 
         // If we're in "Week 1 - Postseason" mode, fetch the postseason poll.
@@ -118,12 +117,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
   // Render / update the chart
   useEffect(() => {
-    // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
     if (!chartData || chartData.length === 0) return;
 
     const { startWeek, endWeek } = mapWeekRange(weekRange);
-    // If "Week 1 - Postseason", we have an extra week for postseason
     const finalWeek = weekRange === "Week 1 - Postseason" ? endWeek + 1 : endWeek;
     const totalWeeks = finalWeek - startWeek + 1;
 
@@ -144,37 +141,92 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale
+    // 1) Background gradient behind the chart
+    const defs = svg.append("defs");
+    const bgGradient = defs
+      .append("linearGradient")
+      .attr("id", "bg-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    bgGradient
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#f9f9f9");
+    bgGradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#ffffff");
+
+    // Place a background rect for the chart area
+    g.append("rect")
+      .attr("width", innerWidth)
+      .attr("height", innerHeight)
+      .style("fill", "url(#bg-gradient)");
+
+    // 2) X and Y scales
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, finalWeek])
       .range([0, innerWidth]);
 
-    // Y scale (1 is top, 25 is bottom)
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes with custom tick formatting for postseason.
+    // 3) Axes with minimal styling
     const xAxis = d3
       .axisBottom(xScale)
       .ticks(totalWeeks)
       .tickFormat((d) => {
-        // If "Week 1 - Postseason" and this tick == finalWeek, label it "Postseason"
         if (weekRange === "Week 1 - Postseason" && d === finalWeek) {
           return "Postseason";
         }
         return d;
-      });
-    const yAxis = d3.axisLeft(yScale).ticks(25);
+      })
+      .tickSize(-innerHeight) // extend ticks as grid lines
+      .tickPadding(10);
 
+    const yAxis = d3
+      .axisLeft(yScale)
+      .ticks(5) // fewer ticks for a cleaner look
+      .tickSize(-innerWidth) // extend ticks as grid lines
+      .tickPadding(10);
+
+    // X Axis Group
     g.append("g")
       .attr("transform", `translate(0, ${innerHeight})`)
-      .call(xAxis);
-    g.append("g").call(yAxis);
+      .call(xAxis)
+      .call((g) => {
+        // Remove the domain line
+        g.select(".domain").remove();
+        // Style the ticks
+        g.selectAll(".tick line")
+          .attr("stroke", "#ccc")
+          .attr("stroke-dasharray", "2,2");
+        g.selectAll("text")
+          .attr("fill", "#666")
+          .style("font-size", "12px")
+          .style("font-family", "sans-serif");
+      });
 
-    // --- Add Poll Logo in Top-Right (Outside the Axis) ---
+    // Y Axis Group
+    g.append("g")
+      .call(yAxis)
+      .call((g) => {
+        g.select(".domain").remove();
+        g.selectAll(".tick line")
+          .attr("stroke", "#ccc")
+          .attr("stroke-dasharray", "2,2");
+        g.selectAll("text")
+          .attr("fill", "#666")
+          .style("font-size", "12px")
+          .style("font-family", "sans-serif");
+      });
+
+    // 4) Poll Logo near top-right
     const pollLogos = {
       "AP Poll": "/photos/AP25.jpg",
       "Coaches Poll": "/photos/USA-Today-Logo.png",
@@ -185,51 +237,40 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const logoHeight = 40;
     const logoPadding = 10;
 
-// Place poll logo near the top-right
-svg
-  .append("image")
-  .attr("xlink:href", pollLogoPath)
-  .attr("width", logoWidth)
-  .attr("height", logoHeight)
-  .attr("x", width - logoWidth - logoPadding)
-  .attr("y", logoPadding);
+    svg
+      .append("image")
+      .attr("xlink:href", pollLogoPath)
+      .attr("width", logoWidth)
+      .attr("height", logoHeight)
+      .attr("x", width - logoWidth - logoPadding)
+      .attr("y", logoPadding);
 
-// Now add a text group for "Presented by" / "GAMEDAY+" near bottom-right
-const textPadding = 10;
-// We'll place the group near the bottom-right, offset from the edges
-const stackedTextGroup = svg.append("g")
-  .attr("transform", `translate(${width - textPadding}, ${height - textPadding})`);
+    // 5) "Presented by" / "GAMEDAY+" near bottom-right
+    const textPadding = 10;
+    const stackedTextGroup = svg.append("g")
+      .attr("transform", `translate(${width - textPadding}, ${height - textPadding})`);
 
-// 1) First line: "Presented by" (black, normal font)
-stackedTextGroup.append("text")
-  .text("Presented by")
-  .attr("x", 0)
-  .attr("y", 0)
-  .style("font-size", "12px")
-  .style("fill", "#000")
-  .style("font-weight", "normal")
-  .style("text-anchor", "end")
-  .style("font-family", "sans-serif"); // or any other normal font
+    stackedTextGroup.append("text")
+      .text("Presented by")
+      .attr("x", 0)
+      .attr("y", 0)
+      .style("font-size", "12px")
+      .style("fill", "#000")
+      .style("font-weight", "normal")
+      .style("text-anchor", "end")
+      .style("font-family", "sans-serif");
 
-// 2) Second line: "GAMEDAY+" (red, italic, your custom font)
-stackedTextGroup.append("text")
-  .text("GAMEDAY+")
-  .attr("x", 0)
-  .attr("y", 16) // 16px below the first line
-  .style("font-size", "12px")
-  .style("fill", "#D4001C") // your red color
-  .style("font-style", "italic")
-  .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
-  .style("text-anchor", "end");
+    stackedTextGroup.append("text")
+      .text("GAMEDAY+")
+      .attr("x", 0)
+      .attr("y", 16)
+      .style("font-size", "12px")
+      .style("fill", "#D4001C")
+      .style("font-style", "italic")
+      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
+      .style("text-anchor", "end");
 
-    // Line generator
-    const lineGen = d3
-      .line()
-      .x((d, i) => xScale(i + startWeek))
-      .y((d) => yScale(d))
-      .curve(d3.curveMonotoneX);
-
-    // Create a shared tooltip element if it doesn't exist
+    // 6) Shared tooltip
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     let tooltip = container.select(".tooltip");
     if (tooltip.empty()) {
@@ -246,20 +287,29 @@ stackedTextGroup.append("text")
         .style("z-index", "10000");
     }
 
-    // For each team, draw line, animate, attach logos
+    // 7) Line generator
+    const lineGen = d3
+      .line()
+      .x((d, i) => xScale(i + startWeek))
+      .y((d) => yScale(d))
+      .curve(d3.curveMonotoneX);
+
+    // For each team
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
+      // 7a) Draw line with modern styling
       const path = g
         .append("path")
         .datum(normalizedRanks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 3)        // thicker line
+        .attr("stroke-opacity", 0.8)    // slight transparency
         .attr("d", lineGen);
 
-      // Animate line
+      // 7b) Animate the line
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -269,13 +319,13 @@ stackedTextGroup.append("text")
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Fade out if final rank is null
+      // If final rank is null, fade out
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
       if (finalRank === null) {
         path.transition().delay(13000).duration(1000).style("opacity", 0);
       }
 
-      // Team logo along the line
+      // 7c) Team logo that moves along the path
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -298,10 +348,10 @@ stackedTextGroup.append("text")
         } else {
           logo.style("opacity", 1);
         }
-        return t === 1; // stop timer after line finishes
+        return t === 1; 
       });
 
-      // Tooltip on hover
+      // 8) Tooltip logic on hover
       path
         .on("mousemove", function (event) {
           const [mx] = d3.pointer(event, g.node());
