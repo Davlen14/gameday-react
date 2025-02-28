@@ -159,12 +159,18 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .curve(d3.curveMonotoneX);
 
     // For each team, replace null ranks with 25 so that the line goes to the bottom.
-    // Also, later we fade out the line if the team has fallen out.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
-      // Draw the line
+      // Determine when (if at all) the team falls out of the top 25.
+      // fallIndex is the first index where rank is null or greater than 25.
+      const fallIndex = teamData.ranks.findIndex((r) => r === null || r > 25);
+      // If team falls out, compute the proportional time (0 to 1) for fade-out.
+      const fadeThresholdProportion = fallIndex !== -1 ? (fallIndex + 1) / totalWeeks : 1;
+      const fadeDelay = 13000 * fadeThresholdProportion; // in ms
+
+      // Draw the line.
       const path = g
         .append("path")
         .datum(normalizedRanks)
@@ -173,7 +179,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", lineGen);
 
-      // Animate the line drawing (13 seconds).
+      // Animate the line drawing over 13 seconds.
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -183,13 +189,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // If the team falls out (its final week is null), then fade out the line after drawing.
-      const finalRank = teamData.ranks[teamData.ranks.length - 1];
-      if (finalRank === null) {
-        path.transition().delay(13000).duration(1000).style("opacity", 0);
+      // If the team falls out before the end, fade out its line when it happens.
+      if (fallIndex !== -1) {
+        path.transition()
+          .delay(fadeDelay)
+          .duration(1000)
+          .style("opacity", 0);
       }
 
-      // Attach the team logo and animate its movement along the path.
+      // Attach the team logo.
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -197,6 +205,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("height", 20)
         .style("opacity", 1);
 
+      // Move the logo along the path and fade it out after the fall threshold.
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
@@ -205,15 +214,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Move the logo to this point.
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // Fade out the logo when near the bottom (e.g., rank ~25).
-        const fadeThresholdY = yScale(24.5);
-        if (point.y >= fadeThresholdY) {
-          const bottomY = yScale(25);
-          const fraction = (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
-          logo.style("opacity", 1 - fraction);
+        // Fade out the logo as soon as the team falls out.
+        if (t >= fadeThresholdProportion) {
+          // Calculate a fade factor over the remainder of the animation.
+          const fadeT = (t - fadeThresholdProportion) / (1 - fadeThresholdProportion);
+          logo.style("opacity", Math.max(0, 1 - fadeT));
         } else {
           logo.style("opacity", 1);
         }
+
         return t === 1; // stop timer after 13 seconds.
       });
     });
@@ -240,15 +249,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("pointer-events", "all")
       .on("mousemove", (event) => {
         const rect = container.node().getBoundingClientRect();
-        const [mouseX, mouseY] = d3.pointer(event, g.node());
+        const [mouseX] = d3.pointer(event, g.node());
 
         // Figure out which week we're hovering over.
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // Build a sorted list of teams by their current rank,
-        // and filter so only teams in the top 25 appear.
+        // Build a sorted list of teams by their current rank (only for top 25).
         const sortedTeams = chartData
           .map((teamData) => ({
             ...teamData,
@@ -263,7 +271,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         sortedTeams.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
           const { currentRank, prevRank } = teamData;
-
           let diffHTML = "";
           if (prevRank === null) {
             diffHTML = ` <span style="color:green; font-size:0.8rem;">(newly ranked)</span>`;
@@ -275,7 +282,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
               diffHTML = ` <span style="color:red; font-size:0.8rem;">↓ ${Math.abs(change)}</span>`;
             }
           }
-
           html += `<div style="display:flex; align-items:center; margin-bottom:4px;">
                      <img src="${teamInfo.logo}" width="16" height="16" style="margin-right:4px;" />
                      <span style="font-size:0.8rem; margin-right:4px;">${teamData.team}:</span>
@@ -287,19 +293,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Default tooltip position relative to the container.
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
-
-        // Ensure the tooltip does not overflow the container.
         tooltip.html(html);
         const ttWidth = tooltip.node().offsetWidth;
         const ttHeight = tooltip.node().offsetHeight;
-
         if (left + ttWidth > rect.width) {
           left = rect.width - ttWidth - 15;
         }
         if (top + ttHeight > rect.height) {
           top = rect.height - ttHeight - 15;
         }
-
         tooltip
           .style("left", left + "px")
           .style("top", top + "px")
