@@ -103,7 +103,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Render / update the chart
+  // Render / update the chart with smooth week-to-week transitions
   useEffect(() => {
     // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
@@ -112,6 +112,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
     const { startWeek, endWeek } = mapWeekRange(weekRange);
     const totalWeeks = endWeek - startWeek + 1;
+    const totalDuration = 13000; // total animation duration in ms
 
     // Margins & inner dimensions
     const margin = { top: 40, right: 100, bottom: 40, left: 50 },
@@ -151,55 +152,80 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Define line generator that ignores null values
-    const line = d3
-      .line()
-      .defined((d) => d !== null)
-      .x((d, i) => xScale(i + startWeek))
-      .y((d) => yScale(d))
+    // Define a line generator that accepts objects with { week, rank }
+    const animatedLine = d3.line()
+      .x((d) => xScale(d.week))
+      .y((d) => yScale(d.rank))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team
+    // Draw a line for each team with smooth week-to-week transitions
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
-      const path = g
-        .append("path")
+      // Append path element for team line
+      const path = g.append("path")
         .datum(teamData.ranks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
-        .attr("stroke-width", 2)
-        .attr("d", line);
+        .attr("stroke-width", 2);
 
-      // Animate the line drawing (13 seconds).
-      const totalLength = path.node().getTotalLength();
-      path
-        .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
-        .attr("stroke-dashoffset", totalLength)
-        .transition()
-        .duration(13000)
+      // Animate the line using attrTween to interpolate between week data
+      path.transition()
+        .duration(totalDuration)
         .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0);
+        .attrTween("d", function(d) {
+          return function(t) {
+            const totalSegments = d.length - 1;
+            const segmentDuration = 1 / totalSegments;
+            let segmentIndex = Math.floor(t / segmentDuration);
+            let segmentProgress = (t - segmentIndex * segmentDuration) / segmentDuration;
+            if (segmentIndex >= totalSegments) {
+              segmentIndex = totalSegments - 1;
+              segmentProgress = 1;
+            }
+            // Build points up to the current animated segment
+            const points = [];
+            for (let i = 0; i <= segmentIndex; i++) {
+              points.push({ week: startWeek + i, rank: d[i] });
+            }
+            // Add an interpolated point for the current segment
+            if (segmentIndex < totalSegments) {
+              const interpolatedRank = d[segmentIndex] + (d[segmentIndex + 1] - d[segmentIndex]) * segmentProgress;
+              const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
+              points.push({ week: interpolatedWeek, rank: interpolatedRank });
+            }
+            return animatedLine(points);
+          };
+        });
 
-      // Attach the team logo to the line
-      const logo = g
-        .append("image")
+      // Attach the team logo and animate its movement along the line
+      const logo = g.append("image")
         .attr("xlink:href", teamInfo.logo)
         .attr("width", 20)
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Update logo's position along the path for 13 seconds
+      // Timer to update the logo's position in sync with the line animation
       d3.timer((elapsed) => {
-        const t = Math.min(elapsed / 13000, 1);
-        const currentLength = totalLength * t;
-        const point = path.node().getPointAtLength(currentLength);
-        logo.attr("x", point.x - 10).attr("y", point.y - 10);
-        return t === 1;
+        const t = Math.min(elapsed / totalDuration, 1);
+        const totalSegments = teamData.ranks.length - 1;
+        const segmentDuration = 1 / totalSegments;
+        let segmentIndex = Math.floor(t / segmentDuration);
+        let segmentProgress = (t - segmentIndex * segmentDuration) / segmentDuration;
+        if (segmentIndex >= totalSegments) {
+          segmentIndex = totalSegments - 1;
+          segmentProgress = 1;
+        }
+        const interpolatedRank = teamData.ranks[segmentIndex] + (teamData.ranks[segmentIndex + 1] - teamData.ranks[segmentIndex]) * segmentProgress;
+        const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
+        const x = xScale(interpolatedWeek);
+        const y = yScale(interpolatedRank);
+        logo.attr("x", x - 10).attr("y", y - 10);
+        if (t === 1) return true; // Stop timer when animation completes
       });
     });
 
-    // Tooltip logic: position tooltip so it never overflows the container.
+    // Tooltip logic: positions the tooltip so it never overflows the container.
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     const tooltip = container
       .append("div")
@@ -213,7 +239,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("opacity", 0)
       .style("z-index", "10000");
 
-    // Invisible rectangle to capture mouse events for the tooltip
     g.append("rect")
       .attr("width", innerWidth)
       .attr("height", innerHeight)
@@ -223,30 +248,25 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const rect = container.node().getBoundingClientRect();
         const [mouseX, mouseY] = d3.pointer(event, g.node());
 
-        // Figure out which week we're hovering over
+        // Determine the hovered week based on mouse position
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // ---- SORTING CHANGE: Build a sorted list of teams by their current rank ----
+        // SORTING: Build a sorted list of teams by their current rank
         const sortedTeams = chartData
           .map((teamData) => ({
             ...teamData,
             currentRank: teamData.ranks[weekIndex],
             prevRank: weekIndex > 0 ? teamData.ranks[weekIndex - 1] : null,
           }))
-          // Only keep teams that actually have a rank at this week
           .filter((d) => d.currentRank !== null)
-          // Sort ascending by current rank
           .sort((a, b) => a.currentRank - b.currentRank);
 
-        // Build tooltip HTML
         let html = `<strong style="font-size:0.9rem;">Week ${week}</strong><br/><br/>`;
         sortedTeams.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
           const { currentRank, prevRank } = teamData;
-
-          // Figure out how many spots changed from last week
           let diffHTML = "";
           if (prevRank === null) {
             diffHTML = ` <span style="color:green; font-size:0.8rem;">(newly ranked)</span>`;
@@ -258,7 +278,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
               diffHTML = ` <span style="color:red; font-size:0.8rem;">↓ ${Math.abs(change)}</span>`;
             }
           }
-
           html += `<div style="display:flex; align-items:center; margin-bottom:4px;">
                      <img src="${teamInfo.logo}" width="16" height="16" style="margin-right:4px;" />
                      <span style="font-size:0.8rem; margin-right:4px;">${teamData.team}:</span>
@@ -271,7 +290,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
 
-        // Ensure the tooltip does not overflow the container
         tooltip.html(html);
         const ttWidth = tooltip.node().offsetWidth;
         const ttHeight = tooltip.node().offsetHeight;
