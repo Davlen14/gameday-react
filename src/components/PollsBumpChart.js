@@ -194,34 +194,35 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
 
-// We'll place the group near the bottom-right, offset more from the bottom
-const bottomOffset = 60; // Increase this if still hidden
-const textGroup = svg.append("g")
-  .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`)
-  .attr("text-anchor", "middle"); // center the text horizontally at x=0
+    // SHIFT BOTTOM TEXT so it's fully visible
+    // We'll place it slightly above the bottom edge (e.g. 20px above the bottom)
+    const bottomOffset = 20;
+    const textGroup = svg.append("g")
+      .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`);
 
-// GAMEDAY+ line (red, italic, bold, smaller font)
-textGroup
-  .append("text")
-  .text("GAMEDAY+")
-  .attr("x", 0)
-  .attr("y", 0) // placed at y=0
-  .style("font-size", "10px")
-  .style("font-weight", "bold")
-  .style("font-style", "italic")
-  .style("fill", "#D4001C")
-  .style("font-family", "'Orbitron', 'Titillium Web', sans-serif");
+    // 1) "Presented by" line
+    textGroup
+      .append("text")
+      .text("Presented by")
+      .attr("x", 0)
+      .attr("y", 0)
+      .style("font-size", "12px")
+      .style("fill", "#000")
+      .style("font-weight", "normal")
+      .style("text-anchor", "end")
+      .style("font-family", "sans-serif");
 
-// "Presented by" line (black, normal weight, above GAMEDAY+)
-textGroup
-  .append("text")
-  .text("Presented by")
-  .attr("x", 0)
-  .attr("y", -12) // 12px above GAMEDAY+
-  .style("font-size", "10px")
-  .style("fill", "#000")
-  .style("font-weight", "normal")
-  .style("font-family", "sans-serif");
+    // 2) "GAMEDAY+" line
+    textGroup
+      .append("text")
+      .text("GAMEDAY+")
+      .attr("x", 0)
+      .attr("y", 16)
+      .style("font-size", "12px")
+      .style("fill", "#D4001C")
+      .style("font-style", "italic")
+      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
+      .style("text-anchor", "end");
 
     // Line generator
     const lineGen = d3
