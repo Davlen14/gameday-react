@@ -3,29 +3,29 @@ import teamsService from "../services/teamsService";
 import "../styles/PlayerStatsChart.css";
 
 const PlayerStatsChart = () => {
-  // State for fetched player stats
   const [players, setPlayers] = useState([]);
-  // State for search term only
   const [searchTerm, setSearchTerm] = useState("");
-  // Loading and error states
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch offensive player stats on mount
+  // Whenever searchTerm changes, call /player/search?searchTerm=...
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPlayersBySearch = async () => {
       try {
-        setIsLoading(true);
-        // Fetch offensive player stats
-        const rawPlayers = await teamsService.getPlayerSeasonStats(
-          2024,       // year
-          "offense",  // category (assuming your API merges passing/rushing/receiving)
-          "regular",  // seasonType
-          10000       // limit
-        );
+        // If no search term, clear the list and skip fetch
+        if (!searchTerm) {
+          setPlayers([]);
+          return;
+        }
 
-        // Build a fullName field if missing
-        const playersWithFullName = rawPlayers.map((p) => {
+        setIsLoading(true);
+        setError(null);
+
+        // Call the service to search players by name
+        const results = await teamsService.getPlayerSearch(searchTerm);
+
+        // Build a fullName if needed
+        const withFullName = results.map((p) => {
           let fullName = p.fullName;
           if (!fullName) {
             if (p.name) {
@@ -34,13 +34,10 @@ const PlayerStatsChart = () => {
               fullName = `${p.firstName || ""} ${p.lastName || ""}`.trim();
             }
           }
-          return {
-            ...p,
-            fullName,
-          };
+          return { ...p, fullName };
         });
 
-        setPlayers(playersWithFullName);
+        setPlayers(withFullName);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,50 +45,46 @@ const PlayerStatsChart = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    fetchPlayersBySearch();
+  }, [searchTerm]);
 
-  // Filter players based solely on the search term.
-  const filteredPlayers = players.filter((player) => {
-    const name = player.fullName ? player.fullName.toLowerCase() : "";
-    return name.includes(searchTerm.toLowerCase());
-  });
-
-  if (isLoading) return <div>Loading offensive stats...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (isLoading) return <div>Loading players...</div>;
+  if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
 
   return (
     <div className="player-stats-chart">
-      <h2>Offensive Player Stats - 2024</h2>
+      <h2>Search Players by Name</h2>
 
-      {/* Search Filter */}
       <div className="filters">
         <input
           type="text"
-          placeholder="Search by player name..."
+          placeholder="Type a player's name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Results Table */}
       <div className="stats-table-container">
         <table className="stats-table">
           <thead>
             <tr>
               <th>Player Name</th>
+              <th>Team</th>
+              <th>Position</th>
             </tr>
           </thead>
           <tbody>
-            {filteredPlayers.length ? (
-              filteredPlayers.map((player) => (
+            {players.length ? (
+              players.map((player) => (
                 <tr key={player.id}>
                   <td>{player.fullName}</td>
+                  <td>{player.team}</td>
+                  <td>{player.position}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td>No matching players found.</td>
+                <td colSpan="3">No matching players found.</td>
               </tr>
             )}
           </tbody>
