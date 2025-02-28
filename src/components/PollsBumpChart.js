@@ -29,7 +29,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   // Convert weekRange string to numeric start and end weeks.
-  // For "Week 1 - Postseason", we treat weeks 1–16 as regular season.
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -39,13 +38,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
       case "Week 1 - Postseason":
+        // weeks 1..16, plus 1 more for postseason
         return { startWeek: 1, endWeek: 16 };
       default:
         return { startWeek: 1, endWeek: 5 };
     }
   };
 
-  // Helper function to look up team info from the fetched teams data.
+  // Helper function to look up team info from fetched teams data.
   const getTeamInfo = (teamName) => {
     const foundTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -74,18 +74,22 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           if (!pollForWeek || pollForWeek.length === 0) continue;
-          weeks.push(pollForWeek[0]);
+          weeks.push(pollForWeek[0]); // assume pollForWeek[0] is the poll group
         }
 
-        // If we're in "Week 1 - Postseason" mode, fetch the postseason poll.
+        // If "Week 1 - Postseason", fetch postseason poll
         if (weekRange === "Week 1 - Postseason") {
-          const postseasonPoll = await teamsService.getPolls(2024, apiPollType, "postseason");
+          const postseasonPoll = await teamsService.getPolls(
+            2024,
+            apiPollType,
+            "postseason"
+          );
           if (postseasonPoll && postseasonPoll.length > 0) {
             weeks.push(postseasonPoll[0]);
           }
         }
 
-        // Transform weekly polls into a team-centric format.
+        // Transform weekly polls into a team-centric format
         const teamsMap = {};
         weeks.forEach((pollGroup, i) => {
           pollGroup.rankings.forEach((team) => {
@@ -141,42 +145,19 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // 1) Background gradient behind the chart
-    const defs = svg.append("defs");
-    const bgGradient = defs
-      .append("linearGradient")
-      .attr("id", "bg-gradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "0%")
-      .attr("y2", "100%");
-    bgGradient
-      .append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#f9f9f9");
-    bgGradient
-      .append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#ffffff");
-
-    // Place a background rect for the chart area
-    g.append("rect")
-      .attr("width", innerWidth)
-      .attr("height", innerHeight)
-      .style("fill", "url(#bg-gradient)");
-
-    // 2) X and Y scales
+    // X scale
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, finalWeek])
       .range([0, innerWidth]);
 
+    // Y scale (1 is top, 25 is bottom)
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // 3) Axes with minimal styling
+    // Axes
     const xAxis = d3
       .axisBottom(xScale)
       .ticks(totalWeeks)
@@ -185,48 +166,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           return "Postseason";
         }
         return d;
-      })
-      .tickSize(-innerHeight) // extend ticks as grid lines
-      .tickPadding(10);
+      });
+    const yAxis = d3.axisLeft(yScale).ticks(25);
 
-    const yAxis = d3
-      .axisLeft(yScale)
-      .ticks(5) // fewer ticks for a cleaner look
-      .tickSize(-innerWidth) // extend ticks as grid lines
-      .tickPadding(10);
-
-    // X Axis Group
+    // Draw axes
     g.append("g")
       .attr("transform", `translate(0, ${innerHeight})`)
-      .call(xAxis)
-      .call((g) => {
-        // Remove the domain line
-        g.select(".domain").remove();
-        // Style the ticks
-        g.selectAll(".tick line")
-          .attr("stroke", "#ccc")
-          .attr("stroke-dasharray", "2,2");
-        g.selectAll("text")
-          .attr("fill", "#666")
-          .style("font-size", "12px")
-          .style("font-family", "sans-serif");
-      });
+      .call(xAxis);
+    g.append("g").call(yAxis);
 
-    // Y Axis Group
-    g.append("g")
-      .call(yAxis)
-      .call((g) => {
-        g.select(".domain").remove();
-        g.selectAll(".tick line")
-          .attr("stroke", "#ccc")
-          .attr("stroke-dasharray", "2,2");
-        g.selectAll("text")
-          .attr("fill", "#666")
-          .style("font-size", "12px")
-          .style("font-family", "sans-serif");
-      });
-
-    // 4) Poll Logo near top-right
+    // Poll logo top-right
     const pollLogos = {
       "AP Poll": "/photos/AP25.jpg",
       "Coaches Poll": "/photos/USA-Today-Logo.png",
@@ -245,12 +194,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
 
-    // 5) "Presented by" / "GAMEDAY+" near bottom-right
-    const textPadding = 10;
-    const stackedTextGroup = svg.append("g")
-      .attr("transform", `translate(${width - textPadding}, ${height - textPadding})`);
+    // SHIFT BOTTOM TEXT so it's fully visible
+    // We'll place it slightly above the bottom edge (e.g. 20px above the bottom)
+    const bottomOffset = 20;
+    const textGroup = svg.append("g")
+      .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`);
 
-    stackedTextGroup.append("text")
+    // 1) "Presented by" line
+    textGroup
+      .append("text")
       .text("Presented by")
       .attr("x", 0)
       .attr("y", 0)
@@ -260,7 +212,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("text-anchor", "end")
       .style("font-family", "sans-serif");
 
-    stackedTextGroup.append("text")
+    // 2) "GAMEDAY+" line
+    textGroup
+      .append("text")
       .text("GAMEDAY+")
       .attr("x", 0)
       .attr("y", 16)
@@ -270,7 +224,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
       .style("text-anchor", "end");
 
-    // 6) Shared tooltip
+    // Line generator
+    const lineGen = d3
+      .line()
+      .x((d, i) => xScale(i + startWeek))
+      .y((d) => yScale(d))
+      .curve(d3.curveMonotoneX);
+
+    // Shared tooltip
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     let tooltip = container.select(".tooltip");
     if (tooltip.empty()) {
@@ -287,29 +248,20 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .style("z-index", "10000");
     }
 
-    // 7) Line generator
-    const lineGen = d3
-      .line()
-      .x((d, i) => xScale(i + startWeek))
-      .y((d) => yScale(d))
-      .curve(d3.curveMonotoneX);
-
-    // For each team
+    // Draw lines
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
-      // 7a) Draw line with modern styling
       const path = g
         .append("path")
         .datum(normalizedRanks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
-        .attr("stroke-width", 3)        // thicker line
-        .attr("stroke-opacity", 0.8)    // slight transparency
+        .attr("stroke-width", 2)
         .attr("d", lineGen);
 
-      // 7b) Animate the line
+      // Animate line
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -319,13 +271,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // If final rank is null, fade out
+      // Fade out if final rank is null
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
       if (finalRank === null) {
         path.transition().delay(13000).duration(1000).style("opacity", 0);
       }
 
-      // 7c) Team logo that moves along the path
+      // Team logo along the path
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -351,7 +303,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return t === 1; 
       });
 
-      // 8) Tooltip logic on hover
+      // Tooltip
       path
         .on("mousemove", function (event) {
           const [mx] = d3.pointer(event, g.node());
