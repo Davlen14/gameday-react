@@ -151,25 +151,26 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // Define line generator that ignores null values
-    const line = d3
+    // Line generator (no .defined() so that null => 25 can be drawn)
+    const lineGen = d3
       .line()
-      .defined((d) => d !== null)
       .x((d, i) => xScale(i + startWeek))
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team
+    // For each team, replace null ranks with 25 so the line goes all the way down.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
+      const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
+      // Draw the line
       const path = g
         .append("path")
-        .datum(teamData.ranks)
+        .datum(normalizedRanks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
         .attr("stroke-width", 2)
-        .attr("d", line);
+        .attr("d", lineGen);
 
       // Animate the line drawing (13 seconds).
       const totalLength = path.node().getTotalLength();
@@ -181,7 +182,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // Attach the team logo to the line
+      // Attach the team logo
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -194,8 +195,24 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
+
+        // Move the logo to this point
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
-        return t === 1;
+
+        // If near bottom (rank ~25), fade out the logo
+        // Compare y-position to yScale(24.5) as a threshold
+        const fadeThresholdY = yScale(24.5); 
+        if (point.y >= fadeThresholdY) {
+          // Determine how close we are to the very bottom
+          const bottomY = yScale(25);
+          const fraction =
+            (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
+          logo.style("opacity", 1 - fraction);
+        } else {
+          logo.style("opacity", 1);
+        }
+
+        return t === 1; // stop timer after 13s
       });
     });
 
@@ -228,14 +245,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // ---- SORTING CHANGE: Build a sorted list of teams by their current rank ----
+        // Build a sorted list of teams by their current rank
         const sortedTeams = chartData
           .map((teamData) => ({
             ...teamData,
             currentRank: teamData.ranks[weekIndex],
             prevRank: weekIndex > 0 ? teamData.ranks[weekIndex - 1] : null,
           }))
-          // Only keep teams that actually have a rank at this week
+          // Exclude unranked (null) teams from tooltip
           .filter((d) => d.currentRank !== null)
           // Sort ascending by current rank
           .sort((a, b) => a.currentRank - b.currentRank);
