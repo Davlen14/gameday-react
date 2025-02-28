@@ -29,6 +29,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   // Convert weekRange string to numeric start and end weeks.
+  // Added a new case "Week 1 - 16 + Final" for a 16-week season plus postseason.
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -37,6 +38,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return { startWeek: 1, endWeek: 10 };
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
+      case "Week 1 - 16 + Final":
+        return { startWeek: 1, endWeek: 17 }; // weeks 1-16 plus an extra tick for Final
       default:
         return { startWeek: 1, endWeek: 5 };
     }
@@ -67,6 +70,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const apiPollType = mapPollType(pollType);
         const weeks = [];
 
+        // Loop through weeks from startWeek to endWeek.
+        // (Make sure your API returns data for postseason if endWeek is greater than 16.)
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           // Assume pollForWeek[0] is the poll group for that week.
@@ -142,8 +147,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes
-    const xAxis = d3.axisBottom(xScale).ticks(totalWeeks).tickFormat(d3.format("d"));
+    // Axes with custom tick formatting: if the tick equals endWeek (postseason), show "Final"
+    const xAxis = d3.axisBottom(xScale)
+      .ticks(totalWeeks)
+      .tickFormat((d) => (d === endWeek && endWeek === 17 ? "Final" : d));
     const yAxis = d3.axisLeft(yScale).ticks(25);
 
     g.append("g")

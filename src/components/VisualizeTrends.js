@@ -81,13 +81,14 @@ const VisualizeTrends = () => {
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                    <select
-                      value={selectedWeekRange}
-                      onChange={handleWeekRangeChange}
+                  <select
+                    value={selectedWeekRange}
+                    onChange={handleWeekRangeChange}
                     >
-                      <option value="Week 1 - 5">Week 1 - 5</option>
-                      <option value="Week 1 - 10">Week 1 - 10</option>
-                      <option value="Week 1 - 15">Week 1 - 15</option>
+                    <option value="Week 1 - 5">Week 1 - 5</option>
+                    <option value="Week 1 - 10">Week 1 - 10</option>
+                    <option value="Week 1 - 15">Week 1 - 15</option>
+                    <option value="Week 1 - 16 + Final">Week 1 - Final </option>
                     </select>
                   </div>
                   <div className="filter-group">
