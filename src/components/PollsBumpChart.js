@@ -7,6 +7,11 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   const [chartData, setChartData] = useState([]);
   const [teams, setTeams] = useState([]);
 
+  // PHASE DURATIONS
+  const mainDuration = 8000;        // Time to animate the initial lines
+  const finalTransitionDuration = 5000; // Time to slide axis & show only weeks 10-15
+  const totalDuration = mainDuration + finalTransitionDuration;
+
   // Fetch teams data on mount so we can look up team info.
   useEffect(() => {
     const fetchTeams = async () => {
@@ -29,16 +34,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   // Convert weekRange string to numeric start and end weeks.
+  // For simplicity, we assume 1–15 is your overall range.
   const mapWeekRange = (rangeStr) => {
+    // You can adapt these as needed.
     switch (rangeStr) {
-      case "Week 1 - 5":
-        return { startWeek: 1, endWeek: 5 };
-      case "Week 1 - 10":
-        return { startWeek: 1, endWeek: 10 };
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
       default:
-        return { startWeek: 1, endWeek: 5 };
+        return { startWeek: 1, endWeek: 15 };
     }
   };
 
@@ -62,7 +65,20 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   // Helper: if a rank is null (i.e. unranked), treat it as 25 (the bottom of the chart)
   const normalizeRank = (rank) => (rank === null ? 25 : rank);
 
-  // Fetch poll data for the given pollType and weekRange.
+  // Check if a team is ranked in the final weeks (10–15).
+  // If they're always 25 (or unranked) in that period, we can hide them at the end.
+  const isRankedInFinalWeeks = (ranks) => {
+    // Weeks 10–15 means array indices 9–14 (if weeks start at 1).
+    // If any rank < 25 in that range, we consider them "ranked" in the final period.
+    for (let i = 9; i < 15 && i < ranks.length; i++) {
+      if (ranks[i] !== null && ranks[i] < 25) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Fetch poll data for the given pollType and weekRange
   useEffect(() => {
     const fetchPollData = async () => {
       try {
@@ -95,10 +111,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         setChartData(transformedData);
       } catch (error) {
         console.error("Error fetching poll data:", error);
-        // Fallback sample data for 5 weeks.
+        // Fallback sample data for 5 weeks (adjust to 15 if needed).
         setChartData([
-          { team: "Georgia", ranks: [1, 1, 2, 1, 1] },
-          { team: "Michigan", ranks: [2, 2, 1, 2, 2] },
+          { team: "Georgia", ranks: [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+          { team: "Michigan", ranks: [2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] },
         ]);
       }
     };
@@ -106,89 +122,85 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Render / update the chart with smooth week-to-week transitions,
-  // moving week labels, and removal of the logo when a team is unranked.
+  // Render / update the chart with:
+  // 1) Animated lines (phase 1)
+  // 2) Slower axis slide to show only weeks 10–15 (phase 2)
+  // 3) Filter out teams not ranked in final weeks
   useEffect(() => {
-    // Clear previous chart.
+    // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
     if (!chartData || chartData.length === 0) return;
 
-    const { startWeek, endWeek } = mapWeekRange(weekRange);
-    const totalWeeks = endWeek - startWeek + 1;
-    const totalDuration = 13000; // total animation duration in ms
-
-    // Margins & inner dimensions.
-    const margin = { top: 40, right: 100, bottom: 40, left: 50 },
-      innerWidth = width - margin.left - margin.right,
-      innerHeight = height - margin.top - margin.bottom;
-
-    // Create the responsive SVG.
-    const svg = d3
+    const { startWeek, endWeek } = mapWeekRange(weekRange); // e.g. 1, 15
+    const mainSvg = d3
       .select(chartRef.current)
       .attr("width", "100%")
       .attr("height", "100%")
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "none");
 
-    // Group for the chart elements.
-    const g = svg
+    // Margins & inner dimensions
+    const margin = { top: 40, right: 80, bottom: 40, left: 50 },
+      innerWidth = width - margin.left - margin.right,
+      innerHeight = height - margin.top - margin.bottom;
+
+    // Main group
+    const g = mainSvg
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale.
+    // X scale: start with full domain [1,15]
     const xScale = d3
       .scaleLinear()
-      .domain([startWeek, endWeek])
+      .domain([startWeek, endWeek]) // e.g. [1,15]
       .range([0, innerWidth]);
 
-    // Y scale (1 is top, 25 is bottom).
+    // Y scale (1 is top, 25 is bottom)
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes.
-    const xAxis = d3.axisBottom(xScale).ticks(totalWeeks).tickFormat(d3.format("d"));
+    // Axes
+    const xAxis = d3.axisBottom(xScale).ticks(endWeek - startWeek + 1).tickFormat(d3.format("d"));
     const yAxis = d3.axisLeft(yScale).ticks(25);
 
-    // Append x-axis and animate it to slide left (making week labels move away).
+    // Append x-axis, y-axis
     const xAxisG = g
       .append("g")
       .attr("transform", `translate(0, ${innerHeight})`)
       .call(xAxis);
-
-    xAxisG
-      .transition()
-      .duration(totalDuration)
-      .ease(d3.easeLinear)
-      .attr("transform", `translate(-${innerWidth}, ${innerHeight})`);
-
     g.append("g").call(yAxis);
 
-    // Define a line generator that uses objects with { week, rank }.
+    // LINE GENERATOR
     const animatedLine = d3
       .line()
       .x((d) => xScale(d.week))
       .y((d) => yScale(d.rank))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team.
+    // PHASE 1: Animate lines from weeks 1–15
+    // Store references to each path & logo so we can do a second transition later.
+    const pathSelection = [];
+    const logoSelection = [];
+
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
-      // Append path element for the team line.
+      // Create path
       const path = g.append("path")
         .datum(teamData.ranks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
         .attr("stroke-width", 2);
 
-      // Animate the line using attrTween.
-      path.transition()
-        .duration(totalDuration)
+      // Animate path with attrTween
+      path
+        .transition()
+        .duration(mainDuration)
         .ease(d3.easeLinear)
-        .attrTween("d", function(d) {
-          return function(t) {
+        .attrTween("d", function (d) {
+          return function (t) {
             const totalSegments = d.length - 1;
             const segmentDuration = 1 / totalSegments;
             let segmentIndex = Math.floor(t / segmentDuration);
@@ -197,33 +209,35 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
               segmentIndex = totalSegments - 1;
               segmentProgress = 1;
             }
-            // Build points up to the current animated segment.
+            // Build partial array up to current animated segment
             const points = [];
             for (let i = 0; i <= segmentIndex; i++) {
               points.push({ week: startWeek + i, rank: normalizeRank(d[i]) });
             }
-            // Add an interpolated point for the current segment.
+            // Add an interpolated point for the current segment
             if (segmentIndex < totalSegments) {
-              const current = normalizeRank(d[segmentIndex]);
-              const next = normalizeRank(d[segmentIndex + 1]);
-              const interpolatedRank = current + (next - current) * segmentProgress;
-              const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
-              points.push({ week: interpolatedWeek, rank: interpolatedRank });
+              const currentRank = normalizeRank(d[segmentIndex]);
+              const nextRank = normalizeRank(d[segmentIndex + 1]);
+              const interpRank = currentRank + (nextRank - currentRank) * segmentProgress;
+              const interpWeek = startWeek + segmentIndex + segmentProgress;
+              points.push({ week: interpWeek, rank: interpRank });
             }
             return animatedLine(points);
           };
         });
 
-      // Attach the team logo.
+      // Create logo
       const logo = g.append("image")
         .attr("xlink:href", teamInfo.logo)
         .attr("width", 20)
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Timer to update the logo's position in sync with the line animation.
+      // Timer to move the logo along the line
       d3.timer((elapsed) => {
-        const t = Math.min(elapsed / totalDuration, 1);
+        const t = Math.min(elapsed / mainDuration, 1);
+        if (t >= 1) return true; // Stop this timer at the end of Phase 1
+
         const totalSegments = teamData.ranks.length - 1;
         const segmentDuration = 1 / totalSegments;
         let segmentIndex = Math.floor(t / segmentDuration);
@@ -238,20 +252,106 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
         const x = xScale(interpolatedWeek);
         const y = yScale(interpolatedRank);
+        logo.attr("x", x - 10).attr("y", y - 10);
 
-        // If the interpolated rank is near 25 (i.e. unranked), fade out the logo.
+        // Fade out if near 25
         if (interpolatedRank >= 24.5) {
-          const fadeProgress = (interpolatedRank - 24.5) / 0.5;
-          logo.style("opacity", 1 - fadeProgress);
+          const fade = (interpolatedRank - 24.5) / 0.5;
+          logo.style("opacity", 1 - fade);
         } else {
           logo.style("opacity", 1);
         }
-        logo.attr("x", x - 10).attr("y", y - 10);
-        if (t === 1) return true; // Stop timer when animation completes.
       });
+
+      // Store references for Phase 2
+      pathSelection.push({ teamData, path });
+      logoSelection.push({ teamData, logo });
     });
 
-    // Tooltip logic remains unchanged.
+    // PHASE 2: After mainDuration, show only weeks 10–15, remove unranked teams
+    // We do a delayed transition triggered once Phase 1 finishes.
+    d3.timeout(() => {
+      // 1) Filter out teams not ranked in weeks 10–15
+      const finalChartData = chartData.filter((d) => isRankedInFinalWeeks(d.ranks));
+
+      // 2) Update the xScale domain to [10,15]
+      const finalDomain = [10, endWeek];
+      xScale.domain(finalDomain);
+
+      // 3) Animate the x-axis to show only [10,15]
+      xAxisG
+        .transition()
+        .duration(finalTransitionDuration)
+        .ease(d3.easeCubicInOut)
+        .call(xAxis);
+
+      // 4) For each path: if the team is in finalChartData, re-draw it with the new domain
+      //    otherwise fade it out or remove it.
+      pathSelection.forEach(({ teamData, path }) => {
+        const keep = finalChartData.includes(teamData);
+        if (!keep) {
+          // fade out
+          path
+            .transition()
+            .duration(finalTransitionDuration / 2)
+            .style("opacity", 0)
+            .remove();
+        } else {
+          // Re-draw line for the new domain (weeks 10–15).
+          path
+            .transition()
+            .duration(finalTransitionDuration)
+            .ease(d3.easeCubicInOut)
+            .attr("d", function () {
+              // Build new data points for weeks 10–15 only
+              const newPoints = teamData.ranks
+                .map((r, i) => ({ week: startWeek + i, rank: normalizeRank(r) }))
+                .filter((p) => p.week >= 10 && p.week <= endWeek);
+              return animatedLine(newPoints);
+            });
+        }
+      });
+
+      // 5) Do the same for logos
+      logoSelection.forEach(({ teamData, logo }) => {
+        const keep = finalChartData.includes(teamData);
+        if (!keep) {
+          // fade out
+          logo
+            .transition()
+            .duration(finalTransitionDuration / 2)
+            .style("opacity", 0)
+            .remove();
+        } else {
+          // Move the logo to the final position in the new domain
+          logo
+            .transition()
+            .duration(finalTransitionDuration)
+            .ease(d3.easeCubicInOut)
+            .attrTween("transform", function () {
+              // We'll just place the logo at the last known rank in weeks 10–15
+              // or we could animate it along the line. For simplicity, we jump to the last position.
+              const newPoints = teamData.ranks
+                .map((r, i) => ({ week: startWeek + i, rank: normalizeRank(r) }))
+                .filter((p) => p.week >= 10 && p.week <= endWeek);
+
+              // The final point is the last element in newPoints
+              const finalPoint = newPoints[newPoints.length - 1];
+              const finalX = xScale(finalPoint.week);
+              const finalY = yScale(finalPoint.rank);
+
+              const [startX, startY] = [+logo.attr("x"), +logo.attr("y")];
+              return function (u) {
+                const cx = startX + (finalX - startX) * u;
+                const cy = startY + (finalY - startY) * u;
+                return `translate(${cx}, ${cy})`;
+              };
+            });
+        }
+      });
+    }, mainDuration); // start Phase 2 after Phase 1’s duration
+
+    // TOOLTIP (unchanged)
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     const tooltip = container
       .append("div")
@@ -274,25 +374,25 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const rect = container.node().getBoundingClientRect();
         const [mouseX, mouseY] = d3.pointer(event, g.node());
 
-        let week = Math.round(xScale.invert(mouseX));
-        week = Math.max(startWeek, Math.min(week, endWeek));
-        const weekIndex = week - startWeek;
+        let hoveredWeek = Math.round(xScale.invert(mouseX));
+        hoveredWeek = Math.max(startWeek, Math.min(hoveredWeek, endWeek));
+        const hoveredIndex = hoveredWeek - startWeek;
 
         const sortedTeams = chartData
-          .map((teamData) => ({
-            ...teamData,
-            currentRank: teamData.ranks[weekIndex] === null ? 25 : teamData.ranks[weekIndex],
+          .map((td) => ({
+            ...td,
+            currentRank: td.ranks[hoveredIndex] === null ? 25 : td.ranks[hoveredIndex],
             prevRank:
-              weekIndex > 0
-                ? teamData.ranks[weekIndex - 1] === null
+              hoveredIndex > 0
+                ? td.ranks[hoveredIndex - 1] === null
                   ? 25
-                  : teamData.ranks[weekIndex - 1]
+                  : td.ranks[hoveredIndex - 1]
                 : null,
           }))
           .filter((d) => d.currentRank !== null)
           .sort((a, b) => a.currentRank - b.currentRank);
 
-        let html = `<strong style="font-size:0.9rem;">Week ${week}</strong><br/><br/>`;
+        let html = `<strong style="font-size:0.9rem;">Week ${hoveredWeek}</strong><br/><br/>`;
         sortedTeams.forEach((teamData) => {
           const teamInfo = getTeamInfo(teamData.team);
           const { currentRank, prevRank } = teamData;
