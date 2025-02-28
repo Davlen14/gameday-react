@@ -1,8 +1,9 @@
+// PlayerStatsChart.jsx
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import "../styles/PlayerStatsModal.css";
+import "../styles/PlayerStatsChart.css"; // Renamed for clarity
 
-const PlayerStatsModal = () => {
+const PlayerStatsChart = () => {
   // State for fetched player stats
   const [players, setPlayers] = useState([]);
   // States for filters
@@ -18,8 +19,7 @@ const PlayerStatsModal = () => {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        // Using the getPlayerSeasonStats function from teamsService.
-        // It should fetch offensive stats (combined if your backend supports the "offense" category)
+        // Use the getPlayerSeasonStats function from your service
         const data = await teamsService.getPlayerSeasonStats(2024, "offense", "regular", 10000);
         setPlayers(data);
       } catch (err) {
@@ -32,16 +32,17 @@ const PlayerStatsModal = () => {
     fetchStats();
   }, []);
 
-  // Filter players based on search term, team and position filters.
+  // Filter players based on search term, team, and position filters
   const filteredPlayers = players.filter((player) => {
     const matchesSearch =
-      player.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+      player.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTeam =
       teamFilter === "All Teams" ||
       (player.team && player.team.toLowerCase() === teamFilter.toLowerCase());
     const matchesPosition =
       positionFilter === "All Positions" ||
       (player.position && player.position.toLowerCase() === positionFilter.toLowerCase());
+
     return matchesSearch && matchesTeam && matchesPosition;
   });
 
@@ -49,8 +50,10 @@ const PlayerStatsModal = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="player-stats-modal">
+    <div className="player-stats-chart">
       <h2>Offensive Player Stats - 2024</h2>
+
+      {/* Filters */}
       <div className="filters">
         <input
           type="text"
@@ -74,6 +77,8 @@ const PlayerStatsModal = () => {
           {/* Add more positions as needed */}
         </select>
       </div>
+
+      {/* Table */}
       <div className="stats-table-container">
         <table className="stats-table">
           <thead>
@@ -85,7 +90,6 @@ const PlayerStatsModal = () => {
               <th>Rushing Yards</th>
               <th>Receiving Yards</th>
               <th>Touchdowns</th>
-              {/* Add more stat columns as needed */}
             </tr>
           </thead>
           <tbody>
@@ -113,4 +117,4 @@ const PlayerStatsModal = () => {
   );
 };
 
-export default PlayerStatsModal;
+export default PlayerStatsChart;
