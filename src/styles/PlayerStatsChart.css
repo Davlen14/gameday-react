@@ -1,0 +1,75 @@
+/* PlayerStatsChart.css */
+
+.player-stats-chart {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.player-stats-chart h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+/* Filters Section */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.filters input[type="text"],
+.filters select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.filters input[type="text"]:focus,
+.filters select:focus {
+  border-color: #0077cc;
+}
+
+/* Table Styles */
+.stats-table-container {
+  overflow-x: auto;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 12px 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 14px;
+  color: #444;
+}
+
+.stats-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.stats-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.stats-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
