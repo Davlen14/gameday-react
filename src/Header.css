@@ -76,9 +76,10 @@
 }
 
 .top-bar-button:hover {
-  background: linear-gradient(135deg, #D4001C, #c11b1b);
+  background: transparent; /* Background becomes clear */
+  border: 1px solid rgba(255, 255, 255, 0.25); /* Very subtle border */
   color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* DROPDOWN */
