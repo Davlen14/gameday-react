@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../styles/VisualizeTrends.css";
 import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
+import PlayerStatsModal from "./PlayerStatsModal"; // Dedicated component for player stats
 
 const VisualizeTrends = () => {
   // State to track which modal is open
@@ -96,10 +97,7 @@ const VisualizeTrends = () => {
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                    <select
-                      value={selectedWeekRange}
-                      onChange={handleWeekRangeChange}
-                    >
+                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                       <option value="Week 1 - 5">Week 1 - 5</option>
                       <option value="Week 1 - 10">Week 1 - 10</option>
                       <option value="Week 1 - 15">Week 1 - 15</option>
@@ -107,17 +105,13 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                   <div className="filter-group">
-                    <select
-                      value={selectedPollType}
-                      onChange={handlePollTypeChange}
-                    >
+                    <select value={selectedPollType} onChange={handlePollTypeChange}>
                       <option value="AP Poll">AP Poll</option>
                       <option value="Coaches Poll">Coaches Poll</option>
                       <option value="Playoff Rankings">Playoff Rankings</option>
                     </select>
                   </div>
                 </div>
-
                 <div className="chart-wrapper">
                   <PollsBumpChart
                     width={700}
@@ -175,10 +169,12 @@ const VisualizeTrends = () => {
                   </div>
                 </div>
                 <div className="chart-wrapper">
-                  {/* Placeholder: Replace with a component/table/chart to display filtered offensive stats */}
-                  <div className="player-stats-placeholder">
-                    [Player Stats Table/Chart will appear here after implementing filtering and search]
-                  </div>
+                  {/* Render the PlayerStatsModal component with filter props */}
+                  <PlayerStatsModal
+                    searchTerm={playerSearchTerm}
+                    teamFilter={selectedTeam}
+                    positionFilter={selectedPosition}
+                  />
                 </div>
               </>
             )}
