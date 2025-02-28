@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../styles/VisualizeTrends.css";
-import PollsBumpChart from "./PollsBumpChart"; // D3 chart component for polls
-import PlayerStatsChart from "./PlayerStatsChart"; // D3 chart component for player stats
+import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
 
 const VisualizeTrends = () => {
   // State to track which modal is open
@@ -11,34 +10,33 @@ const VisualizeTrends = () => {
   const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
   const [selectedPollType, setSelectedPollType] = useState("AP Poll");
 
-  // States for player stats modal filters (for D3 chart)
-  const [playerSearchTerm, setPlayerSearchTerm] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("All Teams");
-  const [selectedPosition, setSelectedPosition] = useState("All Positions");
-
   // Handlers for opening/closing modals
-  const openModal = (modalType) => setActiveModal(modalType);
-  const closeModal = () => setActiveModal(null);
+  const openModal = (modalType) => {
+    setActiveModal(modalType);
+  };
+  const closeModal = () => {
+    setActiveModal(null);
+  };
 
-  // Handlers for updating poll filter selections
-  const handleWeekRangeChange = (e) => setSelectedWeekRange(e.target.value);
-  const handlePollTypeChange = (e) => setSelectedPollType(e.target.value);
-
-  // Handlers for player stats modal filters
-  const handlePlayerSearchChange = (e) => setPlayerSearchTerm(e.target.value);
-  const handleTeamFilterChange = (e) => setSelectedTeam(e.target.value);
-  const handlePositionFilterChange = (e) => setSelectedPosition(e.target.value);
+  // Handlers for updating filter selections
+  const handleWeekRangeChange = (e) => {
+    setSelectedWeekRange(e.target.value);
+  };
+  const handlePollTypeChange = (e) => {
+    setSelectedPollType(e.target.value);
+  };
 
   return (
     <div className="visualize-container">
       <header className="visualize-header">
         <h1>Visualize Trends</h1>
         <p>
-          Explore animated trends, polls, player stats, team points, and more over the season.
+          Explore animated trends, polls, player stats, team points, and more over
+          the season.
         </p>
       </header>
 
-      {/* Dashboard Cards */}
+      {/* Dashboard Cards: Click to Open Modals */}
       <section className="visualize-dashboard">
         <div className="chart-card" onClick={() => openModal("pollRankings")}>
           <div className="chart-header">
@@ -69,7 +67,7 @@ const VisualizeTrends = () => {
         </div>
       </section>
 
-      {/* Modal Overlay */}
+      {/* Modal Overlay (only visible if a modal is active) */}
       {activeModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -77,26 +75,36 @@ const VisualizeTrends = () => {
               &times;
             </button>
 
+            {/* 1. Poll Rankings Modal */}
             {activeModal === "pollRankings" && (
               <>
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
-                      <option value="Week 1 - 5">Week 1 - 5</option>
-                      <option value="Week 1 - 10">Week 1 - 10</option>
-                      <option value="Week 1 - 15">Week 1 - 15</option>
-                      <option value="Week 1 - Postseason">Week 1 - Postseason</option>
-                    </select>
+                  <select
+                value={selectedWeekRange}
+                onChange={handleWeekRangeChange}
+                >
+                <option value="Week 1 - 5">Week 1 - 5</option>
+                <option value="Week 1 - 10">Week 1 - 10</option>
+                <option value="Week 1 - 15">Week 1 - 15</option>
+                {/* NEW OPTION FOR POSTSEASON */}
+                <option value="Week 1 - Postseason">Week 1 - Postseason</option>
+                </select>
                   </div>
                   <div className="filter-group">
-                    <select value={selectedPollType} onChange={handlePollTypeChange}>
+                    <select
+                      value={selectedPollType}
+                      onChange={handlePollTypeChange}
+                    >
                       <option value="AP Poll">AP Poll</option>
                       <option value="Coaches Poll">Coaches Poll</option>
                       <option value="Playoff Rankings">Playoff Rankings</option>
                     </select>
                   </div>
                 </div>
+
+                {/* Pass the filter selections to PollsBumpChart */}
                 <div className="chart-wrapper">
                   <PollsBumpChart
                     width={700}
@@ -108,71 +116,73 @@ const VisualizeTrends = () => {
               </>
             )}
 
+            {/* 2. Player Stats Modal */}
             {activeModal === "playerStats" && (
               <>
                 <h2>Player Stats Over Weeks</h2>
-                {/* Filters for player stats are handled here */}
                 <div className="modal-filters">
                   <div className="filter-group">
-                    <label htmlFor="playerSearch">Search Player:</label>
-                    <input
-                      id="playerSearch"
-                      type="text"
-                      placeholder="Enter player name..."
-                      value={playerSearchTerm}
-                      onChange={handlePlayerSearchChange}
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label htmlFor="teamFilter">Team:</label>
-                    <select
-                      id="teamFilter"
-                      value={selectedTeam}
-                      onChange={handleTeamFilterChange}
-                    >
-                      <option value="All Teams">All Teams</option>
-                      {/* You could populate this dynamically from a teams service */}
-                      <option value="Alabama">Alabama</option>
-                      <option value="Ohio State">Ohio State</option>
-                      <option value="Michigan">Michigan</option>
+                    <label>Player</label>
+                    <select>
+                      <option>All Players</option>
+                      <option>Player 1</option>
+                      <option>Player 2</option>
                     </select>
                   </div>
                   <div className="filter-group">
-                    <label htmlFor="positionFilter">Position:</label>
-                    <select
-                      id="positionFilter"
-                      value={selectedPosition}
-                      onChange={handlePositionFilterChange}
-                    >
-                      <option value="All Positions">All Positions</option>
-                      <option value="QB">QB</option>
-                      <option value="RB">RB</option>
-                      <option value="WR">WR</option>
-                      <option value="TE">TE</option>
+                    <label>Stat Type</label>
+                    <select>
+                      <option>Passing Yards</option>
+                      <option>Rushing Yards</option>
+                      <option>Receiving Yards</option>
+                      <option>Touchdowns</option>
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">
-                  {/* Pass filters to the PlayerStatsChart component */}
-                  <PlayerStatsChart
-                    searchTerm={playerSearchTerm}
-                    teamFilter={selectedTeam}
-                    positionFilter={selectedPosition}
-                  />
-                </div>
+                <div className="chart-wrapper">[Line Chart Placeholder]</div>
               </>
             )}
 
+            {/* 3. Team Points Modal */}
             {activeModal === "teamPoints" && (
               <>
                 <h2>Team Points Per Game</h2>
+                <div className="modal-filters">
+                  <div className="filter-group">
+                    <label>Team</label>
+                    <select>
+                      <option>All Teams</option>
+                      <option>Team A</option>
+                      <option>Team B</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="chart-wrapper">[Bar Chart Placeholder]</div>
               </>
             )}
 
+            {/* 4. Offense vs. Defense Modal */}
             {activeModal === "offenseDefense" && (
               <>
                 <h2>Offense vs. Defense Trends</h2>
+                <div className="modal-filters">
+                  <div className="filter-group">
+                    <label>Offensive Stat</label>
+                    <select>
+                      <option>Total Yards</option>
+                      <option>Rushing Yards</option>
+                      <option>Passing Yards</option>
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Defensive Stat</label>
+                    <select>
+                      <option>Yards Allowed</option>
+                      <option>Points Allowed</option>
+                      <option>Sacks</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="chart-wrapper">[Dual-Axis Chart Placeholder]</div>
               </>
             )}
