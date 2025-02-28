@@ -194,33 +194,33 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
 
-// Instead of stackedTextGroup with "text-anchor: end", we do a new group with "text-anchor: middle"
-const bottomOffset = 20;
+// We'll place the group near the bottom-right, offset more from the bottom
+const bottomOffset = 60; // Increase this if still hidden
 const textGroup = svg.append("g")
   .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`)
   .attr("text-anchor", "middle"); // center the text horizontally at x=0
 
-// GAMEDAY+ line (italic + bold, red)
+// GAMEDAY+ line (red, italic, bold, smaller font)
 textGroup
   .append("text")
   .text("GAMEDAY+")
   .attr("x", 0)
-  .attr("y", 0) // place this at y=0
-  .style("font-size", "14px")
-  .style("font-weight", "bold")       // bold
-  .style("font-style", "italic")      // italic
-  .style("fill", "#D4001C")           // red color
+  .attr("y", 0) // placed at y=0
+  .style("font-size", "10px")
+  .style("font-weight", "bold")
+  .style("font-style", "italic")
+  .style("fill", "#D4001C")
   .style("font-family", "'Orbitron', 'Titillium Web', sans-serif");
 
-// Presented by line (smaller, black, normal weight, above GAMEDAY+)
+// "Presented by" line (black, normal weight, above GAMEDAY+)
 textGroup
   .append("text")
   .text("Presented by")
   .attr("x", 0)
-  .attr("y", -14) // 14px above GAMEDAY+
+  .attr("y", -12) // 12px above GAMEDAY+
   .style("font-size", "10px")
-  .style("font-weight", "normal")
   .style("fill", "#000")
+  .style("font-weight", "normal")
   .style("font-family", "sans-serif");
 
     // Line generator
