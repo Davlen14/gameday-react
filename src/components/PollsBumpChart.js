@@ -59,6 +59,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return { color: "gray", logo: "/photos/default_team.png" };
   };
 
+  // Helper: if a rank is null (i.e. unranked), treat it as 25 (the bottom of the chart)
+  const normalizeRank = (rank) => (rank === null ? 25 : rank);
+
   // Fetch poll data for the given pollType and weekRange
   useEffect(() => {
     const fetchPollData = async () => {
@@ -103,7 +106,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
-  // Render / update the chart with smooth week-to-week transitions
+  // Render / update the chart with smooth week-to-week transitions and moving weeks.
   useEffect(() => {
     // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
@@ -153,23 +156,24 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     g.append("g").call(yAxis);
 
     // Define a line generator that accepts objects with { week, rank }
-    const animatedLine = d3.line()
+    const animatedLine = d3
+      .line()
       .x((d) => xScale(d.week))
       .y((d) => yScale(d.rank))
       .curve(d3.curveMonotoneX);
 
-    // Draw a line for each team with smooth week-to-week transitions
+    // Draw a line for each team with smooth transitions and moving weeks.
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
 
-      // Append path element for team line
+      // Append path element for team line.
       const path = g.append("path")
         .datum(teamData.ranks)
         .attr("fill", "none")
         .attr("stroke", teamInfo.color)
         .attr("stroke-width", 2);
 
-      // Animate the line using attrTween to interpolate between week data
+      // Animate the line using attrTween to interpolate between week data.
       path.transition()
         .duration(totalDuration)
         .ease(d3.easeLinear)
@@ -183,14 +187,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
               segmentIndex = totalSegments - 1;
               segmentProgress = 1;
             }
-            // Build points up to the current animated segment
+            // Build points up to the current animated segment using normalized ranks.
             const points = [];
             for (let i = 0; i <= segmentIndex; i++) {
-              points.push({ week: startWeek + i, rank: d[i] });
+              points.push({ week: startWeek + i, rank: normalizeRank(d[i]) });
             }
-            // Add an interpolated point for the current segment
+            // Add an interpolated point for the current segment.
             if (segmentIndex < totalSegments) {
-              const interpolatedRank = d[segmentIndex] + (d[segmentIndex + 1] - d[segmentIndex]) * segmentProgress;
+              const current = normalizeRank(d[segmentIndex]);
+              const next = normalizeRank(d[segmentIndex + 1]);
+              const interpolatedRank = current + (next - current) * segmentProgress;
               const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
               points.push({ week: interpolatedWeek, rank: interpolatedRank });
             }
@@ -198,14 +204,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           };
         });
 
-      // Attach the team logo and animate its movement along the line
+      // Attach the team logo and animate its movement along the line.
       const logo = g.append("image")
         .attr("xlink:href", teamInfo.logo)
         .attr("width", 20)
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Timer to update the logo's position in sync with the line animation
+      // Timer to update the logo's position in sync with the line animation.
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / totalDuration, 1);
         const totalSegments = teamData.ranks.length - 1;
@@ -216,12 +222,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           segmentIndex = totalSegments - 1;
           segmentProgress = 1;
         }
-        const interpolatedRank = teamData.ranks[segmentIndex] + (teamData.ranks[segmentIndex + 1] - teamData.ranks[segmentIndex]) * segmentProgress;
+        const current = normalizeRank(teamData.ranks[segmentIndex]);
+        const next = normalizeRank(teamData.ranks[segmentIndex + 1]);
+        const interpolatedRank = current + (next - current) * segmentProgress;
         const interpolatedWeek = startWeek + segmentIndex + segmentProgress;
         const x = xScale(interpolatedWeek);
         const y = yScale(interpolatedRank);
         logo.attr("x", x - 10).attr("y", y - 10);
-        if (t === 1) return true; // Stop timer when animation completes
+        if (t === 1) return true; // Stop timer when animation completes.
       });
     });
 
@@ -248,17 +256,22 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const rect = container.node().getBoundingClientRect();
         const [mouseX, mouseY] = d3.pointer(event, g.node());
 
-        // Determine the hovered week based on mouse position
+        // Determine the hovered week based on mouse position.
         let week = Math.round(xScale.invert(mouseX));
         week = Math.max(startWeek, Math.min(week, endWeek));
         const weekIndex = week - startWeek;
 
-        // SORTING: Build a sorted list of teams by their current rank
+        // SORTING: Build a sorted list of teams by their current rank.
         const sortedTeams = chartData
           .map((teamData) => ({
             ...teamData,
-            currentRank: teamData.ranks[weekIndex],
-            prevRank: weekIndex > 0 ? teamData.ranks[weekIndex - 1] : null,
+            currentRank: teamData.ranks[weekIndex] === null ? 25 : teamData.ranks[weekIndex],
+            prevRank:
+              weekIndex > 0
+                ? teamData.ranks[weekIndex - 1] === null
+                  ? 25
+                  : teamData.ranks[weekIndex - 1]
+                : null,
           }))
           .filter((d) => d.currentRank !== null)
           .sort((a, b) => a.currentRank - b.currentRank);
@@ -286,7 +299,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
                    </div>`;
         });
 
-        // Default tooltip position relative to the container
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
 
