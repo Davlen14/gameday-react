@@ -22,7 +22,7 @@ const VisualizeTrends = () => {
   useEffect(() => {
     const fetchPlayersAndTeams = async () => {
       try {
-        const playersData = await playersService.getPlayerSearch("");
+        const playersData = await teamsService.getPlayerSearch("");
         setPlayers(playersData);
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
