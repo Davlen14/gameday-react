@@ -185,26 +185,42 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const logoHeight = 40;
     const logoPadding = 10;
 
-    // Place poll logo near the top-right
-    svg
-      .append("image")
-      .attr("xlink:href", pollLogoPath)
-      .attr("width", logoWidth)
-      .attr("height", logoHeight)
-      .attr("x", width - logoWidth - logoPadding)
-      .attr("y", logoPadding);
+// Place poll logo near the top-right
+svg
+  .append("image")
+  .attr("xlink:href", pollLogoPath)
+  .attr("width", logoWidth)
+  .attr("height", logoHeight)
+  .attr("x", width - logoWidth - logoPadding)
+  .attr("y", logoPadding);
 
-    // --- Add text "GAMEDAY+ Animations" near bottom-right ---
-    const textPadding = 10;
-    svg
-      .append("text")
-      .text("GAMEDAY+ Animations")
-      .attr("x", width - logoWidth - textPadding) // place near the right side
-      .attr("y", height - textPadding) // near bottom
-      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
-      .style("font-size", "14px")
-      .style("fill", "#000") // or pick your color
-      .style("text-anchor", "end"); // right-align the text
+// Now add a text group for "Presented by" / "GAMEDAY+" near bottom-right
+const textPadding = 10;
+// We'll place the group near the bottom-right, offset from the edges
+const stackedTextGroup = svg.append("g")
+  .attr("transform", `translate(${width - textPadding}, ${height - textPadding})`);
+
+// 1) First line: "Presented by" (black, normal font)
+stackedTextGroup.append("text")
+  .text("Presented by")
+  .attr("x", 0)
+  .attr("y", 0)
+  .style("font-size", "12px")
+  .style("fill", "#000")
+  .style("font-weight", "normal")
+  .style("text-anchor", "end")
+  .style("font-family", "sans-serif"); // or any other normal font
+
+// 2) Second line: "GAMEDAY+" (red, italic, your custom font)
+stackedTextGroup.append("text")
+  .text("GAMEDAY+")
+  .attr("x", 0)
+  .attr("y", 16) // 16px below the first line
+  .style("font-size", "12px")
+  .style("fill", "#D4001C") // your red color
+  .style("font-style", "italic")
+  .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
+  .style("text-anchor", "end");
 
     // Line generator
     const lineGen = d3
