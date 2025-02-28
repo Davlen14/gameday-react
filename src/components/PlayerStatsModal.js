@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import "../styles/PlayerStatsModal.css"; // Create and style this as needed
+import "../styles/PlayerStatsModal.css";
 
 const PlayerStatsModal = () => {
   // State for fetched player stats
@@ -18,8 +18,8 @@ const PlayerStatsModal = () => {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        // Adjust the category as needed (for offense, you might combine several categories)
-        // For example, category could be "offense" or you might need to merge multiple endpoints.
+        // Using the getPlayerSeasonStats function from teamsService.
+        // It should fetch offensive stats (combined if your backend supports the "offense" category)
         const data = await teamsService.getPlayerSeasonStats(2024, "offense", "regular", 10000);
         setPlayers(data);
       } catch (err) {
@@ -42,7 +42,6 @@ const PlayerStatsModal = () => {
     const matchesPosition =
       positionFilter === "All Positions" ||
       (player.position && player.position.toLowerCase() === positionFilter.toLowerCase());
-
     return matchesSearch && matchesTeam && matchesPosition;
   });
 
