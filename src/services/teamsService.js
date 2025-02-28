@@ -406,12 +406,12 @@ export const getCalendar = async (year) => {
     return await fetchData(endpoint, params);
   };
   
-  // GET /player/search - Search for players based on a query
-  export const getPlayerSearch = async (query) => {
-    const endpoint = "/player/search";
-    const params = { query };
-    return await fetchData(endpoint, params);
-  };
+// GET /player/search - Search for players based on a query
+export const getPlayerSearch = async (searchTerm) => {
+  const endpoint = "/player/search";
+  const params = { searchTerm };
+  return await fetchData(endpoint, params);
+};
   
   // GET /player/usage - Fetch player usage data
   export const getPlayerUsage = async (year, team) => {

@@ -5,7 +5,7 @@
   background-color: #fff;
   border-radius: 8px;
   max-width: 900px;
-  margin: 0 auto;
+  margin: 20px auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
@@ -20,24 +20,21 @@
 /* Filters Section */
 .filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-.filters input[type="text"],
-.filters select {
+.filters input[type="text"] {
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
   outline: none;
   transition: border 0.2s ease;
+  width: 300px;
 }
 
-.filters input[type="text"]:focus,
-.filters select:focus {
+.filters input[type="text"]:focus {
   border-color: #0077cc;
 }
 
