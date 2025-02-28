@@ -180,6 +180,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
+      // Compute fall index: first week where rank is null or greater than 25.
+      const fallIndex = teamData.ranks.findIndex(r => r === null || r > 25);
+      const fadeStartTime = fallIndex !== -1 ? ((fallIndex + 1) / totalWeeks) * 13000 : 13000;
+
       // Draw the line
       const path = g
         .append("path")
@@ -199,10 +203,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // If the team falls out (its final week is null), then fade out the line after drawing.
+      // Fade out the line if the team falls out (final rank is null or > 25).
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
-      if (finalRank === null) {
-        path.transition().delay(13000).duration(1000).style("opacity", 0);
+      if (finalRank === null || finalRank > 25) {
+        path.transition().delay(fadeStartTime).duration(500).style("opacity", 0);
       }
 
       // Attach the team logo and animate its movement along the path.
@@ -221,16 +225,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Move the logo to this point.
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // Fade out the logo when near the bottom (e.g., rank ~25).
-        const fadeThresholdY = yScale(24.5);
-        if (point.y >= fadeThresholdY) {
-          const bottomY = yScale(25);
-          const fraction = (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
-          logo.style("opacity", 1 - fraction);
+        // Fade out the logo when near the bottom (e.g., rank ~25) or after falling out.
+        if (t >= (fallIndex !== -1 ? (fallIndex + 1) / totalWeeks : 1)) {
+          const fadeT = (t - (fallIndex !== -1 ? (fallIndex + 1) / totalWeeks : 1)) / (1 - (fallIndex !== -1 ? (fallIndex + 1) / totalWeeks : 1));
+          logo.style("opacity", Math.max(0, 1 - fadeT));
         } else {
           logo.style("opacity", 1);
         }
-        return t === 1; // stop timer after 13 seconds.
+        return t === 1;
       });
 
       // NEW: Attach team-specific tooltip events to the team’s path.
@@ -290,15 +292,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           .style("left", left + "px")
           .style("top", top + "px")
           .transition()
-          .duration(200)
+          .duration(50) // faster tooltip appearance
           .style("opacity", 1);
       })
       .on("mouseout", function () {
-        tooltip.transition().duration(200).style("opacity", 0);
+        tooltip.transition().duration(50).style("opacity", 0);
       });
     });
-
-    // (Removed the previous global invisible rectangle tooltip logic.)
   }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
