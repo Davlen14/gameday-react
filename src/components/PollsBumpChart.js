@@ -151,7 +151,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // ---------------- NEW: Add Poll Logo & Label in Top-Right (Outside the Axis) ----------------
+    // ---------------- NEW: Add Poll Logo in Top-Right (Outside the Axis) ----------------
     const pollLogos = {
       "AP Poll": "/photos/AP25.jpg",
       "Coaches Poll": "/photos/USA-Today-Logo.png",
@@ -172,14 +172,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       // Far right = total width minus logo width minus some padding
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
-
-    // Poll type label, placed just below the logo
-    svg.append("text")
-      .text(pollType)
-      .attr("x", width - logoWidth - logoPadding)
-      .attr("y", logoPadding + logoHeight + 15)
-      .style("font-size", "14px")
-      .style("fill", "#000");
     // -------------------------------------------------------------------------------------------
 
     // Line generator
