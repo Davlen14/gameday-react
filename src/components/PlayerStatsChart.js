@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
-import playersService from "../services/playersService";
+import playersService from "../services/teamsService";
 
 const PlayerStatsChart = ({ width, height, player, statType, weekRange }) => {
   const chartRef = useRef();
