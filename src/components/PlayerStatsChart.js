@@ -1,186 +1,144 @@
-import React, { useState } from "react";
-import "../styles/VisualizeTrends.css";
-import PollsBumpChart from "./PollsBumpChart"; // D3 chart component for polls
-import PlayerStatsChart from "./PlayerStatsChart"; // D3 chart component for player stats
+import React, { useState, useEffect, useRef } from "react";
+import teamsService from "../services/teamsService";
+import "../styles/PlayerStatsChart.css";
 
-const VisualizeTrends = () => {
-  // State to track which modal is open
-  const [activeModal, setActiveModal] = useState(null);
+const PlayerStatsChart = ({ searchTerm, teamFilter, positionFilter }) => {
+  // State for fetched player stats
+  const [players, setPlayers] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Reference to the SVG element
+  const svgRef = useRef();
 
-  // State to store poll filters
-  const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
-  const [selectedPollType, setSelectedPollType] = useState("AP Poll");
+  // Fetch offensive player season stats on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const rawPlayers = await teamsService.getPlayerSeasonStats(
+          2024,       // year
+          "offense",  // category (assuming your API merges passing/rushing/receiving)
+          "regular",  // seasonType
+          10000       // limit
+        );
 
-  // States for player stats modal filters (for D3 chart)
-  const [playerSearchTerm, setPlayerSearchTerm] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("All Teams");
-  const [selectedPosition, setSelectedPosition] = useState("All Positions");
+        // Build a fullName field if missing
+        const playersWithFullName = rawPlayers.map((p) => {
+          let fullName = p.fullName;
+          if (!fullName) {
+            if (p.name) {
+              fullName = p.name;
+            } else {
+              fullName = `${p.firstName || ""} ${p.lastName || ""}`.trim();
+            }
+          }
+          return { ...p, fullName };
+        });
 
-  // Handlers for opening/closing modals
-  const openModal = (modalType) => setActiveModal(modalType);
-  const closeModal = () => setActiveModal(null);
+        setPlayers(playersWithFullName);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Handlers for updating poll filter selections
-  const handleWeekRangeChange = (e) => setSelectedWeekRange(e.target.value);
-  const handlePollTypeChange = (e) => setSelectedPollType(e.target.value);
+    fetchData();
+  }, []);
 
-  // Handlers for player stats modal filters
-  const handlePlayerSearchChange = (e) => setPlayerSearchTerm(e.target.value);
-  const handleTeamFilterChange = (e) => setSelectedTeam(e.target.value);
-  const handlePositionFilterChange = (e) => setSelectedPosition(e.target.value);
+  // Apply filters based on props passed from VisualizeTrends
+  const filteredPlayers = players.filter((player) => {
+    const name = player.fullName ? player.fullName.toLowerCase() : "";
+    const matchesSearch = name.includes(searchTerm.toLowerCase());
+    const matchesTeam =
+      teamFilter === "All Teams" ||
+      (player.team && player.team.toLowerCase() === teamFilter.toLowerCase());
+    const matchesPosition =
+      positionFilter === "All Positions" ||
+      (player.position && player.position.toLowerCase() === positionFilter.toLowerCase());
+
+    return matchesSearch && matchesTeam && matchesPosition;
+  });
+
+  // Calculate total offense for each player: sum of passing, rushing, receiving yards
+  const dataForChart = filteredPlayers.map((player) => ({
+    name: player.fullName,
+    totalOffense:
+      (Number(player.passingYards) || 0) +
+      (Number(player.rushingYards) || 0) +
+      (Number(player.receivingYards) || 0),
+  }));
+
+  // D3 Chart rendering: update chart when dataForChart changes
+  useEffect(() => {
+    // Set up dimensions and margins
+    const margin = { top: 30, right: 20, bottom: 100, left: 60 };
+    const width = 600 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    // Remove any previous chart
+    const svgElement = svgRef.current;
+    svgElement.innerHTML = "";
+
+    // Create the SVG container
+    const svg = window.d3
+      .select(svgElement)
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Set up x scale: ordinal scale for player names
+    const x = window.d3
+      .scaleBand()
+      .domain(dataForChart.map((d) => d.name))
+      .range([0, width])
+      .padding(0.2);
+
+    // Set up y scale: linear scale for totalOffense
+    const y = window.d3
+      .scaleLinear()
+      .domain([0, window.d3.max(dataForChart, (d) => d.totalOffense) || 0])
+      .nice()
+      .range([height, 0]);
+
+    // X Axis
+    svg
+      .append("g")
+      .attr("transform", `translate(0, ${height})`)
+      .call(window.d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end");
+
+    // Y Axis
+    svg.append("g").call(window.d3.axisLeft(y));
+
+    // Bars
+    svg
+      .selectAll(".bar")
+      .data(dataForChart)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", (d) => x(d.name))
+      .attr("width", x.bandwidth())
+      .attr("y", (d) => y(d.totalOffense))
+      .attr("height", (d) => height - y(d.totalOffense))
+      .attr("fill", "#0077cc");
+  }, [dataForChart]);
+
+  if (isLoading) return <div>Loading offensive stats...</div>;
+  if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
 
   return (
-    <div className="visualize-container">
-      <header className="visualize-header">
-        <h1>Visualize Trends</h1>
-        <p>
-          Explore animated trends, polls, player stats, team points, and more over the season.
-        </p>
-      </header>
-
-      {/* Dashboard Cards */}
-      <section className="visualize-dashboard">
-        <div className="chart-card" onClick={() => openModal("pollRankings")}>
-          <div className="chart-header">
-            <h2>Animated Poll Rankings</h2>
-          </div>
-          <div className="chart-placeholder">[Click to Open Modal]</div>
-        </div>
-
-        <div className="chart-card" onClick={() => openModal("playerStats")}>
-          <div className="chart-header">
-            <h2>Player Stats Over Weeks</h2>
-          </div>
-          <div className="chart-placeholder">[Click to Open Modal]</div>
-        </div>
-
-        <div className="chart-card" onClick={() => openModal("teamPoints")}>
-          <div className="chart-header">
-            <h2>Team Points Per Game</h2>
-          </div>
-          <div className="chart-placeholder">[Click to Open Modal]</div>
-        </div>
-
-        <div className="chart-card" onClick={() => openModal("offenseDefense")}>
-          <div className="chart-header">
-            <h2>Offense vs. Defense Trends</h2>
-          </div>
-          <div className="chart-placeholder">[Click to Open Modal]</div>
-        </div>
-      </section>
-
-      {/* Modal Overlay */}
-      {activeModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={closeModal}>
-              &times;
-            </button>
-
-            {activeModal === "pollRankings" && (
-              <>
-                <h2>Animated Poll Rankings</h2>
-                <div className="modal-filters">
-                  <div className="filter-group">
-                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
-                      <option value="Week 1 - 5">Week 1 - 5</option>
-                      <option value="Week 1 - 10">Week 1 - 10</option>
-                      <option value="Week 1 - 15">Week 1 - 15</option>
-                      <option value="Week 1 - Postseason">Week 1 - Postseason</option>
-                    </select>
-                  </div>
-                  <div className="filter-group">
-                    <select value={selectedPollType} onChange={handlePollTypeChange}>
-                      <option value="AP Poll">AP Poll</option>
-                      <option value="Coaches Poll">Coaches Poll</option>
-                      <option value="Playoff Rankings">Playoff Rankings</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="chart-wrapper">
-                  <PollsBumpChart
-                    width={700}
-                    height={450}
-                    pollType={selectedPollType}
-                    weekRange={selectedWeekRange}
-                  />
-                </div>
-              </>
-            )}
-
-            {activeModal === "playerStats" && (
-              <>
-                <h2>Player Stats Over Weeks</h2>
-                {/* Filters for player stats are handled here */}
-                <div className="modal-filters">
-                  <div className="filter-group">
-                    <label htmlFor="playerSearch">Search Player:</label>
-                    <input
-                      id="playerSearch"
-                      type="text"
-                      placeholder="Enter player name..."
-                      value={playerSearchTerm}
-                      onChange={handlePlayerSearchChange}
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label htmlFor="teamFilter">Team:</label>
-                    <select
-                      id="teamFilter"
-                      value={selectedTeam}
-                      onChange={handleTeamFilterChange}
-                    >
-                      <option value="All Teams">All Teams</option>
-                      {/* You could populate this dynamically from a teams service */}
-                      <option value="Alabama">Alabama</option>
-                      <option value="Ohio State">Ohio State</option>
-                      <option value="Michigan">Michigan</option>
-                    </select>
-                  </div>
-                  <div className="filter-group">
-                    <label htmlFor="positionFilter">Position:</label>
-                    <select
-                      id="positionFilter"
-                      value={selectedPosition}
-                      onChange={handlePositionFilterChange}
-                    >
-                      <option value="All Positions">All Positions</option>
-                      <option value="QB">QB</option>
-                      <option value="RB">RB</option>
-                      <option value="WR">WR</option>
-                      <option value="TE">TE</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="chart-wrapper">
-                  {/* Pass filters to the PlayerStatsChart component */}
-                  <PlayerStatsChart
-                    searchTerm={playerSearchTerm}
-                    teamFilter={selectedTeam}
-                    positionFilter={selectedPosition}
-                  />
-                </div>
-              </>
-            )}
-
-            {activeModal === "teamPoints" && (
-              <>
-                <h2>Team Points Per Game</h2>
-                <div className="chart-wrapper">[Bar Chart Placeholder]</div>
-              </>
-            )}
-
-            {activeModal === "offenseDefense" && (
-              <>
-                <h2>Offense vs. Defense Trends</h2>
-                <div className="chart-wrapper">[Dual-Axis Chart Placeholder]</div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+    <div className="player-stats-chart">
+      <h2>Offensive Player Stats - 2024</h2>
+      {/* Note: The filters are handled in the parent modal, so this component only renders the chart */}
+      <svg ref={svgRef}></svg>
     </div>
   );
 };
 
-export default VisualizeTrends;
+export default PlayerStatsChart;
