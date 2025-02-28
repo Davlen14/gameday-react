@@ -3,7 +3,6 @@ import "../styles/VisualizeTrends.css";
 import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
 import PlayerStatsChart from "./PlayerStatsChart"; // New D3 chart component
 import teamsService from "../services/teamsService";
-import playersService from "../services/playersService";
 
 const VisualizeTrends = () => {
   // State to track which modal is open
