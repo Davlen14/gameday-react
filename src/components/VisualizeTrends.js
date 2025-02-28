@@ -88,7 +88,8 @@ const VisualizeTrends = () => {
                     <option value="Week 1 - 5">Week 1 - 5</option>
                     <option value="Week 1 - 10">Week 1 - 10</option>
                     <option value="Week 1 - 15">Week 1 - 15</option>
-                    <option value="Week 1 - Final">Week 1 - Final </option>
+                    {/* NEW OPTION FOR POSTSEASON */}
+                    <option value="Week 1 - Postseason">Week 1 - Postseason</option>
                     </select>
                   </div>
                   <div className="filter-group">

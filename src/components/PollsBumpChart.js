@@ -29,6 +29,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   // Convert weekRange string to numeric start and end weeks.
+  // Added a "Week 1 - Postseason" case returning 1..17
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -37,8 +38,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return { startWeek: 1, endWeek: 10 };
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
-      case "Week 1 - Final": // <-- Matches your dropdown option
-        // We'll treat this as weeks 1..16 plus a final postseason poll at index 17
+      case "Week 1 - Postseason":
+        // We'll treat this as weeks 1..16 plus a "postseason" poll at index 17
         return { startWeek: 1, endWeek: 17 };
       default:
         return { startWeek: 1, endWeek: 5 };
@@ -73,14 +74,15 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         for (let w = startWeek; w <= endWeek; w++) {
           let pollForWeek;
 
-          // If we're in "Week 1 - Final" range and w == 17, fetch "postseason"
-          if (weekRange === "Week 1 - Final" && w === 17) {
+          // If "Week 1 - Postseason" and w == 17, fetch "postseason"
+          if (weekRange === "Week 1 - Postseason" && w === 17) {
             pollForWeek = await teamsService.getPolls(2024, apiPollType, "postseason");
           } else {
             // Otherwise, fetch numeric weeks
             pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           }
 
+          // If no data returned, skip
           if (!pollForWeek || pollForWeek.length === 0) continue;
 
           // Assume pollForWeek[0] is the poll group for that week.
@@ -156,13 +158,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes with custom tick formatting for final
+    // Axes with custom tick formatting for "postseason"
     const xAxis = d3.axisBottom(xScale)
       .ticks(totalWeeks)
       .tickFormat((d) => {
-        // If "Week 1 - Final" and this tick == 17, label it "Final"
-        if (weekRange === "Week 1 - Final" && d === endWeek) {
-          return "Final";
+        // If "Week 1 - Postseason" and this tick == 17, label it "Postseason"
+        if (weekRange === "Week 1 - Postseason" && d === endWeek) {
+          return "Postseason";
         }
         return d;
       });
@@ -173,7 +175,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
-    // ---------------- NEW: Add Poll Logo in Top-Right (Outside the Axis) ----------------
+    // --- Add Poll Logo in Top-Right (Outside the Axis) ---
     const pollLogos = {
       "AP Poll": "/photos/AP25.jpg",
       "Coaches Poll": "/photos/USA-Today-Logo.png",
@@ -181,20 +183,17 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     };
     const pollLogoPath = pollLogos[pollType] || pollLogos["AP Poll"];
 
-    // Set logo dimensions and a small padding from the right/top edges.
+    // Set logo dimensions + padding
     const logoWidth = 40;
     const logoHeight = 40;
     const logoPadding = 10;
 
-    // Place the logo in the top-right corner, well away from the axis area.
     svg.append("image")
       .attr("xlink:href", pollLogoPath)
       .attr("width", logoWidth)
       .attr("height", logoHeight)
-      // Far right = total width minus logo width minus some padding
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
-    // -------------------------------------------------------------------------------------------
 
     // Line generator
     const lineGen = d3
@@ -203,7 +202,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Create a shared tooltip element in the container (if it doesn't exist)
+    // Create a shared tooltip element if it doesn't exist
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     let tooltip = container.select(".tooltip");
     if (tooltip.empty()) {
@@ -220,7 +219,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .style("z-index", "10000");
     }
 
-    // For each team, draw the line and attach team-specific tooltip events.
+    // Draw lines + logos for each team
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
@@ -234,7 +233,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", lineGen);
 
-      // Animate the line drawing (13 seconds).
+      // Animate line drawing
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -244,13 +243,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // If the team falls out (its final week is null), fade out the line after the animation.
+      // Fade out if final rank is null
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
       if (finalRank === null) {
         path.transition().delay(13000).duration(1000).style("opacity", 0);
       }
 
-      // Attach the team logo and animate its movement along the path.
+      // Animate the team logo along the line
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -263,10 +262,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
 
-        // Move the logo to this point.
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // Fade out the logo near the bottom (rank ~25).
+        // Fade out near rank ~25
         const fadeThresholdY = yScale(24.5);
         if (point.y >= fadeThresholdY) {
           const bottomY = yScale(25);
@@ -275,18 +273,16 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         } else {
           logo.style("opacity", 1);
         }
-        return t === 1; // stop timer after 13 seconds.
+        return t === 1; // stop timer after 13s
       });
 
       // Tooltip events
       path.on("mousemove", function (event) {
-        // Determine the hovered week based on mouse x coordinate relative to g.
         const [mx] = d3.pointer(event, g.node());
         let hoveredWeek = Math.round(xScale.invert(mx));
         hoveredWeek = Math.max(startWeek, Math.min(hoveredWeek, endWeek));
         const hoverIndex = hoveredWeek - startWeek;
 
-        // Build the tooltip HTML:
         let html = `<div style="display:flex; align-items:center; margin-bottom:8px;">
                       <img src="${teamInfo.logo}" width="20" height="20" style="margin-right:8px;" />
                       <span style="font-weight:bold;">${teamData.team}</span>
@@ -294,7 +290,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         html += `<div><strong>Ranking History (Weeks ${startWeek} - ${hoveredWeek})</strong></div>`;
         html += `<ul style="list-style:none; padding-left:0; margin:4px 0;">`;
 
-        // Loop over weeks from startWeek to hoveredWeek.
         for (let i = 0; i <= hoverIndex; i++) {
           const weekNum = i + startWeek;
           const rank = teamData.ranks[i];
@@ -317,7 +312,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         }
         html += `</ul>`;
 
-        // Position the tooltip near the mouse.
         const rect = container.node().getBoundingClientRect();
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
@@ -334,7 +328,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         tooltip
           .style("left", left + "px")
           .style("top", top + "px")
-          // Faster fade-in
           .transition()
           .duration(100)
           .style("opacity", 1);
@@ -346,7 +339,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           .style("opacity", 0);
       });
     });
-    // End of forEach
   }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
