@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/VisualizeTrends.css";
 import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
+import PlayerStatsChart from "./PlayerStatsChart"; // New D3 chart component
+import teamsService from "../services/teamsService";
+import playersService from "../services/playersService";
 
 const VisualizeTrends = () => {
   // State to track which modal is open
@@ -9,6 +12,27 @@ const VisualizeTrends = () => {
   // State to store poll filters
   const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
   const [selectedPollType, setSelectedPollType] = useState("AP Poll");
+
+  // State to store player stats filters
+  const [selectedPlayer, setSelectedPlayer] = useState("All Players");
+  const [selectedStatType, setSelectedStatType] = useState("Passing Yards");
+  const [players, setPlayers] = useState([]);
+  const [teams, setTeams] = useState([]);
+
+  // Fetch players and teams on mount
+  useEffect(() => {
+    const fetchPlayersAndTeams = async () => {
+      try {
+        const playersData = await playersService.getPlayerSearch("");
+        setPlayers(playersData);
+        const teamsData = await teamsService.getTeams();
+        setTeams(teamsData);
+      } catch (error) {
+        console.error("Error fetching players or teams:", error);
+      }
+    };
+    fetchPlayersAndTeams();
+  }, []);
 
   // Handlers for opening/closing modals
   const openModal = (modalType) => {
@@ -24,6 +48,12 @@ const VisualizeTrends = () => {
   };
   const handlePollTypeChange = (e) => {
     setSelectedPollType(e.target.value);
+  };
+  const handlePlayerChange = (e) => {
+    setSelectedPlayer(e.target.value);
+  };
+  const handleStatTypeChange = (e) => {
+    setSelectedStatType(e.target.value);
   };
 
   return (
@@ -81,16 +111,15 @@ const VisualizeTrends = () => {
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                  <select
-                value={selectedWeekRange}
-                onChange={handleWeekRangeChange}
-                >
-                <option value="Week 1 - 5">Week 1 - 5</option>
-                <option value="Week 1 - 10">Week 1 - 10</option>
-                <option value="Week 1 - 15">Week 1 - 15</option>
-                {/* NEW OPTION FOR POSTSEASON */}
-                <option value="Week 1 - Postseason">Week 1 - Postseason</option>
-                </select>
+                    <select
+                      value={selectedWeekRange}
+                      onChange={handleWeekRangeChange}
+                    >
+                      <option value="Week 1 - 5">Week 1 - 5</option>
+                      <option value="Week 1 - 10">Week 1 - 10</option>
+                      <option value="Week 1 - 15">Week 1 - 15</option>
+                      <option value="Week 1 - Postseason">Week 1 - Postseason</option>
+                    </select>
                   </div>
                   <div className="filter-group">
                     <select
@@ -123,23 +152,43 @@ const VisualizeTrends = () => {
                 <div className="modal-filters">
                   <div className="filter-group">
                     <label>Player</label>
-                    <select>
-                      <option>All Players</option>
-                      <option>Player 1</option>
-                      <option>Player 2</option>
+                    <select value={selectedPlayer} onChange={handlePlayerChange}>
+                      <option value="All Players">All Players</option>
+                      {players.map((player) => (
+                        <option key={player.id} value={player.name}>
+                          {player.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="filter-group">
                     <label>Stat Type</label>
-                    <select>
-                      <option>Passing Yards</option>
-                      <option>Rushing Yards</option>
-                      <option>Receiving Yards</option>
-                      <option>Touchdowns</option>
+                    <select value={selectedStatType} onChange={handleStatTypeChange}>
+                      <option value="Passing Yards">Passing Yards</option>
+                      <option value="Rushing Yards">Rushing Yards</option>
+                      <option value="Receiving Yards">Receiving Yards</option>
+                      <option value="Touchdowns">Touchdowns</option>
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Week Range</label>
+                    <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
+                      <option value="Week 1 - 5">Week 1 - 5</option>
+                      <option value="Week 1 - 10">Week 1 - 10</option>
+                      <option value="Week 1 - 15">Week 1 - 15</option>
+                      <option value="Week 1 - Postseason">Week 1 - Postseason</option>
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">[Line Chart Placeholder]</div>
+                <div className="chart-wrapper">
+                  <PlayerStatsChart
+                    width={700}
+                    height={450}
+                    player={selectedPlayer}
+                    statType={selectedStatType}
+                    weekRange={selectedWeekRange}
+                  />
+                </div>
               </>
             )}
 
@@ -152,8 +201,11 @@ const VisualizeTrends = () => {
                     <label>Team</label>
                     <select>
                       <option>All Teams</option>
-                      <option>Team A</option>
-                      <option>Team B</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.school}>
+                          {team.school}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
