@@ -10,6 +10,11 @@ const VisualizeTrends = () => {
   const [selectedWeekRange, setSelectedWeekRange] = useState("Week 1 - 5");
   const [selectedPollType, setSelectedPollType] = useState("AP Poll");
 
+  // State for player stats modal filters
+  const [playerSearchTerm, setPlayerSearchTerm] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("All Teams");
+  const [selectedPosition, setSelectedPosition] = useState("All Positions");
+
   // Handlers for opening/closing modals
   const openModal = (modalType) => {
     setActiveModal(modalType);
@@ -18,7 +23,7 @@ const VisualizeTrends = () => {
     setActiveModal(null);
   };
 
-  // Handlers for updating filter selections
+  // Handlers for updating poll filter selections
   const handleWeekRangeChange = (e) => {
     setSelectedWeekRange(e.target.value);
   };
@@ -26,13 +31,23 @@ const VisualizeTrends = () => {
     setSelectedPollType(e.target.value);
   };
 
+  // Handlers for player stats modal filters
+  const handlePlayerSearchChange = (e) => {
+    setPlayerSearchTerm(e.target.value);
+  };
+  const handleTeamFilterChange = (e) => {
+    setSelectedTeam(e.target.value);
+  };
+  const handlePositionFilterChange = (e) => {
+    setSelectedPosition(e.target.value);
+  };
+
   return (
     <div className="visualize-container">
       <header className="visualize-header">
         <h1>Visualize Trends</h1>
         <p>
-          Explore animated trends, polls, player stats, team points, and more over
-          the season.
+          Explore animated trends, polls, player stats, team points, and more over the season.
         </p>
       </header>
 
@@ -81,15 +96,14 @@ const VisualizeTrends = () => {
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                  <select
-                    value={selectedWeekRange}
-                    onChange={handleWeekRangeChange}
+                    <select
+                      value={selectedWeekRange}
+                      onChange={handleWeekRangeChange}
                     >
-                    <option value="Week 1 - 5">Week 1 - 5</option>
-                    <option value="Week 1 - 10">Week 1 - 10</option>
-                    <option value="Week 1 - 15">Week 1 - 15</option>
-                    {/* NEW OPTION FOR POSTSEASON */}
-                    <option value="Week 1 - Postseason">Week 1 - Postseason</option>
+                      <option value="Week 1 - 5">Week 1 - 5</option>
+                      <option value="Week 1 - 10">Week 1 - 10</option>
+                      <option value="Week 1 - 15">Week 1 - 15</option>
+                      <option value="Week 1 - Postseason">Week 1 - Postseason</option>
                     </select>
                   </div>
                   <div className="filter-group">
@@ -104,7 +118,6 @@ const VisualizeTrends = () => {
                   </div>
                 </div>
 
-                {/* Pass the filter selections to PollsBumpChart */}
                 <div className="chart-wrapper">
                   <PollsBumpChart
                     width={700}
@@ -122,24 +135,51 @@ const VisualizeTrends = () => {
                 <h2>Player Stats Over Weeks</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
-                    <label>Player</label>
-                    <select>
-                      <option>All Players</option>
-                      <option>Player 1</option>
-                      <option>Player 2</option>
+                    <label htmlFor="playerSearch">Search Player:</label>
+                    <input
+                      id="playerSearch"
+                      type="text"
+                      placeholder="Enter player name"
+                      value={playerSearchTerm}
+                      onChange={handlePlayerSearchChange}
+                    />
+                  </div>
+                  <div className="filter-group">
+                    <label htmlFor="teamFilter">Team:</label>
+                    <select
+                      id="teamFilter"
+                      value={selectedTeam}
+                      onChange={handleTeamFilterChange}
+                    >
+                      <option value="All Teams">All Teams</option>
+                      <option value="Alabama">Alabama</option>
+                      <option value="Ohio State">Ohio State</option>
+                      <option value="Michigan">Michigan</option>
+                      {/* Add more teams as needed */}
                     </select>
                   </div>
                   <div className="filter-group">
-                    <label>Stat Type</label>
-                    <select>
-                      <option>Passing Yards</option>
-                      <option>Rushing Yards</option>
-                      <option>Receiving Yards</option>
-                      <option>Touchdowns</option>
+                    <label htmlFor="positionFilter">Position:</label>
+                    <select
+                      id="positionFilter"
+                      value={selectedPosition}
+                      onChange={handlePositionFilterChange}
+                    >
+                      <option value="All Positions">All Positions</option>
+                      <option value="QB">QB</option>
+                      <option value="RB">RB</option>
+                      <option value="WR">WR</option>
+                      <option value="TE">TE</option>
+                      {/* Add additional positions as needed */}
                     </select>
                   </div>
                 </div>
-                <div className="chart-wrapper">[Line Chart Placeholder]</div>
+                <div className="chart-wrapper">
+                  {/* Placeholder: Replace with a component/table/chart to display filtered offensive stats */}
+                  <div className="player-stats-placeholder">
+                    [Player Stats Table/Chart will appear here after implementing filtering and search]
+                  </div>
+                </div>
               </>
             )}
 
