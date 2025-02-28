@@ -151,6 +151,37 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .call(xAxis);
     g.append("g").call(yAxis);
 
+    // ---------------- NEW: Add Poll Logo & Label in Top-Right (Outside the Axis) ----------------
+    const pollLogos = {
+      "AP Poll": "/photos/AP25.jpg",
+      "Coaches Poll": "/photos/USA-Today-Logo.png",
+      "Playoff Rankings": "/photos/committee.png",
+    };
+    const pollLogoPath = pollLogos[pollType] || pollLogos["AP Poll"];
+
+    // Set logo dimensions and a small padding from the right/top edges.
+    const logoWidth = 40;
+    const logoHeight = 40;
+    const logoPadding = 10;
+
+    // Place the logo in the top-right corner, well away from the axis area.
+    svg.append("image")
+      .attr("xlink:href", pollLogoPath)
+      .attr("width", logoWidth)
+      .attr("height", logoHeight)
+      // Far right = total width minus logo width minus some padding
+      .attr("x", width - logoWidth - logoPadding)
+      .attr("y", logoPadding);
+
+    // Poll type label, placed just below the logo
+    svg.append("text")
+      .text(pollType)
+      .attr("x", width - logoWidth - logoPadding)
+      .attr("y", logoPadding + logoHeight + 15)
+      .style("font-size", "14px")
+      .style("fill", "#000");
+    // -------------------------------------------------------------------------------------------
+
     // Line generator
     const lineGen = d3
       .line()
@@ -233,7 +264,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return t === 1; // stop timer after 13 seconds.
       });
 
-      // NEW: Attach team-specific tooltip events to the team’s path.
+      // Tooltip events
       path.on("mousemove", function (event) {
         // Determine the hovered week based on mouse x coordinate relative to g.
         const [mx] = d3.pointer(event, g.node());
@@ -242,7 +273,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const hoverIndex = hoveredWeek - startWeek;
 
         // Build the tooltip HTML:
-        // Header with team logo and name.
         let html = `<div style="display:flex; align-items:center; margin-bottom:8px;">
                       <img src="${teamInfo.logo}" width="20" height="20" style="margin-right:8px;" />
                       <span style="font-weight:bold;">${teamData.team}</span>
@@ -278,6 +308,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
         tooltip.html(html);
+
         const ttWidth = tooltip.node().offsetWidth;
         const ttHeight = tooltip.node().offsetHeight;
         if (left + ttWidth > rect.width) {
@@ -289,16 +320,19 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         tooltip
           .style("left", left + "px")
           .style("top", top + "px")
+          // Faster fade-in
           .transition()
-          .duration(200)
+          .duration(100)
           .style("opacity", 1);
       })
       .on("mouseout", function () {
-        tooltip.transition().duration(200).style("opacity", 0);
+        tooltip
+          .transition()
+          .duration(100)
+          .style("opacity", 0);
       });
     });
-
-    // (Removed the previous global invisible rectangle tooltip logic.)
+    // End of forEach
   }, [chartData, height, width, weekRange]);
 
   return <svg ref={chartRef}></svg>;
