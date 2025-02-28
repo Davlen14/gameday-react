@@ -70,7 +70,19 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const weeks = [];
 
         for (let w = startWeek; w <= endWeek; w++) {
-          const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
+          let pollForWeek;
+
+          // If we're on the "Week 1 - 16 + Final" range and w == 17, fetch "postseason" poll
+          if (weekRange === "Week 1 - 16 + Final" && w === 17) {
+            pollForWeek = await teamsService.getPolls(2024, apiPollType, "postseason");
+          } else {
+            // Otherwise, fetch the numeric week
+            pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
+          }
+
+          // If no data returned or pollForWeek is empty, skip to avoid errors
+          if (!pollForWeek || pollForWeek.length === 0) continue;
+
           // Assume pollForWeek[0] is the poll group for that week.
           weeks.push(pollForWeek[0]);
         }
