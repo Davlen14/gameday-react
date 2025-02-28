@@ -39,7 +39,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
       case "Week 1 - Postseason":
-        // Regular season is weeks 1-16; postseason will be added separately.
+        // Regular season is weeks 1-16; we add an extra week for postseason
         return { startWeek: 1, endWeek: 16 };
       default:
         return { startWeek: 1, endWeek: 5 };
@@ -75,8 +75,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           if (!pollForWeek || pollForWeek.length === 0) continue;
-          // Assume pollForWeek[0] is the poll group for that week.
-          weeks.push(pollForWeek[0]);
+          weeks.push(pollForWeek[0]); // assume pollForWeek[0] is the poll group
         }
 
         // If we're in "Week 1 - Postseason" mode, fetch the postseason poll.
@@ -124,7 +123,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     if (!chartData || chartData.length === 0) return;
 
     const { startWeek, endWeek } = mapWeekRange(weekRange);
-    // For "Week 1 - Postseason", we now have one extra week (postseason)
+    // If "Week 1 - Postseason", we have an extra week for postseason
     const finalWeek = weekRange === "Week 1 - Postseason" ? endWeek + 1 : endWeek;
     const totalWeeks = finalWeek - startWeek + 1;
 
@@ -145,7 +144,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale: domain depends on whether we have postseason.
+    // X scale
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, finalWeek])
@@ -158,10 +157,11 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .range([innerHeight, 0]);
 
     // Axes with custom tick formatting for postseason.
-    const xAxis = d3.axisBottom(xScale)
+    const xAxis = d3
+      .axisBottom(xScale)
       .ticks(totalWeeks)
       .tickFormat((d) => {
-        // If "Week 1 - Postseason" and this tick equals finalWeek, label it "Postseason"
+        // If "Week 1 - Postseason" and this tick == finalWeek, label it "Postseason"
         if (weekRange === "Week 1 - Postseason" && d === finalWeek) {
           return "Postseason";
         }
@@ -184,13 +184,27 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const logoWidth = 40;
     const logoHeight = 40;
     const logoPadding = 10;
-    svg.append("image")
+
+    // Place poll logo near the top-right
+    svg
+      .append("image")
       .attr("xlink:href", pollLogoPath)
       .attr("width", logoWidth)
       .attr("height", logoHeight)
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
-    // -------------------------------------------------------------------------------------------
+
+    // --- Add text "GAMEDAY+ Animations" near bottom-right ---
+    const textPadding = 10;
+    svg
+      .append("text")
+      .text("GAMEDAY+ Animations")
+      .attr("x", width - logoWidth - textPadding) // place near the right side
+      .attr("y", height - textPadding) // near bottom
+      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
+      .style("font-size", "14px")
+      .style("fill", "#000") // or pick your color
+      .style("text-anchor", "end"); // right-align the text
 
     // Line generator
     const lineGen = d3
@@ -199,7 +213,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .y((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
-    // Create a shared tooltip element if it doesn't exist.
+    // Create a shared tooltip element if it doesn't exist
     const container = d3.select(chartRef.current.closest(".chart-wrapper"));
     let tooltip = container.select(".tooltip");
     if (tooltip.empty()) {
@@ -216,7 +230,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .style("z-index", "10000");
     }
 
-    // Draw lines and animate logos for each team.
+    // For each team, draw line, animate, attach logos
     chartData.forEach((teamData) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
@@ -229,6 +243,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", lineGen);
 
+      // Animate line
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -238,11 +253,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
+      // Fade out if final rank is null
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
       if (finalRank === null) {
         path.transition().delay(13000).duration(1000).style("opacity", 0);
       }
 
+      // Team logo along the line
       const logo = g
         .append("image")
         .attr("xlink:href", teamInfo.logo)
@@ -256,6 +273,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const point = path.node().getPointAtLength(currentLength);
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
+        // Fade near rank ~25
         const fadeThresholdY = yScale(24.5);
         if (point.y >= fadeThresholdY) {
           const bottomY = yScale(25);
@@ -264,70 +282,72 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         } else {
           logo.style("opacity", 1);
         }
-        return t === 1;
+        return t === 1; // stop timer after line finishes
       });
 
-      path.on("mousemove", function (event) {
-        const [mx] = d3.pointer(event, g.node());
-        let hoveredWeek = Math.round(xScale.invert(mx));
-        hoveredWeek = Math.max(startWeek, Math.min(hoveredWeek, finalWeek));
-        const hoverIndex = hoveredWeek - startWeek;
+      // Tooltip on hover
+      path
+        .on("mousemove", function (event) {
+          const [mx] = d3.pointer(event, g.node());
+          let hoveredWeek = Math.round(xScale.invert(mx));
+          hoveredWeek = Math.max(startWeek, Math.min(hoveredWeek, finalWeek));
+          const hoverIndex = hoveredWeek - startWeek;
 
-        let html = `<div style="display:flex; align-items:center; margin-bottom:8px;">
-                      <img src="${teamInfo.logo}" width="20" height="20" style="margin-right:8px;" />
-                      <span style="font-weight:bold;">${teamData.team}</span>
-                    </div>`;
-        html += `<div><strong>Ranking History (Weeks ${startWeek} - ${hoveredWeek})</strong></div>`;
-        html += `<ul style="list-style:none; padding-left:0; margin:4px 0;">`;
+          let html = `<div style="display:flex; align-items:center; margin-bottom:8px;">
+                        <img src="${teamInfo.logo}" width="20" height="20" style="margin-right:8px;" />
+                        <span style="font-weight:bold;">${teamData.team}</span>
+                      </div>`;
+          html += `<div><strong>Ranking History (Weeks ${startWeek} - ${hoveredWeek})</strong></div>`;
+          html += `<ul style="list-style:none; padding-left:0; margin:4px 0;">`;
 
-        for (let i = 0; i <= hoverIndex; i++) {
-          const weekNum = i + startWeek;
-          const rank = teamData.ranks[i];
-          const displayRank = rank === null ? "unranked" : rank;
-          let indicator = "";
-          if (i > 0) {
-            const prev = teamData.ranks[i - 1];
-            if (prev === null && rank !== null) {
-              indicator = `<span style="color:orange; font-size:0.8rem;">snuck back in</span>`;
-            } else if (prev !== null && rank !== null) {
-              const change = prev - rank;
-              if (change > 0) {
-                indicator = `<span style="color:green; font-size:0.8rem;">↑ ${change}</span>`;
-              } else if (change < 0) {
-                indicator = `<span style="color:red; font-size:0.8rem;">↓ ${Math.abs(change)}</span>`;
+          for (let i = 0; i <= hoverIndex; i++) {
+            const weekNum = i + startWeek;
+            const rank = teamData.ranks[i];
+            const displayRank = rank === null ? "unranked" : rank;
+            let indicator = "";
+            if (i > 0) {
+              const prev = teamData.ranks[i - 1];
+              if (prev === null && rank !== null) {
+                indicator = `<span style="color:orange; font-size:0.8rem;">snuck back in</span>`;
+              } else if (prev !== null && rank !== null) {
+                const change = prev - rank;
+                if (change > 0) {
+                  indicator = `<span style="color:green; font-size:0.8rem;">↑ ${change}</span>`;
+                } else if (change < 0) {
+                  indicator = `<span style="color:red; font-size:0.8rem;">↓ ${Math.abs(change)}</span>`;
+                }
               }
             }
+            html += `<li style="margin-bottom:4px;">Week ${weekNum}: <strong>${displayRank}</strong> ${indicator}</li>`;
           }
-          html += `<li style="margin-bottom:4px;">Week ${weekNum}: <strong>${displayRank}</strong> ${indicator}</li>`;
-        }
-        html += `</ul>`;
+          html += `</ul>`;
 
-        const rect = container.node().getBoundingClientRect();
-        let left = event.clientX - rect.left + 15;
-        let top = event.clientY - rect.top + 15;
-        tooltip.html(html);
+          const rect = container.node().getBoundingClientRect();
+          let left = event.clientX - rect.left + 15;
+          let top = event.clientY - rect.top + 15;
+          tooltip.html(html);
 
-        const ttWidth = tooltip.node().offsetWidth;
-        const ttHeight = tooltip.node().offsetHeight;
-        if (left + ttWidth > rect.width) {
-          left = rect.width - ttWidth - 15;
-        }
-        if (top + ttHeight > rect.height) {
-          top = rect.height - ttHeight - 15;
-        }
-        tooltip
-          .style("left", left + "px")
-          .style("top", top + "px")
-          .transition()
-          .duration(100)
-          .style("opacity", 1);
-      })
-      .on("mouseout", function () {
-        tooltip
-          .transition()
-          .duration(100)
-          .style("opacity", 0);
-      });
+          const ttWidth = tooltip.node().offsetWidth;
+          const ttHeight = tooltip.node().offsetHeight;
+          if (left + ttWidth > rect.width) {
+            left = rect.width - ttWidth - 15;
+          }
+          if (top + ttHeight > rect.height) {
+            top = rect.height - ttHeight - 15;
+          }
+          tooltip
+            .style("left", left + "px")
+            .style("top", top + "px")
+            .transition()
+            .duration(100)
+            .style("opacity", 1);
+        })
+        .on("mouseout", function () {
+          tooltip
+            .transition()
+            .duration(100)
+            .style("opacity", 0);
+        });
     });
   }, [chartData, height, width, weekRange]);
 
