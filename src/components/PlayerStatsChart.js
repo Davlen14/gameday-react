@@ -5,7 +5,7 @@ import "../styles/PlayerStatsChart.css";
 const PlayerStatsChart = () => {
   // State for fetched player stats
   const [players, setPlayers] = useState([]);
-  // State for all FBS teams (to match logos, etc.)
+  // State for all FBS teams (to match logos, colors, etc.)
   const [teams, setTeams] = useState([]);
 
   // States for filters
@@ -24,17 +24,35 @@ const PlayerStatsChart = () => {
         setIsLoading(true);
 
         // 1. Fetch all FBS teams for logos, colors, etc.
-        const teamsData = await teamsService.getTeams(); // /teams/fbs
+        const teamsData = await teamsService.getTeams(); // Assuming this hits /teams/fbs
         setTeams(teamsData);
 
         // 2. Fetch offensive player stats
-        const playerData = await teamsService.getPlayerSeasonStats(
+        const rawPlayers = await teamsService.getPlayerSeasonStats(
           2024,       // year
           "offense",  // category (assuming your API merges passing/rushing/receiving)
           "regular",  // seasonType
           10000       // limit
         );
-        setPlayers(playerData);
+
+        // Build a fullName field if missing
+        const playersWithFullName = rawPlayers.map((p) => {
+          // Use p.fullName if it exists; otherwise try p.name or combine firstName and lastName
+          let fullName = p.fullName;
+          if (!fullName) {
+            if (p.name) {
+              fullName = p.name;
+            } else {
+              fullName = `${p.firstName || ""} ${p.lastName || ""}`.trim();
+            }
+          }
+          return {
+            ...p,
+            fullName,
+          };
+        });
+
+        setPlayers(playersWithFullName);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,7 +63,7 @@ const PlayerStatsChart = () => {
     fetchData();
   }, []);
 
-  // Helper: find a team's info by name
+  // Helper: find a team's info by name (using team.school)
   const getTeamByName = (teamName) => {
     if (!teamName) return null;
     return teams.find(
@@ -53,10 +71,10 @@ const PlayerStatsChart = () => {
     );
   };
 
-  // Filter players based on search term, team, and position
+  // Filter players based on search term, team, and position filters.
   const filteredPlayers = players.filter((player) => {
-    const matchesSearch =
-      player.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const name = player.fullName ? player.fullName.toLowerCase() : "";
+    const matchesSearch = name.includes(searchTerm.toLowerCase());
 
     const matchesTeam =
       teamFilter === "All Teams" ||
@@ -89,7 +107,7 @@ const PlayerStatsChart = () => {
           onChange={(e) => setTeamFilter(e.target.value)}
         >
           <option value="All Teams">All Teams</option>
-          {/* Build the team dropdown from the teams you fetched */}
+          {/* Build the team dropdown from the fetched teams */}
           {teams.map((t) => (
             <option key={t.id} value={t.school}>
               {t.school}
@@ -127,7 +145,7 @@ const PlayerStatsChart = () => {
           <tbody>
             {filteredPlayers.length ? (
               filteredPlayers.map((player) => {
-                // Attempt to find the team object for this player's team
+                // Get the team info for the player's team
                 const teamObj = getTeamByName(player.team);
                 const logo = teamObj?.logos?.[0] || "/photos/default-team.png";
 
