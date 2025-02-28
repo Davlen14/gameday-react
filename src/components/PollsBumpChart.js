@@ -194,35 +194,34 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("x", width - logoWidth - logoPadding)
       .attr("y", logoPadding);
 
-    // SHIFT BOTTOM TEXT so it's fully visible
-    // We'll place it slightly above the bottom edge (e.g. 20px above the bottom)
-    const bottomOffset = 20;
-    const textGroup = svg.append("g")
-      .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`);
+// Instead of stackedTextGroup with "text-anchor: end", we do a new group with "text-anchor: middle"
+const bottomOffset = 20;
+const textGroup = svg.append("g")
+  .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`)
+  .attr("text-anchor", "middle"); // center the text horizontally at x=0
 
-    // 1) "Presented by" line
-    textGroup
-      .append("text")
-      .text("Presented by")
-      .attr("x", 0)
-      .attr("y", 0)
-      .style("font-size", "12px")
-      .style("fill", "#000")
-      .style("font-weight", "normal")
-      .style("text-anchor", "end")
-      .style("font-family", "sans-serif");
+// GAMEDAY+ line (italic + bold, red)
+textGroup
+  .append("text")
+  .text("GAMEDAY+")
+  .attr("x", 0)
+  .attr("y", 0) // place this at y=0
+  .style("font-size", "14px")
+  .style("font-weight", "bold")       // bold
+  .style("font-style", "italic")      // italic
+  .style("fill", "#D4001C")           // red color
+  .style("font-family", "'Orbitron', 'Titillium Web', sans-serif");
 
-    // 2) "GAMEDAY+" line
-    textGroup
-      .append("text")
-      .text("GAMEDAY+")
-      .attr("x", 0)
-      .attr("y", 16)
-      .style("font-size", "12px")
-      .style("fill", "#D4001C")
-      .style("font-style", "italic")
-      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
-      .style("text-anchor", "end");
+// Presented by line (smaller, black, normal weight, above GAMEDAY+)
+textGroup
+  .append("text")
+  .text("Presented by")
+  .attr("x", 0)
+  .attr("y", -14) // 14px above GAMEDAY+
+  .style("font-size", "10px")
+  .style("font-weight", "normal")
+  .style("fill", "#000")
+  .style("font-family", "sans-serif");
 
     // Line generator
     const lineGen = d3
