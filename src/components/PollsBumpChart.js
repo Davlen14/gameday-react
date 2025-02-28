@@ -37,7 +37,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         return { startWeek: 1, endWeek: 10 };
       case "Week 1 - 15":
         return { startWeek: 1, endWeek: 15 };
-      case "Week 1 - 16 + Final": // New case for postseason
+      case "Week 1 - Final": // <-- Matches your dropdown option
+        // We'll treat this as weeks 1..16 plus a final postseason poll at index 17
         return { startWeek: 1, endWeek: 17 };
       default:
         return { startWeek: 1, endWeek: 5 };
@@ -72,15 +73,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         for (let w = startWeek; w <= endWeek; w++) {
           let pollForWeek;
 
-          // If we're on the "Week 1 - 16 + Final" range and w == 17, fetch "postseason" poll
-          if (weekRange === "Week 1 - 16 + Final" && w === 17) {
+          // If we're in "Week 1 - Final" range and w == 17, fetch "postseason"
+          if (weekRange === "Week 1 - Final" && w === 17) {
             pollForWeek = await teamsService.getPolls(2024, apiPollType, "postseason");
           } else {
-            // Otherwise, fetch the numeric week
+            // Otherwise, fetch numeric weeks
             pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           }
 
-          // If no data returned or pollForWeek is empty, skip to avoid errors
           if (!pollForWeek || pollForWeek.length === 0) continue;
 
           // Assume pollForWeek[0] is the poll group for that week.
@@ -156,12 +156,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([25, 1])
       .range([innerHeight, 0]);
 
-    // Axes with custom tick formatting for postseason.
+    // Axes with custom tick formatting for final
     const xAxis = d3.axisBottom(xScale)
       .ticks(totalWeeks)
       .tickFormat((d) => {
-        // When using "Week 1 - 16 + Final", display "Final" for week 17.
-        if (weekRange === "Week 1 - 16 + Final" && d === endWeek) {
+        // If "Week 1 - Final" and this tick == 17, label it "Final"
+        if (weekRange === "Week 1 - Final" && d === endWeek) {
           return "Final";
         }
         return d;
@@ -244,7 +244,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-      // If the team falls out (its final week is null), then fade out the line after drawing.
+      // If the team falls out (its final week is null), fade out the line after the animation.
       const finalRank = teamData.ranks[teamData.ranks.length - 1];
       if (finalRank === null) {
         path.transition().delay(13000).duration(1000).style("opacity", 0);
@@ -266,7 +266,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // Move the logo to this point.
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // Fade out the logo when near the bottom (e.g., rank ~25).
+        // Fade out the logo near the bottom (rank ~25).
         const fadeThresholdY = yScale(24.5);
         if (point.y >= fadeThresholdY) {
           const bottomY = yScale(25);
