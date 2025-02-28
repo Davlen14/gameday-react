@@ -29,7 +29,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
   };
 
   // Convert weekRange string to numeric start and end weeks.
-  // For "Week 1 - Postseason", treat weeks 1–16 as regular season.
+  // For "Week 1 - Postseason", we treat weeks 1–16 as regular season.
   const mapWeekRange = (rangeStr) => {
     switch (rangeStr) {
       case "Week 1 - 5":
@@ -71,7 +71,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const apiPollType = mapPollType(pollType);
         const weeks = [];
 
-        // Fetch regular season polls for weeks 1 to endWeek (for "Week 1 - Postseason", that's 1–16)
+        // Fetch regular season polls
         for (let w = startWeek; w <= endWeek; w++) {
           const pollForWeek = await teamsService.getPolls(2024, apiPollType, w);
           if (!pollForWeek || pollForWeek.length === 0) continue;
@@ -82,12 +82,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         // If we're in "Week 1 - Postseason" mode, fetch the postseason poll.
         if (weekRange === "Week 1 - Postseason") {
           const postseasonPoll = await teamsService.getPolls(2024, apiPollType, "postseason");
-          // Always push an object so the weeks array length becomes endWeek+1 (i.e. 17)
-          weeks.push(
-            postseasonPoll && postseasonPoll.length > 0
-              ? postseasonPoll[0]
-              : { rankings: [] }
-          );
+          if (postseasonPoll && postseasonPoll.length > 0) {
+            weeks.push(postseasonPoll[0]);
+          }
         }
 
         // Transform weekly polls into a team-centric format.
@@ -127,7 +124,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     if (!chartData || chartData.length === 0) return;
 
     const { startWeek, endWeek } = mapWeekRange(weekRange);
-    // For "Week 1 - Postseason", our weeks array now has 17 entries.
+    // For "Week 1 - Postseason", we now have one extra week (postseason)
     const finalWeek = weekRange === "Week 1 - Postseason" ? endWeek + 1 : endWeek;
     const totalWeeks = finalWeek - startWeek + 1;
 
@@ -148,7 +145,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X scale: domain goes from startWeek to finalWeek.
+    // X scale: domain depends on whether we have postseason.
     const xScale = d3
       .scaleLinear()
       .domain([startWeek, finalWeek])
@@ -164,6 +161,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const xAxis = d3.axisBottom(xScale)
       .ticks(totalWeeks)
       .tickFormat((d) => {
+        // If "Week 1 - Postseason" and this tick equals finalWeek, label it "Postseason"
         if (weekRange === "Week 1 - Postseason" && d === finalWeek) {
           return "Postseason";
         }
@@ -257,6 +255,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
+
         const fadeThresholdY = yScale(24.5);
         if (point.y >= fadeThresholdY) {
           const bottomY = yScale(25);
@@ -273,12 +272,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         let hoveredWeek = Math.round(xScale.invert(mx));
         hoveredWeek = Math.max(startWeek, Math.min(hoveredWeek, finalWeek));
         const hoverIndex = hoveredWeek - startWeek;
+
         let html = `<div style="display:flex; align-items:center; margin-bottom:8px;">
                       <img src="${teamInfo.logo}" width="20" height="20" style="margin-right:8px;" />
                       <span style="font-weight:bold;">${teamData.team}</span>
                     </div>`;
         html += `<div><strong>Ranking History (Weeks ${startWeek} - ${hoveredWeek})</strong></div>`;
         html += `<ul style="list-style:none; padding-left:0; margin:4px 0;">`;
+
         for (let i = 0; i <= hoverIndex; i++) {
           const weekNum = i + startWeek;
           const rank = teamData.ranks[i];
@@ -300,10 +301,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           html += `<li style="margin-bottom:4px;">Week ${weekNum}: <strong>${displayRank}</strong> ${indicator}</li>`;
         }
         html += `</ul>`;
+
         const rect = container.node().getBoundingClientRect();
         let left = event.clientX - rect.left + 15;
         let top = event.clientY - rect.top + 15;
         tooltip.html(html);
+
         const ttWidth = tooltip.node().offsetWidth;
         const ttHeight = tooltip.node().offsetHeight;
         if (left + ttWidth > rect.width) {
@@ -320,7 +323,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
           .style("opacity", 1);
       })
       .on("mouseout", function () {
-        tooltip.transition().duration(100).style("opacity", 0);
+        tooltip
+          .transition()
+          .duration(100)
+          .style("opacity", 0);
       });
     });
   }, [chartData, height, width, weekRange]);
