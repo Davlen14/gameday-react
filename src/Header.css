@@ -66,8 +66,8 @@
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-size: 0.9rem;
   letter-spacing: 0.5px;
-  padding: 10px 20px;
-  border-radius: 8px;  /* Less rounded than originally (was 25px) */
+  padding: 6px 20px; /* Reduced vertical padding for slimmer height */
+  border-radius: 4px;  /* Less rounded edges */
   background: linear-gradient(135deg, #ffffff, #f8f8f8);
   color: #D4001C;
   border: 2px solid #ffffff;
@@ -76,10 +76,9 @@
 }
 
 .top-bar-button:hover {
-  background: transparent; /* Background becomes clear */
-  border: 1px solid rgba(255, 255, 255, 0.25); /* Very subtle border */
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #D4001C, #c11b1b);
+  color: #ffadad;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* DROPDOWN */
