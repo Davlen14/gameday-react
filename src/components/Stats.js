@@ -2,31 +2,24 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregatePlayerStats with a looser match condition using includes()
+// Updated aggregatePlayerStats: filters raw data and maps over it
 const aggregatePlayerStats = (data, desiredStatType) => {
   // Support both raw arrays and responses wrapped in a data property
   const rawData = Array.isArray(data) ? data : data?.data || [];
-  console.log("Aggregating stats. Raw data for", desiredStatType, ":", rawData);
-  const map = {};
-  rawData.forEach(item => {
-    const id = item.playerId; // use playerId as unique key
-    // Use includes() for a partial match (case-insensitive)
-    if (
+  console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
+  
+  const aggregated = rawData
+    .filter(item => 
       item.statType &&
       item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
-    ) {
-      // Only record the first matching entry per player
-      if (!map[id]) {
-        map[id] = {
-          playerName: item.player,
-          statValue: parseFloat(item.stat),
-          playerPhoto: item.playerPhoto || null,
-        };
-      }
-    }
-  });
-  const aggregated = Object.values(map);
-  console.log("Aggregated stats for", desiredStatType, ":", aggregated);
+    )
+    .map(item => ({
+      playerName: item.player,
+      statValue: parseFloat(item.stat),
+      playerPhoto: item.playerPhoto || null,
+    }));
+    
+  console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
 
@@ -114,6 +107,14 @@ const Stats = () => {
         const aggregatedDefInts = aggregatePlayerStats(statsObj["defensive"], "INT"); // interceptions
 
         setPlayerStats({
+          passing: aggregatedPassing,
+          rushing: aggregatedRushing,
+          receiving: aggregatedReceiving,
+          tackles: aggregatedDefTackles,
+          sacks: aggregatedDefSacks,
+          interceptions: aggregatedDefInts,
+        });
+        console.log("Final aggregated player stats:", {
           passing: aggregatedPassing,
           rushing: aggregatedRushing,
           receiving: aggregatedReceiving,
