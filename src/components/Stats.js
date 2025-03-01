@@ -19,7 +19,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 
   // Sort the aggregated data in descending order by statValue
   aggregated.sort((a, b) => b.statValue - a.statValue);
-
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
@@ -126,7 +125,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch tackles stats (defensive)
+  // Fetch tackles stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchTacklesStats = async () => {
@@ -140,7 +139,6 @@ const Stats = () => {
           controller.signal
         );
         console.log("Raw tackles data:", tacklesData);
-        // Assuming the API returns defensive tackles with statType "TACKLES"
         const aggregatedTackles = aggregatePlayerStats(tacklesData, "TACKLES");
         setPlayerStats(prev => ({ ...prev, tackles: aggregatedTackles.slice(0, 10) }));
       } catch (error) {
@@ -157,7 +155,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch interceptions stats (defensive)
+  // Fetch interceptions stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
@@ -171,7 +169,6 @@ const Stats = () => {
           controller.signal
         );
         console.log("Raw interceptions data:", interceptionsData);
-        // Assuming the API returns interceptions with statType "INT"
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
@@ -190,44 +187,124 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Inline CSS */}
+      {/* Inline CSS for a glassy, modern look */}
       <style>{`
         .stats-container {
-          font-family: Arial, sans-serif;
+          font-family: "Helvetica Neue", Arial, sans-serif;
           margin: 2rem;
-          background: #f5f5f5;
-          color: #333;
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+          padding: 1rem;
+          border-radius: 12px;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 4px 30px rgba(0,0,0,0.1);
         }
         h1, h2 {
           text-align: center;
-        }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-top: 1rem;
-          background: #fff;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 0.75rem;
-          text-align: left;
-        }
-        th {
-          background: #e0e0e0;
-        }
-        tr:nth-child(even) {
-          background: #f9f9f9;
+          margin: 0.5rem 0;
         }
         #table-container {
           max-width: 1200px;
           margin: 0 auto;
         }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 2rem;
+        }
+        th, td {
+          padding: 0.75rem;
+          text-align: left;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+          background: rgba(255, 255, 255, 0.3);
+          font-weight: 600;
+        }
+        tr:nth-child(even) {
+          background: rgba(255, 255, 255, 0.1);
+        }
+        .leader-row {
+          display: flex;
+          align-items: center;
+          padding: 0.5rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stats-player-logo {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          margin-right: 0.75rem;
+          object-fit: cover;
+          border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        .leader-name {
+          flex: 1;
+        }
+        .leader-stat {
+          font-weight: bold;
+          margin-left: 0.5rem;
+        }
+        .view-all-btn {
+          display: block;
+          width: 100%;
+          padding: 0.75rem;
+          margin-top: 1rem;
+          background: rgba(255, 255, 255, 0.3);
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: background 0.3s ease;
+        }
+        .view-all-btn:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+        /* Modal styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 1.5rem;
+          border-radius: 12px;
+          backdrop-filter: blur(10px);
+          max-width: 800px;
+          width: 90%;
+          color: #fff;
+        }
+        .modal-content h2 {
+          margin-top: 0;
+          text-align: center;
+        }
+        .modal-content table {
+          width: 100%;
+          margin-top: 1rem;
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 8px;
+          overflow: hidden;
+        }
       `}</style>
+
       <h1>Top 10 Leaders (Yards) - 2024</h1>
       {loading ? (
-        <p>Loading...</p>
+        <p style={{ textAlign: "center" }}>Loading...</p>
       ) : error ? (
-        <p>{error}</p>
+        <p style={{ textAlign: "center" }}>{error}</p>
       ) : (
         <div id="table-container">
           <h2>Passing Leaders</h2>
@@ -243,7 +320,16 @@ const Stats = () => {
               {playerStats.passing.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
+                  <td>
+                    {player.playerPhoto && (
+                      <img
+                        src={player.playerPhoto}
+                        alt={player.playerName}
+                        className="stats-player-logo"
+                      />
+                    )}
+                    {player.playerName}
+                  </td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -263,7 +349,16 @@ const Stats = () => {
               {playerStats.rushing.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
+                  <td>
+                    {player.playerPhoto && (
+                      <img
+                        src={player.playerPhoto}
+                        alt={player.playerName}
+                        className="stats-player-logo"
+                      />
+                    )}
+                    {player.playerName}
+                  </td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -283,7 +378,16 @@ const Stats = () => {
               {playerStats.receiving.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
+                  <td>
+                    {player.playerPhoto && (
+                      <img
+                        src={player.playerPhoto}
+                        alt={player.playerName}
+                        className="stats-player-logo"
+                      />
+                    )}
+                    {player.playerName}
+                  </td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -303,7 +407,16 @@ const Stats = () => {
               {playerStats.tackles.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
+                  <td>
+                    {player.playerPhoto && (
+                      <img
+                        src={player.playerPhoto}
+                        alt={player.playerName}
+                        className="stats-player-logo"
+                      />
+                    )}
+                    {player.playerName}
+                  </td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -323,7 +436,16 @@ const Stats = () => {
               {playerStats.interceptions.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
+                  <td>
+                    {player.playerPhoto && (
+                      <img
+                        src={player.playerPhoto}
+                        alt={player.playerName}
+                        className="stats-player-logo"
+                      />
+                    )}
+                    {player.playerName}
+                  </td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
