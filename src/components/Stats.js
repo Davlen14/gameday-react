@@ -2,28 +2,28 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregatePlayerStats with strict filtering and sorting
 const aggregatePlayerStats = (data, desiredStatType) => {
-  const rawData = Array.isArray(data) ? data : data?.data || [];
-  console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
-
-  // Only include records where statType equals desiredStatType exactly (case-insensitive)
-  const aggregated = rawData
-    .filter(item =>
-      item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
-    )
-    .map(item => ({
-      playerName: item.player,
-      statValue: parseFloat(item.stat),
-      playerPhoto: item.playerPhoto || null,
-    }));
-
-  // Sort the aggregated data in descending order by statValue
-  aggregated.sort((a, b) => b.statValue - a.statValue);
-
-  console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
-  return aggregated;
-};
+    const rawData = Array.isArray(data) ? data : data?.data || [];
+    console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
+  
+    // Only include records where statType equals desiredStatType exactly (case-insensitive)
+    const aggregated = rawData
+      .filter(item =>
+        item.statType &&
+        item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+      )
+      .map(item => ({
+        playerName: item.player,
+        statValue: parseFloat(item.stat),
+        playerPhoto: item.playerPhoto || null,
+      }));
+  
+    // Sort the aggregated data in descending order by statValue
+    aggregated.sort((a, b) => b.statValue - a.statValue);
+  
+    console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
+    return aggregated;
+  };
 
 const Stats = () => {
   // Toggle between Player view and Team view
