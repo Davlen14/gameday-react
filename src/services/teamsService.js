@@ -1,48 +1,59 @@
 // TeamsService.js
-// Refactored for improved reliability and performance
+// =============================================================================
+// This file handles all API interactions via a proxy for CORS. 
+// The file has been modified to include an extended timeout and robust retry 
+// mechanism (with exponential backoff) for 504 Gateway Timeout errors.
+// =============================================================================
 
-// Core function for proxy-based API interaction with retry logic and timeout support
-const fetchData = async (endpoint, params = {}, retries = 3, delay = 1000) => {
+// Enhanced fetchData with AbortController, extended timeout, and exponential backoff
+const fetchData = async (endpoint, params = {}, retries = 3, timeout = 10000) => {
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), timeout);
   const url = `/api/proxy`;
-  // Set a timeout value (in ms) for each request
-  const timeout = 10000; // 10 seconds timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ endpoint, params }),
-      signal: controller.signal,
+      signal: abortController.signal,
     });
+
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      // Retry on 504 (Gateway Timeout) if retries remain.
+      if (response.status === 504 && retries > 0) {
+        console.warn(`Retrying ${endpoint} in ${timeout}ms... (${4 - retries}/3)`);
+        await new Promise(resolve => setTimeout(resolve, timeout));
+        return fetchData(endpoint, params, retries - 1, timeout * 2); // Exponential backoff
+      }
       const text = await response.text();
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${text}`);
     }
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    console.error("Fetch Error:", error.message);
-    // If it's a 504 (or our abort error that may indicate a timeout) and retries remain, retry with exponential backoff.
-    if (retries > 0 && (error.message.includes("504") || error.message.includes("AbortError"))) {
-      console.warn(`Retrying in ${delay}ms... (${4 - retries}/3)`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      return fetchData(endpoint, params, retries - 1, delay * 2);
+    // If aborted or 504 error, retry if possible
+    if ((error.name === "AbortError" || error.message.includes("504")) && retries > 0) {
+      console.warn(`Request aborted or timed out for ${endpoint}. Retrying in ${timeout}ms... (${4 - retries}/3)`);
+      await new Promise(resolve => setTimeout(resolve, timeout));
+      return fetchData(endpoint, params, retries - 1, timeout * 2);
     }
+    console.error("Fetch Error:", error.message);
     throw error;
   }
 };
 
-// -------------------------
+// =============================================================================
 // Core API interaction functions
-// -------------------------
+// =============================================================================
 
 export const getGameById = async (gameId) => {
   const endpoint = "/games";
-  const params = { id: gameId };
+  const params = { id: gameId }; // 'id' is the correct key for game lookup
   const response = await fetchData(endpoint, params);
   return response?.[0] || null;
 };
@@ -56,9 +67,12 @@ export const getTeams = async () => {
 // UPDATED: Added postseason support
 export const getGameMedia = async (year, query) => {
   const endpoint = "/games/media";
-  let params = typeof query === "object" && query.seasonType === "postseason"
-    ? { year, seasonType: "postseason" }
-    : { year, week: query };
+  let params;
+  if (typeof query === "object" && query.seasonType === "postseason") {
+    params = { year, seasonType: "postseason" };
+  } else {
+    params = { year, week: query };
+  }
   return await fetchData(endpoint, params);
 };
 
@@ -71,22 +85,28 @@ export const getTeamGameStats = async (gameId, team, year) => {
 // UPDATED: Added postseason support
 export const getGameWeather = async (year, query) => {
   const endpoint = "/games/weather";
-  let params = typeof query === "object" && query.seasonType === "postseason"
-    ? { year, seasonType: "postseason" }
-    : { year, week: query };
+  let params;
+  if (typeof query === "object" && query.seasonType === "postseason") {
+    params = { year, seasonType: "postseason" };
+  } else {
+    params = { year, week: query };
+  }
   return await fetchData(endpoint, params);
 };
 
 export const getGames = async (query) => {
   const endpoint = "/games";
   let params;
+  // If query is an object (e.g., { seasonType: "postseason" })
   if (typeof query === "object" && query.seasonType === "postseason") {
     params = {
       year: 2024,
       seasonType: "postseason",
       division: "fbs",
+      // No week parameter for postseason games
     };
   } else {
+    // Otherwise, assume it's a regular season week number
     params = {
       year: 2024,
       seasonType: "regular",
@@ -111,14 +131,16 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-  const statsEndpoint = "/stats/season";
+  const statsEndpoint = "/stats/season"; // API endpoint for team stats
   const params = { year, team };
 
   try {
     console.log(`Fetching stats for team: ${team}`);
     const response = await fetchData(statsEndpoint, params);
+
     if (!Array.isArray(response) || response.length === 0) {
       console.error(`Unexpected or empty API response for ${team}:`, response);
+      // Return default stats if no response or unexpected data
       return {
         netPassingYards: 0,
         rushingYards: 0,
@@ -128,6 +150,7 @@ export const getTeamStats = async (team, year) => {
         sacks: 0,
       };
     }
+
     console.log(`Raw Team Stats for ${team}:`, response);
     const stats = {
       netPassingYards: 0,
@@ -137,6 +160,7 @@ export const getTeamStats = async (team, year) => {
       pointsAllowed: 0,
       sacks: 0,
     };
+
     response.forEach((stat) => {
       if (stat.statName === "netPassingYards") {
         stats.netPassingYards = stat.statValue;
@@ -152,6 +176,7 @@ export const getTeamStats = async (team, year) => {
         stats.sacks = stat.statValue;
       }
     });
+
     console.log(`Mapped Stats for ${team}:`, stats);
     return stats;
   } catch (error) {
@@ -174,22 +199,24 @@ export const getPolls = async (year = 2024, pollType = "ap", week = null) => {
     params = { year, pollType, seasonType: "postseason" };
   } else {
     params = { year, pollType, seasonType: "regular" };
-    if (week) params.week = week;
+    if (week) {
+      params.week = week;
+    }
   }
   const data = await fetchData(endpoint, params);
-  const mappedPolls = data.map((pollGroup) => ({
+  const mappedPolls = data.map(pollGroup => ({
     id: `${pollGroup.season}-${pollGroup.week}-${pollGroup.polls[0].poll.replace(/\s+/g, '-')}`,
     name: pollGroup.polls[0].poll,
-    rankings: pollGroup.polls[0].ranks.map((team) => ({
+    rankings: pollGroup.polls[0].ranks.map(team => ({
       school: team.school,
       conference: team.conference,
       rank: team.rank,
       points: team.points,
-      firstPlaceVotes: team.firstPlaceVotes,
-    })),
+      firstPlaceVotes: team.firstPlaceVotes
+    }))
   }));
   if (week === "postseason") {
-    return mappedPolls.filter((poll) => {
+    return mappedPolls.filter(poll => {
       const name = poll.name.trim().toLowerCase();
       return name === "ap top 25" || name === "coaches poll";
     });
@@ -203,7 +230,7 @@ export const getPlayByPlay = async (gameId) => {
   return await fetchData(endpoint, params);
 };
 
-// FBS-specific functions
+// Updated FBS-specific functions
 export const getTeamById = async (teamId) => {
   const endpoint = "/teams/fbs";
   const allTeams = await fetchData(endpoint, { year: 2024 });
@@ -216,13 +243,17 @@ export const getTeamSchedule = async (team, year = 2024) => {
   const endpoint = "/games";
   const regularSeasonParams = { year, team, seasonType: "regular", division: "fbs" };
   const postseasonParams = { year, team, seasonType: "postseason", division: "fbs" };
+
   try {
     const [regularSeason, postseason] = await Promise.all([
       fetchData(endpoint, regularSeasonParams),
       fetchData(endpoint, postseasonParams),
     ]);
+
     const allGames = [...regularSeason, ...postseason];
-    if (!allGames.length) throw new Error("No schedule data found");
+    if (!allGames.length) {
+      throw new Error("No schedule data found");
+    }
     return allGames.map((game) => ({
       id: game.id,
       week: game.week,
@@ -244,9 +275,13 @@ export const getTeamRatings = async (team, year = 2024) => {
   const endpoint = "/ratings/sp";
   const params = { year, team };
   const response = await fetchData(endpoint, params);
-  if (!response || response.length === 0) throw new Error("No ratings data found");
+  if (!response || response.length === 0) {
+    throw new Error("No ratings data found");
+  }
   const teamData = response.find((item) => item.team === team);
-  if (!teamData) throw new Error(`Ratings data not found for team: ${team}`);
+  if (!teamData) {
+    throw new Error(`Ratings data not found for team: ${team}`);
+  }
   return {
     overall: teamData.rating,
     offense: teamData.offense?.rating || "N/A",
@@ -290,6 +325,7 @@ export const getPlayerSeasonStats = async (
   const endpoint = "/stats/player/season";
   const catParam = Array.isArray(category) ? category.join(",") : category;
   const params = { year: String(year), category: catParam, seasonType, limit: String(limit) };
+
   try {
     const response = await fetchData(endpoint, params);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
@@ -304,6 +340,7 @@ export const getPlayerGameStats = async (gameId, year, week, seasonType, team, c
   const endpoint = "/games/players";
   const params = { gameId, year, week, seasonType, team };
   if (category) params.category = category;
+
   try {
     const response = await fetchData(endpoint, params);
     console.log(`getPlayerGameStats(${gameId}, ${year}, ${week}, ${seasonType}, ${team}, ${category}) returned:`, response);
@@ -314,12 +351,14 @@ export const getPlayerGameStats = async (gameId, year, week, seasonType, team, c
   }
 };
 
-// UPDATED: Added postseason support for fetchScoreboard
 export const fetchScoreboard = async (year, query) => {
   const endpoint = "/games";
-  let params = typeof query === "object" && query.seasonType === "postseason"
-    ? { year, seasonType: "postseason" }
-    : { year, week: query };
+  let params;
+  if (typeof query === "object" && query.seasonType === "postseason") {
+    params = { year, seasonType: "postseason" };
+  } else {
+    params = { year, week: query };
+  }
   return await fetchData(endpoint, params);
 };
 
@@ -333,7 +372,11 @@ export const getTeamRoster = async (team, year = 2024) => {
   const endpoint = "/roster";
   const params = { year, team };
   const response = await fetchData(endpoint, params);
-  if (!response || response.length === 0) throw new Error("No roster data found");
+
+  if (!response || response.length === 0) {
+    throw new Error("No roster data found");
+  }
+
   return response.map((player) => ({
     id: player.id || null,
     fullName: `${player.firstName || ""} ${player.lastName || ""}`.trim() || "Unknown Player",
@@ -550,7 +593,10 @@ export const getWepaPlayersKicking = async (year, team) => {
   return await fetchData(endpoint, params);
 };
 
+// =============================================================================
 // Export all functions
+// =============================================================================
+
 const teamsService = {
   getGameById,
   getTeams,
