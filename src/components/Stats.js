@@ -17,7 +17,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       statValue: parseFloat(item.stat),
       playerPhoto: item.playerPhoto || null,
     }));
-    
+
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
@@ -32,11 +32,19 @@ const Stats = () => {
   const [errorTeamStats, setErrorTeamStats] = useState(null);
 
   // State for player season stats
-  const [playerStats, setPlayerStats] = useState({});
+  // For now we only fetch "passing" stats
+  const [playerStats, setPlayerStats] = useState({
+    passing: [],
+    rushing: null,
+    receiving: null,
+    tackles: null,
+    sacks: null,
+    interceptions: null,
+  });
   const [loadingPlayerStats, setLoadingPlayerStats] = useState(true);
   const [errorPlayerStats, setErrorPlayerStats] = useState(null);
 
-  // Fetch team stats
+  // Fetch team stats (unchanged)
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
@@ -68,64 +76,31 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats
+  // Fetch player season stats for passing only
   useEffect(() => {
-    const fetchPlayerStats = async () => {
+    const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        const categories = ["passing", "rushing", "receiving", "defensive"];
-        const results = await Promise.allSettled(
-          categories.map((cat) => teamsService.getPlayerSeasonStats(2024, cat))
-        );
-
-        results.forEach((result, idx) => {
-          if (result.status === "fulfilled") {
-            console.log(`Raw data for ${categories[idx]}:`, result.value);
-          } else {
-            console.error(`Failed to load ${categories[idx]} stats:`, result.reason);
-          }
-        });
-
-        const statsObj = {};
-        categories.forEach((cat, index) => {
-          statsObj[cat] =
-            results[index].status === "fulfilled" ? results[index].value : [];
-        });
-        console.log("Combined stats object:", statsObj);
-
-        // Offensive stats
-        const aggregatedPassing = aggregatePlayerStats(statsObj["passing"], "YDS");
-        const aggregatedRushing = aggregatePlayerStats(statsObj["rushing"], "YDS");
-        const aggregatedReceiving = aggregatePlayerStats(statsObj["receiving"], "YDS");
-        // Defensive stats
-        const aggregatedDefTackles = aggregatePlayerStats(statsObj["defensive"], "TOT");
-        const aggregatedDefSacks = aggregatePlayerStats(statsObj["defensive"], "SACKS");
-        const aggregatedDefInts = aggregatePlayerStats(statsObj["defensive"], "INT");
-
+        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing");
+        console.log("Raw passing data:", passingData);
+        const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
+        console.log("Aggregated passing stats:", aggregatedPassing);
         setPlayerStats({
           passing: aggregatedPassing,
-          rushing: aggregatedRushing,
-          receiving: aggregatedReceiving,
-          tackles: aggregatedDefTackles,
-          sacks: aggregatedDefSacks,
-          interceptions: aggregatedDefInts,
-        });
-        console.log("Final aggregated player stats:", {
-          passing: aggregatedPassing,
-          rushing: aggregatedRushing,
-          receiving: aggregatedReceiving,
-          tackles: aggregatedDefTackles,
-          sacks: aggregatedDefSacks,
-          interceptions: aggregatedDefInts,
+          rushing: null,
+          receiving: null,
+          tackles: null,
+          sacks: null,
+          interceptions: null,
         });
       } catch (error) {
-        console.error("Error fetching player season stats:", error);
+        console.error("Error fetching player season passing stats:", error);
         setErrorPlayerStats("Failed to load player season stats.");
       } finally {
         setLoadingPlayerStats(false);
       }
     };
-    fetchPlayerStats();
+    fetchPlayerPassingStats();
   }, []);
 
   // Helper: Sort team stats by a given key (highest to lowest)
@@ -135,7 +110,7 @@ const Stats = () => {
       .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
   };
 
-  // Render top 5 teams for a given stat
+  // Render top 5 teams for a given stat (unchanged)
   const renderTeamLeaders = (statName) => {
     if (loadingTeamStats) return <p className="stat-placeholder">Loading...</p>;
     if (errorTeamStats) return <p className="stat-placeholder">{errorTeamStats}</p>;
@@ -159,11 +134,16 @@ const Stats = () => {
   };
 
   // Render top 5 players for a given category
+  // For now, only passing is fetched; for others, display "Coming Soon"
   const renderPlayerLeaders = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
     if (errorPlayerStats)
       return <p className="stat-placeholder">{errorPlayerStats}</p>;
+
+    if (category !== "passing") {
+      return <p className="stat-placeholder">Coming Soon</p>;
+    }
 
     const players = playerStats[category] || [];
     if (players.length === 0)
@@ -184,7 +164,7 @@ const Stats = () => {
     ));
   };
 
-  // UI for the Player view
+  // UI for the Player view: Only Passing stats are live; others show "Coming Soon"
   const renderPlayerView = () => {
     return (
       <div className="leaders-wrapper">
@@ -196,33 +176,33 @@ const Stats = () => {
           </div>
           <div className="leaders-card">
             <h3>Rushing</h3>
-            {renderPlayerLeaders("rushing")}
+            <p className="stat-placeholder">Coming Soon</p>
           </div>
           <div className="leaders-card">
             <h3>Receiving</h3>
-            {renderPlayerLeaders("receiving")}
+            <p className="stat-placeholder">Coming Soon</p>
           </div>
         </div>
         <div className="leaders-column">
           <h2 className="leaders-header">Defensive Leaders</h2>
           <div className="leaders-card">
             <h3>Tackles</h3>
-            {renderPlayerLeaders("tackles")}
+            <p className="stat-placeholder">Coming Soon</p>
           </div>
           <div className="leaders-card">
             <h3>Sacks</h3>
-            {renderPlayerLeaders("sacks")}
+            <p className="stat-placeholder">Coming Soon</p>
           </div>
           <div className="leaders-card">
             <h3>Interceptions</h3>
-            {renderPlayerLeaders("interceptions")}
+            <p className="stat-placeholder">Coming Soon</p>
           </div>
         </div>
       </div>
     );
   };
 
-  // UI for the Team view
+  // UI for the Team view remains unchanged
   const renderTeamView = () => {
     return (
       <div className="leaders-wrapper">
