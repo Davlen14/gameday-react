@@ -2,6 +2,27 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css"; // Updated CSS file
 
+// Helper to aggregate raw stat responses by player and desired statType
+const aggregatePlayerStats = (data, desiredStatType) => {
+  const map = {};
+  data.forEach(item => {
+    // Use playerId as the unique key
+    const id = item.playerId;
+    // Compare statType (case-insensitive)
+    if (item.statType && item.statType.toUpperCase() === desiredStatType.toUpperCase()) {
+      // Only record the first matching entry per player
+      if (!map[id]) {
+        map[id] = {
+          playerName: item.player,
+          statValue: parseFloat(item.stat),
+          playerPhoto: item.playerPhoto || null,
+        };
+      }
+    }
+  });
+  return Object.values(map);
+};
+
 const Stats = () => {
   // State for team stats
   const [allTeamStats, setAllTeamStats] = useState([]);
@@ -24,7 +45,8 @@ const Stats = () => {
 
         const statsPromises = teams.map(async (team) => {
           try {
-            // Fetch stats for each team (must include both offense & defense)
+            // getTeamStats should return an object with keys:
+            // netPassingYards, rushingYards, totalYards, yardsAllowed, pointsAllowed, sacks
             const stats = await teamsService.getTeamStats(team.school, 2024);
             return { team: team.school, stats, logo: team.logos[0] };
           } catch (err) {
@@ -47,23 +69,39 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for offensive categories and one defensive category
+  // Fetch player season stats for offensive and defensive categories separately
   useEffect(() => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // For player stats, fetch offensive stats individually and defensive stats once.
-        const categories = ["passing", "rushing", "receiving", "defensive"];
-        const statsResults = await Promise.all(
-          categories.map((category) =>
-            teamsService.getPlayerSeasonStats(2024, category)
-          )
-        );
-        const statsObj = {};
-        categories.forEach((cat, index) => {
-          statsObj[cat] = statsResults[index];
+        // Fetch offensive categories individually
+        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing");
+        const rushingData = await teamsService.getPlayerSeasonStats(2024, "rushing");
+        const receivingData = await teamsService.getPlayerSeasonStats(2024, "receiving");
+        // Fetch defensive data once (which includes multiple stat types)
+        const defensiveData = await teamsService.getPlayerSeasonStats(2024, "defensive");
+
+        // Aggregate offensive stats:
+        // For passing, we choose desired statType "YDS" (adjust if your API returns something else)
+        const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
+        // For rushing, use "YDS"
+        const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
+        // For receiving, use "YDS"
+        const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
+
+        // Aggregate defensive stats for different measures:
+        const aggregatedDefTackles = aggregatePlayerStats(defensiveData, "TOT"); // total tackles
+        const aggregatedDefSacks = aggregatePlayerStats(defensiveData, "SACKS");
+        const aggregatedDefInts = aggregatePlayerStats(defensiveData, "INT"); // interceptions
+
+        setPlayerStats({
+          passing: aggregatedPassing,
+          rushing: aggregatedRushing,
+          receiving: aggregatedReceiving,
+          tackles: aggregatedDefTackles,
+          sacks: aggregatedDefSacks,
+          interceptions: aggregatedDefInts,
         });
-        setPlayerStats(statsObj);
       } catch (error) {
         console.error("Error fetching player season stats:", error);
         setErrorPlayerStats("Failed to load player season stats.");
@@ -100,29 +138,14 @@ const Stats = () => {
     ));
   };
 
-  // Render player stats for a given category
-  // For "passing", "rushing", and "receiving", we use the respective arrays.
-  // For defensive stats, we derive "tackles", "sacks", and "interceptions" from the "defensive" array.
+  // Render player stats for a given category using aggregated data
   const renderPlayerStats = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
     if (errorPlayerStats)
       return <p className="stat-placeholder">{errorPlayerStats}</p>;
 
-    let players = [];
-    if (["passing", "rushing", "receiving"].includes(category)) {
-      players = playerStats[category] || [];
-    } else if (category === "tackles") {
-      players = playerStats["defensive"] || [];
-      players = [...players].sort((a, b) => (b.totalTackles || 0) - (a.totalTackles || 0));
-    } else if (category === "sacks") {
-      players = playerStats["defensive"] || [];
-      players = [...players].sort((a, b) => (b.sacks || 0) - (a.sacks || 0));
-    } else if (category === "interceptions") {
-      players = playerStats["defensive"] || [];
-      players = [...players].sort((a, b) => (b.interceptions || 0) - (a.interceptions || 0));
-    }
-
+    const players = playerStats[category] || [];
     if (players.length === 0)
       return <p className="stat-placeholder">No data available</p>;
 
@@ -137,19 +160,7 @@ const Stats = () => {
           />
         )}
         <span className="player-name">{player.playerName}</span>
-        <span className="player-stat">
-          {(() => {
-            // For offensive categories, use statValue.
-            if (["passing", "rushing", "receiving"].includes(category)) {
-              return player.statValue || 0;
-            }
-            // For defensive categories, choose based on requested category.
-            if (category === "tackles") return player.totalTackles || 0;
-            if (category === "sacks") return player.sacks || 0;
-            if (category === "interceptions") return player.interceptions || 0;
-            return 0;
-          })()}
-        </span>
+        <span className="player-stat">{player.statValue || 0}</span>
       </div>
     ));
   };

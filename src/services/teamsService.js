@@ -311,12 +311,18 @@ export const getTeamRecords = async (teamId, year) => {
     return await fetchData(endpoint, params);
 };
 
-export const getPlayerSeasonStats = async (year = 2024, category, seasonType = "regular", limit = 10000) => {
-    const endpoint = "/stats/player/season";
-    const params = { year, category, seasonType, limit };
-    return await fetchData(endpoint, params);
+export const getPlayerSeasonStats = async (
+  year = 2024,
+  category,
+  seasonType = "regular",
+  limit = 10000
+) => {
+  const endpoint = "/stats/player/season";
+  // If category is an array, join it into a comma‐separated string.
+  const catParam = Array.isArray(category) ? category.join(",") : category;
+  const params = { year, category: catParam, seasonType, limit };
+  return await fetchData(endpoint, params);
 };
-
 // Function to fetch player game stats
 export const getPlayerGameStats = async (gameId, year, week, seasonType, team, category = null) => {
   const endpoint = "/games/players";
