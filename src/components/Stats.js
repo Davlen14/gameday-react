@@ -13,8 +13,8 @@ const aggregatePlayerStats = (data, desiredStatType) => {
     )
     .map(item => ({
       playerName: item.player,
-      statValue: parseFloat(item.stat),
-      playerPhoto: item.playerPhoto || null,
+      team: item.team, // include team for logo lookup
+      statValue: parseFloat(item.stat)
     }));
 
   // Sort the aggregated data in descending order by statValue
@@ -24,7 +24,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, tackles, and interceptions
+  // We'll store stats for multiple categories
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -32,8 +32,31 @@ const Stats = () => {
     tackles: [],
     interceptions: []
   });
+  const [teams, setTeams] = useState([]); // For team logos lookup
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Fetch teams once (for logo lookup)
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams();
+        console.log("Teams data:", teamsData);
+        setTeams(teamsData);
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+      }
+    };
+    fetchTeams();
+  }, []);
+
+  // Helper to get a team logo from teams state
+  const getTeamLogo = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.logos?.[0] || "/photos/default_team.png";
+  };
 
   // Fetch passing stats
   useEffect(() => {
@@ -52,8 +75,9 @@ const Stats = () => {
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Passing stats fetch aborted");
-        else {
+        if (controller.signal.aborted) {
+          console.log("Passing stats fetch aborted");
+        } else {
           console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -187,21 +211,21 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Inline CSS for a glassy, modern look */}
+      {/* Inline CSS for modern, glassy UI */}
       <style>{`
         .stats-container {
           font-family: "Helvetica Neue", Arial, sans-serif;
           margin: 2rem;
           background: rgba(255, 255, 255, 0.1);
           color: #fff;
-          padding: 1rem;
+          padding: 1.5rem;
           border-radius: 12px;
           backdrop-filter: blur(10px);
           box-shadow: 0 4px 30px rgba(0,0,0,0.1);
         }
         h1, h2 {
           text-align: center;
-          margin: 0.5rem 0;
+          margin: 0.75rem 0;
         }
         #table-container {
           max-width: 1200px;
@@ -234,12 +258,12 @@ const Stats = () => {
           padding: 0.5rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .stats-player-logo {
+        .team-logo {
           width: 40px;
           height: 40px;
-          border-radius: 50%;
           margin-right: 0.75rem;
           object-fit: cover;
+          border-radius: 50%;
           border: 2px solid rgba(255, 255, 255, 0.5);
         }
         .leader-name {
@@ -321,13 +345,11 @@ const Stats = () => {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {player.playerPhoto && (
-                      <img
-                        src={player.playerPhoto}
-                        alt={player.playerName}
-                        className="stats-player-logo"
-                      />
-                    )}
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
                     {player.playerName}
                   </td>
                   <td>{player.statValue}</td>
@@ -350,13 +372,11 @@ const Stats = () => {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {player.playerPhoto && (
-                      <img
-                        src={player.playerPhoto}
-                        alt={player.playerName}
-                        className="stats-player-logo"
-                      />
-                    )}
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
                     {player.playerName}
                   </td>
                   <td>{player.statValue}</td>
@@ -379,13 +399,11 @@ const Stats = () => {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {player.playerPhoto && (
-                      <img
-                        src={player.playerPhoto}
-                        alt={player.playerName}
-                        className="stats-player-logo"
-                      />
-                    )}
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
                     {player.playerName}
                   </td>
                   <td>{player.statValue}</td>
@@ -408,13 +426,11 @@ const Stats = () => {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {player.playerPhoto && (
-                      <img
-                        src={player.playerPhoto}
-                        alt={player.playerName}
-                        className="stats-player-logo"
-                      />
-                    )}
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
                     {player.playerName}
                   </td>
                   <td>{player.statValue}</td>
@@ -437,13 +453,11 @@ const Stats = () => {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {player.playerPhoto && (
-                      <img
-                        src={player.playerPhoto}
-                        alt={player.playerName}
-                        className="stats-player-logo"
-                      />
-                    )}
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
                     {player.playerName}
                   </td>
                   <td>{player.statValue}</td>
@@ -455,6 +469,26 @@ const Stats = () => {
       )}
     </div>
   );
+};
+
+// Helper to get team logo from teams data
+// We need to fetch teams data, so add this helper outside the component:
+const getTeamLogo = (teamName) => {
+  // In a real app you might pass teams data via props or context.
+  // For simplicity, we assume a global variable or default mapping.
+  // Here we'll simulate a simple lookup.
+  const teamsMock = [
+    { school: "Long Island University", logos: ["/logos/liuniversity.png"] },
+    { school: "Charlotte", logos: ["/logos/charlotte.png"] },
+    { school: "Stetson", logos: ["/logos/stetson.png"] },
+    { school: "Lamar", logos: ["/logos/lamar.png"] },
+    { school: "Incarnate Word", logos: ["/logos/incarnateword.png"] },
+    // ... add other teams as needed
+  ];
+  const team = teamsMock.find(
+    (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+  );
+  return team?.logos?.[0] || "/logos/default.png";
 };
 
 export default Stats;
