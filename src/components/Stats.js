@@ -24,7 +24,9 @@ const Stats = () => {
 
         const statsPromises = teams.map(async (team) => {
           try {
-            // Fetch stats for each team (assumed to include offense, defense, etc.)
+            // Fetch stats for each team.
+            // It is assumed that getTeamStats now returns an object with the following keys:
+            // net_pass_yds, rush_yds, total_yds, opponentTotalYards, opponentPoints, sacks
             const stats = await teamsService.getTeamStats(team.school, 2024);
             return { team: team.school, stats, logo: team.logos[0] };
           } catch (err) {
@@ -52,7 +54,7 @@ const Stats = () => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // Define the categories you want to fetch. Adjust these based on your API.
+        // Define the categories to fetch. Adjust these based on the API’s valid category names.
         const categories = [
           "passing",
           "rushing",
@@ -146,15 +148,15 @@ const Stats = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <h3 className="stat-title">Passing Yards</h3>
-            {renderTeamStats("netPassingYards")}
+            {renderTeamStats("net_pass_yds")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Rushing Yards</h3>
-            {renderTeamStats("rushingYards")}
+            {renderTeamStats("rush_yds")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Total Yards</h3>
-            {renderTeamStats("totalYards")}
+            {renderTeamStats("total_yds")}
           </div>
         </div>
       </div>
@@ -165,11 +167,11 @@ const Stats = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <h3 className="stat-title">Yards Allowed</h3>
-            {renderTeamStats("yardsAllowed")}
+            {renderTeamStats("opponentTotalYards")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Points Allowed</h3>
-            {renderTeamStats("pointsAllowed")}
+            {renderTeamStats("opponentPoints")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Sacks</h3>
