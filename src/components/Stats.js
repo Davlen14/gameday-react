@@ -8,7 +8,8 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
     .filter(item =>
-      item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+      item.statType &&
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
     )
     .map(item => ({
       playerName: item.player,
@@ -39,13 +40,13 @@ const Stats = () => {
           "passing",
           "regular",
           100,
-          controller.signal // Pass the AbortSignal (ensure your teamsService supports this)
+          controller.signal // Ensure teamsService supports this signal
         );
         console.log("Raw passing data:", passingData);
         const aggregated = aggregatePlayerStats(passingData, "YDS");
         console.log("Aggregated passing stats:", aggregated);
-        // Get the top 100 records (if there are more)
-        setPlayerStats(aggregated.slice(0, 100));
+        // Only keep the top 10 records
+        setPlayerStats(aggregated.slice(0, 10));
       } catch (error) {
         if (controller.signal.aborted) {
           console.log("Player stats fetch aborted");
@@ -91,9 +92,13 @@ const Stats = () => {
         tr:nth-child(even) {
           background: #f9f9f9;
         }
+        #table-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
       `}</style>
 
-      <h1>Top 100 Passing Leaders (Yards) - 2024</h1>
+      <h1>Top 10 Passing Leaders (Yards) - 2024</h1>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
