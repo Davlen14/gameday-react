@@ -24,7 +24,7 @@ const Stats = () => {
 
         const statsPromises = teams.map(async (team) => {
           try {
-            // Fetch stats for each team (now includes offense & defense)
+            // Fetch stats for each team (must include both offense & defense)
             const stats = await teamsService.getTeamStats(team.school, 2024);
             return { team: team.school, stats, logo: team.logos[0] };
           } catch (err) {
@@ -47,19 +47,13 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for multiple categories
+  // Fetch player season stats for offensive categories and one defensive category
   useEffect(() => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        const categories = [
-          "passing",
-          "rushing",
-          "receiving",
-          "tackles",
-          "sacks",
-          "interceptions",
-        ];
+        // For player stats, fetch offensive stats individually and defensive stats once.
+        const categories = ["passing", "rushing", "receiving", "defensive"];
         const statsResults = await Promise.all(
           categories.map((category) =>
             teamsService.getPlayerSeasonStats(2024, category)
@@ -107,13 +101,28 @@ const Stats = () => {
   };
 
   // Render player stats for a given category
+  // For "passing", "rushing", and "receiving", we use the respective arrays.
+  // For defensive stats, we derive "tackles", "sacks", and "interceptions" from the "defensive" array.
   const renderPlayerStats = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
     if (errorPlayerStats)
       return <p className="stat-placeholder">{errorPlayerStats}</p>;
 
-    const players = playerStats[category] || [];
+    let players = [];
+    if (["passing", "rushing", "receiving"].includes(category)) {
+      players = playerStats[category] || [];
+    } else if (category === "tackles") {
+      players = playerStats["defensive"] || [];
+      players = [...players].sort((a, b) => (b.totalTackles || 0) - (a.totalTackles || 0));
+    } else if (category === "sacks") {
+      players = playerStats["defensive"] || [];
+      players = [...players].sort((a, b) => (b.sacks || 0) - (a.sacks || 0));
+    } else if (category === "interceptions") {
+      players = playerStats["defensive"] || [];
+      players = [...players].sort((a, b) => (b.interceptions || 0) - (a.interceptions || 0));
+    }
+
     if (players.length === 0)
       return <p className="stat-placeholder">No data available</p>;
 
@@ -128,7 +137,19 @@ const Stats = () => {
           />
         )}
         <span className="player-name">{player.playerName}</span>
-        <span className="player-stat">{player.statValue || 0}</span>
+        <span className="player-stat">
+          {(() => {
+            // For offensive categories, use statValue.
+            if (["passing", "rushing", "receiving"].includes(category)) {
+              return player.statValue || 0;
+            }
+            // For defensive categories, choose based on requested category.
+            if (category === "tackles") return player.totalTackles || 0;
+            if (category === "sacks") return player.sacks || 0;
+            if (category === "interceptions") return player.interceptions || 0;
+            return 0;
+          })()}
+        </span>
       </div>
     ));
   };
