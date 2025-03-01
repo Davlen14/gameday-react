@@ -45,7 +45,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     }
   };
 
-  // Helper to look up team info from fetched teams data.
+  // Helper function to look up team info from fetched teams data.
   const getTeamInfo = (teamName) => {
     const foundTeam = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -62,7 +62,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     return { color: "gray", logo: "/photos/default_team.png" };
   };
 
-  // Fetch poll data for the given pollType and weekRange.
+  // Fetch poll data for the given pollType and weekRange
   useEffect(() => {
     const fetchPollData = async () => {
       try {
@@ -119,6 +119,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     fetchPollData();
   }, [pollType, weekRange]);
 
+  // Render / update the chart
   useEffect(() => {
     // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
@@ -128,8 +129,8 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
     const finalWeek = weekRange === "Week 1 - Postseason" ? endWeek + 1 : endWeek;
     const totalWeeks = finalWeek - startWeek + 1;
 
-    // Increase bottom margin & domain padding to create more vertical space
-    const margin = { top: 40, right: 100, bottom: 80, left: 50 },
+    // Margins & inner dimensions
+    const margin = { top: 40, right: 100, bottom: 40, left: 50 },
       innerWidth = width - margin.left - margin.right,
       innerHeight = height - margin.top - margin.bottom;
 
@@ -151,11 +152,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([startWeek, finalWeek])
       .range([0, innerWidth]);
 
-    // Y scale (padding domain from 25 to 25.5 at bottom, 1 to 0.5 at top)
-    // So there's extra space above rank 1 and below rank 25
+    // Y scale (1 is top, 25 is bottom)
     const yScale = d3
       .scaleLinear()
-      .domain([25.5, 0.5]) // slight padding above & below
+      .domain([25, 1])
       .range([innerHeight, 0]);
 
     // Axes
@@ -168,9 +168,9 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         }
         return d;
       });
-
-    // Keep y-axis ticks at 25
-    const yAxis = d3.axisLeft(yScale).ticks(25);
+    const yAxis = d3.axisLeft(yScale)
+      .ticks(25)
+      .tickSize(10); // Increase tick size for better spacing
 
     // Draw axes
     g.append("g")
@@ -198,34 +198,33 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("y", logoPadding);
 
     // SHIFT BOTTOM TEXT so it's fully visible
-    const bottomOffset = 60; // shift text group up from bottom
-    const textGroup = svg
-      .append("g")
-      .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`)
-      .attr("text-anchor", "middle");
+    const bottomOffset = 20;
+    const textGroup = svg.append("g")
+      .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`);
 
-    // "GAMEDAY+" line (red, italic, bold)
-    textGroup
-      .append("text")
-      .text("GAMEDAY+")
-      .attr("x", 0)
-      .attr("y", 0)
-      .style("font-size", "10px")
-      .style("font-weight", "bold")
-      .style("font-style", "italic")
-      .style("fill", "#D4001C")
-      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif");
-
-    // "Presented by" line (smaller, black, above GAMEDAY+)
+    // 1) "Presented by" line
     textGroup
       .append("text")
       .text("Presented by")
       .attr("x", 0)
-      .attr("y", -12)
-      .style("font-size", "8px")
+      .attr("y", 0)
+      .style("font-size", "12px")
       .style("fill", "#000")
       .style("font-weight", "normal")
+      .style("text-anchor", "end")
       .style("font-family", "sans-serif");
+
+    // 2) "GAMEDAY+" line
+    textGroup
+      .append("text")
+      .text("GAMEDAY+")
+      .attr("x", 0)
+      .attr("y", 16)
+      .style("font-size", "12px")
+      .style("fill", "#D4001C")
+      .style("font-style", "italic")
+      .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
+      .style("text-anchor", "end");
 
     // Line generator
     const lineGen = d3
@@ -256,7 +255,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       const teamInfo = getTeamInfo(teamData.team);
       const normalizedRanks = teamData.ranks.map((r) => (r === null ? 25 : r));
 
-      // Create the path
       const path = g
         .append("path")
         .datum(normalizedRanks)
@@ -265,7 +263,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("stroke-width", 2)
         .attr("d", lineGen);
 
-      // Animate the line
+      // Animate line
       const totalLength = path.node().getTotalLength();
       path
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -289,16 +287,13 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         .attr("height", 20)
         .style("opacity", 1);
 
-      // Animate the logo
       d3.timer((elapsed) => {
         const t = Math.min(elapsed / 13000, 1);
         const currentLength = totalLength * t;
         const point = path.node().getPointAtLength(currentLength);
-
-        // Position the logo at this point
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // If final rank is 25, keep logo fully visible
+        // If final rank is 25, skip the fade logic near rank ~25
         if (finalRank !== 25) {
           const fadeThresholdY = yScale(24.5);
           if (point.y >= fadeThresholdY) {
@@ -309,12 +304,14 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
             logo.style("opacity", 1);
           }
         } else {
+          // final rank == 25 => remain fully visible
           logo.style("opacity", 1);
         }
-        return t === 1; // stop timer once animation completes
+
+        return t === 1;
       });
 
-      // Tooltip on hover
+      // Tooltip
       path
         .on("mousemove", function (event) {
           const [mx] = d3.pointer(event, g.node());
@@ -372,7 +369,10 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
             .style("opacity", 1);
         })
         .on("mouseout", function () {
-          tooltip.transition().duration(100).style("opacity", 0);
+          tooltip
+            .transition()
+            .duration(100)
+            .style("opacity", 0);
         });
     });
   }, [chartData, height, width, weekRange]);
