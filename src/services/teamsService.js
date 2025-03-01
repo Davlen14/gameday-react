@@ -1,13 +1,14 @@
-// Proxy-based API interaction for handling CORS (modified)
-const fetchData = async (endpoint, params = {}, signal) => {
+const fetchData = async (endpoint, params = {}) => {
   const url = `/api/proxy`;
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ endpoint, params }),
-      signal, // pass the signal here
     });
+
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
@@ -311,12 +312,11 @@ export const getPlayerSeasonStats = async (
   year = 2024,
   category = "passing",
   seasonType = "regular",
-  limit = 100,
-  signal // added signal for cancellation support
+  limit = 100
 ) => {
   const endpoint = "/stats/player/season";
   const catParam = Array.isArray(category) ? category.join(",") : category;
-  // Removed the division parameter to match working HTML
+  // Temporarily remove the division parameter to mimic your working HTML
   const params = {
     year: String(year),
     category: catParam,
@@ -325,7 +325,7 @@ export const getPlayerSeasonStats = async (
   };
 
   try {
-    const response = await fetchData(endpoint, params, signal);
+    const response = await fetchData(endpoint, params);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
     return Array.isArray(response) ? response : response.data || [];
   } catch (error) {
