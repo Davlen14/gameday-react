@@ -2,27 +2,30 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Helper to aggregate raw stat responses by player and desired statType (trim spaces)
+// Updated aggregatePlayerStats with a looser match condition
 const aggregatePlayerStats = (data, desiredStatType) => {
-  // Support both raw arrays and responses wrapped in a data property
-  const rawData = Array.isArray(data) ? data : data?.data || [];
-  const map = {};
-  rawData.forEach(item => {
-    const id = item.playerId; // use playerId as unique key
-    // Compare statType (trimmed and case-insensitive)
-    if (item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()) {
-      // Only record the first matching entry per player
-      if (!map[id]) {
-        map[id] = {
-          playerName: item.player,
-          statValue: parseFloat(item.stat),
-          playerPhoto: item.playerPhoto || null,
-        };
+    // Support both raw arrays and responses wrapped in a data property
+    const rawData = Array.isArray(data) ? data : data?.data || [];
+    const map = {};
+    rawData.forEach(item => {
+      const id = item.playerId; // use playerId as unique key
+      // Use includes() for a partial match (case-insensitive)
+      if (
+        item.statType &&
+        item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
+      ) {
+        // Only record the first matching entry per player
+        if (!map[id]) {
+          map[id] = {
+            playerName: item.player,
+            statValue: parseFloat(item.stat),
+            playerPhoto: item.playerPhoto || null,
+          };
+        }
       }
-    }
-  });
-  return Object.values(map);
-};
+    });
+    return Object.values(map);
+  };
 
 const Stats = () => {
   // State for team stats
