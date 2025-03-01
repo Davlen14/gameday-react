@@ -76,12 +76,19 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for passing only
+  // Fetch player season stats for passing only with cancellation support
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing");
+        const passingData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "passing",
+          "regular",
+          100,
+          controller.signal  // Pass the AbortSignal (if teamsService supports it)
+        );
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         console.log("Aggregated passing stats:", aggregatedPassing);
@@ -94,13 +101,18 @@ const Stats = () => {
           interceptions: null,
         });
       } catch (error) {
-        console.error("Error fetching player season passing stats:", error);
-        setErrorPlayerStats("Failed to load player season stats.");
+        if (controller.signal.aborted) {
+          console.log("Player stats fetch aborted");
+        } else {
+          console.error("Error fetching player season passing stats:", error);
+          setErrorPlayerStats("Failed to load player season stats.");
+        }
       } finally {
         setLoadingPlayerStats(false);
       }
     };
     fetchPlayerPassingStats();
+    return () => controller.abort();
   }, []);
 
   // Helper: Sort team stats by a given key (highest to lowest)

@@ -313,14 +313,21 @@ export const getTeamRecords = async (teamId, year) => {
 
 export const getPlayerSeasonStats = async (
   year = 2024,
-  category,
+  category = "passing",
   seasonType = "regular",
   limit = 100
 ) => {
   const endpoint = "/stats/player/season";
-  // If category is an array, join it into a comma-separated string.
+  // Ensure the category parameter is formatted as needed.
   const catParam = Array.isArray(category) ? category.join(",") : category;
-  const params = { year: String(year), category: catParam, seasonType, limit: String(limit) };
+  // Add a division parameter to restrict results to FBS only.
+  const params = {
+    year: String(year),
+    category: catParam,
+    seasonType,
+    limit: String(limit),
+    division: "fbs"  // <-- This line ensures we only fetch FBS player stats.
+  };
 
   try {
     const response = await fetchData(endpoint, params);
