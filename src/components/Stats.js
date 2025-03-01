@@ -2,21 +2,25 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregatePlayerStats using a looser match condition with includes()
+// Updated aggregatePlayerStats with strict filtering and sorting
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
+  // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
     .filter(item =>
       item.statType &&
-      item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
     )
     .map(item => ({
       playerName: item.player,
       statValue: parseFloat(item.stat),
       playerPhoto: item.playerPhoto || null,
     }));
+
+  // Sort the aggregated data in descending order by statValue
+  aggregated.sort((a, b) => b.statValue - a.statValue);
 
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
@@ -31,8 +35,7 @@ const Stats = () => {
   const [loadingTeamStats, setLoadingTeamStats] = useState(true);
   const [errorTeamStats, setErrorTeamStats] = useState(null);
 
-  // State for player season stats
-  // For now we only fetch "passing" stats
+  // State for player season stats (currently only "passing" is fetched)
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: null,
@@ -79,18 +82,19 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for passing only with cancellation support
+  // Fetch player season stats for passing with cancellation support
   useEffect(() => {
     const controller = new AbortController();
     const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
+        // Call teamsService.getPlayerSeasonStats with division filtering (assumed implemented in teamsService)
         const passingData = await teamsService.getPlayerSeasonStats(
           2024,
           "passing",
           "regular",
           100,
-          controller.signal  // Pass the AbortSignal if teamsService supports it
+          controller.signal // Pass the AbortSignal (teamsService must support this)
         );
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
@@ -125,12 +129,34 @@ const Stats = () => {
       .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
   };
 
-  // Render top 10 players for a given category (for "passing")
+  // Render top 5 teams for a given stat (unchanged)
+  const renderTeamLeaders = (statName) => {
+    if (loadingTeamStats) return <p className="stat-placeholder">Loading...</p>;
+    if (errorTeamStats) return <p className="stat-placeholder">{errorTeamStats}</p>;
+
+    const sortedTeams = sortByTeamStat(statName).slice(0, 5);
+    if (sortedTeams.length === 0)
+      return <p className="stat-placeholder">No data available</p>;
+
+    return sortedTeams.map(({ team, stats, logo }) => (
+      <div key={team} className="leader-row">
+        <img
+          src={logo}
+          alt={team}
+          className="team-stat-logo"
+          onError={(e) => (e.currentTarget.style.display = "none")}
+        />
+        <span className="leader-name">{team}</span>
+        <span className="leader-stat">{stats[statName] || 0}</span>
+      </div>
+    ));
+  };
+
+  // Render top 10 players for passing
+  // If there are more than 10 records, show a "View All" button to open a modal with the full list.
   const renderPlayerLeaders = (category) => {
-    if (loadingPlayerStats)
-      return <p className="stat-placeholder">Loading...</p>;
-    if (errorPlayerStats)
-      return <p className="stat-placeholder">{errorPlayerStats}</p>;
+    if (loadingPlayerStats) return <p className="stat-placeholder">Loading...</p>;
+    if (errorPlayerStats) return <p className="stat-placeholder">{errorPlayerStats}</p>;
 
     if (category !== "passing") {
       return <p className="stat-placeholder">Coming Soon</p>;
@@ -140,7 +166,6 @@ const Stats = () => {
     if (players.length === 0)
       return <p className="stat-placeholder">No data available</p>;
 
-    // Top 10 players for main view
     const top10 = players.slice(0, 10);
 
     return (
@@ -166,7 +191,7 @@ const Stats = () => {
     );
   };
 
-  // Render the modal for full list of passing leaders
+  // Render modal with full list of passing leaders (by YDS)
   const renderModal = () => {
     const players = playerStats.passing || [];
     return (
@@ -197,30 +222,7 @@ const Stats = () => {
     );
   };
 
-  // Render top 5 teams for a given stat (unchanged)
-  const renderTeamLeaders = (statName) => {
-    if (loadingTeamStats) return <p className="stat-placeholder">Loading...</p>;
-    if (errorTeamStats) return <p className="stat-placeholder">{errorTeamStats}</p>;
-
-    const sortedTeams = sortByTeamStat(statName).slice(0, 5);
-    if (sortedTeams.length === 0)
-      return <p className="stat-placeholder">No data available</p>;
-
-    return sortedTeams.map(({ team, stats, logo }) => (
-      <div key={team} className="leader-row">
-        <img
-          src={logo}
-          alt={team}
-          className="team-stat-logo"
-          onError={(e) => (e.currentTarget.style.display = "none")}
-        />
-        <span className="leader-name">{team}</span>
-        <span className="leader-stat">{stats[statName] || 0}</span>
-      </div>
-    ));
-  };
-
-  // UI for the Player view: Only Passing stats are live; others show "Coming Soon"
+  // Render the Player view with passing stats (others show "Coming Soon")
   const renderPlayerView = () => {
     return (
       <div className="leaders-wrapper">
@@ -258,7 +260,7 @@ const Stats = () => {
     );
   };
 
-  // UI for the Team view remains unchanged
+  // Render the Team view (unchanged)
   const renderTeamView = () => {
     return (
       <div className="leaders-wrapper">
