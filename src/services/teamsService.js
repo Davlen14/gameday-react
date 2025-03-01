@@ -318,21 +318,19 @@ export const getPlayerSeasonStats = async (
   limit = 100
 ) => {
   const endpoint = "/stats/player/season";
-  // Ensure the category parameter is formatted as needed.
   const catParam = Array.isArray(category) ? category.join(",") : category;
-  // Add a division parameter to restrict results to FBS only.
+  // Remove the division parameter for testing purposes
   const params = {
     year: String(year),
     category: catParam,
     seasonType,
-    limit: String(limit),
-    division: "fbs"  // <-- This line ensures we only fetch FBS player stats.
+    limit: String(limit)
+    // division: "fbs"   <-- Temporarily removed for debugging
   };
 
   try {
     const response = await fetchData(endpoint, params);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
-    // Mimic Swift's behavior: if the response isn't a raw array, return response.data; otherwise, return response.
     return Array.isArray(response) ? response : response.data || [];
   } catch (error) {
     console.error(`Error in getPlayerSeasonStats for category "${category}":`, error);
