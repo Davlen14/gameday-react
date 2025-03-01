@@ -24,7 +24,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, tackles, and interceptions
+  // We'll store stats for multiple categories
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -32,8 +32,31 @@ const Stats = () => {
     tackles: [],
     interceptions: []
   });
+  const [teams, setTeams] = useState([]); // For team logos lookup
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Fetch teams once (for logo lookup)
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams();
+        console.log("Teams data:", teamsData);
+        setTeams(teamsData);
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+      }
+    };
+    fetchTeams();
+  }, []);
+
+  // Helper to get a team logo from teams state
+  const getTeamLogo = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return team?.logos?.[0] || "/photos/default_team.png";
+  };
 
   // Fetch passing stats
   useEffect(() => {
@@ -186,35 +209,19 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Helper to get team logo from a mock list (adjust for your actual team data)
-  const getTeamLogo = (teamName) => {
-    const teamsMock = [
-      { school: "Long Island University", logos: ["/logos/liuniversity.png"] },
-      { school: "Charlotte", logos: ["/logos/charlotte.png"] },
-      { school: "Stetson", logos: ["/logos/stetson.png"] },
-      { school: "Lamar", logos: ["/logos/lamar.png"] },
-      { school: "Incarnate Word", logos: ["/logos/incarnateword.png"] },
-      // ... add additional teams as needed
-    ];
-    const team = teamsMock.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.logos?.[0] || "/logos/default.png";
-  };
-
   return (
     <div className="stats-container">
-      {/* Inline CSS for glassy, modern look with a glassy gray background and red text */}
+      {/* Inline CSS for modern, glassy UI */}
       <style>{`
         .stats-container {
           font-family: "Helvetica Neue", Arial, sans-serif;
           margin: 2rem;
-          background: rgba(50, 50, 50, 0.5);
-          color: #ff3333;
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
           padding: 1.5rem;
           border-radius: 12px;
-          backdrop-filter: blur(12px);
-          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(10px);
+          box-shadow: 0 4px 30px rgba(0,0,0,0.1);
         }
         h1, h2 {
           text-align: center;
@@ -227,7 +234,7 @@ const Stats = () => {
         table {
           border-collapse: collapse;
           width: 100%;
-          background: rgba(50, 50, 50, 0.3);
+          background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 8px;
           overflow: hidden;
@@ -236,20 +243,20 @@ const Stats = () => {
         th, td {
           padding: 0.75rem;
           text-align: left;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         th {
-          background: rgba(50, 50, 50, 0.5);
+          background: rgba(255, 255, 255, 0.3);
           font-weight: 600;
         }
         tr:nth-child(even) {
-          background: rgba(50, 50, 50, 0.4);
+          background: rgba(255, 255, 255, 0.1);
         }
         .leader-row {
           display: flex;
           align-items: center;
           padding: 0.5rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         .team-logo {
           width: 40px;
@@ -288,20 +295,20 @@ const Stats = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
+          background: rgba(0, 0, 0, 0.7);
           display: flex;
           justify-content: center;
           align-items: center;
           z-index: 1000;
         }
         .modal-content {
-          background: rgba(50, 50, 50, 0.5);
+          background: rgba(255, 255, 255, 0.1);
           padding: 1.5rem;
           border-radius: 12px;
-          backdrop-filter: blur(12px);
+          backdrop-filter: blur(10px);
           max-width: 800px;
           width: 90%;
-          color: #ff3333;
+          color: #fff;
         }
         .modal-content h2 {
           margin-top: 0;
@@ -310,7 +317,7 @@ const Stats = () => {
         .modal-content table {
           width: 100%;
           margin-top: 1rem;
-          background: rgba(50, 50, 50, 0.4);
+          background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 8px;
           overflow: hidden;
@@ -318,157 +325,165 @@ const Stats = () => {
       `}</style>
 
       <h1>Top 10 Leaders (Yards) - 2024</h1>
-      <div id="table-container">
-        <h2>Passing Leaders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Passing Yards</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerStats.passing.map((player, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  <img
-                    src={getTeamLogo(player.team)}
-                    alt={player.team}
-                    className="team-logo"
-                  />
-                  {player.playerName}
-                </td>
-                <td>{player.statValue}</td>
+      {loading ? (
+        <p style={{ textAlign: "center" }}>Loading...</p>
+      ) : error ? (
+        <p style={{ textAlign: "center" }}>{error}</p>
+      ) : (
+        <div id="table-container">
+          <h2>Passing Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Passing Yards</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {playerStats.passing.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
+                    {player.playerName}
+                  </td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <h2>Rushing Leaders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Rushing Yards</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerStats.rushing.map((player, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  <img
-                    src={getTeamLogo(player.team)}
-                    alt={player.team}
-                    className="team-logo"
-                  />
-                  {player.playerName}
-                </td>
-                <td>{player.statValue}</td>
+          <h2>Rushing Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Rushing Yards</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {playerStats.rushing.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
+                    {player.playerName}
+                  </td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <h2>Receiving Leaders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Receiving Yards</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerStats.receiving.map((player, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  <img
-                    src={getTeamLogo(player.team)}
-                    alt={player.team}
-                    className="team-logo"
-                  />
-                  {player.playerName}
-                </td>
-                <td>{player.statValue}</td>
+          <h2>Receiving Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Receiving Yards</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {playerStats.receiving.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
+                    {player.playerName}
+                  </td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <h2>Defensive Tackles Leaders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Tackles</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerStats.tackles.map((player, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  <img
-                    src={getTeamLogo(player.team)}
-                    alt={player.team}
-                    className="team-logo"
-                  />
-                  {player.playerName}
-                </td>
-                <td>{player.statValue}</td>
+          <h2>Defensive Tackles Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Tackles</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {playerStats.tackles.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
+                    {player.playerName}
+                  </td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <h2>Interceptions Leaders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Interceptions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {playerStats.interceptions.map((player, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  <img
-                    src={getTeamLogo(player.team)}
-                    alt={player.team}
-                    className="team-logo"
-                  />
-                  {player.playerName}
-                </td>
-                <td>{player.statValue}</td>
+          <h2>Interceptions Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Interceptions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
-      {error && <p style={{ textAlign: "center" }}>{error}</p>}
+            </thead>
+            <tbody>
+              {playerStats.interceptions.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img
+                      src={getTeamLogo(player.team)}
+                      alt={player.team}
+                      className="team-logo"
+                    />
+                    {player.playerName}
+                  </td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
 
-// Helper to get team logo from a mock list (adjust for your actual team data)
+// Helper to get team logo from teams data
+// We need to fetch teams data, so add this helper outside the component:
 const getTeamLogo = (teamName) => {
+  // In a real app you might pass teams data via props or context.
+  // For simplicity, we assume a global variable or default mapping.
+  // Here we'll simulate a simple lookup.
   const teamsMock = [
     { school: "Long Island University", logos: ["/logos/liuniversity.png"] },
     { school: "Charlotte", logos: ["/logos/charlotte.png"] },
     { school: "Stetson", logos: ["/logos/stetson.png"] },
     { school: "Lamar", logos: ["/logos/lamar.png"] },
     { school: "Incarnate Word", logos: ["/logos/incarnateword.png"] },
-    // ... add additional teams as needed
+    // ... add other teams as needed
   ];
   const team = teamsMock.find(
     (t) => t.school.toLowerCase() === teamName?.toLowerCase()
