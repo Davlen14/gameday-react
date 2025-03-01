@@ -1,25 +1,21 @@
-// Proxy-based API interaction for handling CORS
-const fetchData = async (endpoint, params = {}) => {
-    const url = `/api/proxy`;
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ endpoint, params }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("Fetch Error:", error.message);
-        throw error;
+// Proxy-based API interaction for handling CORS (modified)
+const fetchData = async (endpoint, params = {}, signal) => {
+  const url = `/api/proxy`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint, params }),
+      signal, // pass the signal here
+    });
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch Error:", error.message);
+    throw error;
+  }
 };
 
 // Core API interaction functions
@@ -315,21 +311,21 @@ export const getPlayerSeasonStats = async (
   year = 2024,
   category = "passing",
   seasonType = "regular",
-  limit = 100
+  limit = 100,
+  signal // added signal for cancellation support
 ) => {
   const endpoint = "/stats/player/season";
   const catParam = Array.isArray(category) ? category.join(",") : category;
-  // Remove the division parameter for testing purposes
+  // Removed the division parameter to match working HTML
   const params = {
     year: String(year),
     category: catParam,
     seasonType,
     limit: String(limit)
-    // division: "fbs"   <-- Temporarily removed for debugging
   };
 
   try {
-    const response = await fetchData(endpoint, params);
+    const response = await fetchData(endpoint, params, signal);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
     return Array.isArray(response) ? response : response.data || [];
   } catch (error) {
