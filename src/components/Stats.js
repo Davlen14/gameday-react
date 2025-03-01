@@ -24,7 +24,7 @@ const Stats = () => {
 
         const statsPromises = teams.map(async (team) => {
           try {
-            // Fetch stats for each team – now includes both offense & defense stats.
+            // Fetch stats for each team (now includes offense & defense)
             const stats = await teamsService.getTeamStats(team.school, 2024);
             return { team: team.school, stats, logo: team.logos[0] };
           } catch (err) {
@@ -52,7 +52,6 @@ const Stats = () => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // Define the categories (ensure these exactly match the API’s expected values)
         const categories = [
           "passing",
           "rushing",
@@ -61,7 +60,6 @@ const Stats = () => {
           "sacks",
           "interceptions",
         ];
-        // Fetch stats for each category in parallel
         const statsResults = await Promise.all(
           categories.map((category) =>
             teamsService.getPlayerSeasonStats(2024, category)
@@ -119,7 +117,6 @@ const Stats = () => {
     if (players.length === 0)
       return <p className="stat-placeholder">No data available</p>;
 
-    // Assume each player object includes: playerName, statValue, and optionally playerPhoto
     const topPlayers = players.slice(0, 5);
     return topPlayers.map((player) => (
       <div key={player.playerName} className="player-row">

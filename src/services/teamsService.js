@@ -106,7 +106,7 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-  const statsEndpoint = "/stats/season"; 
+  const statsEndpoint = "/stats/season"; // API endpoint for team stats
   const params = { year, team };
 
   try {
@@ -115,6 +115,7 @@ export const getTeamStats = async (team, year) => {
 
     if (!Array.isArray(response) || response.length === 0) {
       console.error(`Unexpected or empty API response for ${team}:`, response);
+      // Return default stats if no response or unexpected data
       return {
         netPassingYards: 0,
         rushingYards: 0,
@@ -127,7 +128,7 @@ export const getTeamStats = async (team, year) => {
 
     console.log(`Raw Team Stats for ${team}:`, response);
 
-    // Map API fields to your UI fields.
+    // Create an object with default values.
     const stats = {
       netPassingYards: 0,
       rushingYards: 0,
@@ -137,6 +138,8 @@ export const getTeamStats = async (team, year) => {
       sacks: 0,
     };
 
+    // Map the raw response fields to your UI fields.
+    // Adjust these comparisons to match exactly what the API returns.
     response.forEach((stat) => {
       if (stat.statName === "netPassingYards") {
         stats.netPassingYards = stat.statValue;
@@ -152,10 +155,12 @@ export const getTeamStats = async (team, year) => {
         stats.sacks = stat.statValue;
       }
     });
+
     console.log(`Mapped Stats for ${team}:`, stats);
     return stats;
   } catch (error) {
     console.error(`Error fetching stats for ${team}:`, error);
+    // Return default values on error
     return {
       netPassingYards: 0,
       rushingYards: 0,
