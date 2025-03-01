@@ -315,7 +315,7 @@ export const getPlayerSeasonStats = async (
   year = 2024,
   category,
   seasonType = "regular",
-  limit = 10000
+  limit = 100
 ) => {
   const endpoint = "/stats/player/season";
   // If category is an array, join it into a comma-separated string.
