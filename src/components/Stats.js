@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregation function (same logic, reorganized for clarity)
+// Updated aggregatePlayerStats using a looser match condition with includes()
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
@@ -17,7 +17,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       statValue: parseFloat(item.stat),
       playerPhoto: item.playerPhoto || null,
     }));
-
+    
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
@@ -41,7 +41,10 @@ const Stats = () => {
     const fetchTeamStats = async () => {
       try {
         setLoadingTeamStats(true);
-        const teams = await teamsService.getTeams(); // All FBS teams
+        console.log("Fetching list of teams...");
+        const teams = await teamsService.getTeams();
+        console.log("Teams fetched:", teams);
+
         const statsPromises = teams.map(async (team) => {
           try {
             const stats = await teamsService.getTeamStats(team.school, 2024);
@@ -53,6 +56,7 @@ const Stats = () => {
         });
 
         const allStats = await Promise.all(statsPromises);
+        console.log("All Team Stats:", allStats);
         setAllTeamStats(allStats);
       } catch (error) {
         console.error("Error fetching team stats:", error);
@@ -71,31 +75,48 @@ const Stats = () => {
         setLoadingPlayerStats(true);
         const categories = ["passing", "rushing", "receiving", "defensive"];
         const results = await Promise.allSettled(
-          categories.map(cat => teamsService.getPlayerSeasonStats(2024, cat))
+          categories.map((cat) => teamsService.getPlayerSeasonStats(2024, cat))
         );
+
+        results.forEach((result, idx) => {
+          if (result.status === "fulfilled") {
+            console.log(`Raw data for ${categories[idx]}:`, result.value);
+          } else {
+            console.error(`Failed to load ${categories[idx]} stats:`, result.reason);
+          }
+        });
 
         const statsObj = {};
         categories.forEach((cat, index) => {
           statsObj[cat] =
             results[index].status === "fulfilled" ? results[index].value : [];
         });
+        console.log("Combined stats object:", statsObj);
 
-        // Offensive
-        const passing = aggregatePlayerStats(statsObj["passing"], "YDS");
-        const rushing = aggregatePlayerStats(statsObj["rushing"], "YDS");
-        const receiving = aggregatePlayerStats(statsObj["receiving"], "YDS");
-        // Defensive
-        const tackles = aggregatePlayerStats(statsObj["defensive"], "TOT");
-        const sacks = aggregatePlayerStats(statsObj["defensive"], "SACKS");
-        const interceptions = aggregatePlayerStats(statsObj["defensive"], "INT");
+        // Offensive stats
+        const aggregatedPassing = aggregatePlayerStats(statsObj["passing"], "YDS");
+        const aggregatedRushing = aggregatePlayerStats(statsObj["rushing"], "YDS");
+        const aggregatedReceiving = aggregatePlayerStats(statsObj["receiving"], "YDS");
+        // Defensive stats
+        const aggregatedDefTackles = aggregatePlayerStats(statsObj["defensive"], "TOT");
+        const aggregatedDefSacks = aggregatePlayerStats(statsObj["defensive"], "SACKS");
+        const aggregatedDefInts = aggregatePlayerStats(statsObj["defensive"], "INT");
 
         setPlayerStats({
-          passing,
-          rushing,
-          receiving,
-          tackles,
-          sacks,
-          interceptions,
+          passing: aggregatedPassing,
+          rushing: aggregatedRushing,
+          receiving: aggregatedReceiving,
+          tackles: aggregatedDefTackles,
+          sacks: aggregatedDefSacks,
+          interceptions: aggregatedDefInts,
+        });
+        console.log("Final aggregated player stats:", {
+          passing: aggregatedPassing,
+          rushing: aggregatedRushing,
+          receiving: aggregatedReceiving,
+          tackles: aggregatedDefTackles,
+          sacks: aggregatedDefSacks,
+          interceptions: aggregatedDefInts,
         });
       } catch (error) {
         console.error("Error fetching player season stats:", error);
@@ -120,7 +141,8 @@ const Stats = () => {
     if (errorTeamStats) return <p className="stat-placeholder">{errorTeamStats}</p>;
 
     const sortedTeams = sortByTeamStat(statName).slice(0, 5);
-    if (sortedTeams.length === 0) return <p className="stat-placeholder">No data available</p>;
+    if (sortedTeams.length === 0)
+      return <p className="stat-placeholder">No data available</p>;
 
     return sortedTeams.map(({ team, stats, logo }) => (
       <div key={team} className="leader-row">
@@ -144,12 +166,12 @@ const Stats = () => {
       return <p className="stat-placeholder">{errorPlayerStats}</p>;
 
     const players = playerStats[category] || [];
-    if (players.length === 0) return <p className="stat-placeholder">No data available</p>;
+    if (players.length === 0)
+      return <p className="stat-placeholder">No data available</p>;
 
     const topPlayers = players.slice(0, 5);
     return topPlayers.map((player, idx) => (
       <div key={`${player.playerName}-${idx}`} className="leader-row">
-        {/* If you had a player logo or photo, it would go here */}
         <img
           src={player.playerPhoto || ""}
           alt={player.playerName}
@@ -162,7 +184,7 @@ const Stats = () => {
     ));
   };
 
-  // UI for the Player tab
+  // UI for the Player view
   const renderPlayerView = () => {
     return (
       <div className="leaders-wrapper">
@@ -200,7 +222,7 @@ const Stats = () => {
     );
   };
 
-  // UI for the Team tab
+  // UI for the Team view
   const renderTeamView = () => {
     return (
       <div className="leaders-wrapper">
@@ -241,8 +263,6 @@ const Stats = () => {
   return (
     <div className="stats-container">
       <h1 className="stats-header">College Football Stat Leaders 2024</h1>
-
-      {/* Toggle between Player / Team */}
       <div className="view-toggle">
         <button
           className={viewMode === "player" ? "toggle-btn active" : "toggle-btn"}
@@ -257,7 +277,6 @@ const Stats = () => {
           Team
         </button>
       </div>
-
       {viewMode === "player" ? renderPlayerView() : renderTeamView()}
     </div>
   );

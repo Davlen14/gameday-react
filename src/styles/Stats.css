@@ -1,32 +1,25 @@
 :root {
-    /* Primary color palette and theme variables */
     --primary-color: #ffffff;
     --accent-color: #D4001C;
     --text-color: #333333;
     --background-color: #f5f5f5;
     --border-color: #dddddd;
-    --secondary-bg-color: #ffffff; /* For card backgrounds */
+    --secondary-bg-color: #ffffff;
     --transition-speed: 0.3s;
-  
-    /* Font families (adjust as needed for your brand) */
-    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   }
   
-  html,
-  body {
+  /* Ensure HTML and body allow scrolling */
+  html, body {
     margin: 0;
     padding: 0;
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: var(--background-color);
     color: var(--text-color);
     font-family: var(--font-family-sans);
-    height: 100%;
-    width: 100%;
-  }
-  
-  body {
-    display: flex;
-    flex-direction: column;
   }
   
   /* Stats Container */
@@ -34,10 +27,10 @@
     padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
-    min-height: 100vh;
     box-sizing: border-box;
   }
   
+  /* Header */
   .stats-header {
     font-size: 2.5rem;
     font-weight: bold;
@@ -45,7 +38,7 @@
     text-align: center;
   }
   
-  /* Toggle between Player / Team view */
+  /* Toggle Buttons */
   .view-toggle {
     display: flex;
     justify-content: center;
@@ -65,11 +58,7 @@
     cursor: pointer;
   }
   
-  .toggle-btn:hover {
-    background: var(--accent-color);
-    color: var(--primary-color);
-  }
-  
+  .toggle-btn:hover,
   .toggle-btn.active {
     background: var(--accent-color);
     color: var(--primary-color);
@@ -99,7 +88,7 @@
     padding-bottom: 0.25rem;
   }
   
-  /* Card style for each category */
+  /* Leaders Card */
   .leaders-card {
     background: var(--secondary-bg-color);
     border-radius: 16px;
@@ -114,12 +103,11 @@
   
   .leaders-card h3 {
     font-size: 1.25rem;
-    margin-top: 0;
-    margin-bottom: 1rem;
+    margin: 0 0 1rem 0;
     color: var(--accent-color);
   }
   
-  /* Rows for each player or team */
+  /* Leader Row */
   .leader-row {
     display: flex;
     align-items: center;
@@ -130,21 +118,21 @@
   }
   
   .leader-row:hover {
-    background: #eee;
+    background: rgba(0, 0, 0, 0.05);
   }
   
-  /* Logo styling (transparent background, circular) */
+  /* Transparent Logo Styles */
   .stats-player-logo,
   .team-stat-logo {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: transparent; /* no background behind the logo */
+    background: transparent;
     object-fit: contain;
     margin-right: 0.75rem;
   }
   
-  /* Name and stat styling */
+  /* Leader Name and Stat */
   .leader-name {
     flex: 1;
     font-weight: 600;
@@ -158,7 +146,7 @@
     color: var(--accent-color);
   }
   
-  /* Placeholders / Error messages */
+  /* Placeholder / Error Message */
   .stat-placeholder {
     font-size: 1rem;
     color: var(--border-color);
