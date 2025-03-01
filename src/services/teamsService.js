@@ -320,12 +320,12 @@ export const getPlayerSeasonStats = async (
   const endpoint = "/stats/player/season";
   // If category is an array, join it into a comma-separated string.
   const catParam = Array.isArray(category) ? category.join(",") : category;
-  const params = { year, category: catParam, seasonType, limit };
+  const params = { year: String(year), category: catParam, seasonType, limit: String(limit) };
 
   try {
     const response = await fetchData(endpoint, params);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
-    // If the response is wrapped in a "data" property, return that; otherwise return the response directly.
+    // Mimic Swift's behavior: if the response isn't a raw array, return response.data; otherwise, return response.
     return Array.isArray(response) ? response : response.data || [];
   } catch (error) {
     console.error(`Error in getPlayerSeasonStats for category "${category}":`, error);
