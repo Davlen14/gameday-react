@@ -1,126 +1,167 @@
 :root {
+    /* Primary color palette and theme variables */
     --primary-color: #ffffff;
     --accent-color: #D4001C;
     --text-color: #333333;
     --background-color: #f5f5f5;
     --border-color: #dddddd;
+    --secondary-bg-color: #ffffff; /* For card backgrounds */
+    --transition-speed: 0.3s;
+  
+    /* Font families (adjust as needed for your brand) */
+    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   }
   
+  html,
   body {
     margin: 0;
     padding: 0;
     background: var(--background-color);
     color: var(--text-color);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: var(--font-family-sans);
+    height: 100%;
+    width: 100%;
   }
   
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Stats Container */
   .stats-container {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    min-height: 100vh;
+    box-sizing: border-box;
   }
   
   .stats-header {
     font-size: 2.5rem;
     font-weight: bold;
-    color: var(--text-color);
     margin-bottom: 1.5rem;
     text-align: center;
   }
   
-  .stats-section {
-    margin-bottom: 2.5rem;
-  }
-  
-  .section-title {
-    font-size: 1.75rem;
-    color: var(--text-color);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--accent-color);
-  }
-  
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-  
-  /* Modern stat card with subtle animations */
-  .stat-card {
-    background: var(--primary-color);
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeIn 0.5s ease-out;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .stat-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .stat-title {
-    font-size: 1.25rem;
-    color: var(--text-color);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-  }
-  
-  .stat-placeholder {
-    font-size: 1rem;
-    color: var(--border-color);
-    font-style: italic;
-  }
-  
-  /* Team row styling with interactive hover effect */
-  .team-row {
+  /* Toggle between Player / Team view */
+  .view-toggle {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background: var(--background-color);
-    transition: background 0.3s ease, color 0.3s ease;
+    justify-content: center;
+    margin-bottom: 2rem;
   }
   
-  .team-row:hover {
+  .toggle-btn {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 1rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 30px;
+    transition: background var(--transition-speed), color var(--transition-speed);
+    cursor: pointer;
+  }
+  
+  .toggle-btn:hover {
     background: var(--accent-color);
     color: var(--primary-color);
   }
   
-  .team-logo {
+  .toggle-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-color);
+  }
+  
+  /* Leaders Layout */
+  .leaders-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+  
+  .leaders-column {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .leaders-header {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    border-bottom: 3px solid var(--accent-color);
+    padding-bottom: 0.25rem;
+  }
+  
+  /* Card style for each category */
+  .leaders-card {
+    background: var(--secondary-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem 1.25rem;
+    transition: box-shadow var(--transition-speed);
+  }
+  
+  .leaders-card:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+  
+  .leaders-card h3 {
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+  }
+  
+  /* Rows for each player or team */
+  .leader-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background var(--transition-speed);
+  }
+  
+  .leader-row:hover {
+    background: #eee;
+  }
+  
+  /* Logo styling (transparent background, circular) */
+  .stats-player-logo,
+  .team-stat-logo {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-right: 1rem;
-    object-fit: cover;
+    background: transparent; /* no background behind the logo */
+    object-fit: contain;
+    margin-right: 0.75rem;
   }
   
-  .team-name {
+  /* Name and stat styling */
+  .leader-name {
     flex: 1;
     font-weight: 600;
-    text-align: left;
+    font-size: 1rem;
   }
   
-  .team-stat {
-    font-size: 1rem;
+  .leader-stat {
     font-weight: bold;
+    font-size: 1rem;
+    margin-left: 1rem;
+    color: var(--accent-color);
+  }
+  
+  /* Placeholders / Error messages */
+  .stat-placeholder {
+    font-size: 1rem;
+    color: var(--border-color);
+    font-style: italic;
+    margin: 1rem 0;
   }
