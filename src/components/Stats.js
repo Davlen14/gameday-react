@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
-// Updated aggregatePlayerStats with strict filtering and sorting
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
   // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
-    .filter(
-      item =>
-        item.statType &&
-        item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+    .filter(item =>
+      item.statType &&
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
     )
     .map(item => ({
       playerName: item.player,
@@ -27,10 +25,11 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store two sets of player stats: passing and rushing
+  // We'll store three sets of player stats: passing, rushing, and receiving
   const [playerStats, setPlayerStats] = useState({
     passing: [],
-    rushing: []
+    rushing: [],
+    receiving: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,7 +50,6 @@ const Stats = () => {
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         console.log("Aggregated passing stats:", aggregatedPassing);
-        // Update only passing stats in state (keep rushing as is)
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
         if (controller.signal.aborted) {
@@ -79,12 +77,11 @@ const Stats = () => {
           "rushing",
           "regular",
           100,
-          controller.signal // Ensure teamsService supports this signal
+          controller.signal
         );
         console.log("Raw rushing data:", rushingData);
         const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
         console.log("Aggregated rushing stats:", aggregatedRushing);
-        // Update only rushing stats in state (keep passing as is)
         setPlayerStats(prev => ({ ...prev, rushing: aggregatedRushing.slice(0, 10) }));
       } catch (error) {
         if (controller.signal.aborted) {
@@ -101,6 +98,38 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
+  // Fetch player season stats for receiving with cancellation support
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchReceivingStats = async () => {
+      try {
+        setLoading(true);
+        const receivingData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "receiving",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw receiving data:", receivingData);
+        const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
+        console.log("Aggregated receiving stats:", aggregatedReceiving);
+        setPlayerStats(prev => ({ ...prev, receiving: aggregatedReceiving.slice(0, 10) }));
+      } catch (error) {
+        if (controller.signal.aborted) {
+          console.log("Receiving stats fetch aborted");
+        } else {
+          console.error("Error fetching player season receiving stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReceivingStats();
+    return () => controller.abort();
+  }, []);
+
   return (
     <div className="stats-container">
       {/* Inline CSS */}
@@ -112,6 +141,10 @@ const Stats = () => {
           color: #333;
         }
         h1 {
+          text-align: center;
+        }
+        h2 {
+          margin-top: 2rem;
           text-align: center;
         }
         table {
@@ -137,7 +170,7 @@ const Stats = () => {
         }
       `}</style>
 
-      <h1>Top 10 Passing & Rushing Leaders (Yards) - 2024</h1>
+      <h1>Top 10 Leaders (Yards) - 2024</h1>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -175,6 +208,26 @@ const Stats = () => {
             </thead>
             <tbody>
               {playerStats.rushing.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{player.playerName}</td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2>Receiving Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Receiving Yards</th>
+              </tr>
+            </thead>
+            <tbody>
+              {playerStats.receiving.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{player.playerName}</td>
