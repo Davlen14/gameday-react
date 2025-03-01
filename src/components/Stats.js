@@ -6,11 +6,8 @@ import "../styles/Stats.css"; // Updated CSS file
 const aggregatePlayerStats = (data, desiredStatType) => {
   const map = {};
   data.forEach(item => {
-    // Use playerId as the unique key
-    const id = item.playerId;
-    // Compare statType (case-insensitive)
+    const id = item.playerId; // use playerId as unique key
     if (item.statType && item.statType.toUpperCase() === desiredStatType.toUpperCase()) {
-      // Only record the first matching entry per player
       if (!map[id]) {
         map[id] = {
           playerName: item.player,
@@ -69,30 +66,37 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for offensive and defensive categories separately
+  // Fetch player season stats using Promise.allSettled so that one failure doesn't break all calls
   useEffect(() => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // Fetch offensive categories individually
-        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing");
-        const rushingData = await teamsService.getPlayerSeasonStats(2024, "rushing");
-        const receivingData = await teamsService.getPlayerSeasonStats(2024, "receiving");
-        // Fetch defensive data once (which includes multiple stat types)
-        const defensiveData = await teamsService.getPlayerSeasonStats(2024, "defensive");
+        // Define the categories to fetch: offensive and defensive
+        const categories = ["passing", "rushing", "receiving", "defensive"];
+        const results = await Promise.allSettled(
+          categories.map((cat) => teamsService.getPlayerSeasonStats(2024, cat))
+        );
 
-        // Aggregate offensive stats:
-        // For passing, we choose desired statType "YDS" (adjust if your API returns something else)
-        const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
-        // For rushing, use "YDS"
-        const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
-        // For receiving, use "YDS"
-        const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
+        // Build an object mapping category to its data (or empty array on failure)
+        const statsObj = {};
+        categories.forEach((cat, index) => {
+          if (results[index].status === "fulfilled") {
+            statsObj[cat] = results[index].value;
+          } else {
+            console.error(`Failed to load ${cat} stats:`, results[index].reason);
+            statsObj[cat] = [];
+          }
+        });
 
-        // Aggregate defensive stats for different measures:
-        const aggregatedDefTackles = aggregatePlayerStats(defensiveData, "TOT"); // total tackles
-        const aggregatedDefSacks = aggregatePlayerStats(defensiveData, "SACKS");
-        const aggregatedDefInts = aggregatePlayerStats(defensiveData, "INT"); // interceptions
+        // Aggregate offensive stats (filter by statType "YDS")
+        const aggregatedPassing = aggregatePlayerStats(statsObj["passing"], "YDS");
+        const aggregatedRushing = aggregatePlayerStats(statsObj["rushing"], "YDS");
+        const aggregatedReceiving = aggregatePlayerStats(statsObj["receiving"], "YDS");
+
+        // Aggregate defensive stats for specific measures:
+        const aggregatedDefTackles = aggregatePlayerStats(statsObj["defensive"], "TOT"); // total tackles
+        const aggregatedDefSacks = aggregatePlayerStats(statsObj["defensive"], "SACKS");
+        const aggregatedDefInts = aggregatePlayerStats(statsObj["defensive"], "INT"); // interceptions
 
         setPlayerStats({
           passing: aggregatedPassing,
@@ -139,6 +143,8 @@ const Stats = () => {
   };
 
   // Render player stats for a given category using aggregated data
+  // For offensive categories, we use the aggregated "YDS" value.
+  // For defensive categories, we render aggregated data from the "defensive" fetch.
   const renderPlayerStats = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
