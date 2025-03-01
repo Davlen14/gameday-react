@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import "../styles/Stats.css"; // Updated CSS file
+import "../styles/Stats.css";
 
 // Helper to aggregate raw stat responses by player and desired statType (trim spaces)
 const aggregatePlayerStats = (data, desiredStatType) => {
+  // Support both raw arrays and responses wrapped in a data property
+  const rawData = Array.isArray(data) ? data : data?.data || [];
   const map = {};
-  data.forEach(item => {
+  rawData.forEach(item => {
     const id = item.playerId; // use playerId as unique key
     // Compare statType (trimmed and case-insensitive)
     if (item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()) {

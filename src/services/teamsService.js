@@ -325,7 +325,8 @@ export const getPlayerSeasonStats = async (
   try {
     const response = await fetchData(endpoint, params);
     console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
-    return response;
+    // If the response is wrapped in a "data" property, return that; otherwise return the response directly.
+    return Array.isArray(response) ? response : response.data || [];
   } catch (error) {
     console.error(`Error in getPlayerSeasonStats for category "${category}":`, error);
     throw error;
