@@ -44,6 +44,9 @@ const Stats = () => {
   const [loadingPlayerStats, setLoadingPlayerStats] = useState(true);
   const [errorPlayerStats, setErrorPlayerStats] = useState(null);
 
+  // State for modal (to display full list)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Fetch team stats (unchanged)
   useEffect(() => {
     const fetchTeamStats = async () => {
@@ -87,7 +90,7 @@ const Stats = () => {
           "passing",
           "regular",
           100,
-          controller.signal  // Pass the AbortSignal (if teamsService supports it)
+          controller.signal  // Pass the AbortSignal if teamsService supports it
         );
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
@@ -122,6 +125,78 @@ const Stats = () => {
       .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
   };
 
+  // Render top 10 players for a given category (for "passing")
+  const renderPlayerLeaders = (category) => {
+    if (loadingPlayerStats)
+      return <p className="stat-placeholder">Loading...</p>;
+    if (errorPlayerStats)
+      return <p className="stat-placeholder">{errorPlayerStats}</p>;
+
+    if (category !== "passing") {
+      return <p className="stat-placeholder">Coming Soon</p>;
+    }
+
+    const players = playerStats[category] || [];
+    if (players.length === 0)
+      return <p className="stat-placeholder">No data available</p>;
+
+    // Top 10 players for main view
+    const top10 = players.slice(0, 10);
+
+    return (
+      <>
+        {top10.map((player, idx) => (
+          <div key={`${player.playerName}-${idx}`} className="leader-row">
+            <img
+              src={player.playerPhoto || ""}
+              alt={player.playerName}
+              className="stats-player-logo"
+              onError={(e) => (e.currentTarget.style.display = "none")}
+            />
+            <span className="leader-name">{player.playerName}</span>
+            <span className="leader-stat">{player.statValue || 0}</span>
+          </div>
+        ))}
+        {players.length > 10 && (
+          <button className="view-all-btn" onClick={() => setIsModalOpen(true)}>
+            View All
+          </button>
+        )}
+      </>
+    );
+  };
+
+  // Render the modal for full list of passing leaders
+  const renderModal = () => {
+    const players = playerStats.passing || [];
+    return (
+      <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <h2>All Passing Leaders (Yards)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Yards</th>
+              </tr>
+            </thead>
+            <tbody>
+              {players.map((player, idx) => (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{player.playerName}</td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button onClick={() => setIsModalOpen(false)}>Close</button>
+        </div>
+      </div>
+    );
+  };
+
   // Render top 5 teams for a given stat (unchanged)
   const renderTeamLeaders = (statName) => {
     if (loadingTeamStats) return <p className="stat-placeholder">Loading...</p>;
@@ -141,37 +216,6 @@ const Stats = () => {
         />
         <span className="leader-name">{team}</span>
         <span className="leader-stat">{stats[statName] || 0}</span>
-      </div>
-    ));
-  };
-
-  // Render top 5 players for a given category
-  // For now, only passing is fetched; for others, display "Coming Soon"
-  const renderPlayerLeaders = (category) => {
-    if (loadingPlayerStats)
-      return <p className="stat-placeholder">Loading...</p>;
-    if (errorPlayerStats)
-      return <p className="stat-placeholder">{errorPlayerStats}</p>;
-
-    if (category !== "passing") {
-      return <p className="stat-placeholder">Coming Soon</p>;
-    }
-
-    const players = playerStats[category] || [];
-    if (players.length === 0)
-      return <p className="stat-placeholder">No data available</p>;
-
-    const topPlayers = players.slice(0, 5);
-    return topPlayers.map((player, idx) => (
-      <div key={`${player.playerName}-${idx}`} className="leader-row">
-        <img
-          src={player.playerPhoto || ""}
-          alt={player.playerName}
-          className="stats-player-logo"
-          onError={(e) => (e.currentTarget.style.display = "none")}
-        />
-        <span className="leader-name">{player.playerName}</span>
-        <span className="leader-stat">{player.statValue || 0}</span>
       </div>
     ));
   };
@@ -270,6 +314,7 @@ const Stats = () => {
         </button>
       </div>
       {viewMode === "player" ? renderPlayerView() : renderTeamView()}
+      {isModalOpen && renderModal()}
     </div>
   );
 };
