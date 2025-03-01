@@ -2,30 +2,33 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregatePlayerStats with a looser match condition
+// Updated aggregatePlayerStats with a looser match condition using includes()
 const aggregatePlayerStats = (data, desiredStatType) => {
-    // Support both raw arrays and responses wrapped in a data property
-    const rawData = Array.isArray(data) ? data : data?.data || [];
-    const map = {};
-    rawData.forEach(item => {
-      const id = item.playerId; // use playerId as unique key
-      // Use includes() for a partial match (case-insensitive)
-      if (
-        item.statType &&
-        item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
-      ) {
-        // Only record the first matching entry per player
-        if (!map[id]) {
-          map[id] = {
-            playerName: item.player,
-            statValue: parseFloat(item.stat),
-            playerPhoto: item.playerPhoto || null,
-          };
-        }
+  // Support both raw arrays and responses wrapped in a data property
+  const rawData = Array.isArray(data) ? data : data?.data || [];
+  console.log("Aggregating stats. Raw data for", desiredStatType, ":", rawData);
+  const map = {};
+  rawData.forEach(item => {
+    const id = item.playerId; // use playerId as unique key
+    // Use includes() for a partial match (case-insensitive)
+    if (
+      item.statType &&
+      item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
+    ) {
+      // Only record the first matching entry per player
+      if (!map[id]) {
+        map[id] = {
+          playerName: item.player,
+          statValue: parseFloat(item.stat),
+          playerPhoto: item.playerPhoto || null,
+        };
       }
-    });
-    return Object.values(map);
-  };
+    }
+  });
+  const aggregated = Object.values(map);
+  console.log("Aggregated stats for", desiredStatType, ":", aggregated);
+  return aggregated;
+};
 
 const Stats = () => {
   // State for team stats
@@ -98,6 +101,7 @@ const Stats = () => {
         categories.forEach((cat, index) => {
           statsObj[cat] = results[index].status === "fulfilled" ? results[index].value : [];
         });
+        console.log("Combined stats object:", statsObj);
 
         // Aggregate offensive stats (filter by statType "YDS")
         const aggregatedPassing = aggregatePlayerStats(statsObj["passing"], "YDS");
