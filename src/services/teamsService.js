@@ -318,18 +318,34 @@ export const getPlayerSeasonStats = async (
   limit = 10000
 ) => {
   const endpoint = "/stats/player/season";
-  // If category is an array, join it into a comma‐separated string.
+  // If category is an array, join it into a comma-separated string.
   const catParam = Array.isArray(category) ? category.join(",") : category;
   const params = { year, category: catParam, seasonType, limit };
-  return await fetchData(endpoint, params);
+
+  try {
+    const response = await fetchData(endpoint, params);
+    console.log(`getPlayerSeasonStats(${year}, ${category}) returned:`, response);
+    return response;
+  } catch (error) {
+    console.error(`Error in getPlayerSeasonStats for category "${category}":`, error);
+    throw error;
+  }
 };
+
 // Function to fetch player game stats
 export const getPlayerGameStats = async (gameId, year, week, seasonType, team, category = null) => {
   const endpoint = "/games/players";
   const params = { gameId, year, week, seasonType, team };
   if (category) params.category = category;
 
-  return await fetchData(endpoint, params);
+  try {
+    const response = await fetchData(endpoint, params);
+    console.log(`getPlayerGameStats(${gameId}, ${year}, ${week}, ${seasonType}, ${team}, ${category}) returned:`, response);
+    return response;
+  } catch (error) {
+    console.error(`Error in getPlayerGameStats for gameId "${gameId}":`, error);
+    throw error;
+  }
 };
 
 // UPDATED: Added postseason support for fetchScoreboard

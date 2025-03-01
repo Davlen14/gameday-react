@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css"; // Updated CSS file
 
-// Helper to aggregate raw stat responses by player and desired statType
+// Helper to aggregate raw stat responses by player and desired statType (trim spaces)
 const aggregatePlayerStats = (data, desiredStatType) => {
   const map = {};
   data.forEach(item => {
     const id = item.playerId; // use playerId as unique key
-    if (item.statType && item.statType.toUpperCase() === desiredStatType.toUpperCase()) {
+    // Compare statType (trimmed and case-insensitive)
+    if (item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()) {
+      // Only record the first matching entry per player
       if (!map[id]) {
         map[id] = {
           playerName: item.player,
@@ -77,15 +79,19 @@ const Stats = () => {
           categories.map((cat) => teamsService.getPlayerSeasonStats(2024, cat))
         );
 
+        // Log raw responses for debugging
+        results.forEach((result, idx) => {
+          if (result.status === "fulfilled") {
+            console.log(`Raw data for ${categories[idx]}:`, result.value);
+          } else {
+            console.error(`Failed to load ${categories[idx]} stats:`, result.reason);
+          }
+        });
+
         // Build an object mapping category to its data (or empty array on failure)
         const statsObj = {};
         categories.forEach((cat, index) => {
-          if (results[index].status === "fulfilled") {
-            statsObj[cat] = results[index].value;
-          } else {
-            console.error(`Failed to load ${cat} stats:`, results[index].reason);
-            statsObj[cat] = [];
-          }
+          statsObj[cat] = results[index].status === "fulfilled" ? results[index].value : [];
         });
 
         // Aggregate offensive stats (filter by statType "YDS")
@@ -143,8 +149,6 @@ const Stats = () => {
   };
 
   // Render player stats for a given category using aggregated data
-  // For offensive categories, we use the aggregated "YDS" value.
-  // For defensive categories, we render aggregated data from the "defensive" fetch.
   const renderPlayerStats = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
