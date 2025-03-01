@@ -152,7 +152,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .domain([startWeek, finalWeek])
       .range([0, innerWidth]);
 
-    // Y scale (1 is top, 25 is bottom)
+    // Y scale (1 is top, 25 is bottom) with increased spacing
     const yScale = d3
       .scaleLinear()
       .domain([25, 1])
@@ -168,9 +168,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         }
         return d;
       });
-    const yAxis = d3.axisLeft(yScale)
-      .ticks(25)
-      .tickSize(10); // Increase tick size for better spacing
+    const yAxis = d3.axisLeft(yScale).ticks(25);
 
     // Draw axes
     g.append("g")
