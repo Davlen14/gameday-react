@@ -4,7 +4,6 @@ import "../styles/Stats.css";
 
 // Updated aggregatePlayerStats using a looser match condition with includes()
 const aggregatePlayerStats = (data, desiredStatType) => {
-  // Support both raw arrays and responses wrapped in a data property
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
@@ -33,7 +32,7 @@ const Stats = () => {
   const [errorTeamStats, setErrorTeamStats] = useState(null);
 
   // State for player season stats
-  // For now we only fetch "passing" stats; the others show "Coming Soon"
+  // For now we only fetch "passing" stats
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: null,
@@ -74,25 +73,15 @@ const Stats = () => {
         setLoadingTeamStats(false);
       }
     };
-
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for passing only, with cancellation
+  // Fetch player season stats for passing only
   useEffect(() => {
-    const abortController = new AbortController();
-
     const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // If your teamsService.getPlayerSeasonStats is modified to accept a signal parameter, pass it here:
-        const passingData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "passing",
-          "regular",
-          100,
-          abortController.signal
-        );
+        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing");
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         console.log("Aggregated passing stats:", aggregatedPassing);
@@ -105,19 +94,13 @@ const Stats = () => {
           interceptions: null,
         });
       } catch (error) {
-        if (!abortController.signal.aborted) {
-          console.error("Error fetching player season passing stats:", error);
-          setErrorPlayerStats("Failed to load player season stats.");
-        }
+        console.error("Error fetching player season passing stats:", error);
+        setErrorPlayerStats("Failed to load player season stats.");
       } finally {
         setLoadingPlayerStats(false);
       }
     };
-
     fetchPlayerPassingStats();
-
-    // Clean up (cancel the request if the component unmounts)
-    return () => abortController.abort();
   }, []);
 
   // Helper: Sort team stats by a given key (highest to lowest)
@@ -151,7 +134,7 @@ const Stats = () => {
   };
 
   // Render top 5 players for a given category
-  // For now, only passing is fetched; others display "Coming Soon"
+  // For now, only passing is fetched; for others, display "Coming Soon"
   const renderPlayerLeaders = (category) => {
     if (loadingPlayerStats)
       return <p className="stat-placeholder">Loading...</p>;
