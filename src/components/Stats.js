@@ -25,11 +25,12 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store three sets of player stats: passing, rushing, and receiving
+  // We'll store stats for passing, rushing, receiving, and tackles
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
-    receiving: []
+    receiving: [],
+    tackles: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +46,7 @@ const Stats = () => {
           "passing",
           "regular",
           100,
-          controller.signal // Ensure teamsService supports this signal
+          controller.signal
         );
         console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
@@ -55,7 +56,7 @@ const Stats = () => {
         if (controller.signal.aborted) {
           console.log("Passing stats fetch aborted");
         } else {
-          console.error("Error fetching player season passing stats:", error);
+          console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
         }
       } finally {
@@ -87,7 +88,7 @@ const Stats = () => {
         if (controller.signal.aborted) {
           console.log("Rushing stats fetch aborted");
         } else {
-          console.error("Error fetching player season rushing stats:", error);
+          console.error("Error fetching rushing stats:", error);
           setError("Failed to load player season stats.");
         }
       } finally {
@@ -119,7 +120,7 @@ const Stats = () => {
         if (controller.signal.aborted) {
           console.log("Receiving stats fetch aborted");
         } else {
-          console.error("Error fetching player season receiving stats:", error);
+          console.error("Error fetching receiving stats:", error);
           setError("Failed to load player season stats.");
         }
       } finally {
@@ -127,6 +128,39 @@ const Stats = () => {
       }
     };
     fetchReceivingStats();
+    return () => controller.abort();
+  }, []);
+
+  // Fetch player season stats for defensive tackles with cancellation support
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchTacklesStats = async () => {
+      try {
+        setLoading(true);
+        const tacklesData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "tackles",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw tackles data:", tacklesData);
+        // Assuming the API returns the stat type for tackles as "TACKLES"
+        const aggregatedTackles = aggregatePlayerStats(tacklesData, "TACKLES");
+        console.log("Aggregated tackles stats:", aggregatedTackles);
+        setPlayerStats(prev => ({ ...prev, tackles: aggregatedTackles.slice(0, 10) }));
+      } catch (error) {
+        if (controller.signal.aborted) {
+          console.log("Tackles stats fetch aborted");
+        } else {
+          console.error("Error fetching tackles stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTacklesStats();
     return () => controller.abort();
   }, []);
 
@@ -140,11 +174,7 @@ const Stats = () => {
           background: #f5f5f5;
           color: #333;
         }
-        h1 {
-          text-align: center;
-        }
-        h2 {
-          margin-top: 2rem;
+        h1, h2 {
           text-align: center;
         }
         table {
@@ -228,6 +258,26 @@ const Stats = () => {
             </thead>
             <tbody>
               {playerStats.receiving.map((player, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{player.playerName}</td>
+                  <td>{player.statValue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2>Defensive Tackles Leaders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Tackles</th>
+              </tr>
+            </thead>
+            <tbody>
+              {playerStats.tackles.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{player.playerName}</td>
