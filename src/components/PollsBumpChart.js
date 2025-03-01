@@ -121,6 +121,7 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
 
   // Render / update the chart
   useEffect(() => {
+    // Clear previous chart
     d3.select(chartRef.current).selectAll("*").remove();
     if (!chartData || chartData.length === 0) return;
 
@@ -195,7 +196,6 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .attr("y", logoPadding);
 
     // SHIFT BOTTOM TEXT so it's fully visible
-    // We'll place it slightly above the bottom edge (e.g. 20px above the bottom)
     const bottomOffset = 20;
     const textGroup = svg.append("g")
       .attr("transform", `translate(${width - logoPadding}, ${height - bottomOffset})`);
@@ -291,16 +291,22 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
         const point = path.node().getPointAtLength(currentLength);
         logo.attr("x", point.x - 10).attr("y", point.y - 10);
 
-        // Fade near rank ~25
-        const fadeThresholdY = yScale(24.5);
-        if (point.y >= fadeThresholdY) {
-          const bottomY = yScale(25);
-          const fraction = (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
-          logo.style("opacity", 1 - fraction);
+        // If final rank is 25, skip the fade logic near rank ~25
+        if (finalRank !== 25) {
+          const fadeThresholdY = yScale(24.5);
+          if (point.y >= fadeThresholdY) {
+            const bottomY = yScale(25);
+            const fraction = (point.y - fadeThresholdY) / (bottomY - fadeThresholdY);
+            logo.style("opacity", 1 - fraction);
+          } else {
+            logo.style("opacity", 1);
+          }
         } else {
+          // final rank == 25 => remain fully visible
           logo.style("opacity", 1);
         }
-        return t === 1; 
+
+        return t === 1;
       });
 
       // Tooltip
