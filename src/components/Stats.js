@@ -2,49 +2,56 @@ import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
-// Updated aggregatePlayerStats using a looser match condition with includes()
+/**
+ * Modified aggregatePlayerStats:
+ * - Groups the raw data by playerId, and picks the object where statType exactly equals the desired value (e.g. "YDS").
+ * - Returns an array of objects containing the player's name, team, conference, and the parsed statValue.
+ */
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
-  const aggregated = rawData
-    .filter(item =>
+  // Group by playerId and select only the record with statType equal to desiredStatType
+  const playerMap = {};
+  rawData.forEach(item => {
+    if (
       item.statType &&
-      item.statType.trim().toUpperCase().includes(desiredStatType.toUpperCase())
-    )
-    .map(item => ({
-      playerName: item.player,
-      statValue: parseFloat(item.stat),
-      playerPhoto: item.playerPhoto || null,
-    }));
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+    ) {
+      // Use playerId as key (ensure each player appears only once)
+      playerMap[item.playerId] = {
+        playerName: item.player,
+        team: item.team,
+        conference: item.conference,
+        statValue: parseFloat(item.stat)
+      };
+    }
+  });
 
+  const aggregated = Object.values(playerMap);
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
 
 const Stats = () => {
-  // Toggle between Player view and Team view
-  const [viewMode, setViewMode] = useState("player"); // "player" or "team"
+  // Toggle view mode (player or team)
+  const [viewMode, setViewMode] = useState("player");
 
-  // State for team stats
+  // State for team stats (unchanged)
   const [allTeamStats, setAllTeamStats] = useState([]);
   const [loadingTeamStats, setLoadingTeamStats] = useState(true);
   const [errorTeamStats, setErrorTeamStats] = useState(null);
 
-  // State for player season stats
-  // For now we only fetch "passing" stats
+  // State for player season stats (for now, only passing stats)
   const [playerStats, setPlayerStats] = useState({
-    passing: [],
-    rushing: null,
-    receiving: null,
-    tackles: null,
-    sacks: null,
-    interceptions: null,
+    passing: []
   });
   const [loadingPlayerStats, setLoadingPlayerStats] = useState(true);
   const [errorPlayerStats, setErrorPlayerStats] = useState(null);
 
+  // ------------------------
   // Fetch team stats (unchanged)
+  // ------------------------
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
@@ -76,53 +83,79 @@ const Stats = () => {
     fetchTeamStats();
   }, []);
 
-  // Fetch player season stats for passing only with cancellation support
+  // ------------------------
+  // Fetch player season stats for passing only
+  // ------------------------
   useEffect(() => {
-    const controller = new AbortController();
     const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        const passingData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "passing",
-          "regular",
-          100,
-          controller.signal  // Pass the AbortSignal (if teamsService supports it)
-        );
+        // Request the top 100 records for passing stats
+        const passingData = await teamsService.getPlayerSeasonStats(2024, "passing", "regular", 100);
         console.log("Raw passing data:", passingData);
+        // Aggregate only the "YDS" statType for each player
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
-        console.log("Aggregated passing stats:", aggregatedPassing);
-        setPlayerStats({
-          passing: aggregatedPassing,
-          rushing: null,
-          receiving: null,
-          tackles: null,
-          sacks: null,
-          interceptions: null,
-        });
+        // Sort in descending order by passing yards
+        aggregatedPassing.sort((a, b) => b.statValue - a.statValue);
+        // Take the top 100 players
+        const top100 = aggregatedPassing.slice(0, 100);
+        console.log("Top 100 passing stats:", top100);
+        setPlayerStats({ passing: top100 });
       } catch (error) {
-        if (controller.signal.aborted) {
-          console.log("Player stats fetch aborted");
-        } else {
-          console.error("Error fetching player season passing stats:", error);
-          setErrorPlayerStats("Failed to load player season stats.");
-        }
+        console.error("Error fetching player season passing stats:", error);
+        setErrorPlayerStats("Failed to load player season stats.");
       } finally {
         setLoadingPlayerStats(false);
       }
     };
     fetchPlayerPassingStats();
-    return () => controller.abort();
   }, []);
 
-  // Helper: Sort team stats by a given key (highest to lowest)
+  // ------------------------
+  // Helper: Render player leaders as a table
+  // ------------------------
+  const renderPlayerTable = () => {
+    if (loadingPlayerStats) return <p className="stat-placeholder">Loading...</p>;
+    if (errorPlayerStats) return <p className="stat-placeholder">{errorPlayerStats}</p>;
+
+    const players = playerStats.passing;
+    if (!players.length) return <p className="stat-placeholder">No data available</p>;
+
+    return (
+      <table className="player-stats-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Team</th>
+            <th>Conference</th>
+            <th>Passing Yards</th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((player, idx) => (
+            <tr key={player.playerName + idx}>
+              <td>{idx + 1}</td>
+              <td>{player.playerName}</td>
+              <td>{player.team}</td>
+              <td>{player.conference}</td>
+              <td>{player.statValue}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  // ------------------------
+  // For team stats, we keep your existing UI (unchanged)
+  // ------------------------
   const sortByTeamStat = (statKey) => {
     return [...allTeamStats]
       .filter(({ stats }) => stats && stats[statKey] !== undefined)
       .sort((a, b) => b.stats[statKey] - a.stats[statKey]);
   };
 
-  // Render top 5 teams for a given stat (unchanged)
   const renderTeamLeaders = (statName) => {
     if (loadingTeamStats) return <p className="stat-placeholder">Loading...</p>;
     if (errorTeamStats) return <p className="stat-placeholder">{errorTeamStats}</p>;
@@ -145,76 +178,18 @@ const Stats = () => {
     ));
   };
 
-  // Render top 5 players for a given category
-  // For now, only passing is fetched; for others, display "Coming Soon"
-  const renderPlayerLeaders = (category) => {
-    if (loadingPlayerStats)
-      return <p className="stat-placeholder">Loading...</p>;
-    if (errorPlayerStats)
-      return <p className="stat-placeholder">{errorPlayerStats}</p>;
-
-    if (category !== "passing") {
-      return <p className="stat-placeholder">Coming Soon</p>;
-    }
-
-    const players = playerStats[category] || [];
-    if (players.length === 0)
-      return <p className="stat-placeholder">No data available</p>;
-
-    const topPlayers = players.slice(0, 5);
-    return topPlayers.map((player, idx) => (
-      <div key={`${player.playerName}-${idx}`} className="leader-row">
-        <img
-          src={player.playerPhoto || ""}
-          alt={player.playerName}
-          className="stats-player-logo"
-          onError={(e) => (e.currentTarget.style.display = "none")}
-        />
-        <span className="leader-name">{player.playerName}</span>
-        <span className="leader-stat">{player.statValue || 0}</span>
-      </div>
-    ));
-  };
-
-  // UI for the Player view: Only Passing stats are live; others show "Coming Soon"
+  // ------------------------
+  // UI Render functions
+  // ------------------------
   const renderPlayerView = () => {
     return (
       <div className="leaders-wrapper">
-        <div className="leaders-column">
-          <h2 className="leaders-header">Offensive Leaders</h2>
-          <div className="leaders-card">
-            <h3>Passing</h3>
-            {renderPlayerLeaders("passing")}
-          </div>
-          <div className="leaders-card">
-            <h3>Rushing</h3>
-            <p className="stat-placeholder">Coming Soon</p>
-          </div>
-          <div className="leaders-card">
-            <h3>Receiving</h3>
-            <p className="stat-placeholder">Coming Soon</p>
-          </div>
-        </div>
-        <div className="leaders-column">
-          <h2 className="leaders-header">Defensive Leaders</h2>
-          <div className="leaders-card">
-            <h3>Tackles</h3>
-            <p className="stat-placeholder">Coming Soon</p>
-          </div>
-          <div className="leaders-card">
-            <h3>Sacks</h3>
-            <p className="stat-placeholder">Coming Soon</p>
-          </div>
-          <div className="leaders-card">
-            <h3>Interceptions</h3>
-            <p className="stat-placeholder">Coming Soon</p>
-          </div>
-        </div>
+        <h2 className="leaders-header">Top 100 Passing Leaders</h2>
+        {renderPlayerTable()}
       </div>
     );
   };
 
-  // UI for the Team view remains unchanged
   const renderTeamView = () => {
     return (
       <div className="leaders-wrapper">
