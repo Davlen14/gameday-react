@@ -322,6 +322,7 @@ export const getPlayerSeasonStats = async (
     category: catParam,
     seasonType,
     limit: String(limit)
+    // division: "fbs"  <-- removed for now for testing purposes
   };
 
   try {

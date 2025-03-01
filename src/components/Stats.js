@@ -10,8 +10,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
     .filter(item =>
-      item.statType &&
-      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+      item.statType && item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
     )
     .map(item => ({
       playerName: item.player,
@@ -88,7 +87,6 @@ const Stats = () => {
     const fetchPlayerPassingStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // Call teamsService.getPlayerSeasonStats with division filtering (assumed implemented in teamsService)
         const passingData = await teamsService.getPlayerSeasonStats(
           2024,
           "passing",
@@ -152,8 +150,7 @@ const Stats = () => {
     ));
   };
 
-  // Render top 10 players for passing
-  // If there are more than 10 records, show a "View All" button to open a modal with the full list.
+  // Render top 10 players for passing; if more than 10 records, show "View All" button
   const renderPlayerLeaders = (category) => {
     if (loadingPlayerStats) return <p className="stat-placeholder">Loading...</p>;
     if (errorPlayerStats) return <p className="stat-placeholder">{errorPlayerStats}</p>;
