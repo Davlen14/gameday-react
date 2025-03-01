@@ -106,53 +106,65 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
 };
 
 export const getTeamStats = async (team, year) => {
-    const statsEndpoint = "/stats/season"; // API endpoint for team stats
-    const params = { year, team }; // Pass the raw team name without extra encoding
+  const statsEndpoint = "/stats/season"; 
+  const params = { year, team };
 
-    try {
-        console.log(`Fetching stats for team: ${team}`);
+  try {
+    console.log(`Fetching stats for team: ${team}`);
+    const response = await fetchData(statsEndpoint, params);
 
-        // Fetch team stats from the API
-        const response = await fetchData(statsEndpoint, params);
-
-        if (!Array.isArray(response) || response.length === 0) {
-            console.error(`Unexpected or empty API response for ${team}:`, response);
-            // Return default stats if no response or unexpected data
-            return {
-                netPassingYards: 0,
-                rushingYards: 0,
-                totalYards: 0,
-            };
-        }
-
-        console.log(`Raw Team Stats for ${team}:`, response);
-
-        // Filter relevant stats based on your requirements
-        const relevantStats = response.filter((stat) =>
-            ["netPassingYards", "rushingYards", "totalYards"].includes(stat.statName)
-        );
-
-        console.log(`Filtered Stats for ${team}:`, relevantStats);
-
-        // Initialize with default values and populate with actual data
-        return relevantStats.reduce((acc, stat) => {
-            acc[stat.statName] = stat.statValue;
-            return acc;
-        }, {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        });
-    } catch (error) {
-        console.error(`Error fetching stats for ${team}:`, error);
-
-        // Return default values on error
-        return {
-            netPassingYards: 0,
-            rushingYards: 0,
-            totalYards: 0,
-        };
+    if (!Array.isArray(response) || response.length === 0) {
+      console.error(`Unexpected or empty API response for ${team}:`, response);
+      return {
+        netPassingYards: 0,
+        rushingYards: 0,
+        totalYards: 0,
+        yardsAllowed: 0,
+        pointsAllowed: 0,
+        sacks: 0,
+      };
     }
+
+    console.log(`Raw Team Stats for ${team}:`, response);
+
+    // Map API fields to your UI fields.
+    const stats = {
+      netPassingYards: 0,
+      rushingYards: 0,
+      totalYards: 0,
+      yardsAllowed: 0,
+      pointsAllowed: 0,
+      sacks: 0,
+    };
+
+    response.forEach((stat) => {
+      if (stat.statName === "netPassingYards") {
+        stats.netPassingYards = stat.statValue;
+      } else if (stat.statName === "rushingYards") {
+        stats.rushingYards = stat.statValue;
+      } else if (stat.statName === "totalYards") {
+        stats.totalYards = stat.statValue;
+      } else if (stat.statName === "opponentTotalYards") {
+        stats.yardsAllowed = stat.statValue;
+      } else if (stat.statName === "opponentPoints") {
+        stats.pointsAllowed = stat.statValue;
+      } else if (stat.statName === "sacks") {
+        stats.sacks = stat.statValue;
+      }
+    });
+    console.log(`Mapped Stats for ${team}:`, stats);
+    return stats;
+  } catch (error) {
+    console.error(`Error fetching stats for ${team}:`, error);
+    return {
+      netPassingYards: 0,
+      rushingYards: 0,
+      totalYards: 0,
+      yardsAllowed: 0,
+      pointsAllowed: 0,
+      sacks: 0,
+    };
+  }
 };
 
 export const getPolls = async (year = 2024, pollType = "ap", week = null) => {

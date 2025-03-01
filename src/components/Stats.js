@@ -24,12 +24,7 @@ const Stats = () => {
 
         const statsPromises = teams.map(async (team) => {
           try {
-            // Fetch stats for each team.
-            // Expected response mapping (from teamsService.getTeamStats):
-            // {
-            //   net_pass_yds, rush_yds, total_yds,
-            //   opponentTotalYards, opponentPoints, sacks
-            // }
+            // Fetch stats for each team – now includes both offense & defense stats.
             const stats = await teamsService.getTeamStats(team.school, 2024);
             return { team: team.school, stats, logo: team.logos[0] };
           } catch (err) {
@@ -57,7 +52,7 @@ const Stats = () => {
     const fetchPlayerStats = async () => {
       try {
         setLoadingPlayerStats(true);
-        // Define valid categories per APINext docs
+        // Define the categories (ensure these exactly match the API’s expected values)
         const categories = [
           "passing",
           "rushing",
@@ -124,7 +119,7 @@ const Stats = () => {
     if (players.length === 0)
       return <p className="stat-placeholder">No data available</p>;
 
-    // Assume each player object includes: playerName, team, statValue, and optionally playerPhoto
+    // Assume each player object includes: playerName, statValue, and optionally playerPhoto
     const topPlayers = players.slice(0, 5);
     return topPlayers.map((player) => (
       <div key={player.playerName} className="player-row">
@@ -151,15 +146,15 @@ const Stats = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <h3 className="stat-title">Passing Yards</h3>
-            {renderTeamStats("net_pass_yds")}
+            {renderTeamStats("netPassingYards")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Rushing Yards</h3>
-            {renderTeamStats("rush_yds")}
+            {renderTeamStats("rushingYards")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Total Yards</h3>
-            {renderTeamStats("total_yds")}
+            {renderTeamStats("totalYards")}
           </div>
         </div>
       </div>
@@ -170,11 +165,11 @@ const Stats = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <h3 className="stat-title">Yards Allowed</h3>
-            {renderTeamStats("opponentTotalYards")}
+            {renderTeamStats("yardsAllowed")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Points Allowed</h3>
-            {renderTeamStats("opponentPoints")}
+            {renderTeamStats("pointsAllowed")}
           </div>
           <div className="stat-card">
             <h3 className="stat-title">Sacks</h3>
