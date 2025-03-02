@@ -136,12 +136,12 @@ const Stats = () => {
       try {
         setLoading(true);
         const sacksData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "defensive", // Changed from "sacks" to "defensive" to retrieve defensive stats that include sacks
-          "regular",
-          100,
-          controller.signal
-        );
+            2024,
+            "sacks", // Now teamsService will internally change this to "defensive"
+            "regular",
+            100,
+            controller.signal
+          );
         console.log("Raw sacks data:", sacksData);
         const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
         setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
