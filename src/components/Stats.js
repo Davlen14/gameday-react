@@ -5,7 +5,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
-  // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
     .filter(item =>
       item.statType &&
@@ -17,7 +16,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       playerPhoto: item.playerPhoto || null,
     }));
 
-  // Sort the aggregated data in descending order by statValue
   aggregated.sort((a, b) => b.statValue - a.statValue);
 
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
@@ -25,18 +23,15 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, sacks, and interceptions
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
     receiving: [],
-    sacks: [],
     interceptions: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch passing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchPassingStats = async () => {
@@ -67,7 +62,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch rushing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchRushingStats = async () => {
@@ -98,7 +92,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch receiving stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchReceivingStats = async () => {
@@ -129,38 +122,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch sacks stats (defensive) – UPDATED: Now using "sacks" so teamsService converts it
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchSacksStats = async () => {
-      try {
-        setLoading(true);
-        const sacksData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "sacks", // Passing "sacks" so teamsService will convert it to "defensive"
-          "regular",
-          100,
-          controller.signal
-        );
-        console.log("Raw sacks data:", sacksData);
-        const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
-        setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
-      } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Sacks stats fetch aborted");
-        else {
-          console.error("Error fetching sacks stats:", error);
-          setError("Failed to load player season stats.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSacksStats();
-    return () => controller.abort();
-  }, []);
-
-  // Fetch interceptions stats (defensive)
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
@@ -306,28 +267,6 @@ const Stats = () => {
               </thead>
               <tbody>
                 {playerStats.receiving.map((player, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
-                    <td>{player.statValue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-
-          <section>
-            <h2>Sacks Leaders</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th>Sacks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {playerStats.sacks.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
                     <td>{player.playerName}</td>
