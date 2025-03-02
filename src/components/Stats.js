@@ -129,7 +129,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch sacks stats (defensive) – using "SACKS" as in the JSON data
+  // Fetch sacks stats (defensive) – note the change here: using "defensive" instead of "sacks"
   useEffect(() => {
     const controller = new AbortController();
     const fetchSacksStats = async () => {
@@ -137,7 +137,7 @@ const Stats = () => {
         setLoading(true);
         const sacksData = await teamsService.getPlayerSeasonStats(
           2024,
-          "sacks",
+          "defensive", // updated parameter to match JSON records
           "regular",
           100,
           controller.signal
