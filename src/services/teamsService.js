@@ -315,7 +315,17 @@ export const getPlayerSeasonStats = async (
   limit = 100
 ) => {
   const endpoint = "/stats/player/season";
-  const catParam = Array.isArray(category) ? category.join(",") : category;
+  
+  // If the category passed in is "sacks", change it to "defensive"
+  let effectiveCategory = category;
+  if (category.toLowerCase() === "sacks") {
+    effectiveCategory = "defensive";
+  }
+
+  const catParam = Array.isArray(effectiveCategory)
+    ? effectiveCategory.join(",")
+    : effectiveCategory;
+    
   // Temporarily remove the division parameter to mimic your working HTML
   const params = {
     year: String(year),
