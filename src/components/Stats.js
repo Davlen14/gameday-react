@@ -129,8 +129,8 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-// Fetch sacks stats (defensive) – UPDATED: Now using "sacks" so teamsService converts it
-useEffect(() => {
+  // Fetch sacks stats (defensive) – UPDATED: Now using "sacks" so teamsService converts it
+  useEffect(() => {
     const controller = new AbortController();
     const fetchSacksStats = async () => {
       try {
@@ -243,13 +243,21 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {playerStats.passing.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+              {playerStats.passing.length ? (
+                playerStats.passing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
@@ -263,13 +271,21 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {playerStats.rushing.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+              {playerStats.rushing.length ? (
+                playerStats.rushing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
@@ -283,13 +299,21 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {playerStats.receiving.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+              {playerStats.receiving.length ? (
+                playerStats.receiving.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
@@ -303,13 +327,21 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {playerStats.sacks.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+              {playerStats.sacks.length ? (
+                playerStats.sacks.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
@@ -323,13 +355,21 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {playerStats.interceptions.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+              {playerStats.interceptions.length ? (
+                playerStats.interceptions.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
