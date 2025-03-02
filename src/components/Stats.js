@@ -25,12 +25,12 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, tackles, and interceptions
+  // We'll store stats for passing, rushing, receiving, sacks, and interceptions
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
     receiving: [],
-    tackles: [],
+    sacks: [],
     interceptions: []
   });
   const [loading, setLoading] = useState(true);
@@ -126,34 +126,33 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch tackles stats (defensive)
+  // Fetch sacks stats (defensive) – note: using "SACKS" as in the JSON data
   useEffect(() => {
     const controller = new AbortController();
-    const fetchTacklesStats = async () => {
+    const fetchSacksStats = async () => {
       try {
         setLoading(true);
-        const tacklesData = await teamsService.getPlayerSeasonStats(
+        const sacksData = await teamsService.getPlayerSeasonStats(
           2024,
-          "tackles",
+          "sacks",
           "regular",
           100,
           controller.signal
         );
-        console.log("Raw tackles data:", tacklesData);
-        // Assuming the API returns defensive tackles with statType "TACKLES"
-        const aggregatedTackles = aggregatePlayerStats(tacklesData, "TACKLES");
-        setPlayerStats(prev => ({ ...prev, tackles: aggregatedTackles.slice(0, 10) }));
+        console.log("Raw sacks data:", sacksData);
+        const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
+        setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Tackles stats fetch aborted");
+        if (controller.signal.aborted) console.log("Sacks stats fetch aborted");
         else {
-          console.error("Error fetching tackles stats:", error);
+          console.error("Error fetching sacks stats:", error);
           setError("Failed to load player season stats.");
         }
       } finally {
         setLoading(false);
       }
     };
-    fetchTacklesStats();
+    fetchSacksStats();
     return () => controller.abort();
   }, []);
 
@@ -171,7 +170,6 @@ const Stats = () => {
           controller.signal
         );
         console.log("Raw interceptions data:", interceptionsData);
-        // Assuming the API returns interceptions with statType "INT"
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
@@ -290,17 +288,17 @@ const Stats = () => {
             </tbody>
           </table>
 
-          <h2>Defensive Tackles Leaders</h2>
+          <h2>Sacks Leaders</h2>
           <table>
             <thead>
               <tr>
                 <th>Rank</th>
                 <th>Player</th>
-                <th>Tackles</th>
+                <th>Sacks</th>
               </tr>
             </thead>
             <tbody>
-              {playerStats.tackles.map((player, index) => (
+              {playerStats.sacks.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{player.playerName}</td>
