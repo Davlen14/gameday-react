@@ -53,7 +53,8 @@ const Stats = () => {
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Passing stats fetch aborted");
+        if (controller.signal.aborted)
+          console.log("Passing stats fetch aborted");
         else {
           console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
@@ -83,7 +84,8 @@ const Stats = () => {
         const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
         setPlayerStats(prev => ({ ...prev, rushing: aggregatedRushing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Rushing stats fetch aborted");
+        if (controller.signal.aborted)
+          console.log("Rushing stats fetch aborted");
         else {
           console.error("Error fetching rushing stats:", error);
           setError("Failed to load player season stats.");
@@ -113,7 +115,8 @@ const Stats = () => {
         const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
         setPlayerStats(prev => ({ ...prev, receiving: aggregatedReceiving.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Receiving stats fetch aborted");
+        if (controller.signal.aborted)
+          console.log("Receiving stats fetch aborted");
         else {
           console.error("Error fetching receiving stats:", error);
           setError("Failed to load player season stats.");
@@ -126,7 +129,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch sacks stats (defensive) – note: using "SACKS" as in the JSON data
+  // Fetch sacks stats (defensive) – using "SACKS" as in the JSON data
   useEffect(() => {
     const controller = new AbortController();
     const fetchSacksStats = async () => {
@@ -143,7 +146,8 @@ const Stats = () => {
         const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
         setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Sacks stats fetch aborted");
+        if (controller.signal.aborted)
+          console.log("Sacks stats fetch aborted");
         else {
           console.error("Error fetching sacks stats:", error);
           setError("Failed to load player season stats.");
@@ -173,7 +177,8 @@ const Stats = () => {
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) console.log("Interceptions stats fetch aborted");
+        if (controller.signal.aborted)
+          console.log("Interceptions stats fetch aborted");
         else {
           console.error("Error fetching interceptions stats:", error);
           setError("Failed to load player season stats.");
