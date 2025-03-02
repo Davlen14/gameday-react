@@ -25,7 +25,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, and interceptions for players
+  // We'll store stats for passing, rushing, receiving, and interceptions
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -35,16 +35,7 @@ const Stats = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // We'll also store team stats for passing, rushing, and receiving
-  const [teamStats, setTeamStats] = useState({
-    passing: [],
-    rushing: [],
-    receiving: []
-  });
-  const [teamLoading, setTeamLoading] = useState(true);
-  const [teamError, setTeamError] = useState(null);
-
-  // Fetch passing stats for players
+  // Fetch passing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchPassingStats = async () => {
@@ -75,7 +66,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch rushing stats for players
+  // Fetch rushing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchRushingStats = async () => {
@@ -106,7 +97,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch receiving stats for players
+  // Fetch receiving stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchReceivingStats = async () => {
@@ -137,7 +128,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch interceptions stats for players (defensive)
+  // Fetch interceptions stats (defensive)
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
@@ -166,34 +157,6 @@ const Stats = () => {
     };
     fetchInterceptionsStats();
     return () => controller.abort();
-  }, []);
-
-  // Fetch team stats for passing, rushing, and receiving
-  useEffect(() => {
-    const fetchTeamStats = async () => {
-      try {
-        setTeamLoading(true);
-        const teams = await teamsService.getTeams();
-        // For each team, fetch its stats for the season.
-        const statsPromises = teams.map(team => teamsService.getTeamStats(team.school, 2024));
-        const allStats = await Promise.all(statsPromises);
-        // Assume each team stat object has keys: team, passingYards, rushingYards, receivingYards
-        const sortedPassing = [...allStats].sort((a, b) => b.passingYards - a.passingYards).slice(0, 10);
-        const sortedRushing = [...allStats].sort((a, b) => b.rushingYards - a.rushingYards).slice(0, 10);
-        const sortedReceiving = [...allStats].sort((a, b) => b.receivingYards - a.receivingYards).slice(0, 10);
-        setTeamStats({
-          passing: sortedPassing,
-          rushing: sortedRushing,
-          receiving: sortedReceiving
-        });
-      } catch (error) {
-        console.error("Error fetching team stats:", error);
-        setTeamError("Failed to load team stats.");
-      } finally {
-        setTeamLoading(false);
-      }
-    };
-    fetchTeamStats();
   }, []);
 
   return (
@@ -226,12 +189,12 @@ const Stats = () => {
         tr:nth-child(even) {
           background: #f9f9f9;
         }
-        #table-container, #team-table-container {
+        #table-container {
           max-width: 1200px;
           margin: 0 auto;
         }
       `}</style>
-      <h1>Top 10 Player Leaders (Yards) - 2024</h1>
+      <h1>Top 10 Leaders (Yards) - 2024</h1>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -313,75 +276,6 @@ const Stats = () => {
                   <td>{index + 1}</td>
                   <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <h1>Team Leaders (Yards) - 2024</h1>
-      {teamLoading ? (
-        <p>Loading team stats...</p>
-      ) : teamError ? (
-        <p>{teamError}</p>
-      ) : (
-        <div id="team-table-container">
-          <h2>Team Passing Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Team</th>
-                <th>Passing Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamStats.passing.map((team, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{team.team}</td>
-                  <td>{team.passingYards}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <h2>Team Rushing Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Team</th>
-                <th>Rushing Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamStats.rushing.map((team, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{team.team}</td>
-                  <td>{team.rushingYards}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <h2>Team Receiving Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Team</th>
-                <th>Receiving Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamStats.receiving.map((team, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{team.team}</td>
-                  <td>{team.receivingYards}</td>
                 </tr>
               ))}
             </tbody>
