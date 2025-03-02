@@ -5,7 +5,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
-  // Only include records where statType equals desiredStatType exactly (case-insensitive)
   const aggregated = rawData
     .filter(item =>
       item.statType &&
@@ -17,7 +16,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       playerPhoto: item.playerPhoto || null,
     }));
 
-  // Sort the aggregated data in descending order by statValue
   aggregated.sort((a, b) => b.statValue - a.statValue);
 
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
@@ -25,7 +23,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
 };
 
 const Stats = () => {
-  // We'll store stats for passing, rushing, receiving, and interceptions
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -35,7 +32,6 @@ const Stats = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch passing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchPassingStats = async () => {
@@ -66,7 +62,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch rushing stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchRushingStats = async () => {
@@ -97,7 +92,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch receiving stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchReceivingStats = async () => {
@@ -128,7 +122,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch interceptions stats (defensive)
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
@@ -161,37 +154,54 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Inline CSS */}
+      {/* Updated Modern CSS */}
       <style>{`
+        :root {
+          --background-color: #ffffff;
+          --text-color: #000000;
+          --navbar-bg: #d4001c;
+          --card-background: #f9f9f9;
+          --border-color: #ddd;
+          --shadow-color: rgba(0, 0, 0, 0.08);
+        }
         .stats-container {
-          font-family: Arial, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           margin: 2rem;
-          background: #f5f5f5;
-          color: #333;
+          background: var(--background-color);
+          color: var(--text-color);
         }
         h1, h2 {
           text-align: center;
-        }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-top: 1rem;
-          background: #fff;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 0.75rem;
-          text-align: left;
-        }
-        th {
-          background: #e0e0e0;
-        }
-        tr:nth-child(even) {
-          background: #f9f9f9;
+          margin: 1rem 0;
         }
         #table-container {
           max-width: 1200px;
           margin: 0 auto;
+          display: grid;
+          gap: 2rem;
+        }
+        table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          background: var(--card-background);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 8px var(--shadow-color);
+        }
+        th, td {
+          padding: 0.75rem 1rem;
+          text-align: left;
+        }
+        thead {
+          background: var(--navbar-bg);
+          color: var(--background-color);
+        }
+        tbody tr {
+          border-bottom: 1px solid var(--border-color);
+        }
+        tbody tr:last-child {
+          border-bottom: none;
         }
       `}</style>
       <h1>Top 10 Leaders (Yards) - 2024</h1>
@@ -201,85 +211,93 @@ const Stats = () => {
         <p>{error}</p>
       ) : (
         <div id="table-container">
-          <h2>Passing Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Passing Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {playerStats.passing.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+          <section>
+            <h2>Passing Leaders</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Passing Yards</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {playerStats.passing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
 
-          <h2>Rushing Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Rushing Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {playerStats.rushing.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+          <section>
+            <h2>Rushing Leaders</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Rushing Yards</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {playerStats.rushing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
 
-          <h2>Receiving Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Receiving Yards</th>
-              </tr>
-            </thead>
-            <tbody>
-              {playerStats.receiving.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+          <section>
+            <h2>Receiving Leaders</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Receiving Yards</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {playerStats.receiving.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
 
-          <h2>Interceptions Leaders</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Interceptions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {playerStats.interceptions.map((player, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{player.playerName}</td>
-                  <td>{player.statValue}</td>
+          <section>
+            <h2>Interceptions Leaders</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Interceptions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {playerStats.interceptions.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
         </div>
       )}
     </div>
