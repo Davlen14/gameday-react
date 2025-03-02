@@ -129,7 +129,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch sacks stats (defensive) – note the change here: using "defensive" instead of "sacks"
+  // Fetch sacks stats (defensive) – UPDATED: Changed parameter from "sacks" to "defensive"
   useEffect(() => {
     const controller = new AbortController();
     const fetchSacksStats = async () => {
@@ -137,7 +137,7 @@ const Stats = () => {
         setLoading(true);
         const sacksData = await teamsService.getPlayerSeasonStats(
           2024,
-          "defensive", // updated parameter to match JSON records
+          "defensive", // Changed from "sacks" to "defensive" to retrieve defensive stats that include sacks
           "regular",
           100,
           controller.signal
