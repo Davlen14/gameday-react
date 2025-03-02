@@ -13,18 +13,19 @@ const aggregatePlayerStats = (data, desiredStatType) => {
     )
     .map(item => ({
       playerName: item.player,
-      team: item.team, // include team for logo lookup
-      statValue: parseFloat(item.stat)
+      statValue: parseFloat(item.stat),
+      playerPhoto: item.playerPhoto || null,
     }));
 
   // Sort the aggregated data in descending order by statValue
   aggregated.sort((a, b) => b.statValue - a.statValue);
+
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
 
 const Stats = () => {
-  // We'll store stats for multiple categories
+  // We'll store stats for passing, rushing, receiving, tackles, and interceptions
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -32,31 +33,8 @@ const Stats = () => {
     tackles: [],
     interceptions: []
   });
-  const [teams, setTeams] = useState([]); // For team logos lookup
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Fetch teams once (for logo lookup)
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const teamsData = await teamsService.getTeams();
-        console.log("Teams data:", teamsData);
-        setTeams(teamsData);
-      } catch (err) {
-        console.error("Error fetching teams:", err);
-      }
-    };
-    fetchTeams();
-  }, []);
-
-  // Helper to get a team logo from teams state
-  const getTeamLogo = (teamName) => {
-    const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.logos?.[0] || "/photos/default_team.png";
-  };
 
   // Fetch passing stats
   useEffect(() => {
@@ -75,9 +53,8 @@ const Stats = () => {
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) {
-          console.log("Passing stats fetch aborted");
-        } else {
+        if (controller.signal.aborted) console.log("Passing stats fetch aborted");
+        else {
           console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -149,7 +126,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch tackles stats
+  // Fetch tackles stats (defensive)
   useEffect(() => {
     const controller = new AbortController();
     const fetchTacklesStats = async () => {
@@ -163,6 +140,7 @@ const Stats = () => {
           controller.signal
         );
         console.log("Raw tackles data:", tacklesData);
+        // Assuming the API returns defensive tackles with statType "TACKLES"
         const aggregatedTackles = aggregatePlayerStats(tacklesData, "TACKLES");
         setPlayerStats(prev => ({ ...prev, tackles: aggregatedTackles.slice(0, 10) }));
       } catch (error) {
@@ -179,7 +157,7 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch interceptions stats
+  // Fetch interceptions stats (defensive)
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
@@ -193,6 +171,7 @@ const Stats = () => {
           controller.signal
         );
         console.log("Raw interceptions data:", interceptionsData);
+        // Assuming the API returns interceptions with statType "INT"
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
@@ -211,124 +190,44 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Inline CSS for modern, glassy UI */}
+      {/* Inline CSS */}
       <style>{`
         .stats-container {
-          font-family: "Helvetica Neue", Arial, sans-serif;
+          font-family: Arial, sans-serif;
           margin: 2rem;
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-          padding: 1.5rem;
-          border-radius: 12px;
-          backdrop-filter: blur(10px);
-          box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+          background: #f5f5f5;
+          color: #333;
         }
         h1, h2 {
           text-align: center;
-          margin: 0.75rem 0;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          margin-top: 1rem;
+          background: #fff;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 0.75rem;
+          text-align: left;
+        }
+        th {
+          background: #e0e0e0;
+        }
+        tr:nth-child(even) {
+          background: #f9f9f9;
         }
         #table-container {
           max-width: 1200px;
           margin: 0 auto;
         }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 8px;
-          overflow: hidden;
-          margin-bottom: 2rem;
-        }
-        th, td {
-          padding: 0.75rem;
-          text-align: left;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        th {
-          background: rgba(255, 255, 255, 0.3);
-          font-weight: 600;
-        }
-        tr:nth-child(even) {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        .leader-row {
-          display: flex;
-          align-items: center;
-          padding: 0.5rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .team-logo {
-          width: 40px;
-          height: 40px;
-          margin-right: 0.75rem;
-          object-fit: cover;
-          border-radius: 50%;
-          border: 2px solid rgba(255, 255, 255, 0.5);
-        }
-        .leader-name {
-          flex: 1;
-        }
-        .leader-stat {
-          font-weight: bold;
-          margin-left: 0.5rem;
-        }
-        .view-all-btn {
-          display: block;
-          width: 100%;
-          padding: 0.75rem;
-          margin-top: 1rem;
-          background: rgba(255, 255, 255, 0.3);
-          border: none;
-          border-radius: 8px;
-          font-size: 1rem;
-          cursor: pointer;
-          transition: background 0.3s ease;
-        }
-        .view-all-btn:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-        /* Modal styles */
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 1.5rem;
-          border-radius: 12px;
-          backdrop-filter: blur(10px);
-          max-width: 800px;
-          width: 90%;
-          color: #fff;
-        }
-        .modal-content h2 {
-          margin-top: 0;
-          text-align: center;
-        }
-        .modal-content table {
-          width: 100%;
-          margin-top: 1rem;
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 8px;
-          overflow: hidden;
-        }
       `}</style>
-
       <h1>Top 10 Leaders (Yards) - 2024</h1>
       {loading ? (
-        <p style={{ textAlign: "center" }}>Loading...</p>
+        <p>Loading...</p>
       ) : error ? (
-        <p style={{ textAlign: "center" }}>{error}</p>
+        <p>{error}</p>
       ) : (
         <div id="table-container">
           <h2>Passing Leaders</h2>
@@ -344,14 +243,7 @@ const Stats = () => {
               {playerStats.passing.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>
-                    <img
-                      src={getTeamLogo(player.team)}
-                      alt={player.team}
-                      className="team-logo"
-                    />
-                    {player.playerName}
-                  </td>
+                  <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -371,14 +263,7 @@ const Stats = () => {
               {playerStats.rushing.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>
-                    <img
-                      src={getTeamLogo(player.team)}
-                      alt={player.team}
-                      className="team-logo"
-                    />
-                    {player.playerName}
-                  </td>
+                  <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -398,14 +283,7 @@ const Stats = () => {
               {playerStats.receiving.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>
-                    <img
-                      src={getTeamLogo(player.team)}
-                      alt={player.team}
-                      className="team-logo"
-                    />
-                    {player.playerName}
-                  </td>
+                  <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -425,14 +303,7 @@ const Stats = () => {
               {playerStats.tackles.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>
-                    <img
-                      src={getTeamLogo(player.team)}
-                      alt={player.team}
-                      className="team-logo"
-                    />
-                    {player.playerName}
-                  </td>
+                  <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -452,14 +323,7 @@ const Stats = () => {
               {playerStats.interceptions.map((player, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>
-                    <img
-                      src={getTeamLogo(player.team)}
-                      alt={player.team}
-                      className="team-logo"
-                    />
-                    {player.playerName}
-                  </td>
+                  <td>{player.playerName}</td>
                   <td>{player.statValue}</td>
                 </tr>
               ))}
@@ -469,26 +333,6 @@ const Stats = () => {
       )}
     </div>
   );
-};
-
-// Helper to get team logo from teams data
-// We need to fetch teams data, so add this helper outside the component:
-const getTeamLogo = (teamName) => {
-  // In a real app you might pass teams data via props or context.
-  // For simplicity, we assume a global variable or default mapping.
-  // Here we'll simulate a simple lookup.
-  const teamsMock = [
-    { school: "Long Island University", logos: ["/logos/liuniversity.png"] },
-    { school: "Charlotte", logos: ["/logos/charlotte.png"] },
-    { school: "Stetson", logos: ["/logos/stetson.png"] },
-    { school: "Lamar", logos: ["/logos/lamar.png"] },
-    { school: "Incarnate Word", logos: ["/logos/incarnateword.png"] },
-    // ... add other teams as needed
-  ];
-  const team = teamsMock.find(
-    (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-  );
-  return team?.logos?.[0] || "/logos/default.png";
 };
 
 export default Stats;
