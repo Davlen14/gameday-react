@@ -129,19 +129,19 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch sacks stats (defensive) – UPDATED: Changed parameter from "sacks" to "defensive"
-  useEffect(() => {
+// Fetch sacks stats (defensive) – UPDATED: Now using "sacks" so teamsService converts it
+useEffect(() => {
     const controller = new AbortController();
     const fetchSacksStats = async () => {
       try {
         setLoading(true);
         const sacksData = await teamsService.getPlayerSeasonStats(
-            2024,
-            "sacks", // Now teamsService will internally change this to "defensive"
-            "regular",
-            100,
-            controller.signal
-          );
+          2024,
+          "sacks", // Changed here from "defensive" to "sacks"
+          "regular",
+          100,
+          controller.signal
+        );
         console.log("Raw sacks data:", sacksData);
         const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
         setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
