@@ -29,14 +29,21 @@ const Stats = () => {
     receiving: [],
     interceptions: []
   });
-  const [loading, setLoading] = useState(true);
+
+  // Separate loading states for each category:
+  const [loadingPassing, setLoadingPassing] = useState(true);
+  const [loadingRushing, setLoadingRushing] = useState(true);
+  const [loadingReceiving, setLoadingReceiving] = useState(true);
+  const [loadingInterceptions, setLoadingInterceptions] = useState(true);
+
   const [error, setError] = useState(null);
 
+  // Fetch Passing Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchPassingStats = async () => {
       try {
-        setLoading(true);
+        setLoadingPassing(true);
         const passingData = await teamsService.getPlayerSeasonStats(
           2024,
           "passing",
@@ -55,18 +62,19 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoading(false);
+        setLoadingPassing(false);
       }
     };
     fetchPassingStats();
     return () => controller.abort();
   }, []);
 
+  // Fetch Rushing Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchRushingStats = async () => {
       try {
-        setLoading(true);
+        setLoadingRushing(true);
         const rushingData = await teamsService.getPlayerSeasonStats(
           2024,
           "rushing",
@@ -85,18 +93,19 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoading(false);
+        setLoadingRushing(false);
       }
     };
     fetchRushingStats();
     return () => controller.abort();
   }, []);
 
+  // Fetch Receiving Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchReceivingStats = async () => {
       try {
-        setLoading(true);
+        setLoadingReceiving(true);
         const receivingData = await teamsService.getPlayerSeasonStats(
           2024,
           "receiving",
@@ -115,18 +124,19 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoading(false);
+        setLoadingReceiving(false);
       }
     };
     fetchReceivingStats();
     return () => controller.abort();
   }, []);
 
+  // Fetch Interceptions Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
       try {
-        setLoading(true);
+        setLoadingInterceptions(true);
         const interceptionsData = await teamsService.getPlayerSeasonStats(
           2024,
           "interceptions",
@@ -145,7 +155,7 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoading(false);
+        setLoadingInterceptions(false);
       }
     };
     fetchInterceptionsStats();
@@ -205,14 +215,13 @@ const Stats = () => {
         }
       `}</style>
       <h1>Top 10 Leaders (Yards) - 2024</h1>
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        <div id="table-container">
-          <section>
-            <h2>Passing Leaders</h2>
+      {error && <p>{error}</p>}
+      <div id="table-container">
+        <section>
+          <h2>Passing Leaders</h2>
+          {loadingPassing ? (
+            <p>Loading passing stats...</p>
+          ) : (
             <table>
               <thead>
                 <tr>
@@ -231,10 +240,14 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          </section>
+          )}
+        </section>
 
-          <section>
-            <h2>Rushing Leaders</h2>
+        <section>
+          <h2>Rushing Leaders</h2>
+          {loadingRushing ? (
+            <p>Loading rushing stats...</p>
+          ) : (
             <table>
               <thead>
                 <tr>
@@ -253,10 +266,14 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          </section>
+          )}
+        </section>
 
-          <section>
-            <h2>Receiving Leaders</h2>
+        <section>
+          <h2>Receiving Leaders</h2>
+          {loadingReceiving ? (
+            <p>Loading receiving stats...</p>
+          ) : (
             <table>
               <thead>
                 <tr>
@@ -275,10 +292,14 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          </section>
+          )}
+        </section>
 
-          <section>
-            <h2>Interceptions Leaders</h2>
+        <section>
+          <h2>Interceptions Leaders</h2>
+          {loadingInterceptions ? (
+            <p>Loading interceptions stats...</p>
+          ) : (
             <table>
               <thead>
                 <tr>
@@ -297,9 +318,9 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          </section>
-        </div>
-      )}
+          )}
+        </section>
+      </div>
     </div>
   );
 };
