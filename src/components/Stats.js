@@ -239,14 +239,17 @@ const Stats = () => {
   return (
     <div className="stats-container">
       <style>{`
+        /* Use a clean, modern font. You can swap out "Inter" for another. */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         :root {
           --bg-color: #ffffff;
-          --text-color: #333333;
-          --primary-color: #d4001c;
+          --text-color: #222222;
+          --highlight-color: #333333; /* Subtle highlight instead of red */
           --border-color: #ddd;
-          --shadow-color: rgba(0, 0, 0, 0.1);
+          --shadow-color: rgba(0, 0, 0, 0.08);
           --card-bg: #f9f9f9;
-          --primary-font: 'Roboto', sans-serif;
+          --primary-font: 'Inter', sans-serif;
           --heading-font-size: 1rem;
           --sub-font-size: 0.85rem;
         }
@@ -274,6 +277,7 @@ const Stats = () => {
           font-style: italic;
           font-size: 2rem;
           margin: 0;
+          color: var(--highlight-color);
         }
 
         /* Tabs */
@@ -285,27 +289,27 @@ const Stats = () => {
         .tab-button {
           border: none;
           background: none;
-          font-size: 1.1rem;
+          font-size: 1rem;
           padding: 0.75rem 1.5rem;
           margin: 0 0.5rem;
           cursor: pointer;
-          border-bottom: 3px solid transparent;
+          border-bottom: 2px solid transparent;
           transition: color 0.3s ease, border-bottom 0.3s ease;
         }
         .tab-button:hover {
-          color: var(--primary-color);
+          color: var(--highlight-color);
         }
         .tab-button.active {
-          border-bottom: 3px solid var(--primary-color);
-          color: var(--primary-color);
-          font-weight: bold;
+          border-bottom: 2px solid var(--highlight-color);
+          color: var(--highlight-color);
+          font-weight: 600;
         }
 
         .coming-soon {
           text-align: center;
           margin-top: 2rem;
           font-size: 1.3rem;
-          color: var(--primary-color);
+          color: var(--highlight-color);
         }
 
         /* Cards Layout */
@@ -329,8 +333,8 @@ const Stats = () => {
         .stat-card {
           background: var(--card-bg);
           border: 1px solid var(--border-color);
-          box-shadow: 0 4px 8px var(--shadow-color);
-          border-radius: 0;
+          box-shadow: 0 2px 4px var(--shadow-color);
+          border-radius: 6px;
           padding: 1rem;
           transition: transform 0.2s ease;
           display: flex;
@@ -341,9 +345,8 @@ const Stats = () => {
         }
         .card-title {
           font-size: 1rem;
-          text-transform: uppercase;
-          font-weight: bold;
-          color: var(--primary-color);
+          font-weight: 600;
+          color: var(--highlight-color);
           margin-bottom: 1rem;
           border-bottom: 1px solid var(--border-color);
           padding-bottom: 0.5rem;
@@ -358,18 +361,17 @@ const Stats = () => {
           display: flex;
           align-items: center;
           margin-bottom: 1rem;
+          gap: 0.75rem;
         }
         .top-rank {
           font-size: 1.2rem;
-          font-weight: bold;
-          color: var(--primary-color);
-          margin-right: 0.75rem;
+          font-weight: 600;
+          color: var(--highlight-color);
         }
         .top-logo {
           width: 40px;
           height: 40px;
           object-fit: contain;
-          margin-right: 0.75rem;
         }
         .top-info {
           display: flex;
@@ -378,16 +380,16 @@ const Stats = () => {
         }
         .top-player-name {
           font-size: 1rem;
-          font-weight: bold;
+          font-weight: 500;
           margin-bottom: 0.25rem;
         }
         .top-sub {
           font-size: var(--sub-font-size);
-          color: #666;
+          color: #777;
         }
         .top-yds {
-          font-size: 1.4rem;
-          font-weight: bold;
+          font-size: 1.2rem;
+          font-weight: 600;
           color: var(--text-color);
         }
 
@@ -396,8 +398,8 @@ const Stats = () => {
           display: grid;
           grid-template-columns: 40px 80px 1fr 60px;
           font-size: 0.8rem;
-          color: #666;
-          font-weight: bold;
+          color: #888;
+          font-weight: 600;
           padding: 0.5rem 0;
           border-top: 1px solid var(--border-color);
           border-bottom: 1px solid var(--border-color);
@@ -418,8 +420,8 @@ const Stats = () => {
           border-bottom: none;
         }
         .col-rank {
-          color: var(--primary-color);
-          font-weight: bold;
+          color: var(--highlight-color);
+          font-weight: 600;
         }
         .table-logo {
           width: 18px;
@@ -431,16 +433,20 @@ const Stats = () => {
         .col-team {
           display: flex;
           align-items: center;
-          gap: 2px;
+          gap: 4px;
+          font-weight: 500;
+        }
+        .col-player {
+          font-weight: 400;
         }
         .col-yds {
           text-align: right;
-          font-weight: bold;
+          font-weight: 600;
         }
 
         .complete-link {
           text-align: center;
-          margin-top: 0.5rem;
+          margin-top: 0.75rem;
           font-size: 0.8rem;
           color: #666;
           cursor: pointer;
@@ -453,7 +459,7 @@ const Stats = () => {
       {/* Title */}
       <div className="page-title">
         <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
-        <h1>COLLEGE FOOTBALL statistics</h1>
+        <h1>COLLEGE FOOTBALL STATISTICS</h1>
       </div>
 
       {/* Tabs */}
