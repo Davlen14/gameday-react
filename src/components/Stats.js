@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
-// Modified aggregator to include the player's team property
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
@@ -13,12 +12,10 @@ const aggregatePlayerStats = (data, desiredStatType) => {
     )
     .map(item => ({
       playerName: item.player,
-      team: item.team, // include team name for logo lookup
       statValue: parseFloat(item.stat),
       playerPhoto: item.playerPhoto || null,
     }));
 
-  // Sort in descending order
   aggregated.sort((a, b) => b.statValue - a.statValue);
 
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
@@ -33,39 +30,13 @@ const Stats = () => {
     interceptions: []
   });
 
-  // We'll fetch and store teams for logo lookup
-  const [teams, setTeams] = useState([]);
-
   // Separate loading states for each category:
   const [loadingPassing, setLoadingPassing] = useState(true);
   const [loadingRushing, setLoadingRushing] = useState(true);
   const [loadingReceiving, setLoadingReceiving] = useState(true);
   const [loadingInterceptions, setLoadingInterceptions] = useState(true);
 
-  // Single error state for demonstration (you could split per category if needed)
   const [error, setError] = useState(null);
-
-  // Fetch the FBS teams to enable logo lookups
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const teamsData = await teamsService.getTeams(); // Ensure this fetches only FBS teams or filter them
-        setTeams(teamsData);
-      } catch (err) {
-        console.error("Error fetching teams:", err);
-      }
-    };
-    fetchTeams();
-  }, []);
-
-  // Helper to get a team's logo
-  const getTeamLogo = (teamName) => {
-    const foundTeam = teams.find(
-      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
-    );
-    // If not found or no logos, fall back to a default
-    return foundTeam?.logos?.[0] || "/photos/default_team.png";
-  };
 
   // Fetch Passing Stats
   useEffect(() => {
@@ -80,12 +51,13 @@ const Stats = () => {
           100,
           controller.signal
         );
+        console.log("Raw passing data:", passingData);
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted)
           console.log("Passing stats fetch aborted");
-        } else {
+        else {
           console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -110,12 +82,13 @@ const Stats = () => {
           100,
           controller.signal
         );
+        console.log("Raw rushing data:", rushingData);
         const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
         setPlayerStats(prev => ({ ...prev, rushing: aggregatedRushing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted)
           console.log("Rushing stats fetch aborted");
-        } else {
+        else {
           console.error("Error fetching rushing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -140,12 +113,13 @@ const Stats = () => {
           100,
           controller.signal
         );
+        console.log("Raw receiving data:", receivingData);
         const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
         setPlayerStats(prev => ({ ...prev, receiving: aggregatedReceiving.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted)
           console.log("Receiving stats fetch aborted");
-        } else {
+        else {
           console.error("Error fetching receiving stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -170,12 +144,13 @@ const Stats = () => {
           100,
           controller.signal
         );
+        console.log("Raw interceptions data:", interceptionsData);
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted)
           console.log("Interceptions stats fetch aborted");
-        } else {
+        else {
           console.error("Error fetching interceptions stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -189,7 +164,7 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Inline CSS or your main CSS file */}
+      {/* Updated Modern CSS */}
       <style>{`
         :root {
           --background-color: #ffffff;
@@ -198,10 +173,9 @@ const Stats = () => {
           --card-background: #f9f9f9;
           --border-color: #ddd;
           --shadow-color: rgba(0, 0, 0, 0.08);
-          --primary-font: 'Roboto', sans-serif;
         }
         .stats-container {
-          font-family: var(--primary-font);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           margin: 2rem;
           background: var(--background-color);
           color: var(--text-color);
@@ -231,29 +205,18 @@ const Stats = () => {
         }
         thead {
           background: var(--navbar-bg);
-          color: #ffffff;
+          color: var(--background-color);
         }
         tbody tr {
           border-bottom: 1px solid var(--border-color);
-          transition: background 0.3s ease;
         }
-        tbody tr:hover {
-          background: #f1f1f1;
-        }
-        .logo-img {
-          width: 30px;
-          height: 30px;
-          object-fit: contain;
-          margin-right: 8px;
-          vertical-align: middle;
+        tbody tr:last-child {
+          border-bottom: none;
         }
       `}</style>
-
       <h1>Top 10 Leaders (Yards) - 2024</h1>
       {error && <p>{error}</p>}
       <div id="table-container">
-
-        {/* Passing Leaders */}
         <section>
           <h2>Passing Leaders</h2>
           {loadingPassing ? (
@@ -271,10 +234,7 @@ const Stats = () => {
                 {playerStats.passing.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>
-                      {/* If you later store the player's team in aggregator, you can show the logo here */}
-                      {player.playerName}
-                    </td>
+                    <td>{player.playerName}</td>
                     <td>{player.statValue}</td>
                   </tr>
                 ))}
@@ -283,7 +243,6 @@ const Stats = () => {
           )}
         </section>
 
-        {/* Rushing Leaders */}
         <section>
           <h2>Rushing Leaders</h2>
           {loadingRushing ? (
@@ -310,7 +269,6 @@ const Stats = () => {
           )}
         </section>
 
-        {/* Receiving Leaders */}
         <section>
           <h2>Receiving Leaders</h2>
           {loadingReceiving ? (
@@ -337,7 +295,6 @@ const Stats = () => {
           )}
         </section>
 
-        {/* Interceptions Leaders */}
         <section>
           <h2>Interceptions Leaders</h2>
           {loadingInterceptions ? (
@@ -363,7 +320,6 @@ const Stats = () => {
             </table>
           )}
         </section>
-
       </div>
     </div>
   );
