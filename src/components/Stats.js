@@ -239,7 +239,9 @@ const Stats = () => {
   return (
     <div className="stats-container">
       <style>{`
-        /* Use a clean, modern font. You can swap out "Inter" for another. */
+        /* Import new fonts for specific selectors */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron&family=Titillium+Web&display=swap');
+        /* Existing font import for rest of page (if needed) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         :root {
@@ -278,8 +280,8 @@ const Stats = () => {
           font-size: 2rem;
           margin: 0;
           color: var(--highlight-color);
-          /* New rule to ensure the title uses your website font */
-          font-family: var(--primary-font);
+          /* Use new fonts for the title */
+          font-family: "Orbitron", "Titillium Web", sans-serif;
         }
 
         /* Tabs */
@@ -297,6 +299,8 @@ const Stats = () => {
           cursor: pointer;
           border-bottom: 2px solid transparent;
           transition: color 0.3s ease, border-bottom 0.3s ease;
+          /* Use new fonts for tab buttons */
+          font-family: "Orbitron", "Titillium Web", sans-serif;
         }
         .tab-button:hover {
           color: var(--highlight-color);
@@ -352,6 +356,8 @@ const Stats = () => {
           margin-bottom: 1rem;
           border-bottom: 1px solid var(--border-color);
           padding-bottom: 0.5rem;
+          /* Use new fonts for card titles */
+          font-family: "Orbitron", "Titillium Web", sans-serif;
         }
         .loading-text {
           font-style: italic;
@@ -405,6 +411,8 @@ const Stats = () => {
           padding: 0.5rem 0;
           border-top: 1px solid var(--border-color);
           border-bottom: 1px solid var(--border-color);
+          /* Use new fonts for table headers */
+          font-family: "Orbitron", "Titillium Web", sans-serif;
         }
         .table-body {
           display: flex;
