@@ -278,6 +278,8 @@ const Stats = () => {
           font-size: 2rem;
           margin: 0;
           color: var(--highlight-color);
+          /* New rule to ensure the title uses your website font */
+          font-family: var(--primary-font);
         }
 
         /* Tabs */
