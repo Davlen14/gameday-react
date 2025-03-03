@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
+// Define the list of allowed FBS conferences (all uppercase for comparison)
+const allowedConferences = [
+  "SEC",
+  "ACC",
+  "BIG 12",
+  "BIG TEN",
+  "PAC-12",
+  "AMERICAN ATHLETIC",
+  "MOUNTAIN WEST",
+  "SUN BELT",
+  "FBS INDEPENDENTS"
+];
+
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
@@ -8,16 +21,19 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   const aggregated = rawData
     .filter(item =>
       item.statType &&
-      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase() &&
+      item.conference &&
+      allowedConferences.includes(item.conference.trim().toUpperCase())
     )
     .map(item => ({
       playerName: item.player,
+      team: item.team, // for logo lookup
+      conference: item.conference,
       statValue: parseFloat(item.stat),
       playerPhoto: item.playerPhoto || null,
     }));
 
   aggregated.sort((a, b) => b.statValue - a.statValue);
-
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
   return aggregated;
 };
@@ -30,13 +46,38 @@ const Stats = () => {
     interceptions: []
   });
 
+  // We'll fetch and store teams for logo lookup
+  const [teams, setTeams] = useState([]);
+
   // Separate loading states for each category:
   const [loadingPassing, setLoadingPassing] = useState(true);
   const [loadingRushing, setLoadingRushing] = useState(true);
   const [loadingReceiving, setLoadingReceiving] = useState(true);
   const [loadingInterceptions, setLoadingInterceptions] = useState(true);
 
+  // Single error state for demonstration (could split if desired)
   const [error, setError] = useState(null);
+
+  // Fetch the FBS teams to enable logo lookups
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams();
+        setTeams(teamsData);
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+      }
+    };
+    fetchTeams();
+  }, []);
+
+  // Helper to get a team's logo
+  const getTeamLogo = (teamName) => {
+    const foundTeam = teams.find(
+      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
+    );
+    return foundTeam?.logos?.[0] || "/photos/default_team.png";
+  };
 
   // Fetch Passing Stats
   useEffect(() => {
@@ -55,9 +96,7 @@ const Stats = () => {
         const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
         setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Passing stats fetch aborted");
-        else {
+        if (!controller.signal.aborted) {
           console.error("Error fetching passing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -86,9 +125,7 @@ const Stats = () => {
         const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
         setPlayerStats(prev => ({ ...prev, rushing: aggregatedRushing.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Rushing stats fetch aborted");
-        else {
+        if (!controller.signal.aborted) {
           console.error("Error fetching rushing stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -117,9 +154,7 @@ const Stats = () => {
         const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
         setPlayerStats(prev => ({ ...prev, receiving: aggregatedReceiving.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Receiving stats fetch aborted");
-        else {
+        if (!controller.signal.aborted) {
           console.error("Error fetching receiving stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -148,9 +183,7 @@ const Stats = () => {
         const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
         setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
       } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Interceptions stats fetch aborted");
-        else {
+        if (!controller.signal.aborted) {
           console.error("Error fetching interceptions stats:", error);
           setError("Failed to load player season stats.");
         }
@@ -164,7 +197,7 @@ const Stats = () => {
 
   return (
     <div className="stats-container">
-      {/* Updated Modern CSS */}
+      {/* Inline CSS */}
       <style>{`
         :root {
           --background-color: #ffffff;
@@ -173,9 +206,10 @@ const Stats = () => {
           --card-background: #f9f9f9;
           --border-color: #ddd;
           --shadow-color: rgba(0, 0, 0, 0.08);
+          --primary-font: 'Roboto', sans-serif;
         }
         .stats-container {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-family: var(--primary-font);
           margin: 2rem;
           background: var(--background-color);
           color: var(--text-color);
@@ -205,18 +239,28 @@ const Stats = () => {
         }
         thead {
           background: var(--navbar-bg);
-          color: var(--background-color);
+          color: #ffffff;
         }
         tbody tr {
           border-bottom: 1px solid var(--border-color);
+          transition: background 0.3s ease;
         }
-        tbody tr:last-child {
-          border-bottom: none;
+        tbody tr:hover {
+          background: #f1f1f1;
+        }
+        .logo-img {
+          width: 30px;
+          height: 30px;
+          object-fit: contain;
+          margin-right: 8px;
+          vertical-align: middle;
         }
       `}</style>
+
       <h1>Top 10 Leaders (Yards) - 2024</h1>
       {error && <p>{error}</p>}
       <div id="table-container">
+        {/* Passing Leaders */}
         <section>
           <h2>Passing Leaders</h2>
           {loadingPassing ? (
@@ -234,7 +278,10 @@ const Stats = () => {
                 {playerStats.passing.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
                     <td>{player.statValue}</td>
                   </tr>
                 ))}
@@ -243,6 +290,7 @@ const Stats = () => {
           )}
         </section>
 
+        {/* Rushing Leaders */}
         <section>
           <h2>Rushing Leaders</h2>
           {loadingRushing ? (
@@ -260,7 +308,10 @@ const Stats = () => {
                 {playerStats.rushing.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
                     <td>{player.statValue}</td>
                   </tr>
                 ))}
@@ -269,6 +320,7 @@ const Stats = () => {
           )}
         </section>
 
+        {/* Receiving Leaders */}
         <section>
           <h2>Receiving Leaders</h2>
           {loadingReceiving ? (
@@ -286,7 +338,10 @@ const Stats = () => {
                 {playerStats.receiving.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
                     <td>{player.statValue}</td>
                   </tr>
                 ))}
@@ -295,6 +350,7 @@ const Stats = () => {
           )}
         </section>
 
+        {/* Interceptions Leaders */}
         <section>
           <h2>Interceptions Leaders</h2>
           {loadingInterceptions ? (
@@ -312,7 +368,10 @@ const Stats = () => {
                 {playerStats.interceptions.map((player, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
                     <td>{player.statValue}</td>
                   </tr>
                 ))}
