@@ -45,7 +45,7 @@ const Stats = () => {
     interceptions: [],
   });
 
-  // For fetching team logos
+  // For fetching team logos and abbreviations
   const [teams, setTeams] = useState([]);
 
   // Loading states
@@ -60,7 +60,7 @@ const Stats = () => {
   // Tabs
   const [activeTab, setActiveTab] = useState("playerLeaders");
 
-  // Fetch teams for logos
+  // Fetch teams for logos and abbreviations
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -79,6 +79,16 @@ const Stats = () => {
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return foundTeam?.logos?.[0] || "/photos/default_team.png";
+  };
+
+  // Helper for team abbreviation
+  const getTeamAbbreviation = (teamName) => {
+    const foundTeam = teams.find(
+      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
+    );
+    return foundTeam?.abbreviation
+      ? foundTeam.abbreviation.toUpperCase()
+      : teamName?.toUpperCase() || "";
   };
 
   // Helper for fetch
@@ -148,12 +158,15 @@ const Stats = () => {
         {/* Top player row */}
         <div className="top-row-section">
           <span className="top-rank">1</span>
-          <img src={getTeamLogo(top.team)} alt={top.team} className="top-logo" />
+          <img
+            src={getTeamLogo(top.team)}
+            alt={getTeamAbbreviation(top.team)}
+            className="top-logo"
+          />
           <div className="top-info">
             <div className="top-player-name">{top.playerName}</div>
             <div className="top-sub">
-              {/* Team Abbreviation, Position if you have it, etc. */}
-              {top.team?.toUpperCase()} 
+              {getTeamAbbreviation(top.team)}
             </div>
           </div>
           <div className="top-yds">{top.statValue}</div>
@@ -175,10 +188,10 @@ const Stats = () => {
                 <span className="col-team">
                   <img
                     src={getTeamLogo(p.team)}
-                    alt={p.team}
+                    alt={getTeamAbbreviation(p.team)}
                     className="table-logo"
                   />
-                  {p.team?.toUpperCase()}
+                  {getTeamAbbreviation(p.team)}
                 </span>
                 <span className="col-player">{p.playerName}</span>
                 <span className="col-yds">{p.statValue}</span>
