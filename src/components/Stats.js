@@ -35,9 +35,12 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       playerPhoto: item.playerPhoto || null,
     }));
 
+  // Sort in descending order
   aggregated.sort((a, b) => b.statValue - a.statValue);
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
-  return aggregated;
+
+  // Only return the top 10 overall
+  return aggregated.slice(0, 10);
 };
 
 const Stats = () => {
@@ -98,7 +101,7 @@ const Stats = () => {
         controller.signal
       );
       const aggregated = aggregatePlayerStats(rawData, statType);
-      setPlayerStats((prev) => ({ ...prev, [key]: aggregated.slice(0, 10) }));
+      setPlayerStats((prev) => ({ ...prev, [key]: aggregated }));
     } catch (error) {
       if (!controller.signal.aborted) {
         console.error(`Error fetching ${category} stats:`, error);
@@ -124,9 +127,8 @@ const Stats = () => {
     fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
 
-  // Renders a single "stat card"
-  // topOne = data[0] (bigger highlight)
-  // nextFour = data.slice(1,5)
+  // Renders a single "stat card" for top 10
+  // topOne = data[0], nextNine = data.slice(1)
   const renderStatCard = (title, data, loading) => {
     if (loading) {
       return (
@@ -145,7 +147,7 @@ const Stats = () => {
       );
     }
     const topOne = data[0];
-    const nextFour = data.slice(1, 5);
+    const nextNine = data.slice(1);
 
     return (
       <div className="stat-card">
@@ -163,9 +165,9 @@ const Stats = () => {
           <div className="top-player-stat">{topOne.statValue}</div>
         </div>
 
-        {/* Next four in smaller rows */}
+        {/* Next nine in smaller rows */}
         <div className="small-rows">
-          {nextFour.map((p, idx) => (
+          {nextNine.map((p, idx) => (
             <div className="small-row" key={idx}>
               <span className="small-rank">{idx + 2}.</span>
               <img
@@ -334,7 +336,7 @@ const Stats = () => {
           color: var(--primary-color);
         }
 
-        /* Next four in smaller rows */
+        /* Next nine in smaller rows */
         .small-rows {
           display: flex;
           flex-direction: column;
@@ -356,6 +358,7 @@ const Stats = () => {
         }
         .small-name {
           margin-right: auto;
+          margin-left: 0.25rem;
         }
         .small-stat {
           margin-left: 0.5rem;
@@ -377,12 +380,9 @@ const Stats = () => {
         }
       `}</style>
 
-      {/* Page Title with NCAAF logo and italic text */}
+      {/* Page Title with NCAAF logo & Italic text */}
       <div className="page-title">
-        <img
-          src="/photos/ncaaf.png"
-          alt="NCAAF Logo"
-        />
+        <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
         <h1>COLLEGE FOOTBALL statistics</h1>
       </div>
 
@@ -418,236 +418,23 @@ const Stats = () => {
 
       {/* Main Content */}
       {activeTab === "playerLeaders" ? (
-        <>{/* Player Leaders Layout */}</>
+        <div className="cards-layout">
+          <div className="top-row">
+            {/* Passing Card */}
+            {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
+            {/* Rushing Card */}
+            {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
+            {/* Receiving Card */}
+            {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
+          </div>
+          <div className="bottom-row">
+            {/* Interceptions Card */}
+            {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
+          </div>
+        </div>
       ) : (
         <div className="coming-soon">
           <h2>Coming Soon...</h2>
-        </div>
-      )}
-
-      {/* If "playerLeaders", show the card layout */}
-      {activeTab === "playerLeaders" && (
-        <div className="cards-layout">
-          <div className="top-row">
-            {/* Passing, Rushing, Receiving Cards */}
-            {/* Passing */}
-            {(() => {
-              const data = playerStats.passing;
-              if (loadingPassing) {
-                return (
-                  <div className="stat-card">
-                    <h3>Passing Yards</h3>
-                    <p className="loading-text">Loading...</p>
-                  </div>
-                );
-              }
-              if (!data.length) {
-                return (
-                  <div className="stat-card">
-                    <h3>Passing Yards</h3>
-                    <p className="loading-text">No data found.</p>
-                  </div>
-                );
-              }
-              const topOne = data[0];
-              const nextFour = data.slice(1, 5);
-
-              return (
-                <div className="stat-card">
-                  <h3>Passing Yards</h3>
-                  <div className="top-player-row">
-                    <div className="top-player-name">
-                      <img
-                        src={getTeamLogo(topOne.team)}
-                        alt={topOne.team}
-                        className="logo-img"
-                      />
-                      <span className="top-player">{topOne.playerName}</span>
-                    </div>
-                    <div className="top-player-stat">{topOne.statValue}</div>
-                  </div>
-                  <div className="small-rows">
-                    {nextFour.map((p, idx) => (
-                      <div className="small-row" key={idx}>
-                        <span className="small-rank">{idx + 2}.</span>
-                        <img
-                          src={getTeamLogo(p.team)}
-                          alt={p.team}
-                          className="logo-img small-logo"
-                        />
-                        <span className="small-name">{p.playerName}</span>
-                        <span className="small-stat">{p.statValue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Rushing */}
-            {(() => {
-              const data = playerStats.rushing;
-              if (loadingRushing) {
-                return (
-                  <div className="stat-card">
-                    <h3>Rushing Yards</h3>
-                    <p className="loading-text">Loading...</p>
-                  </div>
-                );
-              }
-              if (!data.length) {
-                return (
-                  <div className="stat-card">
-                    <h3>Rushing Yards</h3>
-                    <p className="loading-text">No data found.</p>
-                  </div>
-                );
-              }
-              const topOne = data[0];
-              const nextFour = data.slice(1, 5);
-
-              return (
-                <div className="stat-card">
-                  <h3>Rushing Yards</h3>
-                  <div className="top-player-row">
-                    <div className="top-player-name">
-                      <img
-                        src={getTeamLogo(topOne.team)}
-                        alt={topOne.team}
-                        className="logo-img"
-                      />
-                      <span className="top-player">{topOne.playerName}</span>
-                    </div>
-                    <div className="top-player-stat">{topOne.statValue}</div>
-                  </div>
-                  <div className="small-rows">
-                    {nextFour.map((p, idx) => (
-                      <div className="small-row" key={idx}>
-                        <span className="small-rank">{idx + 2}.</span>
-                        <img
-                          src={getTeamLogo(p.team)}
-                          alt={p.team}
-                          className="logo-img small-logo"
-                        />
-                        <span className="small-name">{p.playerName}</span>
-                        <span className="small-stat">{p.statValue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Receiving */}
-            {(() => {
-              const data = playerStats.receiving;
-              if (loadingReceiving) {
-                return (
-                  <div className="stat-card">
-                    <h3>Receiving Yards</h3>
-                    <p className="loading-text">Loading...</p>
-                  </div>
-                );
-              }
-              if (!data.length) {
-                return (
-                  <div className="stat-card">
-                    <h3>Receiving Yards</h3>
-                    <p className="loading-text">No data found.</p>
-                  </div>
-                );
-              }
-              const topOne = data[0];
-              const nextFour = data.slice(1, 5);
-
-              return (
-                <div className="stat-card">
-                  <h3>Receiving Yards</h3>
-                  <div className="top-player-row">
-                    <div className="top-player-name">
-                      <img
-                        src={getTeamLogo(topOne.team)}
-                        alt={topOne.team}
-                        className="logo-img"
-                      />
-                      <span className="top-player">{topOne.playerName}</span>
-                    </div>
-                    <div className="top-player-stat">{topOne.statValue}</div>
-                  </div>
-                  <div className="small-rows">
-                    {nextFour.map((p, idx) => (
-                      <div className="small-row" key={idx}>
-                        <span className="small-rank">{idx + 2}.</span>
-                        <img
-                          src={getTeamLogo(p.team)}
-                          alt={p.team}
-                          className="logo-img small-logo"
-                        />
-                        <span className="small-name">{p.playerName}</span>
-                        <span className="small-stat">{p.statValue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* Bottom row: Interceptions */}
-          <div className="bottom-row">
-            {(() => {
-              const data = playerStats.interceptions;
-              if (loadingInterceptions) {
-                return (
-                  <div className="stat-card">
-                    <h3>Interceptions</h3>
-                    <p className="loading-text">Loading...</p>
-                  </div>
-                );
-              }
-              if (!data.length) {
-                return (
-                  <div className="stat-card">
-                    <h3>Interceptions</h3>
-                    <p className="loading-text">No data found.</p>
-                  </div>
-                );
-              }
-              const topOne = data[0];
-              const nextFour = data.slice(1, 5);
-
-              return (
-                <div className="stat-card">
-                  <h3>Interceptions</h3>
-                  <div className="top-player-row">
-                    <div className="top-player-name">
-                      <img
-                        src={getTeamLogo(topOne.team)}
-                        alt={topOne.team}
-                        className="logo-img"
-                      />
-                      <span className="top-player">{topOne.playerName}</span>
-                    </div>
-                    <div className="top-player-stat">{topOne.statValue}</div>
-                  </div>
-                  <div className="small-rows">
-                    {nextFour.map((p, idx) => (
-                      <div className="small-row" key={idx}>
-                        <span className="small-rank">{idx + 2}.</span>
-                        <img
-                          src={getTeamLogo(p.team)}
-                          alt={p.team}
-                          className="logo-img small-logo"
-                        />
-                        <span className="small-name">{p.playerName}</span>
-                        <span className="small-stat">{p.statValue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
         </div>
       )}
     </div>
