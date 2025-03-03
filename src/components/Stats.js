@@ -27,7 +27,7 @@ const Stats = () => {
     rushing: [],
     receiving: [],
     interceptions: [],
-    sacks: []
+    sacks: [] // This will now hold Total Tackles data
   });
 
   // Separate loading states for each category:
@@ -44,7 +44,7 @@ const Stats = () => {
   const [errorInterceptions, setErrorInterceptions] = useState(null);
   const [errorSacks, setErrorSacks] = useState(null);
 
-  // Active tab: "playerOffense", "playerDefense", "teamOffense", "teamDefense"
+  // Active tab: "playerOffense", "playerDefense", "teamOffense", or "teamDefense"
   const [activeTab, setActiveTab] = useState("playerOffense");
 
   // Fetch Passing Stats
@@ -163,32 +163,32 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch Sacks Stats
+  // Fetch Total Tackles Stats (defensive) – using "defensive" as the category to get TOT values
   useEffect(() => {
     const controller = new AbortController();
-    const fetchSacksStats = async () => {
+    const fetchTotalTacklesStats = async () => {
       try {
         setLoadingSacks(true);
-        const sacksData = await teamsService.getPlayerSeasonStats(
+        const defensiveData = await teamsService.getPlayerSeasonStats(
           2024,
-          "sacks", // Passing "sacks" so teamsService converts it to "defensive"
+          "defensive", // Fetch defensive data
           "regular",
           100,
           controller.signal
         );
-        console.log("Raw sacks data:", sacksData);
-        const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
-        setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
+        console.log("Raw defensive data:", defensiveData);
+        const aggregatedTotalTackles = aggregatePlayerStats(defensiveData, "TOT");
+        setPlayerStats(prev => ({ ...prev, sacks: aggregatedTotalTackles.slice(0, 10) }));
       } catch (error) {
         if (!controller.signal.aborted) {
-          console.error("Error fetching sacks stats:", error);
-          setErrorSacks("Failed to load sacks stats.");
+          console.error("Error fetching total tackles stats:", error);
+          setErrorSacks("Failed to load total tackles stats.");
         }
       } finally {
         setLoadingSacks(false);
       }
     };
-    fetchSacksStats();
+    fetchTotalTacklesStats();
     return () => controller.abort();
   }, []);
 
@@ -283,9 +283,9 @@ const Stats = () => {
       return (
         <div>
           <section>
-            <h2>Sacks Leaders</h2>
+            <h2>Total Tackles Leaders</h2>
             {loadingSacks ? (
-              <div className="loader">Loading sacks stats...</div>
+              <div className="loader">Loading total tackles stats...</div>
             ) : errorSacks ? (
               <p>{errorSacks}</p>
             ) : (
@@ -294,7 +294,7 @@ const Stats = () => {
                   <tr>
                     <th>Rank</th>
                     <th>Player</th>
-                    <th>Sacks</th>
+                    <th>Total Tackles</th>
                   </tr>
                 </thead>
                 <tbody>
