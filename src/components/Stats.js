@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 
-// Define the list of allowed FBS conferences (all uppercase for comparison)
+// Allowed FBS conferences
 const allowedConferences = [
   "SEC",
   "ACC",
@@ -11,14 +11,12 @@ const allowedConferences = [
   "AMERICAN ATHLETIC",
   "MOUNTAIN WEST",
   "SUN BELT",
-  "FBS INDEPENDENTS"
+  "FBS INDEPENDENTS",
 ];
 
-// Aggregate and filter only FBS conferences, then return top 10
+// Filter to top 10 FBS players
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
-  console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
-
   const aggregated = rawData
     .filter(
       (item) =>
@@ -35,16 +33,11 @@ const aggregatePlayerStats = (data, desiredStatType) => {
       playerPhoto: item.playerPhoto || null,
     }));
 
-  // Sort in descending order
   aggregated.sort((a, b) => b.statValue - a.statValue);
-  console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
-
-  // Only return the top 10
   return aggregated.slice(0, 10);
 };
 
 const Stats = () => {
-  // Data state
   const [playerStats, setPlayerStats] = useState({
     passing: [],
     rushing: [],
@@ -52,7 +45,7 @@ const Stats = () => {
     interceptions: [],
   });
 
-  // Teams for logo lookups
+  // For fetching team logos
   const [teams, setTeams] = useState([]);
 
   // Loading states
@@ -61,13 +54,13 @@ const Stats = () => {
   const [loadingReceiving, setLoadingReceiving] = useState(true);
   const [loadingInterceptions, setLoadingInterceptions] = useState(true);
 
-  // Simple error state
+  // Error
   const [error, setError] = useState(null);
 
-  // Tab state: "playerLeaders", "teamLeaders", "playerStats", "teamStats"
+  // Tabs
   const [activeTab, setActiveTab] = useState("playerLeaders");
 
-  // Fetch FBS teams for logos
+  // Fetch teams for logos
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -80,7 +73,7 @@ const Stats = () => {
     fetchTeams();
   }, []);
 
-  // Helper: get team logo
+  // Helper for logos
   const getTeamLogo = (teamName) => {
     const foundTeam = teams.find(
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
@@ -88,7 +81,7 @@ const Stats = () => {
     return foundTeam?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Helper: fetch & set data
+  // Helper for fetch
   const fetchCategory = async (year, category, statType, setLoading, key) => {
     const controller = new AbortController();
     try {
@@ -113,7 +106,7 @@ const Stats = () => {
     return () => controller.abort();
   };
 
-  // Fetch Passing, Rushing, Receiving, Interceptions
+  // Fetch data
   useEffect(() => {
     fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing");
   }, []);
@@ -127,95 +120,101 @@ const Stats = () => {
     fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
 
-  // Renders a single "stat card" in CBS style
-  // topOne = data[0], nextNine = data.slice(1)
+  // Render card
   const renderStatCard = (title, data, loading) => {
     if (loading) {
       return (
         <div className="stat-card">
-          <div className="card-title">{title}</div>
-          <div className="card-loading">Loading...</div>
+          <h3 className="card-title">{title}</h3>
+          <div className="loading-text">Loading...</div>
         </div>
       );
     }
     if (!data.length) {
       return (
         <div className="stat-card">
-          <div className="card-title">{title}</div>
-          <div className="card-loading">No data found.</div>
+          <h3 className="card-title">{title}</h3>
+          <div className="loading-text">No data found.</div>
         </div>
       );
     }
-
-    const topOne = data[0];
-    const nextNine = data.slice(1);
+    const top = data[0];
+    const rest = data.slice(1);
 
     return (
       <div className="stat-card">
-        <div className="card-title">{title}</div>
+        <h3 className="card-title">{title}</h3>
 
-        {/* Top player's row (rank #1) */}
-        <div className="top-player">
-          <div className="top-left">
-            <span className="top-rank">1</span>
-            <img
-              src={getTeamLogo(topOne.team)}
-              alt={topOne.team}
-              className="top-logo"
-            />
-            <div className="top-name">{topOne.playerName}</div>
+        {/* Top player row */}
+        <div className="top-row-section">
+          <span className="top-rank">1</span>
+          <img src={getTeamLogo(top.team)} alt={top.team} className="top-logo" />
+          <div className="top-info">
+            <div className="top-player-name">{top.playerName}</div>
+            <div className="top-sub">
+              {/* Team Abbreviation, Position if you have it, etc. */}
+              {top.team?.toUpperCase()} 
+            </div>
           </div>
-          <div className="top-stat">{topOne.statValue}</div>
+          <div className="top-yds">{top.statValue}</div>
         </div>
 
-        {/* Table for next 9 players */}
-        <div className="table-container">
-          <div className="table-header">
-            <span className="col-rank">RANK</span>
-            <span className="col-team">TEAM</span>
-            <span className="col-player">PLAYER</span>
-            <span className="col-yds">YDS</span>
-          </div>
-          <div className="table-body">
-            {nextNine.map((p, idx) => {
-              const rank = idx + 2; // because topOne is rank #1
-              return (
-                <div className="table-row" key={idx}>
-                  <span className="col-rank">{rank}</span>
-                  <span className="col-team">{p.team?.toUpperCase()}</span>
-                  <span className="col-player">{p.playerName}</span>
-                  <span className="col-yds">{p.statValue}</span>
-                </div>
-              );
-            })}
-          </div>
+        {/* Next 9 in table format */}
+        <div className="table-header">
+          <span className="col-rank">RANK</span>
+          <span className="col-team">TEAM</span>
+          <span className="col-player">PLAYER</span>
+          <span className="col-yds">YDS</span>
+        </div>
+        <div className="table-body">
+          {rest.map((p, idx) => {
+            const rank = idx + 2; // since top is #1
+            return (
+              <div className="table-row" key={idx}>
+                <span className="col-rank">{rank}</span>
+                <span className="col-team">
+                  <img
+                    src={getTeamLogo(p.team)}
+                    alt={p.team}
+                    className="table-logo"
+                  />
+                  {p.team?.toUpperCase()}
+                </span>
+                <span className="col-player">{p.playerName}</span>
+                <span className="col-yds">{p.statValue}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="complete-link">
+          Complete {title} Leaders
         </div>
       </div>
     );
   };
 
-  // Renders the "Player Leaders" page with 3 cards on top row, 1 on bottom row
+  // Render 3 on top row, 1 on bottom row
   const renderPlayerLeaders = () => {
     return (
-      <div className="cards-layout">
-        <div className="top-row">
+      <div className="cards-container">
+        <div className="row top-row">
           {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
           {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
           {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
         </div>
-        <div className="bottom-row">
+        <div className="row bottom-row">
           {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
         </div>
       </div>
     );
   };
 
-  // Main content based on activeTab
+  // Content
   const renderContent = () => {
     if (activeTab === "playerLeaders") {
       return renderPlayerLeaders();
     } else {
-      // "teamLeaders", "playerStats", "teamStats" => coming soon
       return (
         <div className="coming-soon">
           <h2>Coming Soon...</h2>
@@ -228,23 +227,25 @@ const Stats = () => {
     <div className="stats-container">
       <style>{`
         :root {
-          --background-color: #ffffff;
-          --text-color: #000000;
-          --primary-color: #d4001c; /* Red theme */
-          --card-background: #f9f9f9;
+          --bg-color: #ffffff;
+          --text-color: #333333;
+          --primary-color: #d4001c;
           --border-color: #ddd;
-          --shadow-color: rgba(0, 0, 0, 0.08);
+          --shadow-color: rgba(0, 0, 0, 0.1);
+          --card-bg: #f9f9f9;
           --primary-font: 'Roboto', sans-serif;
+          --heading-font-size: 1rem;
+          --sub-font-size: 0.85rem;
         }
 
         .stats-container {
+          background: var(--bg-color);
+          color: var(--text-color);
           font-family: var(--primary-font);
           margin: 2rem;
-          background: var(--background-color);
-          color: var(--text-color);
         }
 
-        /* Title with logo and italics */
+        /* Page Title */
         .page-title {
           display: flex;
           align-items: center;
@@ -294,128 +295,149 @@ const Stats = () => {
           color: var(--primary-color);
         }
 
-        /* Cards layout: top row (3 cards), bottom row (1 card) */
-        .cards-layout {
+        /* Cards Layout */
+        .cards-container {
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
         }
-        .top-row {
+        .row {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
           gap: 1.5rem;
+        }
+        .top-row {
+          grid-template-columns: repeat(3, 1fr);
         }
         .bottom-row {
-          display: grid;
           grid-template-columns: 1fr;
-          gap: 1.5rem;
         }
 
-        /* Stat card */
+        /* Stat Card */
         .stat-card {
-          background: var(--card-background);
+          background: var(--card-bg);
           border: 1px solid var(--border-color);
           box-shadow: 0 4px 8px var(--shadow-color);
-          transition: transform 0.2s ease;
-          border-radius: 0; /* sharp corners */
+          border-radius: 0;
           padding: 1rem;
+          transition: transform 0.2s ease;
           display: flex;
           flex-direction: column;
         }
         .stat-card:hover {
           transform: translateY(-2px);
         }
-
         .card-title {
-          font-size: 1.1rem;
+          font-size: 1rem;
           text-transform: uppercase;
-          color: var(--primary-color);
           font-weight: bold;
+          color: var(--primary-color);
           margin-bottom: 1rem;
           border-bottom: 1px solid var(--border-color);
           padding-bottom: 0.5rem;
         }
-        .card-loading {
+        .loading-text {
           font-style: italic;
-          color: #777;
+          color: #666;
         }
 
-        /* Top player's row (rank #1) */
-        .top-player {
+        /* Top Row Section (Rank #1) */
+        .top-row-section {
           display: flex;
           align-items: center;
-          justify-content: space-between;
           margin-bottom: 1rem;
-        }
-        .top-left {
-          display: flex;
-          align-items: center;
         }
         .top-rank {
           font-size: 1.2rem;
           font-weight: bold;
           color: var(--primary-color);
-          margin-right: 0.5rem;
+          margin-right: 0.75rem;
         }
         .top-logo {
-          width: 36px;
-          height: 36px;
+          width: 40px;
+          height: 40px;
           object-fit: contain;
           margin-right: 0.75rem;
         }
-        .top-name {
-          font-weight: bold;
-          font-size: 1rem;
+        .top-info {
+          display: flex;
+          flex-direction: column;
+          margin-right: auto;
         }
-        .top-stat {
+        .top-player-name {
+          font-size: 1rem;
           font-weight: bold;
-          font-size: 1.2rem;
+          margin-bottom: 0.25rem;
+        }
+        .top-sub {
+          font-size: var(--sub-font-size);
+          color: #666;
+        }
+        .top-yds {
+          font-size: 1.4rem;
+          font-weight: bold;
           color: var(--text-color);
         }
 
-        /* Table for next 9 players */
-        .table-container {
+        /* Table for next 9 */
+        .table-header {
+          display: grid;
+          grid-template-columns: 40px 80px 1fr 60px;
+          font-size: 0.8rem;
+          color: #666;
+          font-weight: bold;
+          padding: 0.5rem 0;
           border-top: 1px solid var(--border-color);
-          padding-top: 0.5rem;
+          border-bottom: 1px solid var(--border-color);
         }
-        .table-header,
+        .table-body {
+          display: flex;
+          flex-direction: column;
+        }
         .table-row {
           display: grid;
-          grid-template-columns: 40px 60px 1fr 60px;
+          grid-template-columns: 40px 80px 1fr 60px;
           align-items: center;
-          font-size: 0.9rem;
-          padding: 0.3rem 0;
-        }
-        .table-header {
-          font-weight: bold;
-          color: #666;
-          border-bottom: 1px solid var(--border-color);
-          margin-bottom: 0.3rem;
-        }
-        .table-body .table-row {
+          font-size: 0.85rem;
+          padding: 0.5rem 0;
           border-bottom: 1px solid var(--border-color);
         }
-        .table-body .table-row:last-child {
+        .table-row:last-child {
           border-bottom: none;
         }
         .col-rank {
-          text-align: left;
           color: var(--primary-color);
+          font-weight: bold;
+        }
+        .table-logo {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          margin-right: 4px;
+          vertical-align: middle;
         }
         .col-team {
-          text-align: left;
-          font-weight: normal;
-        }
-        .col-player {
-          text-align: left;
+          display: flex;
+          align-items: center;
+          gap: 2px;
         }
         .col-yds {
           text-align: right;
           font-weight: bold;
         }
+
+        .complete-link {
+          text-align: center;
+          margin-top: 0.5rem;
+          font-size: 0.8rem;
+          color: #666;
+          cursor: pointer;
+        }
+        .complete-link:hover {
+          text-decoration: underline;
+        }
       `}</style>
 
-      {/* Page Title */}
+      {/* Title */}
       <div className="page-title">
         <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
         <h1>COLLEGE FOOTBALL statistics</h1>
@@ -449,22 +471,17 @@ const Stats = () => {
         </button>
       </div>
 
-      {/* Error */}
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
-      {/* Main Content */}
+      {/* Content */}
       {activeTab === "playerLeaders" ? (
-        <div className="cards-layout">
-          <div className="top-row">
-            {/* Passing */}
+        <div className="cards-container">
+          <div className="row top-row">
             {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
-            {/* Rushing */}
             {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
-            {/* Receiving */}
             {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
           </div>
-          <div className="bottom-row">
-            {/* Interceptions */}
+          <div className="row bottom-row">
             {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
           </div>
         </div>
