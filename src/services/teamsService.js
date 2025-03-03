@@ -326,13 +326,13 @@ export const getPlayerSeasonStats = async (
     ? effectiveCategory.join(",")
     : effectiveCategory;
     
-  // Temporarily remove the division parameter to mimic your working HTML
+  // Reintroduce the division parameter to filter by FBS
   const params = {
     year: String(year),
     category: catParam,
     seasonType,
-    limit: String(limit)
-    // division: "fbs"  <-- removed for now for testing purposes
+    limit: String(limit),
+    division: "fbs"
   };
 
   try {
