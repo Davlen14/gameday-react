@@ -14,7 +14,7 @@ const allowedConferences = [
   "FBS INDEPENDENTS"
 ];
 
-// Aggregate and filter only FBS conferences
+// Aggregate and filter only FBS conferences, then return top 10
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
@@ -39,7 +39,7 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   aggregated.sort((a, b) => b.statValue - a.statValue);
   console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
 
-  // Only return the top 10 overall
+  // Only return the top 10
   return aggregated.slice(0, 10);
 };
 
@@ -133,16 +133,16 @@ const Stats = () => {
     if (loading) {
       return (
         <div className="stat-card">
-          <h3>{title}</h3>
-          <p className="loading-text">Loading...</p>
+          <div className="card-title">{title}</div>
+          <div className="card-loading">Loading...</div>
         </div>
       );
     }
     if (!data.length) {
       return (
         <div className="stat-card">
-          <h3>{title}</h3>
-          <p className="loading-text">No data found.</p>
+          <div className="card-title">{title}</div>
+          <div className="card-loading">No data found.</div>
         </div>
       );
     }
@@ -151,30 +151,25 @@ const Stats = () => {
 
     return (
       <div className="stat-card">
-        <h3>{title}</h3>
-        {/* Highlight the top player */}
+        <div className="card-title">{title}</div>
+
+        {/* Top player row */}
         <div className="top-player-row">
-          <div className="top-player-name">
-            <img
-              src={getTeamLogo(topOne.team)}
-              alt={topOne.team}
-              className="logo-img"
-            />
-            <span className="top-player">{topOne.playerName}</span>
-          </div>
+          <img
+            src={getTeamLogo(topOne.team)}
+            alt={topOne.team}
+            className="top-logo"
+          />
+          <div className="top-player-name">{topOne.playerName}</div>
           <div className="top-player-stat">{topOne.statValue}</div>
         </div>
 
         {/* Next nine in smaller rows */}
+        <div className="divider" />
         <div className="small-rows">
           {nextNine.map((p, idx) => (
             <div className="small-row" key={idx}>
               <span className="small-rank">{idx + 2}.</span>
-              <img
-                src={getTeamLogo(p.team)}
-                alt={p.team}
-                className="logo-img small-logo"
-              />
               <span className="small-name">{p.playerName}</span>
               <span className="small-stat">{p.statValue}</span>
             </div>
@@ -184,7 +179,7 @@ const Stats = () => {
     );
   };
 
-  // Renders the "Player Leaders" page with 3 cards on top row, 1 card on bottom row
+  // Renders the "Player Leaders" page with 3 cards on top row, 1 on bottom row
   const renderPlayerLeaders = () => {
     return (
       <div className="cards-layout">
@@ -277,6 +272,13 @@ const Stats = () => {
           font-weight: bold;
         }
 
+        .coming-soon {
+          text-align: center;
+          margin-top: 2rem;
+          font-size: 1.3rem;
+          color: var(--primary-color);
+        }
+
         /* Cards layout: top row (3 cards), bottom row (1 card) */
         .cards-layout {
           display: flex;
@@ -294,93 +296,93 @@ const Stats = () => {
           gap: 1.5rem;
         }
 
-        /* Stat card styling */
+        /* Stat card */
         .stat-card {
           background: var(--card-background);
           border: 1px solid var(--border-color);
           box-shadow: 0 4px 8px var(--shadow-color);
-          padding: 1rem;
           transition: transform 0.2s ease;
           border-radius: 0; /* sharp corners */
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
         }
         .stat-card:hover {
           transform: translateY(-2px);
         }
-        .stat-card h3 {
-          margin: 0 0 1rem 0;
+
+        .card-title {
           font-size: 1.1rem;
           text-transform: uppercase;
           color: var(--primary-color);
+          font-weight: bold;
+          margin-bottom: 1rem;
           border-bottom: 1px solid var(--border-color);
           padding-bottom: 0.5rem;
         }
+        .card-loading {
+          font-style: italic;
+          color: #777;
+        }
 
-        /* Top player row */
+        /* Top player row (logo, name, stat) */
         .top-player-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
+        }
+        .top-logo {
+          width: 40px;
+          height: 40px;
+          margin-right: 0.5rem;
+          object-fit: contain;
         }
         .top-player-name {
-          display: flex;
-          align-items: center;
-        }
-        .top-player {
-          font-size: 1.1rem;
+          font-size: 1rem;
           font-weight: bold;
+          margin-right: auto;
+          margin-left: 0.5rem;
         }
         .top-player-stat {
-          font-size: 1.4rem;
+          font-size: 1rem;
           font-weight: bold;
-          color: var(--primary-color);
+          color: var(--text-color);
+        }
+
+        .divider {
+          height: 1px;
+          background: var(--border-color);
+          margin: 0.5rem 0;
         }
 
         /* Next nine in smaller rows */
         .small-rows {
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
+          gap: 0.3rem;
         }
         .small-row {
           display: flex;
           align-items: center;
           font-size: 0.9rem;
+          justify-content: space-between;
         }
         .small-rank {
-          margin-right: 0.25rem;
           color: var(--primary-color);
           font-weight: bold;
-        }
-        .small-logo {
-          width: 20px;
-          height: 20px;
+          margin-right: 0.5rem;
         }
         .small-name {
-          margin-right: auto;
-          margin-left: 0.25rem;
+          flex: 1;
         }
         .small-stat {
-          margin-left: 0.5rem;
           font-weight: bold;
-        }
-
-        /* Basic loading text */
-        .loading-text {
-          font-style: italic;
-          color: #777;
-        }
-
-        /* Coming soon page */
-        .coming-soon {
-          text-align: center;
-          margin-top: 2rem;
-          font-size: 1.3rem;
-          color: var(--primary-color);
+          margin-left: 0.5rem;
         }
       `}</style>
 
-      {/* Page Title with NCAAF logo & Italic text */}
+      {/* Page Title */}
       <div className="page-title">
         <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
         <h1>COLLEGE FOOTBALL statistics</h1>
@@ -414,21 +416,22 @@ const Stats = () => {
         </button>
       </div>
 
+      {/* Error */}
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
       {/* Main Content */}
       {activeTab === "playerLeaders" ? (
         <div className="cards-layout">
           <div className="top-row">
-            {/* Passing Card */}
+            {/* Passing */}
             {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
-            {/* Rushing Card */}
+            {/* Rushing */}
             {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
-            {/* Receiving Card */}
+            {/* Receiving */}
             {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
           </div>
           <div className="bottom-row">
-            {/* Interceptions Card */}
+            {/* Interceptions */}
             {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
           </div>
         </div>
