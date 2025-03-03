@@ -26,8 +26,7 @@ const Stats = () => {
     passing: [],
     rushing: [],
     receiving: [],
-    interceptions: [],
-    sacks: [] // This will now hold Total Tackles data
+    interceptions: []
   });
 
   // Separate loading states for each category:
@@ -35,14 +34,12 @@ const Stats = () => {
   const [loadingRushing, setLoadingRushing] = useState(true);
   const [loadingReceiving, setLoadingReceiving] = useState(true);
   const [loadingInterceptions, setLoadingInterceptions] = useState(true);
-  const [loadingSacks, setLoadingSacks] = useState(true);
 
-  // Separate error states for each category:
+  // Separate error states for each category (optional for granular control)
   const [errorPassing, setErrorPassing] = useState(null);
   const [errorRushing, setErrorRushing] = useState(null);
   const [errorReceiving, setErrorReceiving] = useState(null);
   const [errorInterceptions, setErrorInterceptions] = useState(null);
-  const [errorSacks, setErrorSacks] = useState(null);
 
   // Active tab: "playerOffense", "playerDefense", "teamOffense", or "teamDefense"
   const [activeTab, setActiveTab] = useState("playerOffense");
@@ -163,35 +160,6 @@ const Stats = () => {
     return () => controller.abort();
   }, []);
 
-  // Fetch Total Tackles Stats (defensive) – using "defensive" as the category to get TOT values
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchTotalTacklesStats = async () => {
-      try {
-        setLoadingSacks(true);
-        const defensiveData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "defensive", // Fetch defensive data
-          "regular",
-          100,
-          controller.signal
-        );
-        console.log("Raw defensive data:", defensiveData);
-        const aggregatedTotalTackles = aggregatePlayerStats(defensiveData, "TOT");
-        setPlayerStats(prev => ({ ...prev, sacks: aggregatedTotalTackles.slice(0, 10) }));
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error("Error fetching total tackles stats:", error);
-          setErrorSacks("Failed to load total tackles stats.");
-        }
-      } finally {
-        setLoadingSacks(false);
-      }
-    };
-    fetchTotalTacklesStats();
-    return () => controller.abort();
-  }, []);
-
   const renderContent = () => {
     if (activeTab === "playerOffense") {
       return (
@@ -281,62 +249,33 @@ const Stats = () => {
       );
     } else if (activeTab === "playerDefense") {
       return (
-        <div>
-          <section>
-            <h2>Total Tackles Leaders</h2>
-            {loadingSacks ? (
-              <div className="loader">Loading total tackles stats...</div>
-            ) : errorSacks ? (
-              <p>{errorSacks}</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Total Tackles</th>
+        <section>
+          <h2>Interceptions Leaders</h2>
+          {loadingInterceptions ? (
+            <div className="loader">Loading interceptions stats...</div>
+          ) : errorInterceptions ? (
+            <p>{errorInterceptions}</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Interceptions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerStats.interceptions.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{player.playerName}</td>
+                    <td>{player.statValue}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {playerStats.sacks.map((player, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{player.playerName}</td>
-                      <td>{player.statValue}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-          <section>
-            <h2>Interceptions Leaders</h2>
-            {loadingInterceptions ? (
-              <div className="loader">Loading interceptions stats...</div>
-            ) : errorInterceptions ? (
-              <p>{errorInterceptions}</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Interceptions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {playerStats.interceptions.map((player, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{player.playerName}</td>
-                      <td>{player.statValue}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
       );
     } else if (activeTab === "teamOffense") {
       return <div className="placeholder">Team Offense data coming soon...</div>;
