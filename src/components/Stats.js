@@ -404,7 +404,8 @@ const Stats = () => {
         /* Table for next 9 */
         .table-header {
           display: grid;
-          grid-template-columns: 40px 80px 1fr 60px;
+          /* Increase the second column to add more space between Rank and Team */
+          grid-template-columns: 40px 120px 1fr 60px;
           font-size: 0.8rem;
           color: #888;
           font-weight: 600;
@@ -420,7 +421,8 @@ const Stats = () => {
         }
         .table-row {
           display: grid;
-          grid-template-columns: 40px 80px 1fr 60px;
+          /* Match the header columns here too */
+          grid-template-columns: 40px 120px 1fr 60px;
           align-items: center;
           font-size: 0.85rem;
           padding: 0.5rem 0;
