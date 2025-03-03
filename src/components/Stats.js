@@ -127,7 +127,7 @@ const Stats = () => {
     fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
 
-  // Renders a single "stat card" for top 10
+  // Renders a single "stat card" in CBS style
   // topOne = data[0], nextNine = data.slice(1)
   const renderStatCard = (title, data, loading) => {
     if (loading) {
@@ -146,6 +146,7 @@ const Stats = () => {
         </div>
       );
     }
+
     const topOne = data[0];
     const nextNine = data.slice(1);
 
@@ -153,27 +154,41 @@ const Stats = () => {
       <div className="stat-card">
         <div className="card-title">{title}</div>
 
-        {/* Top player row */}
-        <div className="top-player-row">
-          <img
-            src={getTeamLogo(topOne.team)}
-            alt={topOne.team}
-            className="top-logo"
-          />
-          <div className="top-player-name">{topOne.playerName}</div>
-          <div className="top-player-stat">{topOne.statValue}</div>
+        {/* Top player's row (rank #1) */}
+        <div className="top-player">
+          <div className="top-left">
+            <span className="top-rank">1</span>
+            <img
+              src={getTeamLogo(topOne.team)}
+              alt={topOne.team}
+              className="top-logo"
+            />
+            <div className="top-name">{topOne.playerName}</div>
+          </div>
+          <div className="top-stat">{topOne.statValue}</div>
         </div>
 
-        {/* Next nine in smaller rows */}
-        <div className="divider" />
-        <div className="small-rows">
-          {nextNine.map((p, idx) => (
-            <div className="small-row" key={idx}>
-              <span className="small-rank">{idx + 2}.</span>
-              <span className="small-name">{p.playerName}</span>
-              <span className="small-stat">{p.statValue}</span>
-            </div>
-          ))}
+        {/* Table for next 9 players */}
+        <div className="table-container">
+          <div className="table-header">
+            <span className="col-rank">RANK</span>
+            <span className="col-team">TEAM</span>
+            <span className="col-player">PLAYER</span>
+            <span className="col-yds">YDS</span>
+          </div>
+          <div className="table-body">
+            {nextNine.map((p, idx) => {
+              const rank = idx + 2; // because topOne is rank #1
+              return (
+                <div className="table-row" key={idx}>
+                  <span className="col-rank">{rank}</span>
+                  <span className="col-team">{p.team?.toUpperCase()}</span>
+                  <span className="col-player">{p.playerName}</span>
+                  <span className="col-yds">{p.statValue}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -325,60 +340,78 @@ const Stats = () => {
           color: #777;
         }
 
-        /* Top player row (logo, name, stat) */
-        .top-player-row {
+        /* Top player's row (rank #1) */
+        .top-player {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 0.75rem;
+          margin-bottom: 1rem;
+        }
+        .top-left {
+          display: flex;
+          align-items: center;
+        }
+        .top-rank {
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: var(--primary-color);
+          margin-right: 0.5rem;
         }
         .top-logo {
-          width: 40px;
-          height: 40px;
-          margin-right: 0.5rem;
+          width: 36px;
+          height: 36px;
           object-fit: contain;
+          margin-right: 0.75rem;
         }
-        .top-player-name {
-          font-size: 1rem;
+        .top-name {
           font-weight: bold;
-          margin-right: auto;
-          margin-left: 0.5rem;
+          font-size: 1rem;
         }
-        .top-player-stat {
-          font-size: 1rem;
+        .top-stat {
           font-weight: bold;
+          font-size: 1.2rem;
           color: var(--text-color);
         }
 
-        .divider {
-          height: 1px;
-          background: var(--border-color);
-          margin: 0.5rem 0;
+        /* Table for next 9 players */
+        .table-container {
+          border-top: 1px solid var(--border-color);
+          padding-top: 0.5rem;
         }
-
-        /* Next nine in smaller rows */
-        .small-rows {
-          display: flex;
-          flex-direction: column;
-          gap: 0.3rem;
-        }
-        .small-row {
-          display: flex;
+        .table-header,
+        .table-row {
+          display: grid;
+          grid-template-columns: 40px 60px 1fr 60px;
           align-items: center;
           font-size: 0.9rem;
-          justify-content: space-between;
+          padding: 0.3rem 0;
         }
-        .small-rank {
+        .table-header {
+          font-weight: bold;
+          color: #666;
+          border-bottom: 1px solid var(--border-color);
+          margin-bottom: 0.3rem;
+        }
+        .table-body .table-row {
+          border-bottom: 1px solid var(--border-color);
+        }
+        .table-body .table-row:last-child {
+          border-bottom: none;
+        }
+        .col-rank {
+          text-align: left;
           color: var(--primary-color);
-          font-weight: bold;
-          margin-right: 0.5rem;
         }
-        .small-name {
-          flex: 1;
+        .col-team {
+          text-align: left;
+          font-weight: normal;
         }
-        .small-stat {
+        .col-player {
+          text-align: left;
+        }
+        .col-yds {
+          text-align: right;
           font-weight: bold;
-          margin-left: 0.5rem;
         }
       `}</style>
 
