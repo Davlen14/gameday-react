@@ -1,65 +1,60 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FaTv, FaStar, FaCheckCircle } from "react-icons/fa";
-import teamsService, { getAllRecruits } from "../services/teamsService";
-import "../styles/Home.css";
-import { useWeek } from "../context/WeekContext"; // Global week state
+import teamsService from "../services/teamsService";
 
-const Home = () => {
-  const { week } = useWeek();
+const aggregatePlayerStats = (data, desiredStatType) => {
+  const rawData = Array.isArray(data) ? data : data?.data || [];
+  console.log(`aggregatePlayerStats - raw data for ${desiredStatType}:`, rawData);
 
-  const [polls, setPolls] = useState([]);
-  const [games, setGames] = useState([]);
+  // Include the team property for later logo lookup
+  const aggregated = rawData
+    .filter(item =>
+      item.statType &&
+      item.statType.trim().toUpperCase() === desiredStatType.toUpperCase()
+    )
+    .map(item => ({
+      playerName: item.player,
+      team: item.team, // include team property
+      statValue: parseFloat(item.stat),
+      playerPhoto: item.playerPhoto || null,
+    }));
+
+  aggregated.sort((a, b) => b.statValue - a.statValue);
+  console.log(`aggregatePlayerStats - aggregated for ${desiredStatType}:`, aggregated);
+  return aggregated;
+};
+
+const Stats = () => {
+  const [playerStats, setPlayerStats] = useState({
+    passing: [],
+    rushing: [],
+    receiving: [],
+    interceptions: [],
+    sacks: [] // This will be used if needed later
+  });
   const [teams, setTeams] = useState([]);
-  const [topRecruits, setTopRecruits] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Separate loading states for each category:
+  const [loadingPassing, setLoadingPassing] = useState(true);
+  const [loadingRushing, setLoadingRushing] = useState(true);
+  const [loadingReceiving, setLoadingReceiving] = useState(true);
+  const [loadingInterceptions, setLoadingInterceptions] = useState(true);
+
   const [error, setError] = useState(null);
 
+  // Fetch Teams Data for logos
   useEffect(() => {
-    const fetchHomeData = async () => {
+    const fetchTeams = async () => {
       try {
-        setIsLoading(true);
-
-        // Fetch polls (e.g., "ap" or "coaches")
-        const pollsPromise = teamsService.getPolls(2024, "ap", week);
-
-        // Determine the query param for games
-        const queryParam =
-          week === "postseason" ? { seasonType: "postseason" } : parseInt(week, 10);
-
-        // Fetch teams, polls, games, and recruits in parallel
-        const [teamsData, pollsData, gamesData, recruitsData] = await Promise.all([
-          teamsService.getTeams(),
-          pollsPromise,
-          teamsService.getGames(queryParam),
-          getAllRecruits(2025)
-        ]);
-
+        const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
-        setPolls(pollsData);
-
-        // Filter games to include only FBS vs. FBS matchups
-        const fbsGames = gamesData.filter(
-          (game) =>
-            game.homeClassification === "fbs" &&
-            game.awayClassification === "fbs"
-        );
-        setGames(fbsGames);
-
-        // Sort recruits by ranking and keep top 20
-        const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
-        setTopRecruits(sortedRecruits.slice(0, 20));
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
       }
     };
+    fetchTeams();
+  }, []);
 
-    fetchHomeData();
-  }, [week]);
-
-  // Helper functions
+  // Helper to get team logo
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
@@ -67,245 +62,305 @@ const Home = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
-  const getTeamAbbreviation = (teamName) => {
-    const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.abbreviation || teamName;
-  };
-
-  const getNetworkLogo = (network) => {
-    const networks = {
-      ESPN: <FaTv className="network-icon espn" />,
-      FOX: <FaTv className="network-icon fox" />,
-      ABC: <FaTv className="network-icon abc" />,
-      CBS: <FaTv className="network-icon cbs" />
+  // Fetch Passing Stats
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchPassingStats = async () => {
+      try {
+        setLoadingPassing(true);
+        const passingData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "passing",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw passing data:", passingData);
+        const aggregatedPassing = aggregatePlayerStats(passingData, "YDS");
+        setPlayerStats(prev => ({ ...prev, passing: aggregatedPassing.slice(0, 10) }));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching passing stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoadingPassing(false);
+      }
     };
-    return networks[network] || <FaTv className="network-icon default" />;
-  };
+    fetchPassingStats();
+    return () => controller.abort();
+  }, []);
 
-  // Inline helper to render stars for recruits
-  const renderStars = (stars) => (
-    <div className="stars-container">
-      {[...Array(stars)].map((_, index) => (
-        <FaStar key={index} className="star-icon" />
-      ))}
-    </div>
-  );
+  // Fetch Rushing Stats
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchRushingStats = async () => {
+      try {
+        setLoadingRushing(true);
+        const rushingData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "rushing",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw rushing data:", rushingData);
+        const aggregatedRushing = aggregatePlayerStats(rushingData, "YDS");
+        setPlayerStats(prev => ({ ...prev, rushing: aggregatedRushing.slice(0, 10) }));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching rushing stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoadingRushing(false);
+      }
+    };
+    fetchRushingStats();
+    return () => controller.abort();
+  }, []);
 
-  if (isLoading) return <div className="loading-container">Loading...</div>;
-  if (error) return <div className="error-container">Error: {error}</div>;
+  // Fetch Receiving Stats
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchReceivingStats = async () => {
+      try {
+        setLoadingReceiving(true);
+        const receivingData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "receiving",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw receiving data:", receivingData);
+        const aggregatedReceiving = aggregatePlayerStats(receivingData, "YDS");
+        setPlayerStats(prev => ({ ...prev, receiving: aggregatedReceiving.slice(0, 10) }));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching receiving stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoadingReceiving(false);
+      }
+    };
+    fetchReceivingStats();
+    return () => controller.abort();
+  }, []);
 
+  // Fetch Interceptions Stats
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchInterceptionsStats = async () => {
+      try {
+        setLoadingInterceptions(true);
+        const interceptionsData = await teamsService.getPlayerSeasonStats(
+          2024,
+          "interceptions",
+          "regular",
+          100,
+          controller.signal
+        );
+        console.log("Raw interceptions data:", interceptionsData);
+        const aggregatedInterceptions = aggregatePlayerStats(interceptionsData, "INT");
+        setPlayerStats(prev => ({ ...prev, interceptions: aggregatedInterceptions.slice(0, 10) }));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching interceptions stats:", error);
+          setError("Failed to load player season stats.");
+        }
+      } finally {
+        setLoadingInterceptions(false);
+      }
+    };
+    fetchInterceptionsStats();
+    return () => controller.abort();
+  }, []);
+
+  // Render the tables with team logos next to the player's name
   return (
-    <div className="home-container">
-      <header className="hero-header">
-        <h1 style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>GAMEDAY+</h1>
-      </header>
-
-      {/* Featured Section */}
-      <section className="featured-section">
-        <div className="featured-grid">
-          {/* Big Hero Card */}
-          <div className="featured-card big-card">
-            <img src="/photos/Ostate.webp" alt="Ohio State Celebration" />
-            <div className="featured-overlay">
-              <h2>Ohio State Triumph</h2>
-              <p>
-                Discover how Ohio State clinched the championship in a thrilling matchup. Read more
-              </p>
-            </div>
-          </div>
-
-          {/* Additional Featured Cards */}
-          <div className="featured-card small-card">
-            <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
-            <div className="featured-overlay">
-              <h3>Arch Manning Buzz</h3>
-              <p>
-                Arch Manning is poised for a breakout season as excitement builds around his potential. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
-            <div className="featured-overlay">
-              <h3>Oregon's Next Move</h3>
-              <p>
-                Get the latest on Oregon's strategic decisions that could reshape the program’s future. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/CU.jpg" alt="Colorado" />
-            <div className="featured-overlay">
-              <h3>Colorado on the Rise</h3>
-              <p>
-                A detailed look into Colorado's evolving game plan and rising expectations this season. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Pennst.jpg" alt="Penn State" />
-            <div className="featured-overlay">
-              <h3>Penn State Prospects</h3>
-              <p>
-                Explore early roster insights and what they mean for the future of the Nittany Lions. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
-            <div className="featured-overlay">
-              <h3>Georgia's Offseason</h3>
-              <p>
-                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. Read more
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Two-Column Layout for Polls & Top Recruits */}
-      <div className="polls-recruits-container">
-        {/* Left Column: Polls */}
-        <section className="polls-section left-column">
-          <div className="polls-grid">
-            {polls.map((poll) => (
-              <div key={poll.id} className="poll-card">
-                <h3 className="poll-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
-                  <img
-                    src="/photos/committee.png"
-                    alt="Committee Logo"
-                    className="poll-logo"
-                  />
-                  {poll.name}
-                </h3>
-                <div className="rankings-list">
-                  {/* Display top teams inline */}
-                  {poll.rankings.slice(0, 25).map((team) => {
-                    const teamData = teams.find(
-                      (t) => t.school.toLowerCase() === team.school.toLowerCase()
-                    );
-                    const logo = getTeamLogo(team.school);
-                    return (
-                      <div key={team.school} className="ranking-item">
-                        <span className="poll-rank">#{team.rank}</span>
-                        {teamData ? (
-                          <Link to={`/teams/${teamData.id}`}>
-                            <img
-                              src={logo}
-                              alt={team.school}
-                              className="team-poll-logo"
-                            />
-                          </Link>
-                        ) : (
-                          <img
-                            src={logo}
-                            alt={team.school}
-                            className="team-poll-logo"
-                          />
-                        )}
-                        <span className="poll-team-name">{team.school}</span>
-                        <span className="poll-points">{team.points} pts</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="stats-container">
+      {/* Modernized CSS */}
+      <style>{`
+        :root {
+          --background-color: #ffffff;
+          --text-color: #000000;
+          --navbar-bg: #d4001c;
+          --card-background: #f9f9f9;
+          --border-color: #ddd;
+          --shadow-color: rgba(0, 0, 0, 0.08);
+          --primary-font: 'Roboto', sans-serif;
+        }
+        .stats-container {
+          font-family: var(--primary-font);
+          margin: 2rem;
+          background: var(--background-color);
+          color: var(--text-color);
+        }
+        h1, h2 {
+          text-align: center;
+          margin: 1rem 0;
+        }
+        #table-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: grid;
+          gap: 2rem;
+        }
+        table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          background: var(--card-background);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 8px var(--shadow-color);
+        }
+        th, td {
+          padding: 0.75rem 1rem;
+          text-align: left;
+        }
+        thead {
+          background: var(--navbar-bg);
+          color: #ffffff;
+        }
+        tbody tr {
+          border-bottom: 1px solid var(--border-color);
+          transition: background 0.3s ease;
+        }
+        tbody tr:hover {
+          background: #f1f1f1;
+        }
+        .logo-img {
+          width: 30px;
+          height: 30px;
+          object-fit: contain;
+          margin-right: 8px;
+          vertical-align: middle;
+        }
+      `}</style>
+      <h1>Top 10 Leaders (Yards) - 2024</h1>
+      {error && <p>{error}</p>}
+      <div id="table-container">
+        <section>
+          <h2>Passing Leaders</h2>
+          {loadingPassing ? (
+            <p>Loading passing stats...</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Passing Yards</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerStats.passing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
 
-        {/* Right Column: Top 20 Recruits */}
-        <section className="recruits-section right-column">
-          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>Top 20 Recruits</h2>
-          <div className="recruits-list">
-            {topRecruits.slice(0, 20).map((prospect) => (
-              <div key={prospect.id} className="recruit-item">
-                <span className="recruit-rank">#{prospect.ranking}</span>
-                <span className="recruit-name">{prospect.name}</span>
-                <span className="recruit-position">({prospect.position})</span>
-                {prospect.stars && renderStars(prospect.stars)}
-                {prospect.committedTo && (
-                  <span className="recruit-commit">
-                    <img
-                      src={getTeamLogo(prospect.committedTo)}
-                      alt={`${prospect.committedTo} Logo`}
-                      className="committed-team-logo"
-                    />
-                    <FaCheckCircle className="commit-check" />
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+        <section>
+          <h2>Rushing Leaders</h2>
+          {loadingRushing ? (
+            <p>Loading rushing stats...</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Rushing Yards</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerStats.rushing.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <section>
+          <h2>Receiving Leaders</h2>
+          {loadingReceiving ? (
+            <p>Loading receiving stats...</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Receiving Yards</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerStats.receiving.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <section>
+          <h2>Interceptions Leaders</h2>
+          {loadingInterceptions ? (
+            <p>Loading interceptions stats...</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Interceptions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerStats.interceptions.map((player, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <img src={getTeamLogo(player.team)} alt={player.team} className="logo-img" />
+                      {player.playerName}
+                    </td>
+                    <td>{player.statValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
       </div>
-
-      {/* Games Section */}
-      <section className="games-section">
-        <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
-          {week === "postseason" ? "Postseason Matchups" : `Week ${week} Matchups`}
-        </h2>
-        <div className="games-slider">
-          {games.map((game) => (
-            <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
-              <div className="game-card">
-                <div className="game-header">
-                  <div className="game-time">
-                    {new Date(game.startDate).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric"
-                    })}
-                  </div>
-                  <div className="network">
-                    {getNetworkLogo(game.network || "ESPN")}
-                    <span className="network-name">
-                      {game.network || "ESPN"}
-                    </span>
-                  </div>
-                </div>
-                <div className="teams-container">
-                  <div className="team home-team">
-                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                    <div className="team-info">
-                      <span className="team-name">{game.homeTeam}</span>
-                      <span className="team-record">
-                        {game.homeRecord || "(N/A)"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="vs-container">
-                    <div className="vs-circle">VS</div>
-                    <div className="score-container">
-                      <span className="score">{game.homePoints || "-"}</span>
-                      <span className="score-divider">-</span>
-                      <span className="score">{game.awayPoints || "-"}</span>
-                    </div>
-                  </div>
-                  <div className="team away-team">
-                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                    <div className="team-info">
-                      <span className="team-name">{game.awayTeam}</span>
-                      <span className="team-record">
-                        {game.awayRecord || "(N/A)"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="game-footer">
-                  <div className="game-venue">
-                    <span>🏟️ {game.venue}</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 };
 
-export default Home;
+export default Stats;
