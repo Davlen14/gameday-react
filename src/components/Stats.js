@@ -27,25 +27,16 @@ const Stats = () => {
     passing: [],
     rushing: [],
     receiving: [],
-    sacks: [],
     interceptions: []
   });
-  
-  // Separate loading states for each category
-  const [loadingPassing, setLoadingPassing] = useState(true);
-  const [loadingRushing, setLoadingRushing] = useState(true);
-  const [loadingReceiving, setLoadingReceiving] = useState(true);
-  const [loadingSacks, setLoadingSacks] = useState(true);
-  const [loadingInterceptions, setLoadingInterceptions] = useState(true);
-
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch Passing Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchPassingStats = async () => {
       try {
-        setLoadingPassing(true);
+        setLoading(true);
         const passingData = await teamsService.getPlayerSeasonStats(
           2024,
           "passing",
@@ -64,19 +55,18 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoadingPassing(false);
+        setLoading(false);
       }
     };
     fetchPassingStats();
     return () => controller.abort();
   }, []);
 
-  // Fetch Rushing Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchRushingStats = async () => {
       try {
-        setLoadingRushing(true);
+        setLoading(true);
         const rushingData = await teamsService.getPlayerSeasonStats(
           2024,
           "rushing",
@@ -95,19 +85,18 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoadingRushing(false);
+        setLoading(false);
       }
     };
     fetchRushingStats();
     return () => controller.abort();
   }, []);
 
-  // Fetch Receiving Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchReceivingStats = async () => {
       try {
-        setLoadingReceiving(true);
+        setLoading(true);
         const receivingData = await teamsService.getPlayerSeasonStats(
           2024,
           "receiving",
@@ -126,50 +115,18 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoadingReceiving(false);
+        setLoading(false);
       }
     };
     fetchReceivingStats();
     return () => controller.abort();
   }, []);
 
-  // Fetch Sacks Stats (defensive)
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchSacksStats = async () => {
-      try {
-        setLoadingSacks(true);
-        const sacksData = await teamsService.getPlayerSeasonStats(
-          2024,
-          "sacks", // Passing "sacks" so teamsService converts it to "defensive"
-          "regular",
-          100,
-          controller.signal
-        );
-        console.log("Raw sacks data:", sacksData);
-        const aggregatedSacks = aggregatePlayerStats(sacksData, "SACKS");
-        setPlayerStats(prev => ({ ...prev, sacks: aggregatedSacks.slice(0, 10) }));
-      } catch (error) {
-        if (controller.signal.aborted)
-          console.log("Sacks stats fetch aborted");
-        else {
-          console.error("Error fetching sacks stats:", error);
-          setError("Failed to load player season stats.");
-        }
-      } finally {
-        setLoadingSacks(false);
-      }
-    };
-    fetchSacksStats();
-    return () => controller.abort();
-  }, []);
-
-  // Fetch Interceptions Stats
   useEffect(() => {
     const controller = new AbortController();
     const fetchInterceptionsStats = async () => {
       try {
-        setLoadingInterceptions(true);
+        setLoading(true);
         const interceptionsData = await teamsService.getPlayerSeasonStats(
           2024,
           "interceptions",
@@ -188,7 +145,7 @@ const Stats = () => {
           setError("Failed to load player season stats.");
         }
       } finally {
-        setLoadingInterceptions(false);
+        setLoading(false);
       }
     };
     fetchInterceptionsStats();
@@ -248,13 +205,14 @@ const Stats = () => {
         }
       `}</style>
       <h1>Top 10 Leaders (Yards) - 2024</h1>
-      {error && <p>{error}</p>}
-      <div id="table-container">
-        <section>
-          <h2>Passing Leaders</h2>
-          {loadingPassing ? (
-            <p>Loading passing stats...</p>
-          ) : (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <div id="table-container">
+          <section>
+            <h2>Passing Leaders</h2>
             <table>
               <thead>
                 <tr>
@@ -273,14 +231,10 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
+          </section>
 
-        <section>
-          <h2>Rushing Leaders</h2>
-          {loadingRushing ? (
-            <p>Loading rushing stats...</p>
-          ) : (
+          <section>
+            <h2>Rushing Leaders</h2>
             <table>
               <thead>
                 <tr>
@@ -299,14 +253,10 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
+          </section>
 
-        <section>
-          <h2>Receiving Leaders</h2>
-          {loadingReceiving ? (
-            <p>Loading receiving stats...</p>
-          ) : (
+          <section>
+            <h2>Receiving Leaders</h2>
             <table>
               <thead>
                 <tr>
@@ -325,40 +275,10 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
+          </section>
 
-        <section>
-          <h2>Sacks Leaders</h2>
-          {loadingSacks ? (
-            <p>Loading sacks stats...</p>
-          ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th>Sacks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {playerStats.sacks.map((player, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{player.playerName}</td>
-                    <td>{player.statValue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-
-        <section>
-          <h2>Interceptions Leaders</h2>
-          {loadingInterceptions ? (
-            <p>Loading interceptions stats...</p>
-          ) : (
+          <section>
+            <h2>Interceptions Leaders</h2>
             <table>
               <thead>
                 <tr>
@@ -377,9 +297,9 @@ const Stats = () => {
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
-      </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };
