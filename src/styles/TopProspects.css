@@ -1,57 +1,156 @@
+/* TopProspects.css - Modernized */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
 .top-prospects-container {
-    max-width: 1100px;
-    margin: auto;
-    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    font-family: "Titillium Web", sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* Header Section */
+.prospects-header {
     text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
 }
 
-.top-prospects-container h1 {
-    font-size: 28px;
-    font-weight: bold;
-    color: #222;
-    margin-bottom: 20px;
+.prospects-header h1 {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin: 0 0 0.5rem 0;
+    color: #1a1a1a;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding-bottom: 0.75rem;
+    position: relative;
 }
 
-/* Filter Container */
+.prospects-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(to right, #D4001C, #ff4d6d);
+    border-radius: 2px;
+}
+
+.prospects-subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* Filters Container */
 .filters-container {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
     flex-wrap: wrap;
 }
 
-.filters-container select,
-.filters-container input {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #fff;
-    color: #333;
-    cursor: pointer;
-}
-
-/* Search Box */
-.team-search {
+.filter-group, .search-container {
     position: relative;
     display: flex;
     align-items: center;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-.team-search .search-icon {
+.filter-group:hover, .search-container:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+}
+
+.filter-icon, .search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: #64748b;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.position-filter {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 3rem 0 1rem;
+    height: 44px;
+    min-width: 180px;
+    font-family: "Titillium Web", sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.position-filter:focus {
+    outline: none;
+}
+
+.select-arrow {
     position: absolute;
-    left: 10px;
-    font-size: 14px;
-    color: #999;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
 }
 
-.team-search input {
-    padding: 8px 12px 8px 30px;
-    font-size: 14px;
-    width: 180px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.team-search {
+    background: transparent;
+    border: none;
+    padding: 0 1rem;
+    height: 44px;
+    width: 250px;
+    font-family: "Titillium Web", sans-serif;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.team-search:focus {
+    outline: none;
+}
+
+.team-search::placeholder {
+    color: #94a3b8;
+}
+
+/* Prospects Count */
+.prospects-count {
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+/* Table Container */
+.prospects-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 2rem;
 }
 
 /* Table Styling */
@@ -59,147 +158,406 @@
     width: 100%;
     border-collapse: collapse;
     background: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .prospects-table th {
-    background: #f4f4f4;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 12px;
+    background: #f8fafc;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 1rem 0.75rem;
     text-align: left;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid #e2e8f0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #64748b;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
 }
 
-/* Straight Dividers */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sortable-header:hover {
+    background-color: #f1f5f9;
+}
+
+.sort-icon {
+    font-size: 0.75rem;
+    color: #D4001C;
+    transition: transform 0.2s ease;
+}
+
+.sort-icon.flipped {
+    transform: rotate(180deg);
+}
+
 .prospects-table td {
-    padding: 14px 12px; /* Ensures uniform height */
-    font-size: 14px;
-    border-bottom: 1px solid #ddd;
-    /* Changed from middle to top to avoid staggered appearance */
-    vertical-align: top; 
+    padding: 1rem 0.75rem;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    transition: background-color 0.15s ease;
 }
 
-/* Even/Odd Row Styling */
+/* Row Styling */
 .prospect-row.even {
-    background: #f9f9f9;
-}
-
-.prospect-row.odd {
     background: #ffffff;
 }
 
-/* Player Row Hover Effect */
+.prospect-row.odd {
+    background: #f9fafc;
+}
+
 .prospect-row:hover {
-    background: #f1f1f1;
+    background: #f1f5f9;
 }
 
-/* Player Rank */
-.prospect-row td:first-child {
-    font-weight: bold;
+.prospect-row:last-child td {
+    border-bottom: none;
+}
+
+/* Rank Column */
+.rank-cell {
     text-align: center;
+    padding: 0.5rem;
 }
 
-/* Player Name & Icon */
-.player-cell {
+.rank-badge {
     display: flex;
-    /* Changed from align-items: center to flex-start */
-    align-items: flex-start; 
-    gap: 10px;
-    white-space: nowrap; /* Prevents wrapping */
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    color: #1e293b;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Player Column */
+.player-cell {
+    min-width: 180px;
 }
 
 .player-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
-    /* Removed width: 100% to prevent unwanted stretching */
+    gap: 0.75rem;
 }
 
-.player-icon {
-    font-size: 32px;
-    color: #555;
-}
-
-/* Stars & Rating */
-.stars-wrapper {
+.player-avatar {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 3px;
-    flex-wrap: nowrap;  /* Prevents the stars from wrapping */
-    min-width: 80px;    /* Adjust this value if needed */
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    border-radius: 50%;
+    color: #64748b;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.player-name {
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-hometown {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* Position Column */
+.position-cell {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Stars Column */
+.stars-header {
+    min-width: 100px;
+}
+
+.stars-cell {
+    min-width: 100px;
+}
+
+.stars-container {
+    display: flex;
+    gap: 2px;
 }
 
 .star-icon {
-    color: #FFD700;
-    font-size: 12px; /* Slightly smaller for better alignment */
-    margin-right: 2px;
+    font-size: 0.9rem;
 }
 
-/* Team Commitment */
+.star-icon.filled {
+    color: #fbbf24;
+}
+
+.star-icon.empty {
+    color: #e2e8f0;
+}
+
+/* Rating Column */
+.rating-cell {
+    text-align: center;
+}
+
+.rating-value {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 700;
+    color: #1e293b;
+    background: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Committed Column */
 .committed-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
 }
 
-/* Fixing Misalignment with Commit Box */
 .commit-box {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: #f4f4f4;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
     min-width: 140px;
-    justify-content: space-between;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-/* Adjusted Team Logo */
+.commit-box:hover {
+    background: #f1f5f9;
+    transform: translateX(3px);
+}
+
 .team-logo {
-    width: 50px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
-    background: #fff;
-    padding: 5px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    background: white;
+    padding: 2px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
 
-/* Checkmark for Committed Players */
+.team-name {
+    font-weight: 600;
+    color: #1e293b;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.commit-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 .commit-check {
-    font-size: 16px;
-    color: green;
+    color: #10b981;
+    font-size: 1rem;
 }
 
-/* Uncommitted Players */
 .uncommitted {
-    font-weight: bold;
-    color: #999;
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    background: #f1f5f9;
+    color: #94a3b8;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Loading State */
+.prospects-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(212, 0, 28, 0.2);
+    border-left-color: #D4001C;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.prospects-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.prospects-error h2 {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    color: #D4001C;
+    margin: 0;
+}
+
+.prospects-error button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #D4001C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.prospects-error button:hover {
+    background: #ff0022;
+}
+
+/* No Results */
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.no-results h3 {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.no-results p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+.no-results button {
+    padding: 0.75rem 1.5rem;
+    background: #D4001C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.no-results button:hover {
+    background: #ff0022;
 }
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
-    .filters-container {
-        flex-direction: column;
-        align-items: center;
+@media (max-width: 1024px) {
+    .prospects-table-container {
+        overflow-x: auto;
     }
-
-    .filters-container select,
-    .team-search input {
-        width: 80%;
-    }
-
-    .player-cell {
-        flex-direction: column;
-        align-items: center; /* For mobile, you can keep center alignment */
-    }
-
-    .committed-cell {
-        flex-direction: column;
-        text-align: center;
+    
+    .prospects-table {
+        min-width: 1000px;
     }
 }
 
+@media (max-width: 768px) {
+    .top-prospects-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .prospects-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .prospects-subtitle {
+        font-size: 1rem;
+    }
+    
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .team-search, .position-filter {
+        width: 100%;
+    }
+    
+    .prospects-table {
+        min-width: 800px;
+    }
+}
+
+@media (max-width: 480px) {
+    .prospects-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .prospects-table {
+        min-width: 600px;
+    }
+}
