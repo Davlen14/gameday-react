@@ -605,43 +605,63 @@ const CoachOverview = () => {
                           
                           <div className="stats-grid">
                             {/* Win % */}
-                            <div className="stat-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span className="stat-label">Win %</span>
-                              <div>
+                            <div 
+                              className="stat-item" 
+                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            >
+                              {/* Left column: label and value stacked */}
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span className="stat-label">Win %</span>
                                 <span className="stat-value">{item.winPct.toFixed(1)}%</span>
-                                {rankWinPct <= 5 && (
-                                  <span className="glassy-metal" style={{ marginLeft: '8px' }}>
-                                    Top 5
-                                  </span>
-                                )}
                               </div>
+                              {/* Right column: "Top 5" if applicable */}
+                              {rankWinPct <= 5 && (
+                                <span className="glassy-metal">
+                                  Top 5
+                                </span>
+                              )}
                             </div>
 
                             {/* Record */}
-                            <div className="stat-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span className="stat-label">Record</span>
-                              <span className="stat-value">
-                                {item.wins}-{item.losses}
-                              </span>
+                            <div 
+                              className="stat-item" 
+                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span className="stat-label">Record</span>
+                                <span className="stat-value">
+                                  {item.wins}-{item.losses}
+                                </span>
+                              </div>
+                              {/* No Top 5 here */}
                             </div>
 
                             {/* SP Overall */}
-                            <div className="stat-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span className="stat-label">SP Overall</span>
-                              <div>
+                            <div 
+                              className="stat-item" 
+                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span className="stat-label">SP Overall</span>
                                 <span className="stat-value">{item.spOverall.toFixed(1)}</span>
-                                {rankOverall <= 5 && (
-                                  <span className="glassy-metal" style={{ marginLeft: '8px' }}>
-                                    Top 5
-                                  </span>
-                                )}
                               </div>
+                              {rankOverall <= 5 && (
+                                <span className="glassy-metal">
+                                  Top 5
+                                </span>
+                              )}
                             </div>
 
                             {/* Experience */}
-                            <div className="stat-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span className="stat-label">Experience</span>
-                              <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
+                            <div 
+                              className="stat-item" 
+                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span className="stat-label">Experience</span>
+                                <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
+                              </div>
+                              {/* No Top 5 here */}
                             </div>
                           </div>
                           <button 
