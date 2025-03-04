@@ -17,9 +17,8 @@ import {
 } from "react-icons/fa";
 import "../styles/Commitments.css";
 
-// Marker icons for different star ratings
+// Helper: create custom marker icon for a given star rating
 const createStarIcon = (starRating) => {
-  // Colors from cool (3-star) to hot (5-star)
   const colors = {
     3: "#4287f5", // Blue
     4: "#f5a742", // Orange
@@ -50,15 +49,15 @@ const Commitments = () => {
     position: "All",
     stars: 0,
     team: "",
-    committed: "all", // "all", "committed", "uncommitted"
+    committed: "all", // options: "all", "committed", "uncommitted"
   });
-  const [mapMode, setMapMode] = useState("markers"); // "markers", "heatmap", "clusters"
+  const [mapMode, setMapMode] = useState("markers"); // modes: markers, heatmap, clusters
   const [activeProspect, setActiveProspect] = useState(null);
   const [statsVisible, setStatsVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
 
-  // Fetch data
+  // Fetch recruits and team data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -71,7 +70,7 @@ const Commitments = () => {
           throw new Error("Failed to fetch data");
         }
 
-        // Process the data
+        // Process the data: assign an id if missing
         const processedProspects = prospectData.map((prospect, index) => ({
           ...prospect,
           id: prospect.id || `prospect-${index}`,
@@ -80,9 +79,9 @@ const Commitments = () => {
         setProspects(processedProspects);
         setTeams(teamData);
         setMapReady(true);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(error.message);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -91,20 +90,18 @@ const Commitments = () => {
     fetchData();
   }, []);
 
-  // Filter prospects based on criteria
+  // Apply filters to prospects
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
       // Filter by position
       if (filters.position !== "All" && prospect.position !== filters.position) {
         return false;
       }
-
       // Filter by star rating
       if (filters.stars > 0 && prospect.stars < filters.stars) {
         return false;
       }
-
-      // Filter by team
+      // Filter by team (school search)
       if (
         filters.team &&
         (!prospect.committedTo ||
@@ -112,27 +109,22 @@ const Commitments = () => {
       ) {
         return false;
       }
-
       // Filter by commitment status
       if (
-        filters.committed === "committed" && !prospect.committedTo ||
-        filters.committed === "uncommitted" && prospect.committedTo
+        (filters.committed === "committed" && !prospect.committedTo) ||
+        (filters.committed === "uncommitted" && prospect.committedTo)
       ) {
         return false;
       }
-
       return true;
     });
   }, [prospects, filters]);
 
-  // Generate team-based stats
+  // Calculate team statistics from committed prospects
   const teamStats = useMemo(() => {
     const stats = {};
-    
-    // Get all committed prospects
     const committedProspects = prospects.filter(p => p.committedTo);
-    
-    // Group by school
+
     committedProspects.forEach(prospect => {
       const team = prospect.committedTo;
       if (!stats[team]) {
@@ -147,32 +139,24 @@ const Commitments = () => {
           positions: {}
         };
       }
-      
       stats[team].count++;
       stats[team].totalStars += prospect.stars || 0;
-      
-      // Count by star rating
       if (prospect.stars === 5) stats[team].fiveStars++;
       if (prospect.stars === 4) stats[team].fourStars++;
       if (prospect.stars === 3) stats[team].threeStars++;
-      
-      // Count by position
       if (prospect.position) {
-        stats[team].positions[prospect.position] = 
-          (stats[team].positions[prospect.position] || 0) + 1;
+        stats[team].positions[prospect.position] = (stats[team].positions[prospect.position] || 0) + 1;
       }
     });
-    
-    // Calculate average stars
+
     Object.keys(stats).forEach(team => {
       stats[team].avgStars = stats[team].totalStars / stats[team].count;
     });
-    
-    // Convert to array and sort by recruit count
+
     return Object.values(stats).sort((a, b) => b.count - a.count);
   }, [prospects]);
 
-  // Get the team logo
+  // Get team logo based on school name
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/logos/default.png";
     const team = teams.find(
@@ -181,11 +165,9 @@ const Commitments = () => {
     return team?.logos?.[0] || "/logos/default.png";
   };
 
-  // State-level data for heatmap
+  // Aggregate state-level data (for potential heatmap logic)
   const stateData = useMemo(() => {
     const states = {};
-    
-    // Count prospects by state
     filteredProspects.forEach(prospect => {
       if (prospect.stateProvince) {
         if (!states[prospect.stateProvince]) {
@@ -195,58 +177,44 @@ const Commitments = () => {
             prospects: []
           };
         }
-        
         states[prospect.stateProvince].count++;
         states[prospect.stateProvince].totalStars += prospect.stars || 0;
         states[prospect.stateProvince].prospects.push(prospect);
       }
     });
-    
-    // Calculate average stars per state
     Object.keys(states).forEach(state => {
-      states[state].avgStars = 
-        states[state].totalStars / states[state].count;
+      states[state].avgStars = states[state].totalStars / states[state].count;
     });
-    
     return states;
   }, [filteredProspects]);
 
   // Handle filter changes
-  const handleFilterChange = (event) => {
-    const { name, value } = event.target;
-    setFilters(prev => ({
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
       ...prev,
       [name]: name === "stars" ? parseInt(value) : value
     }));
   };
 
-  // Handle map mode change
+  // Switch map mode (markers, clusters, heatmap)
   const handleMapModeChange = (mode) => {
     setMapMode(mode);
   };
 
-  // Format position groups for better display
-  const formatPositionGroup = (position) => {
-    const offensePositions = ["QB", "RB", "WR", "TE", "OL", "OT", "OG", "C"];
-    const defensePositions = ["DL", "DE", "DT", "LB", "DB", "CB", "S"];
-    const specialTeams = ["K", "P", "LS"];
-    
-    if (offensePositions.includes(position)) return "Offense";
-    if (defensePositions.includes(position)) return "Defense";
-    if (specialTeams.includes(position)) return "Special Teams";
-    return "Other";
-  };
-
-  // Reset map view
+  // Reset map view to default center/zoom
   const resetMapView = () => {
-    mapRef.current.setView([39.8283, -98.5795], 4);
+    if (mapRef.current) {
+      mapRef.current.setView([39.8283, -98.5795], 4);
+    }
   };
 
-  // Toggle stats panel
+  // Toggle the stats panel visibility
   const toggleStats = () => {
-    setStatsVisible(prev => !prev);
+    setStatsVisible((prev) => !prev);
   };
 
+  // Loading and error handling
   if (loading) {
     return (
       <div className="commitments-loading">
@@ -255,7 +223,6 @@ const Commitments = () => {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="commitments-error">
@@ -292,7 +259,6 @@ const Commitments = () => {
               <FaFootballBall /> Clusters
             </button>
           </div>
-          
           <div className="map-actions">
             <button className="action-button" onClick={resetMapView}>
               <FaSyncAlt /> Reset View
@@ -305,7 +271,6 @@ const Commitments = () => {
             </button>
           </div>
         </div>
-        
         <div className="filter-controls">
           <div className="filter-group">
             <label htmlFor="position-select">Position:</label>
@@ -317,15 +282,14 @@ const Commitments = () => {
               className="filter-select"
             >
               <option value="All">All Positions</option>
-              {[...new Set(prospects.map((p) => p.position))]
+              {[...new Set(prospects.map(p => p.position))]
                 .filter(Boolean)
                 .sort()
-                .map((pos) => (
+                .map(pos => (
                   <option key={pos} value={pos}>{pos}</option>
                 ))}
             </select>
           </div>
-          
           <div className="filter-group">
             <label htmlFor="stars-select">Min Stars:</label>
             <select
@@ -341,7 +305,6 @@ const Commitments = () => {
               <option value="5">5 Stars</option>
             </select>
           </div>
-          
           <div className="filter-group">
             <label htmlFor="commitment-select">Status:</label>
             <select
@@ -356,7 +319,6 @@ const Commitments = () => {
               <option value="uncommitted">Uncommitted Only</option>
             </select>
           </div>
-          
           <div className="filter-group search-group">
             <label htmlFor="team-search">School:</label>
             <div className="search-input-container">
@@ -387,22 +349,17 @@ const Commitments = () => {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             />
-            
             {mapMode === 'markers' && filteredProspects.map((prospect) => {
-              // Check if hometownInfo exists and has valid coordinates from your service
               if (!prospect.hometownInfo?.latitude || !prospect.hometownInfo?.longitude) {
                 return null;
               }
-              
               return (
                 <Marker
                   key={prospect.id}
                   position={[prospect.hometownInfo.latitude, prospect.hometownInfo.longitude]}
                   icon={createStarIcon(prospect.stars)}
                   eventHandlers={{
-                    click: () => {
-                      setActiveProspect(prospect);
-                    }
+                    click: () => setActiveProspect(prospect)
                   }}
                 >
                   <Popup className="prospect-popup">
@@ -420,7 +377,6 @@ const Commitments = () => {
                           {prospect.rating ? prospect.rating.toFixed(4) : "N/A"}
                         </div>
                       </div>
-                      
                       <h3 className="prospect-popup-name">{prospect.name}</h3>
                       <div className="prospect-popup-details">
                         <div className="prospect-popup-rank">
@@ -431,11 +387,14 @@ const Commitments = () => {
                           {prospect.city}, {prospect.stateProvince}
                         </div>
                         <div className="prospect-popup-metrics">
-                          <span>{prospect.height ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"` : "N/A"}</span>
-                          <span>{prospect.weight ? `${prospect.weight} lbs` : "N/A"}</span>
+                          <span>
+                            {prospect.height ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"` : "N/A"}
+                          </span>
+                          <span>
+                            {prospect.weight ? `${prospect.weight} lbs` : "N/A"}
+                          </span>
                         </div>
                       </div>
-                      
                       {prospect.committedTo ? (
                         <div className="prospect-popup-commitment">
                           <img
@@ -457,7 +416,6 @@ const Commitments = () => {
             })}
           </MapContainer>
         )}
-
         <AnimatePresence>
           {statsVisible && (
             <motion.div
@@ -471,7 +429,6 @@ const Commitments = () => {
                 <h3>2025 Recruiting Stats</h3>
                 <button className="close-stats" onClick={toggleStats}>×</button>
               </div>
-              
               <div className="stats-panel-content">
                 <div className="stats-summary">
                   <div className="stat-card">
@@ -491,7 +448,6 @@ const Commitments = () => {
                     <div className="stat-label">Committed</div>
                   </div>
                 </div>
-                
                 <div className="top-teams-section">
                   <h4>Top Recruiting Teams</h4>
                   <div className="team-rankings">
