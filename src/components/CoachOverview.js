@@ -604,25 +604,25 @@ const CoachOverview = () => {
                           </div>
                           
                           <div className="stats-grid">
-                            <div className="stat-item">
-                              <span className="stat-label">Win %</span>
-                              <span className="stat-value">{item.winPct.toFixed(1)}%</span>
-                              {rankWinPct <= 5 && <span className="rank-badge top-5">Top 5</span>}
-                            </div>
-                            <div className="stat-item">
-                              <span className="stat-label">Record</span>
-                              <span className="stat-value">{item.wins}-{item.losses}</span>
-                            </div>
-                            <div className="stat-item">
-                              <span className="stat-label">SP Overall</span>
-                              <span className="stat-value">{item.spOverall.toFixed(1)}</span>
-                              {rankOverall <= 5 && <span className="rank-badge top-5">Top 5</span>}
-                            </div>
-                            <div className="stat-item">
-                              <span className="stat-label">Experience</span>
-                              <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
-                            </div>
-                          </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Win %</span>
+                          <span className="stat-value">{item.winPct.toFixed(1)}%</span>
+                          {rankWinPct <= 5 && <span>Top 5</span>}
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Record</span>
+                          <span className="stat-value">{item.wins}-{item.losses}</span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">SP Overall</span>
+                          <span className="stat-value">{item.spOverall.toFixed(1)}</span>
+                          {rankOverall <= 5 && <span>Top 5</span>}
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Experience</span>
+                          <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
+                        </div>
+                      </div>
                           
                           <button 
                             className="view-details-btn"
