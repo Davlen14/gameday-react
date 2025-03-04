@@ -597,17 +597,29 @@ const CoachOverview = () => {
                           custom={index}
                           layoutId={item.coachName}
                         >
-                          <div className="coach-card-header">
-                            <div className="coach-team-logo">
-                              <img src={getTeamLogo(item.school)} alt={item.school} />
+                         <div
+                            className="coach-card-header"
+                            style={{ display: 'flex', alignItems: 'center' }}
+                          >
+                            {/* Left side: Team logo + Coach name/school */}
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <div className="coach-team-logo">
+                                <img src={getTeamLogo(item.school)} alt={item.school} />
+                              </div>
+                              <div className="coach-info" style={{ marginLeft: '1rem' }}>
+                                <h3>{item.coachName}</h3>
+                                <p>{item.school}</p>
+                              </div>
                             </div>
-                            <div className="coach-info">
-                              <h3>{item.coachName}</h3>
-                              <p>{item.school}</p>
+
+                            {/* Status on the right of the coach info */}
+                            <div style={{ marginLeft: 'auto', marginRight: '1rem' }}>
                               <div className={`coach-status ${item.status.className}`}>
                                 {item.status.icon} {item.status.text}
                               </div>
                             </div>
+
+                            {/* 'Select' button remains in top-right */}
                             <div className="card-actions">
                               <button 
                                 className={`select-coach-btn ${isCoachSelected(item.coach) ? 'selected' : ''}`}
