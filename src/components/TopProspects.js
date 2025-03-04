@@ -148,38 +148,40 @@ const TopProspects = () => {
         </div>
       </header>
 
-      <div className="filters-container">
-        <div className="filter-group">
-          <FaFilter className="filter-icon" />
-          <select 
-            name="position" 
-            value={filters.position} 
-            onChange={handleFilterChange}
-            className="position-filter"
-          >
-            <option value="All">All Positions</option>
-            {[...new Set(prospects.map((p) => p.position))]
-              .filter(Boolean)
-              .sort()
-              .map((pos) => (
-                <option key={pos} value={pos}>{pos}</option>
-            ))}
-          </select>
-          <FaAngleDown className="filter-arrow" />
-        </div>
 
-        <div className="search-container">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            name="team"
-            value={filters.team}
-            onChange={handleFilterChange}
-            placeholder="Search team commitment..."
-            className="team-search"
-          />
-        </div>
-      </div>
+<div className="filters-container">
+  <div className="filter-group">
+    <FaFilter className="filter-icon" />
+    <select 
+      name="position" 
+      value={filters.position} 
+      onChange={handleFilterChange}
+      className="position-filter"
+      id="position-select" // Changed to avoid debug targeting
+    >
+      <option value="All">All Positions</option>
+      {[...new Set(prospects.map((p) => p.position))]
+        .filter(Boolean)
+        .sort()
+        .map((pos) => (
+          <option key={pos} value={pos}>{pos}</option>
+        ))}
+    </select>
+    {/* Filter arrow removed since we use background-image in CSS */}
+  </div>
+
+  <div className="search-container">
+    <FaSearch className="search-icon" />
+    <input
+      type="text"
+      name="team"
+      value={filters.team}
+      onChange={handleFilterChange}
+      placeholder="Search team commitment..."
+      className="team-search"
+    />
+  </div>
+</div>
 
       {sortedAndFilteredProspects.length === 0 ? (
         <div className="no-results">

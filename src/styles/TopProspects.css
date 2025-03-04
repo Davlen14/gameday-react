@@ -1,4 +1,4 @@
-/* TopProspects.css - Modernized UI Elements */
+/* TopProspects.css - Modernized UI Elements with Fixed Position Filter */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
 /* Base container - full width */
@@ -28,18 +28,6 @@
     font-weight: 800;
 }
 
-.prospects-header h1::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 4px;
-    background: linear-gradient(to right, #D4001C, #ff4d6d);
-    border-radius: 2px;
-}
-
 .prospects-subtitle {
     font-size: 1rem;
     color: #64748b;
@@ -57,11 +45,12 @@
     max-width: 800px;
 }
 
-/* Position Filter - Modernized */
+/* Position Filter - Modernized & Fixed */
 .filter-group {
     flex: 1;
     position: relative;
     max-width: 300px;
+    z-index: 5; /* Keep above other elements */
 }
 
 .filter-icon {
@@ -72,6 +61,24 @@
     color: #D4001C;
     font-size: 0.9rem;
     z-index: 10;
+    pointer-events: none; /* Prevent interference with clicks */
+}
+
+/* Hide any debugging overlays */
+[id="select.position-filter"],
+.position-filter + div,
+.position-filter::before,
+.position-filter::after,
+select.position-filter::before,
+select.position-filter::after,
+[id^="select.position-filter"],
+[class^="select"],
+.filter-group > svg + div,
+.filter-group > div:not(.filter-icon) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .position-filter {
@@ -84,10 +91,17 @@
     background-color: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     appearance: none;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4001C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 15px) center;
+    background-size: 12px;
+    padding-right: 40px;
 }
 
 .position-filter:hover {
@@ -100,14 +114,9 @@
     box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.1);
 }
 
+/* Hide the filter arrow since we're using background image */
 .filter-arrow {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #D4001C;
-    pointer-events: none;
-    font-size: 0.9rem;
+    display: none !important;
 }
 
 /* Search Box - Modernized */
@@ -254,7 +263,6 @@
 
 .prospects-table td {
     padding: 12px 8px;
-    /* vertical-align property removed because it has no effect with display: block */
     font-size: 0.9rem;
     color: #333;
     font-family: "Titillium Web", sans-serif;
