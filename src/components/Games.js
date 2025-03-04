@@ -72,8 +72,39 @@ const Games = () => {
     const getMediaForGame = (gameId) => media.find((m) => m.id === gameId) || null;
     const getLinesForGame = (gameId) => lines.find((l) => l.id === gameId) || null;
 
+    const formatGameDate = (game) => {
+        // Use startDate if available, fall back to startTime
+        const dateString = game.startDate || game.startTime;
+        if (!dateString) return "TBD";
+        
+        const gameDate = new Date(dateString);
+        if (isNaN(gameDate.getTime())) return "TBD";
+        
+        return gameDate.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        }) + ' • ' + gameDate.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
     const WeatherIcon = ({ condition }) => {
-        const iconStyle = { width: 40, height: 40 };
+        const iconStyle = { width: 24, height: 24 }; // Smaller icons
+        const normalizedCondition = condition?.toLowerCase() || '';
+        
+        // Map similar conditions to our available icons
+        let iconType = 'clear'; // Default
+        if (normalizedCondition.includes('sun') || normalizedCondition === 'clear') {
+            iconType = 'clear';
+        } else if (normalizedCondition.includes('cloud') || normalizedCondition.includes('overcast')) {
+            iconType = 'cloudy';
+        } else if (normalizedCondition.includes('rain') || normalizedCondition.includes('shower') || normalizedCondition.includes('drizzle')) {
+            iconType = 'rain';
+        }
+        
         const icons = {
             sunny: (
                 <svg {...iconStyle} viewBox="0 0 24 24">
@@ -103,11 +134,11 @@ const Games = () => {
                 </svg>
             )
         };
-        return icons[condition?.toLowerCase()] || <div style={iconStyle}>?</div>;
+        return icons[iconType] || <div style={iconStyle}>?</div>;
     };
 
     const TvIcon = () => (
-        <svg width="24" height="24" viewBox="0 0 24 24">
+        <svg width="20" height="20" viewBox="0 0 24 24">
             <path fill="#666" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
             <path fill="#666" d="M8 13h2v3H8zm3 0h2v3h-2zm3 0h2v3h-2z"/>
         </svg>
@@ -135,6 +166,9 @@ const Games = () => {
                     const gameWeather = getWeatherForGame(game.id);
                     const gameMedia = getMediaForGame(game.id);
                     const gameLines = getLinesForGame(game.id);
+
+                    // Get TV network from either network or outlet property
+                    const tvNetwork = gameMedia?.network || gameMedia?.outlet || 'TBD';
 
                     return (
                         <article key={game.id} className="game-card">
@@ -175,7 +209,7 @@ const Games = () => {
                                     {game.status === 'final' ? (
                                         <span className="final">Final Score</span>
                                     ) : (
-                                        <span>{new Date(game.startTime).toLocaleString()}</span>
+                                        <span>{formatGameDate(game)}</span>
                                     )}
                                 </div>
                             </div>
@@ -196,15 +230,10 @@ const Games = () => {
                                 <div className="broadcast-card">
                                     <TvIcon />
                                     <div className="broadcast-info">
-                                        <span className="network">{gameMedia?.network || 'TBD'}</span>
-                                        {gameMedia?.startTime && (
-                                            <span className="time">
-                                                {new Date(gameMedia.startTime).toLocaleTimeString([], { 
-                                                    hour: '2-digit', 
-                                                    minute: '2-digit' 
-                                                })}
-                                            </span>
-                                        )}
+                                        <span className="network">{tvNetwork}</span>
+                                        <span className="time">
+                                            Live Coverage
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -213,7 +242,7 @@ const Games = () => {
                                 <div className="betting-section">
                                     <h4>Betting Lines</h4>
                                     <div className="sportsbooks">
-                                        {gameLines.lines.map((line) => (
+                                        {gameLines.lines && gameLines.lines.map((line) => (
                                             <div key={line.provider} className="sportsbook">
                                                 <img 
                                                     src={getSportsbookLogo(line.provider)} 
