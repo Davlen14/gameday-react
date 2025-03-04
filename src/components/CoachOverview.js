@@ -254,23 +254,26 @@ const CoachOverview = () => {
     const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-
-    // Weighted composite approach to avoid good coaches on hot seat:
-    // 1) Base average of advanced stats
+  
+    // Weighted composite approach:
     const baseAvg = agg.count > 0
-      ? (parseFloat(avgSrs) + parseFloat(avgSpOverall) 
-         + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4
+      ? (parseFloat(avgSrs) + parseFloat(avgSpOverall) + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4
       : 0;
-    // 2) Win percentage
     const wPct = winPct === "N/A" ? 0 : parseFloat(winPct);
-    // 3) Weighted final (adjust 0.6 / 0.4 to taste)
     const composite = (baseAvg * 0.6) + (wPct * 0.4);
-
+  
+    // Get conference info from teams data:
+    const teamData = teams.find(
+      (t) => t.school.toLowerCase() === (lastSeason.school || "").toLowerCase()
+    );
+    const conference = teamData ? teamData.conference : "";
+  
     return {
       coach,
       team: lastSeason.school || "",
       coachName: coach.firstName + " " + coach.lastName,
       school: lastSeason.school || "",
+      conference, // NEW property for filtering by conference
       hireDate: coach.hireDate ? new Date(coach.hireDate) : null,
       games: agg.games,
       wins: agg.wins,
