@@ -191,7 +191,6 @@ const TopProspects = () => {
       ) : (
         <div className="prospects-table-container">
           <div className="prospects-count">
-            style={{ fonyFamily: "Orbitron", fontStyle: "italic", color: "#D4001C" }}
             Showing {sortedAndFilteredProspects.length} prospects
           </div>
           
