@@ -42,14 +42,14 @@ const aggregateCoachData = (seasons) => {
 
 // Determine coach status based on composite score (thresholds 60 / 40)
 const getCoachStatus = (score) => {
-  if (score >= 50) {
+  if (score >= 35) {
     return { 
       text: "Premiere", 
       color: "var(--success-color)", 
       icon: <FaTrophy />, 
       className: "status-badge-premiere" 
     };
-  } else if (score < 39) {
+  } else if (score < 30) {
     return { 
       text: "On Hot Seat", 
       color: "var(--danger-color)", 
