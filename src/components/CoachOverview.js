@@ -39,9 +39,9 @@ const aggregateCoachData = (seasons) => {
 
 // Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
-  if (score >= 60) {
+  if (score >= 65) {
     return { text: "Premiere Coach", color: "var(--success-color)", icon: <FaTrophy /> };
-  } else if (score < 40) {
+  } else if (score <= 45) {
     return { text: "On Hot Seat", color: "var(--danger-color)", icon: <FaExclamationTriangle /> };
   } else {
     return { text: "Average", color: "var(--info-color)", icon: <FaStar /> };
@@ -237,11 +237,8 @@ const CoachOverview = () => {
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
     const composite = agg.count > 0
-      ? (parseFloat(avgSrs) +
-        parseFloat(avgSpOverall) +
-        parseFloat(avgSpOffense) +
-        parseFloat(avgSpDefense)) / 4
-      : 0;
+    ? (parseFloat(avgSrs) + parseFloat(avgSpOverall) + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4
+    : 0;
     return {
       coach,
       team: lastSeason.school || "",
