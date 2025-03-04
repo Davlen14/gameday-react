@@ -40,11 +40,26 @@ const aggregateCoachData = (seasons) => {
 // Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
   if (score >= 60) {
-    return { text: "Premiere Coach", color: "var(--success-color)", icon: <FaTrophy /> };
+    return { 
+      text: "Premiere Coach", 
+      color: "var(--success-color)", 
+      icon: <FaTrophy />, 
+      className: "status-badge-premiere" 
+    };
   } else if (score < 40) {
-    return { text: "On Hot Seat", color: "var(--danger-color)", icon: <FaExclamationTriangle /> };
+    return { 
+      text: "On Hot Seat", 
+      color: "var(--danger-color)", 
+      icon: <FaExclamationTriangle />, 
+      className: "status-badge-hotseat" 
+    };
   } else {
-    return { text: "Average", color: "var(--info-color)", icon: <FaStar /> };
+    return { 
+      text: "Average", 
+      color: "var(--info-color)", 
+      icon: <FaStar />, 
+      className: "status-badge-average" 
+    };
   }
 };
 
@@ -589,7 +604,7 @@ const CoachOverview = () => {
                             <div className="coach-info">
                               <h3>{item.coachName}</h3>
                               <p>{item.school}</p>
-                              <div className="coach-status" style={{ color: item.status.color }}>
+                              <div className={`coach-status ${item.status.className}`}>
                                 {item.status.icon} {item.status.text}
                               </div>
                             </div>
