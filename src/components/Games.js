@@ -92,8 +92,9 @@ const Games = () => {
     };
 
 
+// Replace your WeatherIcon component with this:
 const WeatherIcon = ({ condition }) => {
-    const iconStyle = { width: 24, height: 24 };
+    const iconStyle = { width: 32, height: 32 }; // Bigger icons
     const normalizedCondition = condition?.toLowerCase() || '';
     
     // Map similar conditions to our available icons
@@ -182,7 +183,7 @@ const WeatherIcon = ({ condition }) => {
 
 // Replace your TvIcon component with this:
 const TvIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="tvGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#666" />

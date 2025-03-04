@@ -240,41 +240,43 @@
     font-family: "Orbitron", "Titillium Web", sans-serif;
 }
 
-/* Game Meta - COMBINED WEATHER/TV SECTION */
+/* Game Meta - FIXED SIDE-BY-SIDE LAYOUT */
 .game-meta {
     display: flex;
     padding: 0.35rem 0.75rem;
     border-bottom: 1px solid #edf2f7;
     background-color: white;
     justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .weather-card, .broadcast-card {
     display: flex;
     align-items: center;
     padding: 0.3rem 0.25rem;
+    width: 50%; /* Force each card to take exactly half the width */
 }
 
 .weather-card {
-    flex: 1;
     border-right: 1px solid #edf2f7;
-    margin-right: 0.5rem;
-    justify-content: flex-start;
+    padding-right: 0.75rem;
+    margin-right: 0; /* Remove margin */
 }
 
 .broadcast-card {
-    flex: 1.2;
-    justify-content: flex-start;
+    padding-left: 0.75rem;
 }
 
+/* Bigger icons with no background */
 .weather-card svg, .broadcast-card svg {
-    width: 24px;
-    height: 24px;
+    width: 32px !important; /* Force larger size */
+    height: 32px !important;
     margin-right: 0.5rem;
-    background: #f1f5f9;
-    border-radius: 50%;
-    padding: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: transparent !important; /* Remove background */
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
     flex-shrink: 0;
 }
 
@@ -282,7 +284,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    align-items: flex-start; /* Align text to left */
+    align-items: flex-start;
 }
 
 .temperature, .network {
@@ -294,6 +296,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%; /* Ensure text truncates if too long */
 }
 
 .condition, .time {
@@ -303,6 +306,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%; /* Ensure text truncates if too long */
 }
 
 /* Betting Section */
