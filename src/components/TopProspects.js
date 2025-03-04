@@ -42,6 +42,16 @@ const TopProspects = () => {
     fetchData();
   }, []);
 
+  // Convert inches to feet and inches
+  const formatHeight = (inches) => {
+    if (!inches) return "N/A";
+    
+    const feet = Math.floor(inches / 12);
+    const remainingInches = inches % 12;
+    
+    return `${feet}'${remainingInches}"`;
+  };
+
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/logos/default.png";
     const team = teams.find(
@@ -140,9 +150,7 @@ const TopProspects = () => {
 
       <div className="filters-container">
         <div className="filter-group">
-          <div className="filter-icon">
-            <FaFilter />
-          </div>
+          <FaFilter className="filter-icon" />
           <select 
             name="position" 
             value={filters.position} 
@@ -157,12 +165,11 @@ const TopProspects = () => {
                 <option key={pos} value={pos}>{pos}</option>
             ))}
           </select>
+          <FaAngleDown className="filter-arrow" />
         </div>
 
         <div className="search-container">
-          <div className="search-icon">
-            <FaSearch />
-          </div>
+          <FaSearch className="search-icon" />
           <input
             type="text"
             name="team"
@@ -237,13 +244,15 @@ const TopProspects = () => {
                     </div>
                   </td>
                   <td className="position-cell">{prospect.position || "N/A"}</td>
-                  <td>{prospect.height ? `${prospect.height} in` : "N/A"}</td>
+                  <td className="height-cell">{formatHeight(prospect.height)}</td>
                   <td>{prospect.weight ? `${prospect.weight} lbs` : "N/A"}</td>
                   <td className="stars-cell">
                     {renderStars(prospect.stars || 0)}
                   </td>
                   <td className="rating-cell">
-                    <div className="rating-value">{prospect.rating ? prospect.rating.toFixed(2) : "N/A"}</div>
+                    <div className="rating-value">
+                      {prospect.rating ? prospect.rating.toFixed(4) : "N/A"}
+                    </div>
                   </td>
                   <td className="committed-cell">
                     {prospect.committedTo ? (
