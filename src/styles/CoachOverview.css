@@ -394,17 +394,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 110px;   /* Set a fixed width (adjust as needed) */
-    height: 32px;   /* Set a fixed height (adjust as needed) */
+    width: 130px;   /* Increased width */
+    height: 40px;   /* Increased height */
     border-radius: 6px;
     font-weight: bold;
-    font-size: 0.9rem; /* Consistent font size */
+    font-size: 0.9rem;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.2),
                 0 2px 4px rgba(0, 0, 0, 0.2);
-    color: #fff;  /* Ensures contrast with the gradient background */
+    color: #fff;
     text-align: center;
-    /* Remove padding since fixed dimensions are used */
   }
   
   /* Premiere Coach badge */
