@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, FaTrophy, FaExclamationTriangle, FaTachometerAlt, FaStar } from "react-icons/fa";
+import { 
+  FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, 
+  FaTrophy, FaExclamationTriangle, FaTachometerAlt, FaStar 
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService"; // getCoaches is here
@@ -37,7 +40,7 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-// Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
+// Determine coach status based on composite score (thresholds 60 / 40)
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { 
@@ -251,13 +254,18 @@ const CoachOverview = () => {
     const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-    // Modified composite calculation: now the sum of the averages (not divided by 4)
-    const composite = agg.count > 0
-      ? (parseFloat(avgSrs) +
-         parseFloat(avgSpOverall) +
-         parseFloat(avgSpOffense) +
-         parseFloat(avgSpDefense))
+
+    // Weighted composite approach to avoid good coaches on hot seat:
+    // 1) Base average of advanced stats
+    const baseAvg = agg.count > 0
+      ? (parseFloat(avgSrs) + parseFloat(avgSpOverall) 
+         + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4
       : 0;
+    // 2) Win percentage
+    const wPct = winPct === "N/A" ? 0 : parseFloat(winPct);
+    // 3) Weighted final (adjust 0.6 / 0.4 to taste)
+    const composite = (baseAvg * 0.6) + (wPct * 0.4);
+
     return {
       coach,
       team: lastSeason.school || "",
@@ -267,7 +275,7 @@ const CoachOverview = () => {
       games: agg.games,
       wins: agg.wins,
       losses: agg.losses,
-      winPct: winPct === "N/A" ? 0 : parseFloat(winPct),
+      winPct: wPct,
       srs: avgSrs === "N/A" ? 0 : parseFloat(avgSrs),
       spOverall: avgSpOverall === "N/A" ? 0 : parseFloat(avgSpOverall),
       spOffense: avgSpOffense === "N/A" ? 0 : parseFloat(avgSpOffense),
@@ -299,8 +307,9 @@ const CoachOverview = () => {
   // Apply status filter
   if (statusFilter !== "all") {
     displayedCoaches = displayedCoaches.filter(coach => {
+      // NOTE: now checking "Premiere", "Average", "On Hot Seat" 
       if (statusFilter === "premiere") {
-        return coach.status.text === "Premiere Coach";
+        return coach.status.text === "Premiere";
       } else if (statusFilter === "average") {
         return coach.status.text === "Average";
       } else if (statusFilter === "hotseat") {
@@ -597,7 +606,7 @@ const CoachOverview = () => {
                           custom={index}
                           layoutId={item.coachName}
                         >
-                         <div
+                          <div
                             className="coach-card-header"
                             style={{ display: 'flex', alignItems: 'center' }}
                           >
@@ -636,12 +645,10 @@ const CoachOverview = () => {
                               className="stat-item" 
                               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                             >
-                              {/* Left column: label and value stacked */}
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span className="stat-label">Win %</span>
                                 <span className="stat-value">{item.winPct.toFixed(1)}%</span>
                               </div>
-                              {/* Right column: "Top 5" if applicable */}
                               {rankWinPct <= 5 && (
                                 <span className="glassy-metal">
                                   Top 5
@@ -660,7 +667,6 @@ const CoachOverview = () => {
                                   {item.wins}-{item.losses}
                                 </span>
                               </div>
-                              {/* No Top 5 here */}
                             </div>
 
                             {/* SP Overall */}
@@ -688,7 +694,6 @@ const CoachOverview = () => {
                                 <span className="stat-label">Experience</span>
                                 <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
                               </div>
-                              {/* No Top 5 here */}
                             </div>
                           </div>
                           <button 
@@ -721,7 +726,9 @@ const CoachOverview = () => {
                                     <FaInfoCircle />
                                   </button>
                                   {tooltipVisible === "srs" && (
-                                    <div className="info-tooltip">{getTooltipContent("srs")}</div>
+                                    <div className="info-tooltip">
+                                      {getTooltipContent("srs")}
+                                    </div>
                                   )}
                                 </div>
                                 <div className="detail-item">
@@ -735,7 +742,9 @@ const CoachOverview = () => {
                                     <FaInfoCircle />
                                   </button>
                                   {tooltipVisible === "spOffense" && (
-                                    <div className="info-tooltip">{getTooltipContent("spOffense")}</div>
+                                    <div className="info-tooltip">
+                                      {getTooltipContent("spOffense")}
+                                    </div>
                                   )}
                                 </div>
                                 <div className="detail-item">
@@ -749,7 +758,9 @@ const CoachOverview = () => {
                                     <FaInfoCircle />
                                   </button>
                                   {tooltipVisible === "spDefense" && (
-                                    <div className="info-tooltip">{getTooltipContent("spDefense")}</div>
+                                    <div className="info-tooltip">
+                                      {getTooltipContent("spDefense")}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -823,11 +834,15 @@ const CoachOverview = () => {
                     <p>{data.processed?.school}</p>
                     <div className="comparison-quick-stats">
                       <div className="quick-stat">
-                        <span className="stat-number">{data.processed?.winPct.toFixed(1)}%</span>
+                        <span className="stat-number">
+                          {data.processed?.winPct.toFixed(1)}%
+                        </span>
                         <span className="stat-label">Win %</span>
                       </div>
                       <div className="quick-stat">
-                        <span className="stat-number">{data.processed?.composite.toFixed(1)}</span>
+                        <span className="stat-number">
+                          {data.processed?.composite.toFixed(1)}
+                        </span>
                         <span className="stat-label">Rating</span>
                       </div>
                     </div>
@@ -873,7 +888,9 @@ const CoachOverview = () => {
                                 {cat.label}
                                 <span className="tooltip-icon">
                                   <FaInfoCircle />
-                                  <span className="tooltip-text">{getTooltipContent(cat.key)}</span>
+                                  <span className="tooltip-text">
+                                    {getTooltipContent(cat.key)}
+                                  </span>
                                 </span>
                               </td>
                               {comparisonData.map((data, idx2) => {
@@ -886,7 +903,10 @@ const CoachOverview = () => {
                                 }
                                 return (
                                   <td key={idx2} className={cellClass}>
-                                    {cat.key === "winPct" ? value.toFixed(1) + "%" : value.toFixed(1)}
+                                    {cat.key === "winPct"
+                                      ? value.toFixed(1) + "%"
+                                      : value.toFixed(1)
+                                    }
                                   </td>
                                 );
                               })}
@@ -939,11 +959,16 @@ const CoachOverview = () => {
                     </div>
                   )}
                   <div className="featured-news-details">
-                    <div className="news-source-badge">{news[0].source.name}</div>
+                    <div className="news-source-badge">
+                      {news[0].source.name}
+                    </div>
                     <h3>{news[0].title}</h3>
                     <p>{news[0].description}</p>
                     <div className="news-date">
-                      {news[0].publishedAt ? new Date(news[0].publishedAt).toLocaleDateString() : 'Recent'}
+                      {news[0].publishedAt 
+                        ? new Date(news[0].publishedAt).toLocaleDateString() 
+                        : 'Recent'
+                      }
                     </div>
                   </div>
                 </a>
@@ -971,10 +996,15 @@ const CoachOverview = () => {
                       </div>
                     )}
                     <div className="news-details">
-                      <div className="news-source-badge small">{article.source.name}</div>
+                      <div className="news-source-badge small">
+                        {article.source.name}
+                      </div>
                       <h4>{article.title}</h4>
                       <div className="news-date small">
-                        {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Recent'}
+                        {article.publishedAt 
+                          ? new Date(article.publishedAt).toLocaleDateString() 
+                          : 'Recent'
+                        }
                       </div>
                     </div>
                   </motion.a>
@@ -1024,7 +1054,9 @@ const CoachOverview = () => {
                   </div>
                   <div className="video-info">
                     <h4>{video.snippet.title}</h4>
-                    <div className="video-channel">{video.snippet.channelTitle}</div>
+                    <div className="video-channel">
+                      {video.snippet.channelTitle}
+                    </div>
                   </div>
                 </motion.div>
               ))}
