@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { getAllRecruits, getTeams } from "../services/teamsService";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -16,6 +17,12 @@ import {
   FaChartBar
 } from "react-icons/fa";
 import "../styles/Commitments.css";
+
+// US bounds for map focus
+const US_BOUNDS = [
+  [24.396308, -125.000000], // Southwest coordinates
+  [49.384358, -66.934570]   // Northeast coordinates
+];
 
 // Helper: create custom marker icon for a given star rating
 const createStarIcon = (starRating) => {
@@ -40,6 +47,27 @@ const createStarIcon = (starRating) => {
   });
 };
 
+// Map control component to handle map actions
+const MapControls = ({ resetView }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Ensure map is bound to US
+    map.fitBounds(US_BOUNDS);
+    
+    // Prevent zooming too far out
+    map.setMinZoom(3);
+    
+    // Restrict panning to US area (with some buffer)
+    map.setMaxBounds([
+      [15, -140], // Southwest with buffer
+      [55, -50]   // Northeast with buffer
+    ]);
+  }, [map]);
+
+  return null;
+};
+
 const Commitments = () => {
   const [prospects, setProspects] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -51,16 +79,17 @@ const Commitments = () => {
     team: "",
     committed: "all", // options: "all", "committed", "uncommitted"
   });
-  const [mapMode, setMapMode] = useState("markers"); // modes: markers, heatmap, clusters
+  const [mapMode, setMapMode] = useState("markers"); // modes: markers, clusters
   const [activeProspect, setActiveProspect] = useState(null);
   const [statsVisible, setStatsVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
 
-  // Fetch recruits and team data
+  // Fetch recruits and team data with better error handling
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [prospectData, teamData] = await Promise.all([
           getAllRecruits(2025),
           getTeams(),
@@ -70,18 +99,30 @@ const Commitments = () => {
           throw new Error("Failed to fetch data");
         }
 
-        // Process the data: assign an id if missing
-        const processedProspects = prospectData.map((prospect, index) => ({
-          ...prospect,
-          id: prospect.id || `prospect-${index}`,
-        }));
+        // Process the data with coordinate validation
+        const processedProspects = prospectData
+          .map((prospect, index) => ({
+            ...prospect,
+            id: prospect.id || `prospect-${index}`,
+          }))
+          .filter(prospect => 
+            prospect.hometownInfo?.latitude && 
+            prospect.hometownInfo?.longitude &&
+            // Ensure coordinates are valid numbers and within US bounds
+            !isNaN(prospect.hometownInfo.latitude) && 
+            !isNaN(prospect.hometownInfo.longitude) &&
+            prospect.hometownInfo.latitude >= 24 && 
+            prospect.hometownInfo.latitude <= 50 &&
+            prospect.hometownInfo.longitude >= -125 && 
+            prospect.hometownInfo.longitude <= -66
+          );
 
         setProspects(processedProspects);
         setTeams(teamData);
         setMapReady(true);
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError(err.message);
+        setError(err.message || "Failed to load recruiting data");
       } finally {
         setLoading(false);
       }
@@ -90,7 +131,7 @@ const Commitments = () => {
     fetchData();
   }, []);
 
-  // Apply filters to prospects
+  // Apply filters to prospects with memoization for performance
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
       // Filter by position
@@ -150,22 +191,38 @@ const Commitments = () => {
     });
 
     Object.keys(stats).forEach(team => {
-      stats[team].avgStars = stats[team].totalStars / stats[team].count;
+      stats[team].avgStars = stats[team].count > 0 ? stats[team].totalStars / stats[team].count : 0;
     });
 
-    return Object.values(stats).sort((a, b) => b.count - a.count);
+    return Object.values(stats).sort((a, b) => {
+      // Sort by total stars first, then by average stars if tied
+      const totalStarsDiff = b.totalStars - a.totalStars;
+      return totalStarsDiff !== 0 ? totalStarsDiff : b.avgStars - a.avgStars;
+    });
   }, [prospects]);
 
-  // Get team logo based on school name
-  const getTeamLogo = (teamName) => {
+  // Get team logo based on school name with caching
+  const teamLogoCache = useRef({});
+  const getTeamLogo = useCallback((teamName) => {
     if (!teamName) return "/logos/default.png";
-    const team = teams.find(
-      (t) => t.school?.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
-    );
-    return team?.logos?.[0] || "/logos/default.png";
-  };
+    
+    // Check cache first
+    if (teamLogoCache.current[teamName]) {
+      return teamLogoCache.current[teamName];
+    }
+    
+    const normalizedTeamName = teamName.toLowerCase().replace(/[^a-z]/g, "");
+    const team = teams.find(t => {
+      const normalizedSchool = t.school?.toLowerCase().replace(/[^a-z]/g, "");
+      return normalizedSchool === normalizedTeamName;
+    });
+    
+    const logo = team?.logos?.[0] || "/logos/default.png";
+    teamLogoCache.current[teamName] = logo;
+    return logo;
+  }, [teams]);
 
-  // Aggregate state-level data (for potential heatmap logic)
+  // Aggregate state-level data
   const stateData = useMemo(() => {
     const states = {};
     filteredProspects.forEach(prospect => {
@@ -183,36 +240,89 @@ const Commitments = () => {
       }
     });
     Object.keys(states).forEach(state => {
-      states[state].avgStars = states[state].totalStars / states[state].count;
+      states[state].avgStars = states[state].count > 0 ? 
+        states[state].totalStars / states[state].count : 0;
     });
     return states;
   }, [filteredProspects]);
 
-  // Handle filter changes
-  const handleFilterChange = (e) => {
+  // Handle filter changes with debounce for search
+  const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
       ...prev,
       [name]: name === "stars" ? parseInt(value) : value
     }));
-  };
+  }, []);
 
-  // Switch map mode (markers, clusters, heatmap)
-  const handleMapModeChange = (mode) => {
+  // Handle map mode changes
+  const handleMapModeChange = useCallback((mode) => {
     setMapMode(mode);
-  };
+  }, []);
 
-  // Reset map view to default center/zoom
-  const resetMapView = () => {
+  // Reset map view to default US bounds
+  const resetMapView = useCallback(() => {
     if (mapRef.current) {
-      mapRef.current.setView([39.8283, -98.5795], 4);
+      mapRef.current.fitBounds(US_BOUNDS);
     }
-  };
+  }, []);
 
   // Toggle the stats panel visibility
-  const toggleStats = () => {
+  const toggleStats = useCallback(() => {
     setStatsVisible((prev) => !prev);
-  };
+  }, []);
+
+  // Create prospect popup content
+  const createProspectPopup = useCallback((prospect) => (
+    <div className="prospect-popup-content">
+      <div className="prospect-popup-header">
+        <div className="prospect-popup-stars">
+          {[...Array(5)].map((_, i) => (
+            <FaStar
+              key={i}
+              className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
+            />
+          ))}
+        </div>
+        <div className="prospect-popup-rating">
+          {prospect.rating ? prospect.rating.toFixed(2) : "N/A"}
+        </div>
+      </div>
+      <h3 className="prospect-popup-name">{prospect.name}</h3>
+      <div className="prospect-popup-details">
+        <div className="prospect-popup-rank">
+          <FaTrophy /> Rank: #{prospect.ranking || "N/A"}
+        </div>
+        <div className="prospect-popup-position">{prospect.position || "Unknown"}</div>
+        <div className="prospect-popup-hometown">
+          {prospect.city || ""}{prospect.city && prospect.stateProvince ? ", " : ""}{prospect.stateProvince || ""}
+        </div>
+        <div className="prospect-popup-metrics">
+          <span>
+            {prospect.height ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"` : ""}
+          </span>
+          {prospect.height && prospect.weight ? " · " : ""}
+          <span>
+            {prospect.weight ? `${prospect.weight} lbs` : ""}
+          </span>
+        </div>
+      </div>
+      {prospect.committedTo ? (
+        <div className="prospect-popup-commitment">
+          <img
+            src={getTeamLogo(prospect.committedTo)}
+            alt={`${prospect.committedTo} Logo`}
+            className="popup-team-logo"
+          />
+          <span>Committed to {prospect.committedTo}</span>
+        </div>
+      ) : (
+        <div className="prospect-popup-uncommitted">
+          <span>Uncommitted</span>
+        </div>
+      )}
+    </div>
+  ), [getTeamLogo]);
 
   // Loading and error handling
   if (loading) {
@@ -344,11 +454,17 @@ const Commitments = () => {
             zoom={4}
             style={{ height: "70vh", width: "100%" }}
             ref={mapRef}
+            maxBoundsViscosity={1.0}
+            scrollWheelZoom={true}
+            preferCanvas={true}
           >
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              noWrap={true}
             />
+            <MapControls resetView={resetMapView} />
+            
             {mapMode === 'markers' && filteredProspects.map((prospect) => {
               if (!prospect.hometownInfo?.latitude || !prospect.hometownInfo?.longitude) {
                 return null;
@@ -363,57 +479,40 @@ const Commitments = () => {
                   }}
                 >
                   <Popup className="prospect-popup">
-                    <div className="prospect-popup-content">
-                      <div className="prospect-popup-header">
-                        <div className="prospect-popup-stars">
-                          {[...Array(5)].map((_, i) => (
-                            <FaStar
-                              key={i}
-                              className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
-                            />
-                          ))}
-                        </div>
-                        <div className="prospect-popup-rating">
-                          {prospect.rating ? prospect.rating.toFixed(4) : "N/A"}
-                        </div>
-                      </div>
-                      <h3 className="prospect-popup-name">{prospect.name}</h3>
-                      <div className="prospect-popup-details">
-                        <div className="prospect-popup-rank">
-                          <FaTrophy /> Rank: #{prospect.ranking}
-                        </div>
-                        <div className="prospect-popup-position">{prospect.position}</div>
-                        <div className="prospect-popup-hometown">
-                          {prospect.city}, {prospect.stateProvince}
-                        </div>
-                        <div className="prospect-popup-metrics">
-                          <span>
-                            {prospect.height ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"` : "N/A"}
-                          </span>
-                          <span>
-                            {prospect.weight ? `${prospect.weight} lbs` : "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                      {prospect.committedTo ? (
-                        <div className="prospect-popup-commitment">
-                          <img
-                            src={getTeamLogo(prospect.committedTo)}
-                            alt={`${prospect.committedTo} Logo`}
-                            className="popup-team-logo"
-                          />
-                          <span>Committed to {prospect.committedTo}</span>
-                        </div>
-                      ) : (
-                        <div className="prospect-popup-uncommitted">
-                          <span>Uncommitted</span>
-                        </div>
-                      )}
-                    </div>
+                    {createProspectPopup(prospect)}
                   </Popup>
                 </Marker>
               );
             })}
+            
+            {mapMode === 'clusters' && (
+              <MarkerClusterGroup
+                chunkedLoading
+                maxClusterRadius={50}
+                spiderfyOnMaxZoom={true}
+                disableClusteringAtZoom={8}
+              >
+                {filteredProspects.map((prospect) => {
+                  if (!prospect.hometownInfo?.latitude || !prospect.hometownInfo?.longitude) {
+                    return null;
+                  }
+                  return (
+                    <Marker
+                      key={prospect.id}
+                      position={[prospect.hometownInfo.latitude, prospect.hometownInfo.longitude]}
+                      icon={createStarIcon(prospect.stars)}
+                      eventHandlers={{
+                        click: () => setActiveProspect(prospect)
+                      }}
+                    >
+                      <Popup className="prospect-popup">
+                        {createProspectPopup(prospect)}
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MarkerClusterGroup>
+            )}
           </MapContainer>
         )}
         <AnimatePresence>
@@ -458,6 +557,7 @@ const Commitments = () => {
                           <img
                             src={getTeamLogo(team.name)}
                             alt={`${team.name} Logo`}
+                            loading="lazy"
                           />
                         </div>
                         <div className="team-rank-info">
