@@ -295,15 +295,16 @@ const CoachOverview = () => {
   let displayedCoaches = [...processedCoaches];
   
   // Apply search filter
-  if (filterTerm) {
-    const searchTerm = filterTerm.toLowerCase();
-    displayedCoaches = displayedCoaches.filter(
-      coach => 
-        coach.coachName.toLowerCase().includes(searchTerm) || 
-        coach.school.toLowerCase().includes(searchTerm)
-    );
-  }
-  
+// Apply search filter (by name, school, or conference)
+if (filterTerm) {
+  const searchTerm = filterTerm.toLowerCase();
+  displayedCoaches = displayedCoaches.filter(
+    coach => 
+      coach.coachName.toLowerCase().includes(searchTerm) ||
+      coach.school.toLowerCase().includes(searchTerm) ||
+      (coach.conference && coach.conference.toLowerCase().includes(searchTerm))
+  );
+}
   // Apply status filter
   if (statusFilter !== "all") {
     displayedCoaches = displayedCoaches.filter(coach => {
