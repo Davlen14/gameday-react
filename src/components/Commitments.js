@@ -11,24 +11,22 @@ import {
   FaTrophy,
   FaFootballBall,
   FaSyncAlt,
-  FaChartBar
+  FaChartBar,
+  FaExpand,
+  FaCompress
 } from "react-icons/fa";
 import "../styles/Commitments.css";
 
-/**
- * You need to implement these services in your codebase.
- * getAllRecruits(year) => returns an array of recruit objects.
- * getTeams() => returns an array of team objects (for logos, etc.).
- */
+// Services
 import { getAllRecruits, getTeams } from "../services/teamsService";
 
-/** US bounding box to restrict map view to the continental US. */
+// US bounding box to restrict map view to the continental US.
 const US_BOUNDS = [
   [24.396308, -125.0], // Southwest
   [49.384358, -66.93457] // Northeast
 ];
 
-/** Create a custom marker icon for a given star rating. */
+// Create a custom marker icon for a given star rating.
 const createStarIcon = (starRating) => {
   const colors = {
     3: "#4287f5", // Blue
@@ -51,18 +49,13 @@ const createStarIcon = (starRating) => {
   });
 };
 
-/** A small component to set up the map's bounds and constraints. */
+// MapControls component: sets map bounds and zoom limits.
 const MapControls = () => {
   const map = useMap();
 
   useEffect(() => {
-    // Fit map to US bounds on load
     map.fitBounds(US_BOUNDS);
-
-    // Prevent zooming too far out
     map.setMinZoom(3);
-
-    // Restrict panning to US area (with some buffer)
     map.setMaxBounds([
       [15, -140], // Southwest buffer
       [55, -50],  // Northeast buffer
@@ -78,21 +71,22 @@ const Commitments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Added "state" to the filters
+  // Added "state" to filters. Also, "school" filter now uses dropdown.
   const [filters, setFilters] = useState({
     position: "All",
     stars: 0,
-    team: "",
     committed: "all", // "all", "committed", "uncommitted"
     state: "All",
+    school: "All",
   });
 
   const [mapMode, setMapMode] = useState("markers"); // "markers" or "clusters"
   const [statsVisible, setStatsVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [fullScreen, setFullScreen] = useState(false);
   const mapRef = useRef(null);
 
-  // Fetch recruits and team data
+  // Fetch recruits and team data.
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -106,8 +100,6 @@ const Commitments = () => {
           throw new Error("Failed to fetch data");
         }
 
-        // Process the data: give each prospect a unique ID if missing
-        // Optionally filter out any invalid lat/long here if you wish
         const processedProspects = prospectData.map((prospect, index) => ({
           ...prospect,
           id: prospect.id || `prospect-${index}`,
@@ -127,42 +119,32 @@ const Commitments = () => {
     fetchData();
   }, []);
 
-  /** Filter the prospects based on user selections. */
+  // Filter prospects based on user selections.
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
-      // Position filter
       if (filters.position !== "All" && prospect.position !== filters.position) {
         return false;
       }
-      // Star rating filter
       if (filters.stars > 0 && (prospect.stars || 0) < filters.stars) {
         return false;
       }
-      // Team (school) search
-      if (
-        filters.team &&
-        (!prospect.committedTo ||
-          !prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase()))
-      ) {
+      if (filters.committed === "committed" && !prospect.committedTo) {
         return false;
       }
-      // Commitment status
-      if (
-        (filters.committed === "committed" && !prospect.committedTo) ||
-        (filters.committed === "uncommitted" && prospect.committedTo)
-      ) {
+      if (filters.committed === "uncommitted" && prospect.committedTo) {
         return false;
       }
-      // State filter
       if (filters.state !== "All" && prospect.stateProvince !== filters.state) {
         return false;
       }
-
+      if (filters.school !== "All" && prospect.committedTo !== filters.school) {
+        return false;
+      }
       return true;
     });
   }, [prospects, filters]);
 
-  /** Generate top team statistics (commits, average stars, etc.). */
+  // Generate top team statistics.
   const teamStats = useMemo(() => {
     const stats = {};
     const committedProspects = prospects.filter((p) => p.committedTo);
@@ -186,20 +168,18 @@ const Commitments = () => {
       if (prospect.stars === 3) stats[team].threeStars++;
     });
 
-    // Calculate average stars
     Object.keys(stats).forEach((team) => {
       stats[team].avgStars =
         stats[team].count > 0 ? stats[team].totalStars / stats[team].count : 0;
     });
 
-    // Sort primarily by total stars, then by avgStars
     return Object.values(stats).sort((a, b) => {
       const diff = b.totalStars - a.totalStars;
       return diff !== 0 ? diff : b.avgStars - a.avgStars;
     });
   }, [prospects]);
 
-  /** Simple caching for team logos. */
+  // Cache team logos.
   const teamLogoCache = useRef({});
   const getTeamLogo = useCallback(
     (teamName) => {
@@ -222,7 +202,18 @@ const Commitments = () => {
     [teams]
   );
 
-  /** State-level stats (if you need them). */
+  // Generate unique school options for the dropdown.
+  const schoolOptions = useMemo(() => {
+    const schools = new Set();
+    prospects.forEach((p) => {
+      if (p.committedTo) {
+        schools.add(p.committedTo);
+      }
+    });
+    return Array.from(schools).sort();
+  }, [prospects]);
+
+  // State-level stats (if needed).
   const stateData = useMemo(() => {
     const states = {};
     filteredProspects.forEach((prospect) => {
@@ -234,11 +225,10 @@ const Commitments = () => {
       states[st].count++;
       states[st].totalStars += prospect.stars || 0;
     });
-    // Could add average star calc if needed
     return states;
   }, [filteredProspects]);
 
-  /** Handle changes to filters. */
+  // Handle filter changes.
   const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -247,24 +237,29 @@ const Commitments = () => {
     }));
   }, []);
 
-  /** Switch between marker mode and cluster mode. */
+  // Switch between marker and cluster mode.
   const handleMapModeChange = useCallback((mode) => {
     setMapMode(mode);
   }, []);
 
-  /** Reset the map to the default US view. */
+  // Reset the map view to US bounds.
   const resetMapView = useCallback(() => {
     if (mapRef.current) {
       mapRef.current.fitBounds(US_BOUNDS);
     }
   }, []);
 
-  /** Toggle the stats panel on/off. */
+  // Toggle the stats panel.
   const toggleStats = useCallback(() => {
     setStatsVisible((prev) => !prev);
   }, []);
 
-  /** Create the content of each prospect's popup. */
+  // Toggle full screen mode.
+  const toggleFullScreen = useCallback(() => {
+    setFullScreen((prev) => !prev);
+  }, []);
+
+  // Create prospect popup content.
   const createProspectPopup = useCallback(
     (prospect) => (
       <div className="prospect-popup-content">
@@ -319,7 +314,6 @@ const Commitments = () => {
     [getTeamLogo]
   );
 
-  /** If data is still loading or there was an error, show messages. */
   if (loading) {
     return (
       <div className="commitments-loading">
@@ -340,8 +334,7 @@ const Commitments = () => {
   }
 
   return (
-    <div className="commitments-container">
-      {/* Header */}
+    <div className={`commitments-container ${fullScreen ? "full-screen" : ""}`}>
       <header className="commitments-header">
         <h1>2025 Recruiting Map</h1>
         <div className="commitments-subtitle">
@@ -349,7 +342,6 @@ const Commitments = () => {
         </div>
       </header>
 
-      {/* Map Controls */}
       <div className="map-controls">
         <div className="map-toolbar">
           <div className="map-modes">
@@ -370,16 +362,15 @@ const Commitments = () => {
             <button className="action-button" onClick={resetMapView}>
               <FaSyncAlt /> Reset View
             </button>
-            <button
-              className={`action-button ${statsVisible ? "active" : ""}`}
-              onClick={toggleStats}
-            >
+            <button className="action-button" onClick={toggleStats}>
               <FaChartBar /> {statsVisible ? "Hide Stats" : "Show Stats"}
+            </button>
+            <button className="action-button" onClick={toggleFullScreen}>
+              {fullScreen ? <FaCompress /> : <FaExpand />} {fullScreen ? "Exit Full" : "Full Screen"}
             </button>
           </div>
         </div>
 
-        {/* Filter Controls */}
         <div className="filter-controls">
           <div className="filter-group">
             <label htmlFor="position-select">Position:</label>
@@ -433,7 +424,6 @@ const Commitments = () => {
             </select>
           </div>
 
-          {/* New State Filter */}
           <div className="filter-group">
             <label htmlFor="state-select">State:</label>
             <select
@@ -455,44 +445,43 @@ const Commitments = () => {
             </select>
           </div>
 
-          <div className="filter-group search-group">
-            <label htmlFor="team-search">School:</label>
-            <div className="search-input-container">
-              <FaSearch className="search-icon" />
-              <input
-                id="team-search"
-                type="text"
-                name="team"
-                value={filters.team}
-                onChange={handleFilterChange}
-                placeholder="Search school..."
-                className="team-search"
-              />
-            </div>
+          <div className="filter-group">
+            <label htmlFor="school-select">School:</label>
+            <select
+              id="school-select"
+              name="school"
+              value={filters.school}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="All">All Schools</option>
+              {schoolOptions.map((sch) => (
+                <option key={sch} value={sch}>
+                  {sch}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Map Container */}
       <div className="map-container">
         {mapReady && (
           <MapContainer
-            center={[39.8283, -98.5795]} // Approx center of the US
+            center={[39.8283, -98.5795]}
             zoom={4}
             style={{ height: "70vh", width: "100%" }}
             ref={mapRef}
             scrollWheelZoom={true}
-            // No need for noWrap or maxBounds here; we handle in MapControls
           >
-            {/* Dark-themed tiles from Carto */}
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>
-                contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">
+              OSM</a> contributors &copy; <a href="https://carto.com/attributions">
+              CARTO</a>'
             />
             <MapControls />
 
-            {/* Marker Mode */}
             {mapMode === "markers" &&
               filteredProspects.map((prospect) => {
                 if (
@@ -517,7 +506,6 @@ const Commitments = () => {
                 );
               })}
 
-            {/* Cluster Mode */}
             {mapMode === "clusters" && (
               <MarkerClusterGroup
                 chunkedLoading
@@ -552,7 +540,6 @@ const Commitments = () => {
           </MapContainer>
         )}
 
-        {/* Animated Stats Panel */}
         <AnimatePresence>
           {statsVisible && (
             <motion.div
@@ -588,7 +575,6 @@ const Commitments = () => {
                   </div>
                 </div>
 
-                {/* Top Teams */}
                 <div className="top-teams-section">
                   <h4>Top Recruiting Teams</h4>
                   <div className="team-rankings">
@@ -640,7 +626,6 @@ const Commitments = () => {
         </AnimatePresence>
       </div>
 
-      {/* Map Legend */}
       <div className="map-legend">
         <div className="legend-item">
           <div className="legend-marker five-star"></div>
@@ -660,7 +645,6 @@ const Commitments = () => {
         </div>
       </div>
 
-      {/* Quick Stats Section */}
       <div className="recruit-stats">
         <h3>Quick Stats</h3>
         <div className="stat-grid">
