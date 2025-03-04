@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, FaTrophy, FaExclamationTriangle, FaTachometerAlt, FaStar } from "react-icons/fa";
+import { 
+  FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, 
+  FaTrophy, FaExclamationTriangle, FaTachometerAlt, FaStar 
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService"; // getCoaches is here
@@ -242,7 +245,7 @@ const CoachOverview = () => {
     setActiveTab(tab);
   };
 
-  // Process coaches for display
+  // Process coaches for display (added conference and modified composite calculation)
   const processedCoaches = coachInfo.map((coach) => {
     const agg = aggregateCoachData(coach.seasons);
     const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
@@ -251,18 +254,19 @@ const CoachOverview = () => {
     const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-    // Modified composite calculation: now the sum of the averages (not divided by 4)
+    // Modified composite calculation: use the average of the four stats multiplied by winPct/100
     const composite = agg.count > 0
-      ? (parseFloat(avgSrs) +
-         parseFloat(avgSpOverall) +
-         parseFloat(avgSpOffense) +
-         parseFloat(avgSpDefense))
+      ? ((parseFloat(avgSrs) + parseFloat(avgSpOverall) + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4) * (parseFloat(winPct) / 100)
       : 0;
+    // Get conference info from team data (if available)
+    const teamData = teams.find(t => t.school.toLowerCase() === (lastSeason.school || "").toLowerCase());
+    const conference = teamData?.conference || "";
     return {
       coach,
       team: lastSeason.school || "",
       coachName: coach.firstName + " " + coach.lastName,
       school: lastSeason.school || "",
+      conference, // NEW: conference property added
       hireDate: coach.hireDate ? new Date(coach.hireDate) : null,
       games: agg.games,
       wins: agg.wins,
@@ -283,16 +287,16 @@ const CoachOverview = () => {
     };
   });
 
-  // Apply filters to coaches
+  // Apply filters to coaches (now includes conference filtering)
   let displayedCoaches = [...processedCoaches];
   
-  // Apply search filter
   if (filterTerm) {
     const searchTerm = filterTerm.toLowerCase();
     displayedCoaches = displayedCoaches.filter(
       coach => 
         coach.coachName.toLowerCase().includes(searchTerm) || 
-        coach.school.toLowerCase().includes(searchTerm)
+        coach.school.toLowerCase().includes(searchTerm) ||
+        (coach.conference && coach.conference.toLowerCase().includes(searchTerm))
     );
   }
   
@@ -300,7 +304,7 @@ const CoachOverview = () => {
   if (statusFilter !== "all") {
     displayedCoaches = displayedCoaches.filter(coach => {
       if (statusFilter === "premiere") {
-        return coach.status.text === "Premiere Coach";
+        return coach.status.text === "Premiere";
       } else if (statusFilter === "average") {
         return coach.status.text === "Average";
       } else if (statusFilter === "hotseat") {
@@ -524,7 +528,7 @@ const CoachOverview = () => {
                 <div className="search-container">
                   <input
                     type="text"
-                    placeholder="Search by name or school..."
+                    placeholder="Search by name, school or conference..."
                     value={filterTerm}
                     onChange={(e) => setFilterTerm(e.target.value)}
                     className="search-input"
@@ -597,7 +601,7 @@ const CoachOverview = () => {
                           custom={index}
                           layoutId={item.coachName}
                         >
-                         <div
+                          <div
                             className="coach-card-header"
                             style={{ display: 'flex', alignItems: 'center' }}
                           >
@@ -660,7 +664,6 @@ const CoachOverview = () => {
                                   {item.wins}-{item.losses}
                                 </span>
                               </div>
-                              {/* No Top 5 here */}
                             </div>
 
                             {/* SP Overall */}
@@ -688,7 +691,6 @@ const CoachOverview = () => {
                                 <span className="stat-label">Experience</span>
                                 <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
                               </div>
-                              {/* No Top 5 here */}
                             </div>
                           </div>
                           <button 
