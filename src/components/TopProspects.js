@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getAllRecruits, getTeams } from "../services/teamsService";
-import { FaUserCircle, FaStar, FaCheckCircle, FaSearch, FaFilter, FaAngleDown, FaSortAmountDown } from "react-icons/fa";
+import {
+  FaUserCircle,
+  FaStar,
+  FaCheckCircle,
+  FaSearch,
+  FaFilter,
+  FaAngleDown,
+  FaSortAmountDown,
+} from "react-icons/fa";
 import "../styles/TopProspects.css";
 
 const TopProspects = () => {
@@ -9,7 +17,10 @@ const TopProspects = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ position: "All", team: "" });
-  const [sortConfig, setSortConfig] = useState({ key: "ranking", direction: "asc" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "ranking",
+    direction: "asc",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +39,7 @@ const TopProspects = () => {
           ...prospect,
           id: prospect.id || `prospect-${index}`,
         }));
-        
+
         setProspects(processedProspects.sort((a, b) => a.ranking - b.ranking));
         setTeams(teamData);
       } catch (error) {
@@ -45,7 +56,9 @@ const TopProspects = () => {
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/logos/default.png";
     const team = teams.find(
-      (t) => t.school?.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
+      (t) =>
+        t.school?.toLowerCase().replace(/[^a-z]/g, "") ===
+        teamName.toLowerCase().replace(/[^a-z]/g, "")
     );
     return team?.logos?.[0] || "/logos/default.png";
   };
@@ -54,9 +67,9 @@ const TopProspects = () => {
     return (
       <div className="stars-container">
         {[...Array(5)].map((_, index) => (
-          <FaStar 
-            key={index} 
-            className={`star-icon ${index < stars ? "filled" : "empty"}`} 
+          <FaStar
+            key={index}
+            className={`star-icon ${index < stars ? "filled" : "empty"}`}
           />
         ))}
       </div>
@@ -69,9 +82,9 @@ const TopProspects = () => {
   };
 
   const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
   };
@@ -81,30 +94,32 @@ const TopProspects = () => {
     let filtered = [...prospects].filter((prospect) => {
       return (
         (filters.position === "All" || prospect.position === filters.position) &&
-        (filters.team === "" || (prospect.committedTo && prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase())))
+        (filters.team === "" ||
+          (prospect.committedTo &&
+            prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase())))
       );
     });
 
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
+          return sortConfig.direction === "asc" ? -1 : 1;
         }
         if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
+          return sortConfig.direction === "asc" ? 1 : -1;
         }
         return 0;
       });
     }
-    
+
     return filtered;
   }, [prospects, filters, sortConfig]);
 
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return null;
     return (
-      <FaSortAmountDown 
-        className={`sort-icon ${sortConfig.direction === 'desc' ? 'flipped' : ''}`} 
+      <FaSortAmountDown
+        className={`sort-icon ${sortConfig.direction === "desc" ? "flipped" : ""}`}
       />
     );
   };
@@ -144,9 +159,9 @@ const TopProspects = () => {
             <FaFilter />
           </div>
           <div className="select-wrapper">
-            <select 
-              name="position" 
-              value={filters.position} 
+            <select
+              name="position"
+              value={filters.position}
               onChange={handleFilterChange}
               className="position-filter"
             >
@@ -155,8 +170,10 @@ const TopProspects = () => {
                 .filter(Boolean)
                 .sort()
                 .map((pos) => (
-                  <option key={pos} value={pos}>{pos}</option>
-              ))}
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
             </select>
             <FaAngleDown className="select-arrow" />
           </div>
@@ -190,45 +207,46 @@ const TopProspects = () => {
           <div className="prospects-count">
             Showing {sortedAndFilteredProspects.length} prospects
           </div>
-          
+
           <table className="prospects-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort('ranking')} className="sortable-header">
+                <th onClick={() => handleSort("ranking")} className="sortable-header">
                   <span>Rank</span>
-                  {getSortIndicator('ranking')}
+                  {getSortIndicator("ranking")}
                 </th>
                 <th>Player</th>
-                <th onClick={() => handleSort('position')} className="sortable-header">
+                <th onClick={() => handleSort("position")} className="sortable-header">
                   <span>Position</span>
-                  {getSortIndicator('position')}
+                  {getSortIndicator("position")}
                 </th>
-                <th onClick={() => handleSort('height')} className="sortable-header">
+                <th onClick={() => handleSort("height")} className="sortable-header">
                   <span>Height</span>
-                  {getSortIndicator('height')}
+                  {getSortIndicator("height")}
                 </th>
-                <th onClick={() => handleSort('weight')} className="sortable-header">
+                <th onClick={() => handleSort("weight")} className="sortable-header">
                   <span>Weight</span>
-                  {getSortIndicator('weight')}
+                  {getSortIndicator("weight")}
                 </th>
-                <th onClick={() => handleSort('stars')} className="sortable-header">
+                <th onClick={() => handleSort("stars")} className="sortable-header">
                   <span>Stars</span>
-                  {getSortIndicator('stars')}
+                  {getSortIndicator("stars")}
                 </th>
-                <th onClick={() => handleSort('rating')} className="sortable-header">
+                <th onClick={() => handleSort("rating")} className="sortable-header">
                   <span>Rating</span>
-                  {getSortIndicator('rating')}
+                  {getSortIndicator("rating")}
                 </th>
                 <th>Committed</th>
               </tr>
             </thead>
             <tbody>
               {sortedAndFilteredProspects.map((prospect, index) => (
-                <tr key={prospect.id} className={`prospect-row ${index % 2 === 0 ? "even" : "odd"}`}>
+                <tr
+                  key={prospect.id}
+                  className={`prospect-row ${index % 2 === 0 ? "even" : "odd"}`}
+                >
                   <td className="rank-cell">
-                    <div className="rank-badge">
-                      {prospect.ranking}
-                    </div>
+                    <div className="rank-badge">{prospect.ranking}</div>
                   </td>
                   <td className="player-cell">
                     <div className="player-wrapper">
@@ -237,18 +255,20 @@ const TopProspects = () => {
                       </div>
                       <div className="player-info">
                         <div className="player-name">{prospect.name}</div>
-                        <div className="player-hometown">{prospect.hometown || " "}</div>
+                        <div className="player-hometown">
+                          {prospect.hometown || " "}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="position-cell">{prospect.position || "N/A"}</td>
                   <td>{prospect.height ? `${prospect.height} in` : "N/A"}</td>
                   <td>{prospect.weight ? `${prospect.weight} lbs` : "N/A"}</td>
-                  <td className="stars-cell">
-                    {renderStars(prospect.stars || 0)}
-                  </td>
+                  <td className="stars-cell">{renderStars(prospect.stars || 0)}</td>
                   <td className="rating-cell">
-                    <div className="rating-value">{prospect.rating ? prospect.rating.toFixed(2) : "N/A"}</div>
+                    <div className="rating-value">
+                      {prospect.rating ? prospect.rating.toFixed(2) : "N/A"}
+                    </div>
                   </td>
                   <td className="committed-cell">
                     {prospect.committedTo ? (
