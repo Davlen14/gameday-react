@@ -39,9 +39,9 @@ const aggregateCoachData = (seasons) => {
 
 // Determine coach status based on composite score (average of SRS, SP Overall, SP Offense, SP Defense)
 const getCoachStatus = (score) => {
-  if (score >= 65) {
+  if (score >= 60) {
     return { text: "Premiere Coach", color: "var(--success-color)", icon: <FaTrophy /> };
-  } else if (score <= 45) {
+  } else if (score <= 40) {
     return { text: "On Hot Seat", color: "var(--danger-color)", icon: <FaExclamationTriangle /> };
   } else {
     return { text: "Average", color: "var(--info-color)", icon: <FaStar /> };
