@@ -464,6 +464,18 @@
     background-color: rgba(40, 167, 69, 0.15);
     color: var(--success-color);
   }
+
+  .glassy-metal {
+    display: inline-block;
+    background: linear-gradient(145deg, #00ff66, #009933);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.9em;
+  }
   
   .view-details-btn {
     width: 100%;
