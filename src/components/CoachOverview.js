@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, 
-  FaTrophy, FaExclamationTriangle, FaStar, FaBalanceScale 
-} from "react-icons/fa";
-
+import { FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, FaTrophy, FaExclamationTriangle, FaStar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService"; // getCoaches is here
@@ -45,23 +41,23 @@ const aggregateCoachData = (seasons) => {
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { 
-      text: "Premiere Coach", 
+      text: "Premiere", 
       color: "var(--success-color)", 
-      icon: <FaStar style={{ color: "#fff" }} />, 
+      icon: <FaTrophy />, 
       className: "status-badge-premiere" 
     };
   } else if (score < 40) {
     return { 
       text: "On Hot Seat", 
       color: "var(--danger-color)", 
-      icon: <FaExclamationTriangle style={{ color: "#fff" }} />, 
+      icon: <FaExclamationTriangle />, 
       className: "status-badge-hotseat" 
     };
   } else {
     return { 
       text: "Average", 
       color: "var(--info-color)", 
-      icon: <FaBalanceScale style={{ color: "#fff" }} />, 
+      icon: <FaStar />, 
       className: "status-badge-average" 
     };
   }
@@ -548,13 +544,13 @@ const CoachOverview = () => {
                     className={`status-filter premiere ${statusFilter === "premiere" ? "active" : ""}`}
                     onClick={() => handleStatusFilter("premiere")}
                   >
-                    <FaStar /> Premiere
+                    <FaTrophy /> Premiere
                   </button>
                   <button 
                     className={`status-filter average ${statusFilter === "average" ? "active" : ""}`}
                     onClick={() => handleStatusFilter("average")}
                   >
-                    <FaBalanceScale /> Average
+                    <FaStar /> Average
                   </button>
                   <button 
                     className={`status-filter hotseat ${statusFilter === "hotseat" ? "active" : ""}`}
