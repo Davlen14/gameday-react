@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { getAllRecruits, getTeams } from "../services/teamsService";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FaStar, 
-  FaFilter, 
-  FaLayerGroup, 
-  FaSearch, 
-  FaInfoCircle, 
+import {
+  FaStar,
+  FaSearch,
+  FaInfoCircle,
   FaMapMarkedAlt,
   FaTrophy,
   FaFootballBall,
@@ -18,13 +15,20 @@ import {
 } from "react-icons/fa";
 import "../styles/Commitments.css";
 
-// US bounds for map focus
+/**
+ * You need to implement these services in your codebase.
+ * getAllRecruits(year) => returns an array of recruit objects.
+ * getTeams() => returns an array of team objects (for logos, etc.).
+ */
+import { getAllRecruits, getTeams } from "../services/teamsService";
+
+/** US bounding box to restrict map view to the continental US. */
 const US_BOUNDS = [
-  [24.396308, -125.000000], // Southwest coordinates
-  [49.384358, -66.934570]   // Northeast coordinates
+  [24.396308, -125.0], // Southwest
+  [49.384358, -66.93457] // Northeast
 ];
 
-// Helper: create custom marker icon for a given star rating
+/** Create a custom marker icon for a given star rating. */
 const createStarIcon = (starRating) => {
   const colors = {
     3: "#4287f5", // Blue
@@ -47,21 +51,21 @@ const createStarIcon = (starRating) => {
   });
 };
 
-// Map control component to handle map actions
-const MapControls = ({ resetView }) => {
+/** A small component to set up the map's bounds and constraints. */
+const MapControls = () => {
   const map = useMap();
-  
+
   useEffect(() => {
-    // Ensure map is bound to US
+    // Fit map to US bounds on load
     map.fitBounds(US_BOUNDS);
-    
+
     // Prevent zooming too far out
     map.setMinZoom(3);
-    
+
     // Restrict panning to US area (with some buffer)
     map.setMaxBounds([
-      [15, -140], // Southwest with buffer
-      [55, -50]   // Northeast with buffer
+      [15, -140], // Southwest buffer
+      [55, -50],  // Northeast buffer
     ]);
   }, [map]);
 
@@ -73,19 +77,22 @@ const Commitments = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Added "state" to the filters
   const [filters, setFilters] = useState({
     position: "All",
     stars: 0,
     team: "",
-    committed: "all", // options: "all", "committed", "uncommitted"
+    committed: "all", // "all", "committed", "uncommitted"
+    state: "All",
   });
-  const [mapMode, setMapMode] = useState("markers"); // modes: markers, clusters
-  const [activeProspect, setActiveProspect] = useState(null);
+
+  const [mapMode, setMapMode] = useState("markers"); // "markers" or "clusters"
   const [statsVisible, setStatsVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
 
-  // Fetch recruits and team data with better error handling
+  // Fetch recruits and team data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -99,23 +106,12 @@ const Commitments = () => {
           throw new Error("Failed to fetch data");
         }
 
-        // Process the data with coordinate validation
-        const processedProspects = prospectData
-          .map((prospect, index) => ({
-            ...prospect,
-            id: prospect.id || `prospect-${index}`,
-          }))
-          .filter(prospect => 
-            prospect.hometownInfo?.latitude && 
-            prospect.hometownInfo?.longitude &&
-            // Ensure coordinates are valid numbers and within US bounds
-            !isNaN(prospect.hometownInfo.latitude) && 
-            !isNaN(prospect.hometownInfo.longitude) &&
-            prospect.hometownInfo.latitude >= 24 && 
-            prospect.hometownInfo.latitude <= 50 &&
-            prospect.hometownInfo.longitude >= -125 && 
-            prospect.hometownInfo.longitude <= -66
-          );
+        // Process the data: give each prospect a unique ID if missing
+        // Optionally filter out any invalid lat/long here if you wish
+        const processedProspects = prospectData.map((prospect, index) => ({
+          ...prospect,
+          id: prospect.id || `prospect-${index}`,
+        }));
 
         setProspects(processedProspects);
         setTeams(teamData);
@@ -131,18 +127,18 @@ const Commitments = () => {
     fetchData();
   }, []);
 
-  // Apply filters to prospects with memoization for performance
+  /** Filter the prospects based on user selections. */
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
-      // Filter by position
+      // Position filter
       if (filters.position !== "All" && prospect.position !== filters.position) {
         return false;
       }
-      // Filter by star rating
-      if (filters.stars > 0 && prospect.stars < filters.stars) {
+      // Star rating filter
+      if (filters.stars > 0 && (prospect.stars || 0) < filters.stars) {
         return false;
       }
-      // Filter by team (school search)
+      // Team (school) search
       if (
         filters.team &&
         (!prospect.committedTo ||
@@ -150,34 +146,37 @@ const Commitments = () => {
       ) {
         return false;
       }
-      // Filter by commitment status
+      // Commitment status
       if (
         (filters.committed === "committed" && !prospect.committedTo) ||
         (filters.committed === "uncommitted" && prospect.committedTo)
       ) {
         return false;
       }
+      // State filter
+      if (filters.state !== "All" && prospect.stateProvince !== filters.state) {
+        return false;
+      }
+
       return true;
     });
   }, [prospects, filters]);
 
-  // Calculate team statistics from committed prospects
+  /** Generate top team statistics (commits, average stars, etc.). */
   const teamStats = useMemo(() => {
     const stats = {};
-    const committedProspects = prospects.filter(p => p.committedTo);
+    const committedProspects = prospects.filter((p) => p.committedTo);
 
-    committedProspects.forEach(prospect => {
+    committedProspects.forEach((prospect) => {
       const team = prospect.committedTo;
       if (!stats[team]) {
         stats[team] = {
           name: team,
           count: 0,
-          avgStars: 0,
           totalStars: 0,
           fiveStars: 0,
           fourStars: 0,
           threeStars: 0,
-          positions: {}
         };
       }
       stats[team].count++;
@@ -185,146 +184,142 @@ const Commitments = () => {
       if (prospect.stars === 5) stats[team].fiveStars++;
       if (prospect.stars === 4) stats[team].fourStars++;
       if (prospect.stars === 3) stats[team].threeStars++;
-      if (prospect.position) {
-        stats[team].positions[prospect.position] = (stats[team].positions[prospect.position] || 0) + 1;
-      }
     });
 
-    Object.keys(stats).forEach(team => {
-      stats[team].avgStars = stats[team].count > 0 ? stats[team].totalStars / stats[team].count : 0;
+    // Calculate average stars
+    Object.keys(stats).forEach((team) => {
+      stats[team].avgStars =
+        stats[team].count > 0 ? stats[team].totalStars / stats[team].count : 0;
     });
 
+    // Sort primarily by total stars, then by avgStars
     return Object.values(stats).sort((a, b) => {
-      // Sort by total stars first, then by average stars if tied
-      const totalStarsDiff = b.totalStars - a.totalStars;
-      return totalStarsDiff !== 0 ? totalStarsDiff : b.avgStars - a.avgStars;
+      const diff = b.totalStars - a.totalStars;
+      return diff !== 0 ? diff : b.avgStars - a.avgStars;
     });
   }, [prospects]);
 
-  // Get team logo based on school name with caching
+  /** Simple caching for team logos. */
   const teamLogoCache = useRef({});
-  const getTeamLogo = useCallback((teamName) => {
-    if (!teamName) return "/logos/default.png";
-    
-    // Check cache first
-    if (teamLogoCache.current[teamName]) {
-      return teamLogoCache.current[teamName];
-    }
-    
-    const normalizedTeamName = teamName.toLowerCase().replace(/[^a-z]/g, "");
-    const team = teams.find(t => {
-      const normalizedSchool = t.school?.toLowerCase().replace(/[^a-z]/g, "");
-      return normalizedSchool === normalizedTeamName;
-    });
-    
-    const logo = team?.logos?.[0] || "/logos/default.png";
-    teamLogoCache.current[teamName] = logo;
-    return logo;
-  }, [teams]);
+  const getTeamLogo = useCallback(
+    (teamName) => {
+      if (!teamName) return "/logos/default.png";
 
-  // Aggregate state-level data
+      if (teamLogoCache.current[teamName]) {
+        return teamLogoCache.current[teamName];
+      }
+
+      const normalizedTeamName = teamName.toLowerCase().replace(/[^a-z]/g, "");
+      const foundTeam = teams.find((t) => {
+        const normalizedSchool = t.school?.toLowerCase().replace(/[^a-z]/g, "");
+        return normalizedSchool === normalizedTeamName;
+      });
+
+      const logo = foundTeam?.logos?.[0] || "/logos/default.png";
+      teamLogoCache.current[teamName] = logo;
+      return logo;
+    },
+    [teams]
+  );
+
+  /** State-level stats (if you need them). */
   const stateData = useMemo(() => {
     const states = {};
-    filteredProspects.forEach(prospect => {
-      if (prospect.stateProvince) {
-        if (!states[prospect.stateProvince]) {
-          states[prospect.stateProvince] = {
-            count: 0,
-            totalStars: 0,
-            prospects: []
-          };
-        }
-        states[prospect.stateProvince].count++;
-        states[prospect.stateProvince].totalStars += prospect.stars || 0;
-        states[prospect.stateProvince].prospects.push(prospect);
+    filteredProspects.forEach((prospect) => {
+      const st = prospect.stateProvince;
+      if (!st) return;
+      if (!states[st]) {
+        states[st] = { count: 0, totalStars: 0 };
       }
+      states[st].count++;
+      states[st].totalStars += prospect.stars || 0;
     });
-    Object.keys(states).forEach(state => {
-      states[state].avgStars = states[state].count > 0 ? 
-        states[state].totalStars / states[state].count : 0;
-    });
+    // Could add average star calc if needed
     return states;
   }, [filteredProspects]);
 
-  // Handle filter changes with debounce for search
+  /** Handle changes to filters. */
   const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
       ...prev,
-      [name]: name === "stars" ? parseInt(value) : value
+      [name]: name === "stars" ? parseInt(value, 10) : value
     }));
   }, []);
 
-  // Handle map mode changes
+  /** Switch between marker mode and cluster mode. */
   const handleMapModeChange = useCallback((mode) => {
     setMapMode(mode);
   }, []);
 
-  // Reset map view to default US bounds
+  /** Reset the map to the default US view. */
   const resetMapView = useCallback(() => {
     if (mapRef.current) {
       mapRef.current.fitBounds(US_BOUNDS);
     }
   }, []);
 
-  // Toggle the stats panel visibility
+  /** Toggle the stats panel on/off. */
   const toggleStats = useCallback(() => {
     setStatsVisible((prev) => !prev);
   }, []);
 
-  // Create prospect popup content
-  const createProspectPopup = useCallback((prospect) => (
-    <div className="prospect-popup-content">
-      <div className="prospect-popup-header">
-        <div className="prospect-popup-stars">
-          {[...Array(5)].map((_, i) => (
-            <FaStar
-              key={i}
-              className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
-            />
-          ))}
+  /** Create the content of each prospect's popup. */
+  const createProspectPopup = useCallback(
+    (prospect) => (
+      <div className="prospect-popup-content">
+        <div className="prospect-popup-header">
+          <div className="prospect-popup-stars">
+            {[...Array(5)].map((_, i) => (
+              <FaStar
+                key={i}
+                className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
+              />
+            ))}
+          </div>
+          <div className="prospect-popup-rating">
+            {prospect.rating ? prospect.rating.toFixed(2) : "N/A"}
+          </div>
         </div>
-        <div className="prospect-popup-rating">
-          {prospect.rating ? prospect.rating.toFixed(2) : "N/A"}
-        </div>
-      </div>
-      <h3 className="prospect-popup-name">{prospect.name}</h3>
-      <div className="prospect-popup-details">
-        <div className="prospect-popup-rank">
-          <FaTrophy /> Rank: #{prospect.ranking || "N/A"}
-        </div>
-        <div className="prospect-popup-position">{prospect.position || "Unknown"}</div>
-        <div className="prospect-popup-hometown">
-          {prospect.city || ""}{prospect.city && prospect.stateProvince ? ", " : ""}{prospect.stateProvince || ""}
-        </div>
-        <div className="prospect-popup-metrics">
-          <span>
+        <h3 className="prospect-popup-name">{prospect.name}</h3>
+        <div className="prospect-popup-details">
+          <div className="prospect-popup-rank">
+            <FaTrophy /> Rank: #{prospect.ranking || "N/A"}
+          </div>
+          <div className="prospect-popup-position">
+            {prospect.position || "Unknown"}
+          </div>
+          <div className="prospect-popup-hometown">
+            {prospect.city || ""}
+            {prospect.city && prospect.stateProvince ? ", " : ""}
+            {prospect.stateProvince || ""}
+          </div>
+          <div className="prospect-popup-metrics">
             {prospect.height ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"` : ""}
-          </span>
-          {prospect.height && prospect.weight ? " · " : ""}
-          <span>
+            {prospect.height && prospect.weight ? " · " : ""}
             {prospect.weight ? `${prospect.weight} lbs` : ""}
-          </span>
+          </div>
         </div>
+        {prospect.committedTo ? (
+          <div className="prospect-popup-commitment">
+            <img
+              src={getTeamLogo(prospect.committedTo)}
+              alt={`${prospect.committedTo} Logo`}
+              className="popup-team-logo"
+            />
+            <span>Committed to {prospect.committedTo}</span>
+          </div>
+        ) : (
+          <div className="prospect-popup-uncommitted">
+            <span>Uncommitted</span>
+          </div>
+        )}
       </div>
-      {prospect.committedTo ? (
-        <div className="prospect-popup-commitment">
-          <img
-            src={getTeamLogo(prospect.committedTo)}
-            alt={`${prospect.committedTo} Logo`}
-            className="popup-team-logo"
-          />
-          <span>Committed to {prospect.committedTo}</span>
-        </div>
-      ) : (
-        <div className="prospect-popup-uncommitted">
-          <span>Uncommitted</span>
-        </div>
-      )}
-    </div>
-  ), [getTeamLogo]);
+    ),
+    [getTeamLogo]
+  );
 
-  // Loading and error handling
+  /** If data is still loading or there was an error, show messages. */
   if (loading) {
     return (
       <div className="commitments-loading">
@@ -346,6 +341,7 @@ const Commitments = () => {
 
   return (
     <div className="commitments-container">
+      {/* Header */}
       <header className="commitments-header">
         <h1>2025 Recruiting Map</h1>
         <div className="commitments-subtitle">
@@ -353,18 +349,19 @@ const Commitments = () => {
         </div>
       </header>
 
+      {/* Map Controls */}
       <div className="map-controls">
         <div className="map-toolbar">
           <div className="map-modes">
-            <button 
-              className={`mode-button ${mapMode === 'markers' ? 'active' : ''}`}
-              onClick={() => handleMapModeChange('markers')}
+            <button
+              className={`mode-button ${mapMode === "markers" ? "active" : ""}`}
+              onClick={() => handleMapModeChange("markers")}
             >
               <FaMapMarkedAlt /> Markers
             </button>
-            <button 
-              className={`mode-button ${mapMode === 'clusters' ? 'active' : ''}`}
-              onClick={() => handleMapModeChange('clusters')}
+            <button
+              className={`mode-button ${mapMode === "clusters" ? "active" : ""}`}
+              onClick={() => handleMapModeChange("clusters")}
             >
               <FaFootballBall /> Clusters
             </button>
@@ -373,14 +370,16 @@ const Commitments = () => {
             <button className="action-button" onClick={resetMapView}>
               <FaSyncAlt /> Reset View
             </button>
-            <button 
-              className={`action-button ${statsVisible ? 'active' : ''}`} 
+            <button
+              className={`action-button ${statsVisible ? "active" : ""}`}
               onClick={toggleStats}
             >
-              <FaChartBar /> {statsVisible ? 'Hide Stats' : 'Show Stats'}
+              <FaChartBar /> {statsVisible ? "Hide Stats" : "Show Stats"}
             </button>
           </div>
         </div>
+
+        {/* Filter Controls */}
         <div className="filter-controls">
           <div className="filter-group">
             <label htmlFor="position-select">Position:</label>
@@ -392,14 +391,17 @@ const Commitments = () => {
               className="filter-select"
             >
               <option value="All">All Positions</option>
-              {[...new Set(prospects.map(p => p.position))]
+              {[...new Set(prospects.map((p) => p.position))]
                 .filter(Boolean)
                 .sort()
-                .map(pos => (
-                  <option key={pos} value={pos}>{pos}</option>
+                .map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
                 ))}
             </select>
           </div>
+
           <div className="filter-group">
             <label htmlFor="stars-select">Min Stars:</label>
             <select
@@ -415,6 +417,7 @@ const Commitments = () => {
               <option value="5">5 Stars</option>
             </select>
           </div>
+
           <div className="filter-group">
             <label htmlFor="commitment-select">Status:</label>
             <select
@@ -429,6 +432,29 @@ const Commitments = () => {
               <option value="uncommitted">Uncommitted Only</option>
             </select>
           </div>
+
+          {/* New State Filter */}
+          <div className="filter-group">
+            <label htmlFor="state-select">State:</label>
+            <select
+              id="state-select"
+              name="state"
+              value={filters.state}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="All">All States</option>
+              {[...new Set(prospects.map((p) => p.stateProvince))]
+                .filter(Boolean)
+                .sort()
+                .map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+            </select>
+          </div>
+
           <div className="filter-group search-group">
             <label htmlFor="team-search">School:</label>
             <div className="search-input-container">
@@ -447,63 +473,73 @@ const Commitments = () => {
         </div>
       </div>
 
+      {/* Map Container */}
       <div className="map-container">
         {mapReady && (
           <MapContainer
-            center={[39.8283, -98.5795]}
+            center={[39.8283, -98.5795]} // Approx center of the US
             zoom={4}
             style={{ height: "70vh", width: "100%" }}
             ref={mapRef}
-            maxBoundsViscosity={1.0}
             scrollWheelZoom={true}
-            preferCanvas={true}
+            // No need for noWrap or maxBounds here; we handle in MapControls
           >
+            {/* Dark-themed tiles from Carto */}
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              noWrap={true}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>
+                contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             />
-            <MapControls resetView={resetMapView} />
-            
-            {mapMode === 'markers' && filteredProspects.map((prospect) => {
-              if (!prospect.hometownInfo?.latitude || !prospect.hometownInfo?.longitude) {
-                return null;
-              }
-              return (
-                <Marker
-                  key={prospect.id}
-                  position={[prospect.hometownInfo.latitude, prospect.hometownInfo.longitude]}
-                  icon={createStarIcon(prospect.stars)}
-                  eventHandlers={{
-                    click: () => setActiveProspect(prospect)
-                  }}
-                >
-                  <Popup className="prospect-popup">
-                    {createProspectPopup(prospect)}
-                  </Popup>
-                </Marker>
-              );
-            })}
-            
-            {mapMode === 'clusters' && (
+            <MapControls />
+
+            {/* Marker Mode */}
+            {mapMode === "markers" &&
+              filteredProspects.map((prospect) => {
+                if (
+                  !prospect.hometownInfo?.latitude ||
+                  !prospect.hometownInfo?.longitude
+                ) {
+                  return null;
+                }
+                return (
+                  <Marker
+                    key={prospect.id}
+                    position={[
+                      prospect.hometownInfo.latitude,
+                      prospect.hometownInfo.longitude
+                    ]}
+                    icon={createStarIcon(prospect.stars)}
+                  >
+                    <Popup className="prospect-popup">
+                      {createProspectPopup(prospect)}
+                    </Popup>
+                  </Marker>
+                );
+              })}
+
+            {/* Cluster Mode */}
+            {mapMode === "clusters" && (
               <MarkerClusterGroup
                 chunkedLoading
                 maxClusterRadius={50}
-                spiderfyOnMaxZoom={true}
+                spiderfyOnMaxZoom
                 disableClusteringAtZoom={8}
               >
                 {filteredProspects.map((prospect) => {
-                  if (!prospect.hometownInfo?.latitude || !prospect.hometownInfo?.longitude) {
+                  if (
+                    !prospect.hometownInfo?.latitude ||
+                    !prospect.hometownInfo?.longitude
+                  ) {
                     return null;
                   }
                   return (
                     <Marker
                       key={prospect.id}
-                      position={[prospect.hometownInfo.latitude, prospect.hometownInfo.longitude]}
+                      position={[
+                        prospect.hometownInfo.latitude,
+                        prospect.hometownInfo.longitude
+                      ]}
                       icon={createStarIcon(prospect.stars)}
-                      eventHandlers={{
-                        click: () => setActiveProspect(prospect)
-                      }}
                     >
                       <Popup className="prospect-popup">
                         {createProspectPopup(prospect)}
@@ -515,6 +551,8 @@ const Commitments = () => {
             )}
           </MapContainer>
         )}
+
+        {/* Animated Stats Panel */}
         <AnimatePresence>
           {statsVisible && (
             <motion.div
@@ -526,7 +564,9 @@ const Commitments = () => {
             >
               <div className="stats-panel-header">
                 <h3>2025 Recruiting Stats</h3>
-                <button className="close-stats" onClick={toggleStats}>×</button>
+                <button className="close-stats" onClick={toggleStats}>
+                  ×
+                </button>
               </div>
               <div className="stats-panel-content">
                 <div className="stats-summary">
@@ -536,17 +576,19 @@ const Commitments = () => {
                   </div>
                   <div className="stat-card">
                     <div className="stat-value">
-                      {filteredProspects.filter(p => p.stars === 5).length}
+                      {filteredProspects.filter((p) => p.stars === 5).length}
                     </div>
                     <div className="stat-label">5-Stars</div>
                   </div>
                   <div className="stat-card">
                     <div className="stat-value">
-                      {filteredProspects.filter(p => p.committedTo).length}
+                      {filteredProspects.filter((p) => p.committedTo).length}
                     </div>
                     <div className="stat-label">Committed</div>
                   </div>
                 </div>
+
+                {/* Top Teams */}
                 <div className="top-teams-section">
                   <h4>Top Recruiting Teams</h4>
                   <div className="team-rankings">
@@ -598,6 +640,7 @@ const Commitments = () => {
         </AnimatePresence>
       </div>
 
+      {/* Map Legend */}
       <div className="map-legend">
         <div className="legend-item">
           <div className="legend-marker five-star"></div>
@@ -617,26 +660,35 @@ const Commitments = () => {
         </div>
       </div>
 
+      {/* Quick Stats Section */}
       <div className="recruit-stats">
         <h3>Quick Stats</h3>
         <div className="stat-grid">
           <div className="stat-box">
-            <div className="stat-number">{prospects.filter(p => p.stars === 5).length}</div>
+            <div className="stat-number">
+              {prospects.filter((p) => p.stars === 5).length}
+            </div>
             <div className="stat-label">5-Star Recruits</div>
           </div>
           <div className="stat-box">
-            <div className="stat-number">{prospects.filter(p => p.stars === 4).length}</div>
+            <div className="stat-number">
+              {prospects.filter((p) => p.stars === 4).length}
+            </div>
             <div className="stat-label">4-Star Recruits</div>
           </div>
           <div className="stat-box">
-            <div className="stat-number">
-              {Object.keys(stateData).length}
-            </div>
+            <div className="stat-number">{Object.keys(stateData).length}</div>
             <div className="stat-label">States with Recruits</div>
           </div>
           <div className="stat-box">
             <div className="stat-number">
-              {new Set(prospects.filter(p => p.committedTo).map(p => p.committedTo)).size}
+              {
+                new Set(
+                  prospects
+                    .filter((p) => p.committedTo)
+                    .map((p) => p.committedTo)
+                ).size
+              }
             </div>
             <div className="stat-label">Schools with Commits</div>
           </div>
