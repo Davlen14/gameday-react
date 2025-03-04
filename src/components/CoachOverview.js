@@ -49,7 +49,7 @@ const getCoachStatus = (score) => {
       icon: <FaTrophy />, 
       className: "status-badge-premiere" 
     };
-  } else if (score < 38) {
+  } else if (score < 30) {
     return { 
       text: "On Hot Seat", 
       color: "var(--danger-color)", 
