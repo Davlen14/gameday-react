@@ -45,7 +45,7 @@ const TopProspects = () => {
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/logos/default.png";
     const team = teams.find(
-      (t) => t.school.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
+      (t) => t.school?.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
     );
     return team?.logos?.[0] || "/logos/default.png";
   };
@@ -152,6 +152,7 @@ const TopProspects = () => {
             >
               <option value="All">All Positions</option>
               {[...new Set(prospects.map((p) => p.position))]
+                .filter(Boolean)
                 .sort()
                 .map((pos) => (
                   <option key={pos} value={pos}>{pos}</option>
@@ -210,7 +211,7 @@ const TopProspects = () => {
                   <span>Weight</span>
                   {getSortIndicator('weight')}
                 </th>
-                <th onClick={() => handleSort('stars')} className="sortable-header stars-header">
+                <th onClick={() => handleSort('stars')} className="sortable-header">
                   <span>Stars</span>
                   {getSortIndicator('stars')}
                 </th>
@@ -236,18 +237,18 @@ const TopProspects = () => {
                       </div>
                       <div className="player-info">
                         <div className="player-name">{prospect.name}</div>
-                        <div className="player-hometown">{prospect.hometown}</div>
+                        <div className="player-hometown">{prospect.hometown || " "}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="position-cell">{prospect.position}</td>
-                  <td>{prospect.height} in</td>
-                  <td>{prospect.weight} lbs</td>
+                  <td className="position-cell">{prospect.position || "N/A"}</td>
+                  <td>{prospect.height ? `${prospect.height} in` : "N/A"}</td>
+                  <td>{prospect.weight ? `${prospect.weight} lbs` : "N/A"}</td>
                   <td className="stars-cell">
-                    {renderStars(prospect.stars)}
+                    {renderStars(prospect.stars || 0)}
                   </td>
                   <td className="rating-cell">
-                    <div className="rating-value">{prospect.rating.toFixed(2)}</div>
+                    <div className="rating-value">{prospect.rating ? prospect.rating.toFixed(2) : "N/A"}</div>
                   </td>
                   <td className="committed-cell">
                     {prospect.committedTo ? (
