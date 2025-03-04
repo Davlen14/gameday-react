@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, FaTrophy, FaExclamationTriangle, FaStar } from "react-icons/fa";
+import { FaUserTie, FaSort, FaSortUp, FaSortDown, FaFilter, FaInfoCircle, FaTrophy, FaExclamationTriangle, FaTachometerAlt, FaStar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService"; // getCoaches is here
@@ -57,7 +57,7 @@ const getCoachStatus = (score) => {
     return { 
       text: "Average", 
       color: "var(--info-color)", 
-      icon: <FaStar />, 
+      icon: <FaTachometerAlt />, 
       className: "status-badge-average" 
     };
   }
@@ -550,7 +550,7 @@ const CoachOverview = () => {
                     className={`status-filter average ${statusFilter === "average" ? "active" : ""}`}
                     onClick={() => handleStatusFilter("average")}
                   >
-                    <FaStar /> Average
+                    <FaTachometerAlt /> Average
                   </button>
                   <button 
                     className={`status-filter hotseat ${statusFilter === "hotseat" ? "active" : ""}`}

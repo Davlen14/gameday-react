@@ -212,8 +212,8 @@
     background-color: var(--accent-color);
   }
   
-  /* ===== FILTERS ===== */
-  .filters-container {
+ /* ===== FILTERS ===== */
+.filters-container {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -256,9 +256,9 @@
     gap: 0.5rem;
   }
   
+  /* Base Status Filter Style */
   .status-filter {
-    background: none;
-    border: 1px solid var(--border-color);
+    background: white;
     padding: 0.5rem 1rem;
     border-radius: 50px;
     font-size: 0.85rem;
@@ -267,56 +267,116 @@
     align-items: center;
     gap: 0.3rem;
     transition: all 0.2s ease;
+    font-family: 'Orbitron', 'Titillium Web', sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Default Filter Button */
+  .status-filter {
+    border: 1px solid #7f8c8d;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(145deg, #576574, #2c3e50);
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.3);
+  }
+  
+  .status-filter svg {
+    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.3));
   }
   
   .status-filter:hover {
     background-color: var(--hover-bg);
   }
   
-  .status-filter.active {
-    background-color: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
+  /* Premiere Filter */
+  .status-filter.premiere {
+    border: 1px solid;
+    border-image: linear-gradient(145deg, #66db90, #2f9e5b) 1;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(145deg, #66db90, #2f9e5b);
   }
   
-  .status-filter.premiere {
-    border-color: var(--success-color);
-    color: var(--success-color);
+  .status-filter.premiere svg {
+    color: #4ac277;
+    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.5));
+  }
+  
+  /* Average Filter */
+  .status-filter.average {
+    border: 1px solid;
+    border-image: linear-gradient(145deg, #ffd700, #f57f17) 1;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(145deg, #ffd700, #f57f17);
+  }
+  
+  .status-filter.average svg {
+    color: #f9a825;
+    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.5));
+  }
+  
+  /* Hot Seat Filter */
+  .status-filter.hotseat {
+    border: 1px solid;
+    border-image: linear-gradient(145deg, #ff6b6b, #c0392b) 1;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(145deg, #ff6b6b, #c0392b);
+  }
+  
+  .status-filter.hotseat svg {
+    color: #e74c3c;
+    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.5));
+  }
+  
+  /* Active States */
+  .status-filter.active {
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
   }
   
   .status-filter.premiere.active {
-    background-color: var(--success-color);
-    color: white;
-  }
-  
-  .status-filter.average {
-    border-color: var(--info-color);
-    color: var(--info-color);
+    border: 1px solid #4ac277;
+    box-shadow: 0 2px 6px rgba(102, 219, 144, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
   
   .status-filter.average.active {
-    background-color: var(--info-color);
-    color: white;
-  }
-  
-  .status-filter.hotseat {
-    border-color: var(--danger-color);
-    color: var(--danger-color);
+    border: 1px solid #f9a825;
+    box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
   
   .status-filter.hotseat.active {
-    background-color: var(--danger-color);
-    color: white;
+    border: 1px solid #e74c3c;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Metal shine effect for icons */
+  .status-filter svg {
+    position: relative;
+    z-index: 1;
   }
   
   .clear-filters {
-    background: none;
+    background: white;
     border: 1px solid #999;
     color: #666;
     padding: 0.5rem 1rem;
     border-radius: 50px;
     font-size: 0.85rem;
     cursor: pointer;
+    font-family: 'Orbitron', 'Titillium Web', sans-serif;
+    background-image: linear-gradient(145deg, #ecf0f1, #bdc3c7);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.3);
   }
   
   .results-count {
