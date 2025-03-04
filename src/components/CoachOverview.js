@@ -41,10 +41,10 @@ const aggregateCoachData = (seasons) => {
 const getCoachStatus = (score) => {
   if (score >= 60) {
     return { text: "Premiere Coach", color: "var(--success-color)", icon: <FaTrophy /> };
-  } else if (score >= 40 && score < 60) {
-    return { text: "Average", color: "var(--info-color)", icon: <FaStar /> };
-  } else {
+  } else if (score < 40) {
     return { text: "On Hot Seat", color: "var(--danger-color)", icon: <FaExclamationTriangle /> };
+  } else {
+    return { text: "Average", color: "var(--info-color)", icon: <FaStar /> };
   }
 };
 
@@ -236,11 +236,12 @@ const CoachOverview = () => {
     const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
+    // Modified composite calculation: now the sum of the averages (not divided by 4)
     const composite = agg.count > 0
       ? (parseFloat(avgSrs) +
-        parseFloat(avgSpOverall) +
-        parseFloat(avgSpOffense) +
-        parseFloat(avgSpDefense)) / 4
+         parseFloat(avgSpOverall) +
+         parseFloat(avgSpOffense) +
+         parseFloat(avgSpDefense))
       : 0;
     return {
       coach,
@@ -731,7 +732,7 @@ const CoachOverview = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-<div className="section-header">
+              <div className="section-header">
                 <h2>Coach Comparison</h2>
                 <button 
                   className="close-comparison-btn"
@@ -973,7 +974,3 @@ const CoachOverview = () => {
 };
 
 export default CoachOverview;
-
-
-
-
