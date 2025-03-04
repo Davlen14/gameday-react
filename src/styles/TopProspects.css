@@ -53,15 +53,9 @@
     z-index: 5; /* Keep above other elements */
 }
 
+/* Hide the filter icon */
 .filter-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #D4001C;
-    font-size: 0.9rem;
-    z-index: 10;
-    pointer-events: none; /* Prevent interference with clicks */
+    display: none;
 }
 
 /* Hide any debugging overlays */
@@ -83,10 +77,10 @@ select.position-filter::after,
 
 .position-filter {
     width: 100%;
-    padding: 12px 15px 12px 40px;
-    font-family: "Orbitron", sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
+    padding: 12px 15px;
+    font-family: "Titillium Web", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
     color: #333;
     background-color: #fff;
     border: 1px solid #e2e8f0;
@@ -102,6 +96,7 @@ select.position-filter::after,
     background-position: calc(100% - 15px) center;
     background-size: 12px;
     padding-right: 40px;
+    height: 44px;
 }
 
 .position-filter:hover {
@@ -147,6 +142,7 @@ select.position-filter::after,
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
+    height: 44px;
 }
 
 .team-search:hover {
