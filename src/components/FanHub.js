@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../styles/FanHub.css";
 
-// This will help us detect scoreboard visibility
-const SCOREBOARD_HEIGHT = 30; // Approximate height of scoreboard in pixels
-
 // Import FontAwesome icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -20,12 +17,50 @@ import {
   faMessage
 } from "@fortawesome/free-solid-svg-icons";
 
+// This will help us detect scoreboard visibility
+const SCOREBOARD_HEIGHT = 30; // Approximate height of scoreboard in pixels
+
 function FanHub({ scoreboardVisible = true }) {
   // Force a re-render when the component loads to calculate proper positioning
   const [loaded, setLoaded] = useState(false);
   // Local state to track actual scoreboard visibility
   const [actualScoreboardVisible, setActualScoreboardVisible] = useState(scoreboardVisible);
   
+  // State for left sidebar expansion (default collapsed)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  // State for team selection in the sticky header
+  const [selectedTeam, setSelectedTeam] = useState("");
+
+  // State for live chat messages in the right sidebar
+  const [chatMessages, setChatMessages] = useState([]);
+  const chatMessagesEndRef = useRef(null);
+  const [chatInput, setChatInput] = useState("");
+
+  // Refs for smooth scrolling to sections
+  const homeRef = useRef(null);
+  const liveGameChatRef = useRef(null);
+  const gameRoomsRef = useRef(null);
+  const checkinsRef = useRef(null);
+  const pollsRef = useRef(null);
+  const hypeTrackerRef = useRef(null);
+
+  // Function to check for scoreboard visibility and adjust layout
+  const adjustLayoutForScoreboard = () => {
+    const scoreboardElement = document.querySelector('.scoreboard') || 
+                              document.querySelector('[class*="scoreboard"]') || 
+                              document.querySelector('header + div'); // Generic selector for possible scoreboard
+    
+    if (scoreboardElement) {
+      const isVisible = window.getComputedStyle(scoreboardElement).display !== 'none';
+      setActualScoreboardVisible(isVisible);
+      
+      // Dynamically adjust CSS variables based on actual measurements
+      document.documentElement.style.setProperty('--scoreboard-height', 
+        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px');
+    }
+  };
+
   // Detect if scoreboard is actually visible in the DOM
   useEffect(() => {
     setLoaded(true);
@@ -47,40 +82,6 @@ function FanHub({ scoreboardVisible = true }) {
       resizeObserver.disconnect();
     };
   }, [scoreboardVisible]);
-  
-  // Function to check for scoreboard visibility and adjust layout
-  const adjustLayoutForScoreboard = () => {
-    const scoreboardElement = document.querySelector('.scoreboard') || 
-                              document.querySelector('[class*="scoreboard"]') || 
-                              document.querySelector('header + div'); // Generic selector for possible scoreboard
-    
-    if (scoreboardElement) {
-      const isVisible = window.getComputedStyle(scoreboardElement).display !== 'none';
-      setActualScoreboardVisible(isVisible);
-      
-      // Dynamically adjust CSS variables based on actual measurements
-      document.documentElement.style.setProperty('--scoreboard-height', 
-        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px');
-    }
-  };
-  // State for left sidebar expansion (default collapsed)
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
-
-  // State for team selection in the sticky header
-  const [selectedTeam, setSelectedTeam] = useState("");
-
-  // State for live chat messages in the right sidebar
-  const [chatMessages, setChatMessages] = useState([]);
-  const chatMessagesEndRef = useRef(null);
-  const [chatInput, setChatInput] = useState("");
-
-  // Refs for smooth scrolling to sections
-  const homeRef = useRef(null);
-  const liveGameChatRef = useRef(null);
-  const gameRoomsRef = useRef(null);
-  const checkinsRef = useRef(null);
-  const pollsRef = useRef(null);
-  const hypeTrackerRef = useRef(null);
 
   // Handle smooth scrolling when a nav item is clicked
   const scrollToSection = (ref) => {
@@ -133,6 +134,7 @@ function FanHub({ scoreboardVisible = true }) {
 
   return (
     <div className={`fan-hub-container ${!actualScoreboardVisible ? "scoreboard-hidden" : ""}`}>
+      {/* LEFT SIDEBAR */}
       <nav
         className={`left-sidebar ${sidebarExpanded ? "expanded" : ""}`}
         onMouseEnter={handleSidebarMouseEnter}
