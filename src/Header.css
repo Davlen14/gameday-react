@@ -14,13 +14,13 @@
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 1100; /* Increased from 1000 to ensure it's above secondary bar */
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   box-sizing: border-box;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   transition: transform 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+  overflow: visible; /* Changed from 'hidden' to allow dropdowns to extend outside */
 }
 
 /* Add subtle metallic texture */
@@ -200,7 +200,7 @@
   backdrop-filter: blur(10px) saturate(180%);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
   border-radius: 8px;
-  z-index: 2000;
+  z-index: 1200; /* Increased z-index to be above both top bar and secondary bar */
   padding: 8px 0;
   min-width: 180px;
   font-size: 0.85rem;
