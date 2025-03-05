@@ -1,144 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
-import teamsService from '../services/teamsService';
-
-/**
- *  This TopoJSON file is a good, minimal US map projection.
- *  It's from: https://github.com/deldersveld/topojson/tree/master/countries/united-states
- *  Feel free to customize or replace with another geoUrl if you prefer a different map style.
- */
-const geoUrl =
-  'https://raw.githubusercontent.com/deldersveld/topojson/master/countries/united-states/us-albers.json';
+import React from "react";
 
 const BigTen = () => {
-  const [bigTenTeams, setBigTenTeams] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBigTenTeams = async () => {
-      try {
-        const allTeams = await teamsService.getTeams();
-        const filtered = allTeams.filter(
-          (team) =>
-            team.conference === 'Big Ten' &&
-            team.location?.latitude &&
-            team.location?.longitude
-        );
-        setBigTenTeams(filtered);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching Big Ten teams:', error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchBigTenTeams();
-  }, []);
-
-  if (isLoading) {
-    return <div>Loading Big Ten Map...</div>;
-  }
-
-  // --- Inline "CSS" styling ---
-  // Container around the map
   const containerStyle = {
-    position: 'relative',
-    width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    backgroundColor: '#1C1C1C', // dark background to mimic the "stylized" look
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px",
+    textAlign: "center",
+    minHeight: "80vh",
+    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    color: "#333",
   };
 
-  // The actual map styling
-  const mapStyle = {
-    width: '100%',
-    height: 'auto',
+  const logoStyle = {
+    width: "120px",
+    height: "120px",
+    objectFit: "contain",
+    marginBottom: "20px",
+    transformStyle: "preserve-3d",
   };
 
-  // Footer label in the corner
-  const footerLabelStyle = {
-    position: 'absolute',
-    bottom: '10px',
-    left: '10px',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    padding: '10px',
-    borderRadius: '5px',
-    fontWeight: 'bold',
-    color: '#000',
+  const headingStyle = {
+    fontSize: "2rem",
+    marginBottom: "10px",
+  };
+
+  const messageStyle = {
+    fontSize: "1.2rem",
+    marginBottom: "20px",
+  };
+
+  const constructionStyle = {
+    fontSize: "2.5rem",
+    color: "#ff9900",
   };
 
   return (
-    <div style={containerStyle}>
-      {/* 
-        ComposableMap automatically handles your projection for you.
-        `projection="geoAlbersUsa"` is great for a US map.
-      */}
-      <ComposableMap projection="geoAlbersUsa" style={mapStyle}>
-        {/* 
-          Draw the underlying US geographies.
-          You can customize fill/stroke to mimic the style in your second image.
-        */}
-        <Geographies geography={geoUrl}>
-          {({ geographies }) =>
-            geographies.map((geo) => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill="#2f2f2f"       // fill color of states
-                stroke="#ffffff"     // white state lines
-                strokeWidth={0.5}
-              />
-            ))
+    <>
+      {/* CSS styles for rotation, 3D effect, and metal glare */}
+      <style>
+        {`
+          @keyframes rotate {
+            from { transform: perspective(1000px) rotateY(0deg); }
+            to { transform: perspective(1000px) rotateY(360deg); }
           }
-        </Geographies>
-
-        {/* 
-          Place your Big Ten team logos as markers on the map. 
-          We use an <svg> <image> with a clipPath to create a circular logo. 
-        */}
-        {bigTenTeams.map((team) => {
-          const { latitude, longitude } = team.location;
-          const logoUrl = team.logos?.[0] || '/photos/default-team.png';
-
-          return (
-            <Marker key={team.id} coordinates={[longitude, latitude]}>
-              {/* 
-                We shift by half the width/height so the marker is centered. 
-                We also define a circular clipPath for the logo. 
-              */}
-              <g transform="translate(-25, -25)">
-                <defs>
-                  <clipPath id={`clip-${team.id}`}>
-                    <circle cx="25" cy="25" r="20" />
-                  </clipPath>
-                </defs>
-                {/* The circle "border" behind the logo */}
-                <circle
-                  cx="25"
-                  cy="25"
-                  r="25"
-                  fill={team.color || '#fff'} // team color or white
-                  stroke="#fff"
-                  strokeWidth="2"
-                />
-                {/* The logo image, clipped to a circle */}
-                <image
-                  href={logoUrl}
-                  width="50"
-                  height="50"
-                  clipPath={`url(#clip-${team.id})`}
-                />
-              </g>
-            </Marker>
-          );
-        })}
-      </ComposableMap>
-
-      <div style={footerLabelStyle}>Big Ten Conference Map - 2024 Season</div>
-    </div>
+          .rotating-logo {
+            animation: rotate 20s linear infinite;
+            position: relative;
+            transform-style: preserve-3d;
+          }
+          .rotating-logo::after {
+            content: "";
+            position: absolute;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            mix-blend-mode: overlay;
+          }
+        `}
+      </style>
+      <div style={containerStyle}>
+        <img
+          src="/photos/Big Ten.png"
+          alt="Big Ten Logo"
+          style={logoStyle}
+          className="rotating-logo"
+        />
+        <h1 style={headingStyle}>Big Ten Conference</h1>
+        <p style={messageStyle}>
+          Big Ten Conference page is under construction.
+        </p>
+        <div style={constructionStyle}>🚧</div>
+      </div>
+    </>
   );
 };
 
