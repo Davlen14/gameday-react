@@ -1,380 +1,304 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { 
-  RadialBarChart, 
-  RadialBar, 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer 
-} from "recharts";
-import { motion } from "framer-motion";
-import { 
-  FaChartLine, 
-  FaUsers, 
-  FaCalendar, 
-  FaTrophy, 
-  FaInfoCircle 
-} from "react-icons/fa";
 import teamsService from "../services/teamsService";
+import { RadialBarChart, RadialBar } from "recharts";
 import "../styles/TeamDetail.css";
 
-// Advanced Gauge Component with More Customization
-const ModernGauge = ({ 
-  label, 
-  rawValue, 
-  minValue = 1, 
-  maxValue = 45, 
-  colors = {
-    red: "#ff4d4d", 
-    yellow: "#ffc700", 
-    green: "#4caf50"
-  } 
-}) => {
-  // Calculate normalized value and color zones
-  const clampedValue = Math.max(minValue, Math.min(rawValue, maxValue));
-  const normalizedValue = ((clampedValue - minValue) / (maxValue - minValue)) * 100;
-  
-  // Determine color based on value
-  const getColorForValue = () => {
-    if (clampedValue <= maxValue * 0.33) return colors.red;
-    if (clampedValue <= maxValue * 0.66) return colors.yellow;
-    return colors.green;
-  };
+// --- Gauge Component for Ratings ---
+const GAUGE_MIN = 1;
+const GAUGE_MAX = 45;
+const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN;
+
+const RED_LENGTH = 15 - 1;    
+const YELLOW_LENGTH = 30 - 15; 
+const GREEN_LENGTH = 45 - 30;  
+
+const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;
+const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100;
+const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;
+
+const gaugeData = [
+  { name: "Red", value: redPercent, fill: "#ff0000" },
+  { name: "Yellow", value: yellowPercent, fill: "#fdbf00" },
+  { name: "Green", value: greenPercent, fill: "#00b300" },
+];
+
+const TICK_VALUES = [1, 15, 30, 45];
+
+const Gauge = ({ label, rawValue }) => {
+  const clampedValue = Math.max(GAUGE_MIN, Math.min(rawValue, GAUGE_MAX));
+  const normalizedValue = ((clampedValue - GAUGE_MIN) / GAUGE_RANGE) * 100;
+  const centerX = 75;
+  const centerY = 75;
+  const needleLength = 60;
+  const angle = 180 - (normalizedValue * 180) / 100;
+  const rad = (angle * Math.PI) / 180;
+  const needleX = centerX + needleLength * Math.cos(rad);
+  const needleY = centerY - needleLength * Math.sin(rad);
+
+  const ticks = TICK_VALUES.map((tickVal) => {
+    const tickPercent = ((tickVal - GAUGE_MIN) / GAUGE_RANGE) * 100;
+    const tickAngle = 180 - (tickPercent * 180) / 100;
+    const tickRad = (tickAngle * Math.PI) / 180;
+    const tickX = centerX + 65 * Math.cos(tickRad);
+    const tickY = centerY - 65 * Math.sin(tickRad);
+    return {
+      label: tickVal,
+      x: tickX,
+      y: tickY,
+    };
+  });
 
   return (
-    <motion.div 
-      className="modern-gauge"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="gauge-content">
-        <ResponsiveContainer width="100%" height={200}>
-          <RadialBarChart
-            cx="50%"
-            cy="50%"
-            innerRadius="60%"
-            outerRadius="100%"
-            startAngle={180}
-            endAngle={0}
-            data={[
-              { value: normalizedValue, fill: getColorForValue() }
-            ]}
-          >
-            <RadialBar 
-              dataKey="value" 
-              cornerRadius={10} 
-              background={{ fill: "rgba(0,0,0,0.1)" }}
-            />
-          </RadialBarChart>
-        </ResponsiveContainer>
-        <div className="gauge-value">
-          <span className="value" style={{ color: getColorForValue() }}>
-            {Math.round(clampedValue)}
-          </span>
-          <span className="label">{label}</span>
-        </div>
+    <div className="gauge">
+      <RadialBarChart
+        width={150}
+        height={150}
+        cx={centerX}
+        cy={centerY}
+        innerRadius={50}
+        outerRadius={70}
+        startAngle={180}
+        endAngle={0}
+        barSize={20}
+        data={gaugeData}
+      >
+        <RadialBar dataKey="value" cornerRadius={0} clockWise stackId="gauge" />
+
+        {/* Needle */}
+        <line
+          x1={centerX}
+          y1={centerY}
+          x2={needleX}
+          y2={needleY}
+          stroke="#000"
+          strokeWidth={4}
+        />
+        {/* Needle pivot */}
+        <circle cx={centerX} cy={centerY} r={4} fill="#000" />
+
+        {/* Tick marks & labels */}
+        {ticks.map((tick, i) => (
+          <React.Fragment key={i}>
+            <circle cx={tick.x} cy={tick.y} r={2} fill="#000" />
+            <text
+              x={tick.x}
+              y={tick.y + 12}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#000"
+            >
+              {tick.label}
+            </text>
+          </React.Fragment>
+        ))}
+      </RadialBarChart>
+
+      <text
+        x={centerX}
+        y={centerY + 100}
+        textAnchor="middle"
+        fontSize="18"
+        fill="red"
+      >
+        {Math.round(clampedValue)}
+      </text>
+
+      <div className="gauge-title" style={{ marginTop: "1rem", fontSize: "14px" }}>
+        {label}
       </div>
-      <div className="gauge-tooltip">
-        <FaInfoCircle />
-        <span className="tooltip-text">
-          This {label.toLowerCase()} rating is based on SP+ metrics
-        </span>
-      </div>
-    </motion.div>
+    </div>
   );
 };
 
-// Performance Trend Chart Component
-const PerformanceTrendChart = ({ data, metric }) => {
-  return (
-    <motion.div 
-      className="performance-trend-chart"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="chart-header">
-        <FaChartLine /> {metric} Performance Trend
-      </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <XAxis dataKey="week" />
-          <YAxis />
-          <Tooltip />
-          <Line 
-            type="monotone" 
-            dataKey="value" 
-            stroke="#d4001c" 
-            strokeWidth={3}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </motion.div>
-  );
-};
-
+//
+// TeamDetail Component
+//
 const TeamDetail = () => {
   const { teamId } = useParams();
   const navigate = useNavigate();
-  
-  // Enhanced state management
-  const [teamData, setTeamData] = useState({
-    team: null,
-    teams: [],
-    ratings: {},
-    roster: [],
-    schedule: [],
-    performanceTrends: []
+  const [allTeams, setAllTeams] = useState([]); 
+  const [team, setTeam] = useState(null);
+  const [ratings, setRatings] = useState({});
+  const [roster, setRoster] = useState([]);
+  const [schedule, setSchedule] = useState([]);
+  const [isLoading, setIsLoading] = useState({
+    team: false,
+    ratings: false,
+    roster: false,
+    schedule: false,
   });
-  
-  const [activeSection, setActiveSection] = useState('overview');
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Memoized helper functions
-  const getTeamLogo = useMemo(() => {
-    return (teamName) => {
-      const foundTeam = teamData.teams.find(
-        (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-      );
-      return foundTeam?.logos?.[0] || "/photos/default_team.png";
-    };
-  }, [teamData.teams]);
+  const getTeamLogo = (teamName) => {
+    const foundTeam = allTeams.find(
+      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+    );
+    return foundTeam?.logos?.[0] || "/photos/default_team.png";
+  };
 
-  // Fetch all team data
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoading(true);
-        
-        // Parallel data fetching
-        const [teamsData, foundTeam] = await Promise.all([
-          teamsService.getTeams(),
-          teamsService.getTeamById(teamId)
+        setIsLoading((prev) => ({ ...prev, team: true }));
+        const teamsData = await teamsService.getTeams();
+        setAllTeams(teamsData);
+
+        const foundTeam = teamsData.find(
+          (t) => t.id === parseInt(teamId, 10)
+        );
+        if (!foundTeam) throw new Error("Team not found");
+        setTeam(foundTeam);
+
+        await Promise.all([
+          fetchRatings(foundTeam.school),
+          fetchRoster(foundTeam.school),
+          fetchSchedule(foundTeam.school),
         ]);
-
-        // Fetch additional details
-        const [ratings, roster, schedule] = await Promise.all([
-          teamsService.getTeamRatings(foundTeam.school, 2024),
-          teamsService.getTeamRoster(foundTeam.school, 2024),
-          teamsService.getTeamSchedule(foundTeam.school, 2024)
-        ]);
-
-        // Prepare performance trends (example data structure)
-        const performanceTrends = [
-          { 
-            week: 'Overall', 
-            value: ratings.overall || 0 
-          },
-          { 
-            week: 'Offense', 
-            value: ratings.offense || 0 
-          },
-          { 
-            week: 'Defense', 
-            value: ratings.defense || 0 
-          }
-        ];
-
-        setTeamData({
-          team: foundTeam,
-          teams: teamsData,
-          ratings,
-          roster,
-          schedule,
-          performanceTrends
-        });
       } catch (err) {
         setError(`Error: ${err.message}`);
-        console.error(err);
       } finally {
-        setIsLoading(false);
+        setIsLoading((prev) => ({ ...prev, team: false }));
       }
     };
 
-    fetchTeamData();
+    const fetchRatings = async (teamName) => {
+      try {
+        const data = await teamsService.getTeamRatings(teamName, 2024);
+        setRatings(data);
+      } catch (err) {
+        console.error("Error fetching ratings:", err.message);
+      }
+    };
+
+    const fetchRoster = async (teamName) => {
+      try {
+        const data = await teamsService.getTeamRoster(teamName, 2024);
+        setRoster(data);
+      } catch (err) {
+        console.error("Error fetching roster:", err.message);
+      }
+    };
+
+    const fetchSchedule = async (teamName) => {
+      try {
+        const data = await teamsService.getTeamSchedule(teamName, 2024);
+        setSchedule(data);
+      } catch (err) {
+        console.error("Error fetching schedule:", err.message);
+      }
+    };
+
+    fetchData();
   }, [teamId]);
 
-  // Loading and error states
-  if (isLoading) return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="loading-container"
-    >
-      Loading Team Details...
-    </motion.div>
-  );
+  if (isLoading.team) return <div>Loading...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!team) return <div>Team not found</div>;
 
-  if (error) return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="error-container"
-    >
-      {error}
-    </motion.div>
-  );
-
-  // Destructure team data
-  const { team, ratings, roster, schedule, performanceTrends } = teamData;
+  // Sidebar style using team color
+  const sidebarStyle = {
+    backgroundColor: team.color || "#f0f0f0",
+  };
 
   return (
-    <motion.div 
-      className="team-dashboard"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="team-dashboard">
       {/* Sidebar */}
-      <aside className="team-sidebar">
+      <aside className="team-sidebar" style={sidebarStyle}>
         <Link to="/teams" className="back-to-teams">
-          ← Back to Teams
+          ← Back to All Teams
         </Link>
-        
-        <motion.img
+        <img
           src={getTeamLogo(team.school)}
           alt={team.school}
           className="team-logo-large"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/photos/default_team.png";
+          }}
         />
-        
         <h1 className="team-name">{team.school}</h1>
         <p className="team-mascot">{team.mascot}</p>
-        
-        {/* Navigation Sections */}
-        <nav className="team-nav">
-          <button 
-            onClick={() => setActiveSection('overview')}
-            className={activeSection === 'overview' ? 'active' : ''}
-          >
-            <FaTrophy /> Overview
-          </button>
-          <button 
-            onClick={() => setActiveSection('roster')}
-            className={activeSection === 'roster' ? 'active' : ''}
-          >
-            <FaUsers /> Roster
-          </button>
-          <button 
-            onClick={() => setActiveSection('schedule')}
-            className={activeSection === 'schedule' ? 'active' : ''}
-          >
-            <FaCalendar /> Schedule
-          </button>
-        </nav>
       </aside>
 
       {/* Main Content */}
       <main className="team-main-content">
-        {activeSection === 'overview' && (
-          <motion.div 
-            className="team-overview"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {/* SP+ Ratings */}
-            <section className="team-ratings">
-              <h2>Team Performance Metrics</h2>
-              <div className="gauges-container">
-                <ModernGauge 
-                  label="Overall" 
-                  rawValue={ratings.overall || 1} 
+        {/* Ratings Section */}
+        <section className="team-ratings">
+          <h2>SP+ Ratings</h2>
+          <div className="gauges-container">
+            <Gauge label="Overall" rawValue={ratings.overall || 1} />
+            <Gauge label="Offense" rawValue={ratings.offense || 1} />
+            <Gauge label="Defense" rawValue={ratings.defense || 1} />
+          </div>
+          <div className="ratings-explanation">
+            <h3>How SP+ Ratings Work</h3>
+            <p>
+              The SP+ ratings combine multiple aspects of team performance into a single composite metric.
+              <br />
+              <strong>Overall:</strong> Combines offense, defense, and special teams.
+              <br />
+              <strong>Offense:</strong> Measures scoring efficiency and ball movement.
+              <br />
+              <strong>Defense:</strong> Lower values indicate a stronger defense.
+            </p>
+            <p>
+              Here, each gauge is scaled from 1 to 45:
+              <br />
+              <strong>Red:</strong> 1–15, <strong>Yellow:</strong> 15–30, <strong>Green:</strong> 30–45
+            </p>
+          </div>
+        </section>
+
+        {/* Schedule Section */}
+        <section className="team-schedule">
+          <h2>Schedule</h2>
+          {schedule.map((game, index) => (
+            <div key={index} className="schedule-item">
+              <div className="teams-playing">
+                <img
+                  src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                  alt={game.homeTeam}
+                  className="schedule-team-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/photos/default_team.png";
+                  }}
                 />
-                <ModernGauge 
-                  label="Offense" 
-                  rawValue={ratings.offense || 1} 
-                />
-                <ModernGauge 
-                  label="Defense" 
-                  rawValue={ratings.defense || 1} 
+                <span>
+                  {game.homeTeam} vs. {game.awayTeam}
+                </span>
+                <img
+                  src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                  alt={game.awayTeam}
+                  className="schedule-team-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/photos/default_team.png";
+                  }}
                 />
               </div>
-              
-              {/* Performance Trend Chart */}
-              <PerformanceTrendChart 
-                data={performanceTrends} 
-                metric="Team Performance" 
-              />
-            </section>
-          </motion.div>
-        )}
-
-        {activeSection === 'roster' && (
-          <motion.section 
-            className="team-roster"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2>Team Roster</h2>
-            <div className="roster-grid">
-              {roster.map((player, index) => (
-                <motion.div 
-                  key={player.id || index} 
-                  className="player-card"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="player-info">
-                    <span className="player-name">{player.fullName}</span>
-                    <span className="player-details">
-                      {player.position} | {player.height} | {player.year}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+              <p>
+                Score: {game.homePoints} - {game.awayPoints}
+              </p>
+              <p>Venue: {game.venue || "TBD"}</p>
             </div>
-          </motion.section>
-        )}
+          ))}
+        </section>
 
-        {activeSection === 'schedule' && (
-          <motion.section 
-            className="team-schedule"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2>Game Schedule</h2>
-            {schedule.map((game, index) => (
-              <motion.div 
-                key={game.id || index} 
-                className="schedule-item"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="game-teams">
-                  <img 
-                    src={getTeamLogo(game.homeTeam)} 
-                    alt={game.homeTeam} 
-                    className="team-logo" 
-                  />
-                  <span className="vs">vs</span>
-                  <img 
-                    src={getTeamLogo(game.awayTeam)} 
-                    alt={game.awayTeam} 
-                    className="team-logo" 
-                  />
-                </div>
-                <div className="game-details">
-                  <span className="game-date">{game.date}</span>
-                  <span className="game-venue">{game.venue || 'TBD'}</span>
-                  <span className="game-score">
-                    {game.homePoints} - {game.awayPoints}
-                  </span>
-                </div>
-              </motion.div>
+        {/* Roster Section */}
+        <section className="team-roster">
+          <h2>Roster</h2>
+          <ul>
+            {roster.map((player, index) => (
+              <li key={index}>
+                {player.fullName} — {player.position || "N/A"} — Height: {player.height} — Year: {player.year || "N/A"}
+              </li>
             ))}
-          </motion.section>
-        )}
+          </ul>
+        </section>
       </main>
-    </motion.div>
+    </div>
   );
 };
 
