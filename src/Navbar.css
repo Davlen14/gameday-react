@@ -14,9 +14,14 @@
   top: 50px; /* sticks below the top bar */
   width: 100%;
   z-index: 900;
+  pointer-events: auto; /* allow clicks */
   border-bottom: 1px solid #e0e0e0;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   transition: transform 0.3s ease; /* Add transition */
+}
+
+.dropdown-active .secondary-bar {
+  pointer-events: none; /* Temporarily disable navbar events */
 }
 
 .secondary-bar-container {
