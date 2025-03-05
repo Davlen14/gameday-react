@@ -5,7 +5,7 @@ import { FaTv } from "react-icons/fa";
 import { useWeek } from "../context/WeekContext";
 
 const Scoreboard = ({ setScoreboardVisible }) => {
-  const { week, setWeek } = useWeek();
+  const { week } = useWeek(); // Keep the context but don't use setWeek
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [media, setMedia] = useState([]);
@@ -18,8 +18,8 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const queryParam =
-          week === "postseason" ? { seasonType: "postseason" } : week;
+        // Always use postseason parameter regardless of week context
+        const queryParam = { seasonType: "postseason" };
 
         const [teamsData, gamesData, mediaData, linesData] = await Promise.all([
           teamsService.getTeams(),
@@ -37,13 +37,10 @@ const Scoreboard = ({ setScoreboardVisible }) => {
             game.awayClassification === "fbs"
         );
 
-        // Sort if postseason
-        const sortedGames =
-          week === "postseason"
-            ? fbsGames.sort(
-                (a, b) => new Date(a.startDate) - new Date(b.startDate)
-              )
-            : fbsGames;
+        // Sort postseason games by date
+        const sortedGames = fbsGames.sort(
+          (a, b) => new Date(a.startDate) - new Date(b.startDate)
+        );
 
         setGames(sortedGames);
         setMedia(mediaData);
@@ -55,7 +52,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
       }
     };
     fetchData();
-  }, [week]);
+  }, []); // Removed week dependency since we're always showing postseason
 
   // MODIFIED THIS SECTION - The intersection observer was causing navbar issues
   useEffect(() => {
@@ -132,24 +129,8 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
-      {/* Filters on the left (NCAAF + Week Selector) */}
-      <div className="scoreboard-filters">
-        <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
-        <div className="scoreboard-divider" />
-        <select
-          id="weekSelect"
-          className="scoreboard-week-dropdown"
-          value={week}
-          onChange={(e) => setWeek(e.target.value)}
-          disabled={isLoading}
-        >
-          {[...Array(17).keys()].map((w) => (
-            <option key={w + 1} value={w + 1}>{`Week ${w + 1}`}</option>
-          ))}
-          <option value="postseason">Postseason</option>
-        </select>
-      </div>
-
+      {/* Removed the filters section (NCAAF + Week Selector) */}
+      
       {/* Scrollable list of games with loading state */}
       <div className="scoreboard-games">
         {isLoading ? (
@@ -229,7 +210,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
             );
           })
         ) : (
-          <div className="no-games-message">No games available for this week</div>
+          <div className="no-games-message">No postseason games available</div>
         )}
       </div>
     </div>
