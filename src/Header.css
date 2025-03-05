@@ -148,12 +148,14 @@
 /* DROPDOWN */
 .dropdown {
   position: relative;
+  padding: 5px 0; /* Add padding to create more hover area */
 }
 
 .dropdown-group {
   display: flex;
   align-items: center;
   gap: 15px;
+  position: relative; /* Added for better positioning */
 }
 
 .dropdown-button {
@@ -169,6 +171,7 @@
   transition: all 0.3s ease;
   position: relative;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  display: block; /* Ensure full clickable area */
 }
 
 .dropdown-button::after {
@@ -191,24 +194,34 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Modernized Dropdown Menu */
+/* Modernized Dropdown Menu - Glassy Effect with Improved Responsiveness */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px) saturate(180%);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  z-index: 1200; /* Increased z-index to be above both top bar and secondary bar */
-  padding: 8px 0;
-  min-width: 180px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.75) 100%
+  );
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.12), 
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  z-index: 1500; /* Even higher z-index to ensure it's above everything */
+  padding: 10px 0;
+  min-width: 200px;
   font-size: 0.85rem;
   font-weight: 400;
   transform-origin: top center;
-  animation: dropdownAppear 0.2s ease-out forwards;
+  animation: dropdownAppear 0.25s ease-out forwards;
   margin-top: 5px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* Ensure dropdown stays in position */
+  pointer-events: auto;
 }
 
 @keyframes dropdownAppear {
@@ -222,21 +235,77 @@
   }
 }
 
+/* Add subtle frosted glass texture */
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+  pointer-events: none;
+}
+
 .dropdown-menu a {
   display: flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 12px 16px; /* Increased padding for easier clicking */
   text-decoration: none;
-  color: #333333;
+  color: rgba(51, 51, 51, 0.9);
   transition: all 0.2s ease;
   position: relative;
   border-left: 3px solid transparent;
+  margin: 3px 5px; /* Increased spacing between items */
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  white-space: nowrap; /* Prevent wrapping */
+  min-height: 24px; /* Minimum height to ensure clickability */
 }
 
 .dropdown-menu a:hover {
-  background-color: rgba(212, 0, 28, 0.05);
+  background: rgba(212, 0, 28, 0.08);
   color: #D4001C;
   border-left: 3px solid #D4001C;
+  box-shadow: 0 2px 8px rgba(212, 0, 28, 0.1);
+}
+
+/* Add subtle hover effect */
+.dropdown-menu a::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dropdown-menu a:hover::after {
+  opacity: 1;
+}
+
+/* Prevent text wrapping in dropdown items */
+.dropdown-menu a span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fix dropdown position for edge cases */
+.dropdown:last-child .dropdown-menu {
+  right: 0;
+  left: auto;
 }
 
 /* =============================== */
@@ -288,6 +357,32 @@
 
   .dropdown-menu {
     font-size: 0.75rem;
-    min-width: 140px;
+    min-width: 180px; /* Slightly smaller on mobile */
+    max-width: 90vw; /* Prevent off-screen overflow */
+    left: 50%;
+    transform: translateX(-50%); /* Center dropdown on mobile */
+    max-height: 80vh; /* Max height to prevent offscreen items */
+    overflow-y: auto; /* Allow scrolling if many items */
+  }
+  
+  .dropdown-menu a {
+    padding: 14px 16px; /* Even larger touch targets on mobile */
+  }
+  
+  /* Adjust animation for mobile */
+  @keyframes dropdownAppear {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) scaleY(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) scaleY(1);
+    }
+  }
+  
+  /* Ensure dropdown doesn't disappear too easily on mobile */
+  .dropdown {
+    padding: 8px 0;
   }
 }
