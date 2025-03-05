@@ -1,75 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-} from "react-leaflet";
-import MarkerClusterGroup from "react-leaflet-cluster";
-import L from "leaflet";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaStar,
-  FaSearch,
-  FaInfoCircle,
-  FaMapMarkedAlt,
-  FaTrophy,
-  FaFootballBall,
-  FaSyncAlt,
-  FaChartBar,
-} from "react-icons/fa";
 import newsService from "../services/newsService";
 import teamsService from "../services/teamsService";
+import { FaStar, FaSearch, FaInfoCircle, FaTrophy } from "react-icons/fa";
 import "../styles/Teams.css";
-
-// US boundaries (for map constraints)
-const US_BOUNDS = [
-  [24.396308, -125.0], // Southwest
-  [49.384358, -66.93457], // Northeast
-];
-
-// Component to control the map (fit to bounds, restrict panning)
-const MapControls = () => {
-  const map = useMap();
-  useEffect(() => {
-    map.fitBounds(US_BOUNDS);
-    map.setMinZoom(3);
-    map.setMaxBounds([
-      [15, -140],
-      [55, -50],
-    ]);
-  }, [map]);
-  return null;
-};
-
-// Create a custom marker icon with a star badge for a given star rating.
-const createStarIcon = (starRating) => {
-  const colors = {
-    3: "#4287f5", // Blue
-    4: "#f5a742", // Orange
-    5: "#f54242", // Red
-  };
-
-  return L.divIcon({
-    className: `star-marker star-${starRating}`,
-    html: `
-      <div class="marker-container">
-        <div class="pulse-ring" style="background-color: ${colors[starRating] || "#888"}"></div>
-        <div class="star-badge" style="background-color: ${colors[starRating] || "#888"}">
-          ${starRating}★
-        </div>
-      </div>
-    `,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-  });
-};
 
 const SEC = () => {
   // --------------------------
-  // Data for News, Scores, Polls, Ratings
+  // SEC Hub Data: News, Scores, Polls, Ratings, Teams
   // --------------------------
   const [secNews, setSecNews] = useState([]);
   const [secScores, setSecScores] = useState([]);
@@ -79,24 +17,24 @@ const SEC = () => {
   const [loading, setLoading] = useState(true);
 
   // --------------------------
-  // Recruiting Map States (using your commits logic)
+  // Recruiting Data (for SEC recruits)
   // --------------------------
   const [prospects, setProspects] = useState([]);
-  const [teams, setTeams] = useState([]); // For logo lookup in recruiting
-  const [mapMode, setMapMode] = useState("markers"); // "markers" or "clusters"
+  const [teams, setTeams] = useState([]); // For team logo lookup
+
+  // --------------------------
+  // Recruiting Filters
+  // --------------------------
   const [filters, setFilters] = useState({
     position: "All",
     stars: 0,
     team: "",
-    committed: "all", // all, committed, uncommitted
+    committed: "all", // "all", "committed", "uncommitted"
     state: "All",
   });
-  const [statsVisible, setStatsVisible] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
-  const mapRef = useRef(null);
 
   // --------------------------
-  // Team logo caching (for recruiting and game cards)
+  // Cache for team logos
   // --------------------------
   const teamLogoCache = useRef({});
   const getTeamLogo = useCallback(
@@ -116,13 +54,13 @@ const SEC = () => {
   );
 
   // --------------------------
-  // Fetch Data for the SEC Hub
+  // Fetch SEC and Recruiting Data
   // --------------------------
   useEffect(() => {
     const fetchSECData = async () => {
       try {
         setLoading(true);
-        // Fetch all teams and filter for SEC
+        // Fetch all teams and filter for SEC teams
         const allTeams = await teamsService.getTeams();
         const filteredSECTeams = allTeams.filter(
           (team) => team.conference === "SEC"
@@ -134,7 +72,7 @@ const SEC = () => {
         const newsData = await newsService.fetchNews("SEC conference news");
         setSecNews(newsData.articles || newsData);
 
-        // Fetch games (using week 3 as an example) and filter for SEC games
+        // Fetch recent games (using week 3 as an example) and filter for SEC games
         const gamesData = await teamsService.getGames(3);
         const filteredSECGameScores = gamesData.filter(
           (game) =>
@@ -143,7 +81,7 @@ const SEC = () => {
         );
         setSecScores(filteredSECGameScores);
 
-        // Fetch polls for 2024, week 3, and filter for SEC teams
+        // Fetch polls for 2024 (regular season, week 3) and filter for SEC teams
         const pollsData = await teamsService.getPolls(2024, "ap", 3);
         const filteredSECPolls = pollsData
           .map((pollGroup) => ({
@@ -167,12 +105,9 @@ const SEC = () => {
         }
         setSecTeamRatings(ratings);
 
-        // Fetch recruits for 2025 and filter for SEC (only those committed to SEC schools)
+        // Fetch all recruits for 2025 and filter for SEC-related recruits.
+        // Include recruits that are either committed to SEC teams or uncommitted but relevant.
         const recruitsData = await teamsService.getAllRecruits(2025);
-        const filteredSECRecruits = recruitsData.filter(
-          (recruit) => recruit.committedTo && secTeamNames.includes(recruit.committedTo)
-        );
-        // Use filtered recruits for the recruiting section (or you can combine uncommitted if desired)
         setProspects(
           recruitsData
             .filter((r) => !r.committedTo || secTeamNames.includes(r.committedTo))
@@ -181,11 +116,9 @@ const SEC = () => {
               id: prospect.id || `prospect-${index}`,
             }))
         );
-        setSecRecruits(filteredSECRecruits);
 
-        // Also set teams for recruiting map logo lookup.
+        // Also store teams for logo lookup in recruiting.
         setTeams(allTeams);
-        setMapReady(true);
       } catch (error) {
         console.error("Error fetching SEC hub data:", error);
       } finally {
@@ -197,7 +130,7 @@ const SEC = () => {
   }, []);
 
   // --------------------------
-  // Recruiting Map Filter Logic
+  // Recruiting Filters Logic
   // --------------------------
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
@@ -227,7 +160,7 @@ const SEC = () => {
     });
   }, [prospects, filters]);
 
-  // Calculate team stats for recruits
+  // Calculate recruiting stats by team
   const teamStats = useMemo(() => {
     const stats = {};
     const committedProspects = prospects.filter((p) => p.committedTo);
@@ -267,70 +200,6 @@ const SEC = () => {
     }));
   }, []);
 
-  const handleMapModeChange = useCallback((mode) => setMapMode(mode), []);
-  const resetMapView = useCallback(() => {
-    if (mapRef.current) {
-      mapRef.current.fitBounds(US_BOUNDS);
-    }
-  }, []);
-  const toggleStats = useCallback(() => setStatsVisible((prev) => !prev), []);
-
-  const createProspectPopup = useCallback(
-    (prospect) => (
-      <div className="prospect-popup-content">
-        <div className="prospect-popup-header">
-          <div className="prospect-popup-stars">
-            {[...Array(5)].map((_, i) => (
-              <FaStar
-                key={i}
-                className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
-              />
-            ))}
-          </div>
-          <div className="prospect-popup-rating">
-            {prospect.rating ? prospect.rating.toFixed(2) : "N/A"}
-          </div>
-        </div>
-        <h3 className="prospect-popup-name">{prospect.name}</h3>
-        <div className="prospect-popup-details">
-          <div className="prospect-popup-rank">
-            <FaTrophy /> Rank: #{prospect.ranking || "N/A"}
-          </div>
-          <div className="prospect-popup-position">
-            {prospect.position || "Unknown"}
-          </div>
-          <div className="prospect-popup-hometown">
-            {prospect.city || ""}
-            {prospect.city && prospect.stateProvince ? ", " : ""}
-            {prospect.stateProvince || ""}
-          </div>
-          <div className="prospect-popup-metrics">
-            {prospect.height
-              ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"`
-              : ""}
-            {prospect.height && prospect.weight ? " · " : ""}
-            {prospect.weight ? `${prospect.weight} lbs` : ""}
-          </div>
-        </div>
-        {prospect.committedTo ? (
-          <div className="prospect-popup-commitment">
-            <img
-              src={getTeamLogo(prospect.committedTo)}
-              alt={`${prospect.committedTo} Logo`}
-              className="popup-team-logo"
-            />
-            <span>Committed to {prospect.committedTo}</span>
-          </div>
-        ) : (
-          <div className="prospect-popup-uncommitted">
-            <span>Uncommitted</span>
-          </div>
-        )}
-      </div>
-    ),
-    [getTeamLogo]
-  );
-
   if (loading) return <div className="loading">Loading SEC data...</div>;
 
   return (
@@ -339,10 +208,7 @@ const SEC = () => {
       <section className="hero">
         <img src="/photos/SEC.png" alt="SEC Logo" className="hero-logo" />
         <h1>SEC</h1>
-        <p>
-          Your hub for SEC news, scores, polls, recruiting, team ratings, and
-          more.
-        </p>
+        <p>Your hub for SEC news, scores, polls, recruiting, team ratings, and more.</p>
       </section>
 
       {/* News Section */}
@@ -352,19 +218,11 @@ const SEC = () => {
           {secNews.map((article, idx) => (
             <div key={idx} className="news-card">
               {article.image && (
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="news-image"
-                />
+                <img src={article.image} alt={article.title} className="news-image" />
               )}
               <h3>{article.title}</h3>
               <p>{article.description}</p>
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={article.url} target="_blank" rel="noopener noreferrer">
                 Read more
               </a>
             </div>
@@ -382,27 +240,17 @@ const SEC = () => {
             {secScores.map((game) => (
               <div key={game.id} className="game-card">
                 <div className="game-card-header">
-                  <img
-                    src={getTeamLogo(game.awayTeam)}
-                    alt={game.awayTeam}
-                    className="game-team-logo"
-                  />
+                  <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="game-team-logo" />
                   <span>
                     <strong>{game.awayTeam}</strong> {game.awayPoints}
                   </span>
                 </div>
                 <div className="game-card-body">
-                  <span>
-                    {new Date(game.startDate).toLocaleString()}
-                  </span>
+                  <span>{new Date(game.startDate).toLocaleString()}</span>
                   <span>{game.venue}</span>
                 </div>
                 <div className="game-card-footer">
-                  <img
-                    src={getTeamLogo(game.homeTeam)}
-                    alt={game.homeTeam}
-                    className="game-team-logo"
-                  />
+                  <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="game-team-logo" />
                   <span>
                     <strong>{game.homeTeam}</strong> {game.homePoints}
                   </span>
@@ -472,310 +320,148 @@ const SEC = () => {
         </table>
       </section>
 
-      {/* Recruiting Map Section */}
+      {/* Recruiting Section */}
       <section className="section recruiting">
-        <h2>2025 SEC Recruiting Map</h2>
-        <div className="map-controls">
-          <div className="map-toolbar">
-            <div className="map-modes">
-              <button
-                className={`mode-button ${
-                  mapMode === "markers" ? "active" : ""
-                }`}
-                onClick={() => handleMapModeChange("markers")}
-              >
-                <FaMapMarkedAlt /> Markers
-              </button>
-              <button
-                className={`mode-button ${
-                  mapMode === "clusters" ? "active" : ""
-                }`}
-                onClick={() => handleMapModeChange("clusters")}
-              >
-                <FaFootballBall /> Clusters
-              </button>
-            </div>
-            <div className="map-actions">
-              <button className="action-button" onClick={resetMapView}>
-                <FaSyncAlt /> Reset View
-              </button>
-              <button
-                className={`action-button ${statsVisible ? "active" : ""}`}
-                onClick={toggleStats}
-              >
-                <FaChartBar /> {statsVisible ? "Hide Stats" : "Show Stats"}
-              </button>
-            </div>
-          </div>
-          <div className="filter-controls">
-            <div className="filter-group">
-              <label htmlFor="position-select">Position:</label>
-              <select
-                id="position-select"
-                name="position"
-                value={filters.position}
-                onChange={handleFilterChange}
-                className="filter-select"
-              >
-                <option value="All">All Positions</option>
-                {[...new Set(prospects.map((p) => p.position))]
-                  .filter(Boolean)
-                  .sort()
-                  .map((pos) => (
-                    <option key={pos} value={pos}>
-                      {pos}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="filter-group">
-              <label htmlFor="stars-select">Min Stars:</label>
-              <select
-                id="stars-select"
-                name="stars"
-                value={filters.stars}
-                onChange={handleFilterChange}
-                className="filter-select"
-              >
-                <option value="0">Any Rating</option>
-                <option value="3">3+ Stars</option>
-                <option value="4">4+ Stars</option>
-                <option value="5">5 Stars</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label htmlFor="commitment-select">Status:</label>
-              <select
-                id="commitment-select"
-                name="committed"
-                value={filters.committed}
-                onChange={handleFilterChange}
-                className="filter-select"
-              >
-                <option value="all">All Recruits</option>
-                <option value="committed">Committed Only</option>
-                <option value="uncommitted">Uncommitted Only</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label htmlFor="state-select">State:</label>
-              <select
-                id="state-select"
-                name="state"
-                value={filters.state}
-                onChange={handleFilterChange}
-                className="filter-select"
-              >
-                <option value="All">All States</option>
-                {[...new Set(prospects.map((p) => p.stateProvince))]
-                  .filter(Boolean)
-                  .sort()
-                  .map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="filter-group search-group">
-              <label htmlFor="team-search">School:</label>
-              <div className="search-input-container">
-                <FaSearch className="search-icon" />
-                <input
-                  id="team-search"
-                  type="text"
-                  name="team"
-                  value={filters.team}
-                  onChange={handleFilterChange}
-                  placeholder="Search school..."
-                  className="team-search"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="map-container">
-          {mapReady && (
-            <MapContainer
-              center={[39.8283, -98.5795]}
-              zoom={4}
-              style={{ height: "70vh", width: "100%" }}
-              ref={mapRef}
-              scrollWheelZoom={true}
+        <h2>2025 SEC Recruiting</h2>
+        <div className="filter-controls">
+          <div className="filter-group">
+            <label htmlFor="position-select">Position:</label>
+            <select
+              id="position-select"
+              name="position"
+              value={filters.position}
+              onChange={handleFilterChange}
+              className="filter-select"
             >
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>
-                  contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              <option value="All">All Positions</option>
+              {[...new Set(prospects.map((p) => p.position))]
+                .filter(Boolean)
+                .sort()
+                .map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="stars-select">Min Stars:</label>
+            <select
+              id="stars-select"
+              name="stars"
+              value={filters.stars}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="0">Any Rating</option>
+              <option value="3">3+ Stars</option>
+              <option value="4">4+ Stars</option>
+              <option value="5">5 Stars</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="commitment-select">Status:</label>
+            <select
+              id="commitment-select"
+              name="committed"
+              value={filters.committed}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="all">All Recruits</option>
+              <option value="committed">Committed Only</option>
+              <option value="uncommitted">Uncommitted Only</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="state-select">State:</label>
+            <select
+              id="state-select"
+              name="state"
+              value={filters.state}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="All">All States</option>
+              {[...new Set(prospects.map((p) => p.stateProvince))]
+                .filter(Boolean)
+                .sort()
+                .map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="filter-group search-group">
+            <label htmlFor="team-search">School:</label>
+            <div className="search-input-container">
+              <FaSearch className="search-icon" />
+              <input
+                id="team-search"
+                type="text"
+                name="team"
+                value={filters.team}
+                onChange={handleFilterChange}
+                placeholder="Search school..."
+                className="team-search"
               />
-              <MapControls />
-              {mapMode === "markers" &&
-                filteredProspects.map((prospect) => {
-                  if (
-                    !prospect.hometownInfo?.latitude ||
-                    !prospect.hometownInfo?.longitude
-                  ) {
-                    return null;
-                  }
-                  return (
-                    <Marker
-                      key={prospect.id}
-                      position={[
-                        prospect.hometownInfo.latitude,
-                        prospect.hometownInfo.longitude,
-                      ]}
-                      icon={createStarIcon(prospect.stars)}
-                    >
-                      <Popup className="prospect-popup">
-                        {createProspectPopup(prospect)}
-                      </Popup>
-                    </Marker>
-                  );
-                })}
-              {mapMode === "clusters" && (
-                <MarkerClusterGroup
-                  chunkedLoading
-                  maxClusterRadius={50}
-                  spiderfyOnMaxZoom
-                  disableClusteringAtZoom={8}
-                >
-                  {filteredProspects.map((prospect) => {
-                    if (
-                      !prospect.hometownInfo?.latitude ||
-                      !prospect.hometownInfo?.longitude
-                    ) {
-                      return null;
-                    }
-                    return (
-                      <Marker
-                        key={prospect.id}
-                        position={[
-                          prospect.hometownInfo.latitude,
-                          prospect.hometownInfo.longitude,
-                        ]}
-                        icon={createStarIcon(prospect.stars)}
-                      >
-                        <Popup className="prospect-popup">
-                          {createProspectPopup(prospect)}
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                </MarkerClusterGroup>
-              )}
-            </MapContainer>
-          )}
-          <AnimatePresence>
-            {statsVisible && (
-              <motion.div
-                className="stats-panel"
-                initial={{ opacity: 0, x: 300 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 300 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="stats-panel-header">
-                  <h3>2025 Recruiting Stats</h3>
-                  <button className="close-stats" onClick={toggleStats}>
-                    ×
-                  </button>
-                </div>
-                <div className="stats-panel-content">
-                  <div className="stats-summary">
-                    <div className="stat-card">
-                      <div className="stat-value">
-                        {filteredProspects.length}
-                      </div>
-                      <div className="stat-label">Recruits</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-value">
-                        {filteredProspects.filter((p) => p.stars === 5).length}
-                      </div>
-                      <div className="stat-label">5-Stars</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-value">
-                        {filteredProspects.filter((p) => p.committedTo).length}
-                      </div>
-                      <div className="stat-label">Committed</div>
-                    </div>
-                  </div>
-                  <div className="top-teams-section">
-                    <h4>Top Recruiting Teams</h4>
-                    <div className="team-rankings">
-                      {teamStats.slice(0, 10).map((team, index) => (
-                        <div key={team.name} className="team-rank-card">
-                          <div className="team-rank-position">{index + 1}</div>
-                          <div className="team-rank-logo">
-                            <img
-                              src={getTeamLogo(team.name)}
-                              alt={`${team.name} Logo`}
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="team-rank-info">
-                            <div className="team-rank-name">{team.name}</div>
-                            <div className="team-rank-stats">
-                              <div className="team-rank-commits">
-                                {team.count} commits
-                              </div>
-                              <div className="team-rank-stars">
-                                {team.avgStars.toFixed(2)} avg ★
-                              </div>
-                            </div>
-                            <div className="team-star-breakdown">
-                              {team.fiveStars > 0 && (
-                                <span className="five-star-count">
-                                  {team.fiveStars} × 5★
-                                </span>
-                              )}
-                              {team.fourStars > 0 && (
-                                <span className="four-star-count">
-                                  {team.fourStars} × 4★
-                                </span>
-                              )}
-                              {team.threeStars > 0 && (
-                                <span className="three-star-count">
-                                  {team.threeStars} × 3★
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+          </div>
         </div>
+        {filteredProspects.length === 0 ? (
+          <p>No recruiting data available for selected filters.</p>
+        ) : (
+          <div className="recruits-grid">
+            {filteredProspects.map((prospect) => (
+              <div key={prospect.id} className="recruit-card">
+                <div className="recruit-header">
+                  <div className="recruit-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar
+                        key={i}
+                        className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
+                      />
+                    ))}
+                  </div>
+                  <h3 className="recruit-name">{prospect.name}</h3>
+                </div>
+                <div className="recruit-details">
+                  <p>{prospect.position || "Unknown Position"}</p>
+                  <p>
+                    {prospect.city || ""}{prospect.city && prospect.stateProvince ? ", " : ""}
+                    {prospect.stateProvince || ""}
+                  </p>
+                  <p>
+                    {prospect.height
+                      ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"`
+                      : ""}{" "}
+                    {prospect.weight ? `· ${prospect.weight} lbs` : ""}
+                  </p>
+                </div>
+                {prospect.committedTo ? (
+                  <div className="recruit-commitment">
+                    <img
+                      src={getTeamLogo(prospect.committedTo)}
+                      alt={`${prospect.committedTo} Logo`}
+                      className="commitment-logo"
+                    />
+                    <p>Committed to {prospect.committedTo}</p>
+                  </div>
+                ) : (
+                  <div className="recruit-uncommitted">
+                    <p>Uncommitted</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Map Legend */}
-      <div className="map-legend">
-        <div className="legend-item">
-          <div className="legend-marker five-star"></div>
-          <span>5-Star Recruit</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-marker four-star"></div>
-          <span>4-Star Recruit</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-marker three-star"></div>
-          <span>3-Star Recruit</span>
-        </div>
-        <div className="legend-info">
-          <FaInfoCircle />
-          <span>Click on a marker to see recruit details</span>
-        </div>
-      </div>
-
-      {/* Quick Stats Section */}
-      <div className="recruit-stats">
-        <h3>Quick Stats</h3>
+      {/* Quick Recruiting Stats */}
+      <section className="section recruit-stats">
+        <h2>Recruiting Quick Stats</h2>
         <div className="stat-grid">
           <div className="stat-box">
             <div className="stat-number">
@@ -814,7 +500,7 @@ const SEC = () => {
             <div className="stat-label">Schools with Commits</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <style jsx>{`
         .sec-page {
@@ -829,8 +515,7 @@ const SEC = () => {
           justify-content: center;
           padding: 60px 20px;
           text-align: center;
-          background: url("/photos/sec-background.jpg")
-            no-repeat center center/cover;
+          background: url("/photos/sec-background.jpg") no-repeat center center/cover;
           color: #fff;
           margin-bottom: 40px;
         }
@@ -920,56 +605,28 @@ const SEC = () => {
           background: #d4001c;
           color: #fff;
         }
-        .map-legend {
+        .filter-controls {
           display: flex;
           flex-wrap: wrap;
-          gap: 1rem;
-          align-items: center;
+          gap: 20px;
+          margin-bottom: 20px;
           justify-content: center;
-          margin-top: 20px;
         }
-        .legend-item {
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .filter-select,
+        .team-search {
+          padding: 5px 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+        .search-input-container {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-        }
-        .legend-marker {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-        }
-        .legend-marker.five-star {
-          background-color: #f54242;
-        }
-        .legend-marker.four-star {
-          background-color: #f5a742;
-        }
-        .legend-marker.three-star {
-          background-color: #4287f5;
-        }
-        .legend-info {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .ratings-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 0 auto;
-        }
-        .ratings-table th,
-        .ratings-table td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: center;
-        }
-        .ratings-table th {
-          background: #d4001c;
-          color: #fff;
-        }
-        .recruit-stats {
-          text-align: center;
-          margin-top: 40px;
+          gap: 5px;
         }
         .stat-grid {
           display: grid;
@@ -988,29 +645,6 @@ const SEC = () => {
           font-size: 2rem;
           font-weight: bold;
           color: #d4001c;
-        }
-        .stats-panel {
-          position: absolute;
-          top: 10%;
-          right: 5%;
-          background: rgba(255, 255, 255, 0.95);
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px;
-          z-index: 1000;
-          max-width: 300px;
-        }
-        .stats-panel-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-        .close-stats {
-          background: transparent;
-          border: none;
-          font-size: 1.5rem;
-          cursor: pointer;
         }
         @media (max-width: 768px) {
           .hero h1 {
