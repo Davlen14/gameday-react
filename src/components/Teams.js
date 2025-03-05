@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import "../styles/Teams.css"; // Import the new CSS file
+import "../styles/Teams.css"; // Import your CSS file
 
 // Import Recharts components
 import {
@@ -13,6 +13,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts";
 
 const Teams = () => {
@@ -23,8 +28,8 @@ const Teams = () => {
   // Store the teams selected for comparison
   const [selectedTeams, setSelectedTeams] = useState([]);
 
-  // We'll store each selected team's ratings here
-  // Shape: { [team.school]: { offense, defense, overall, ... } }
+  // We'll store each selected team's ratings here.
+  // Shape: { [team.school]: { offense, defense, overall } }
   const [teamRatings, setTeamRatings] = useState({});
 
   // Conference order based on popularity
@@ -57,14 +62,12 @@ const Teams = () => {
         sortedConferences[conference] = grouped[conference];
       }
     });
-
     // Add any remaining conferences that were not in the predefined order
     Object.keys(grouped).forEach((conference) => {
       if (!sortedConferences[conference]) {
         sortedConferences[conference] = grouped[conference];
       }
     });
-
     return sortedConferences;
   };
 
@@ -99,11 +102,9 @@ const Teams = () => {
   }, []);
 
   // Whenever the user selects (or deselects) teams, fetch their ratings.
-  // Note: The dependency array is now [selectedTeams] only.
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
-
       for (const team of selectedTeams) {
         try {
           // Fetch ratings using team.school and 2024 as parameters
@@ -114,10 +115,8 @@ const Teams = () => {
           newRatings[team.school] = { offense: 1, defense: 1, overall: 1 };
         }
       }
-
       setTeamRatings(newRatings);
     };
-
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
     }
@@ -158,10 +157,9 @@ const Teams = () => {
   };
 
   // ------------------------------
-  // BUILD THE COMPARISON CHART DATA
+  // Build the comparison chart data
   // ------------------------------
   // We'll compare 3 metrics: Offense, Defense, Overall.
-  // Each row in chartData represents one metric.
   const METRICS = ["Offense", "Defense", "Overall"];
   const chartData = METRICS.map((metric) => {
     const row = { metric };
@@ -172,7 +170,7 @@ const Teams = () => {
     return row;
   });
 
-  // Custom Legend to show each team's logo and name
+  // Custom Legend for the line chart
   const renderCustomLegend = (props) => {
     const { payload } = props;
     return (
@@ -211,7 +209,7 @@ const Teams = () => {
 
   return (
     <div className="teams-comparison-container">
-      {/* Left Column: Teams */}
+      {/* Left Column: Teams List */}
       <div className="teams-list-section">
         <div className="teams-container">
           <div className="conferences-list">
@@ -228,8 +226,6 @@ const Teams = () => {
                   />
                   <h2 className="conference-title">{conference}</h2>
                 </div>
-
-                {/* Teams in a "table" layout */}
                 <div className="teams-table">
                   {teams.map((team) => (
                     <div key={team.id} className="team-card-container">
@@ -242,10 +238,11 @@ const Teams = () => {
                               className="team-logo"
                             />
                           </Link>
-                          <span className="team-name">{getTeamAbbreviation(team.school)}</span>
+                          <span className="team-name">
+                            {getTeamAbbreviation(team.school)}
+                          </span>
                         </div>
                       </div>
-                      {/* Compare Button */}
                       <button
                         className="compare-button"
                         onClick={() => handleTeamSelect(team)}
@@ -269,14 +266,13 @@ const Teams = () => {
         {selectedTeams.length === 0 && (
           <p>No teams selected. Click "Compare" on a team to add it.</p>
         )}
-
         {selectedTeams.length > 0 && (
           <>
             <button onClick={clearComparison} className="clear-button">
               Clear All
             </button>
 
-            {/* Chart comparing selected teams on Offense/Defense/Overall */}
+            {/* Line Chart Comparison */}
             <div style={{ width: "100%", height: 300, marginBottom: "1rem" }}>
               <ResponsiveContainer>
                 <LineChart data={chartData}>
@@ -297,6 +293,58 @@ const Teams = () => {
                   ))}
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Radar Chart Comparison */}
+            <div style={{ width: "100%", height: 300, marginBottom: "1rem" }}>
+              <ResponsiveContainer>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="metric" />
+                  <PolarRadiusAxis angle={30} domain={[0, 50]} />
+                  {selectedTeams.map((team) => (
+                    <Radar
+                      key={team.school}
+                      name={team.school}
+                      dataKey={team.school}
+                      stroke={team.color || "#000"}
+                      fill={team.color || "#000"}
+                      fillOpacity={0.6}
+                    />
+                  ))}
+                  <Legend />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Ratings Table */}
+            <div className="ratings-table">
+              <h3>Ratings Table</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    {selectedTeams.map((team) => (
+                      <th key={team.id}>{team.school}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {METRICS.map((metric) => (
+                    <tr key={metric}>
+                      <td>{metric}</td>
+                      {selectedTeams.map((team) => (
+                        <td key={team.id}>
+                          {teamRatings[team.school]
+                            ? teamRatings[team.school][metric.toLowerCase()] || "N/A"
+                            : "N/A"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Comparison Cards */}
