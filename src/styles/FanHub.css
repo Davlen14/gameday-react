@@ -8,7 +8,6 @@
   --hover-color: #f9f9f9;
   --top-navbar-height: 50px;
   --secondary-navbar-height: 50px;
-  --scoreboard-height: 30px; /* Added explicit scoreboard height */
   --transition-speed: 0.3s;
   --sidebar-width: 60px;
   --sidebar-expanded-width: 200px;
@@ -35,20 +34,20 @@ body {
   display: flex;
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height)); /* Extra space for scoreboard */
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height)); /* Push further below top bars */
+  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height)); /* Full viewport minus top bars */
+  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height)); /* Push below top bars */
 }
 
 /* Adjust when scoreboard is hidden */
 .fan-hub-container.scoreboard-hidden {
-  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height));
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+  height: calc(100vh - var(--top-navbar-height));
+  margin-top: var(--top-navbar-height);
 }
 
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
   position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height)); /* Account for scoreboard */
+  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
   left: 0;
   bottom: 0;
   width: var(--sidebar-width);
@@ -105,7 +104,7 @@ body {
 
 /* Adjust sidebar position when scoreboard is hidden */
 .scoreboard-hidden .left-sidebar {
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+  top: var(--top-navbar-height);
 }
 
 /* --- MAIN CONTENT --- */
@@ -218,7 +217,7 @@ body {
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
   position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height)); /* Account for scoreboard */
+  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
   right: 0;
   bottom: 0;
   width: var(--right-sidebar-width);
@@ -285,7 +284,7 @@ body {
 
 /* Adjust right sidebar position when scoreboard is hidden */
 .scoreboard-hidden .right-sidebar {
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+  top: var(--top-navbar-height);
 }
 
 /* --- CHAT TABS --- */
