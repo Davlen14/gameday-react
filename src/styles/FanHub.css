@@ -31,7 +31,7 @@ body {
 }
 
 /* --- FAN HUB CONTAINER --- */
-.fan-hub-container {
+.fan-hub-container, #fan-hub, #fan-hub-container {
   display: flex;
   position: relative;
   width: 100%;
@@ -40,13 +40,17 @@ body {
 }
 
 /* Adjust when scoreboard is hidden */
-.fan-hub-container.scoreboard-hidden {
+.fan-hub-container.scoreboard-hidden, 
+#fan-hub.scoreboard-hidden,
+#fan-hub-container.scoreboard-hidden {
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height));
   margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- LEFT SIDEBAR --- */
-.left-sidebar {
+.left-sidebar, 
+nav[class*="sidebar"],
+.sidebar-navigation {
   position: fixed;
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height)); /* Account for scoreboard */
   left: 0;
@@ -60,17 +64,23 @@ body {
   box-shadow: 2px 0 5px var(--shadow-color);
 }
 
-.left-sidebar.expanded {
+.left-sidebar.expanded, 
+nav[class*="sidebar"].expanded,
+.sidebar-navigation.expanded {
   width: var(--sidebar-expanded-width);
 }
 
-.left-sidebar ul {
+.left-sidebar ul, 
+nav[class*="sidebar"] ul,
+.sidebar-navigation ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.left-sidebar li {
+.left-sidebar li, 
+nav[class*="sidebar"] li,
+.sidebar-navigation li {
   display: flex;
   align-items: center;
   padding: 15px;
@@ -79,19 +89,26 @@ body {
   border-left: 3px solid transparent;
 }
 
-.left-sidebar li:hover {
+.left-sidebar li:hover, 
+nav[class*="sidebar"] li:hover,
+.sidebar-navigation li:hover {
   background-color: var(--hover-color);
   border-left: 3px solid var(--accent-color);
   color: var(--accent-color);
 }
 
-.left-sidebar li .icon {
+.left-sidebar li .icon, 
+nav[class*="sidebar"] li .icon,
+.sidebar-navigation li .icon,
+[class*="icon-"] {
   font-size: 1.5em;
   width: 30px;
   text-align: center;
 }
 
-.left-sidebar li .label {
+.left-sidebar li .label,
+nav[class*="sidebar"] li .label,
+.sidebar-navigation li .label {
   margin-left: 10px;
   opacity: 0;
   transition: opacity var(--transition-speed) ease;
@@ -99,17 +116,23 @@ body {
   font-weight: 500;
 }
 
-.left-sidebar.expanded li .label {
+.left-sidebar.expanded li .label,
+nav[class*="sidebar"].expanded li .label,
+.sidebar-navigation.expanded li .label {
   opacity: 1;
 }
 
 /* Adjust sidebar position when scoreboard is hidden */
-.scoreboard-hidden .left-sidebar {
+.scoreboard-hidden .left-sidebar,
+.scoreboard-hidden nav[class*="sidebar"],
+.scoreboard-hidden .sidebar-navigation {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- MAIN CONTENT --- */
-.main-content {
+.main-content,
+#main-content,
+.content-wrapper {
   flex: 1;
   margin-left: var(--sidebar-width);
   margin-right: var(--right-sidebar-width);
@@ -121,12 +144,18 @@ body {
   background-color: var(--background-color);
 }
 
-.left-sidebar.expanded ~ .main-content {
+.left-sidebar.expanded ~ .main-content,
+nav[class*="sidebar"].expanded ~ .main-content,
+.sidebar-navigation.expanded ~ .content-wrapper,
+.sidebar-navigation.expanded ~ #main-content {
   margin-left: var(--sidebar-expanded-width);
 }
 
 /* --- STICKY HEADER --- */
-.sticky-header {
+.sticky-header,
+.welcome-header,
+[class*="header-container"],
+header[class*="sticky"] {
   position: sticky;
   top: 0;
   background-color: var(--primary-color);
@@ -134,26 +163,35 @@ body {
   z-index: 980;
 }
 
-.header-content {
+.header-content,
+.welcome-content,
+[class*="header-inner"] {
   padding: 15px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.sticky-header h2 {
+.sticky-header h2,
+.welcome-header h2,
+[class*="header-container"] h2,
+header[class*="sticky"] h2 {
   margin: 0;
   font-size: 1.5rem;
   display: flex;
   align-items: center;
 }
 
-.header-icon {
+.header-icon,
+.icon-header,
+[class*="icon-header"] {
   margin-right: 10px;
   color: var(--accent-color);
 }
 
-.team-selector {
+.team-selector,
+select[id*="team"],
+[class*="team-dropdown"] {
   padding: 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -164,13 +202,22 @@ body {
   transition: border-color var(--transition-speed) ease;
 }
 
-.team-selector:hover, .team-selector:focus {
+.team-selector:hover, 
+.team-selector:focus,
+select[id*="team"]:hover,
+select[id*="team"]:focus,
+[class*="team-dropdown"]:hover,
+[class*="team-dropdown"]:focus {
   border-color: var(--accent-color);
   outline: none;
 }
 
 /* --- SECTION STYLES --- */
-.section {
+.section,
+[class*="section"],
+.card,
+.panel,
+.content-box {
   margin: 20px;
   padding: 20px;
   background-color: var(--primary-color);
@@ -179,12 +226,20 @@ body {
   transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
-.section:hover {
+.section:hover,
+[class*="section"]:hover,
+.card:hover,
+.panel:hover,
+.content-box:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px var(--shadow-color);
 }
 
-.section-header {
+.section-header,
+[class*="section-header"],
+.card-header,
+.panel-header,
+.content-header {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
@@ -192,18 +247,29 @@ body {
   padding-bottom: 10px;
 }
 
-.section-icon {
+.section-icon,
+[class*="section-icon"],
+.card-icon,
+.panel-icon,
+[class*="icon-"] {
   color: var(--accent-color);
   margin-right: 10px;
   font-size: 1.2rem;
 }
 
-.section h3 {
+.section h3,
+[class*="section"] h3,
+.card h3,
+.panel h3,
+.content-box h3 {
   margin: 0;
   font-size: 1.3rem;
 }
 
-.content-placeholder {
+.content-placeholder,
+[class*="placeholder"],
+[class*="content-area"],
+[style*="background-color: #eaeaea"] {
   height: 150px;
   background-color: var(--background-color);
   border-radius: 6px;
@@ -211,12 +277,18 @@ body {
   transition: background-color var(--transition-speed) ease;
 }
 
-.section:hover .content-placeholder {
+.section:hover .content-placeholder,
+[class*="section"]:hover [class*="placeholder"],
+.card:hover [class*="content-area"],
+.panel:hover [style*="background-color: #eaeaea"] {
   background-color: var(--hover-color);
 }
 
 /* --- RIGHT SIDEBAR --- */
-.right-sidebar {
+.right-sidebar,
+aside,
+[class*="chat-sidebar"],
+[class*="sidebar-right"] {
   position: fixed;
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height)); /* Account for scoreboard */
   right: 0;
@@ -231,7 +303,10 @@ body {
   transition: top var(--transition-speed) ease;
 }
 
-.chat-header {
+.chat-header,
+[class*="chat-title"],
+.chat-title,
+aside header {
   padding: 15px;
   border-bottom: 1px solid var(--border-color);
   font-weight: bold;
@@ -239,25 +314,35 @@ body {
   align-items: center;
 }
 
-.chat-icon {
+.chat-icon,
+[class*="chat-icon"],
+.icon-chat {
   margin-right: 10px;
   color: var(--accent-color);
 }
 
-.chat-messages {
+.chat-messages,
+[class*="message-container"],
+.messages,
+.message-area {
   flex: 1;
   padding: 15px;
   overflow-y: auto;
   background-color: var(--background-color);
 }
 
-.chat-input {
+.chat-input,
+[class*="input-container"],
+.message-input-container {
   border-top: 1px solid var(--border-color);
   padding: 10px;
   background-color: var(--primary-color);
 }
 
-.chat-input input {
+.chat-input input,
+[class*="input-container"] input,
+input[type="text"],
+input[placeholder*="message"] {
   width: 100%;
   padding: 10px;
   border: 1px solid var(--border-color);
@@ -265,38 +350,56 @@ body {
   transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
-.chat-input input:focus {
+.chat-input input:focus,
+[class*="input-container"] input:focus,
+input[type="text"]:focus,
+input[placeholder*="message"]:focus {
   border-color: var(--accent-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.1);
 }
 
-.mini-feed {
+.mini-feed,
+[class*="feed-container"],
+.latest-messages,
+.message-summary {
   padding: 12px 15px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--background-color);
   font-size: 0.9em;
 }
 
-.no-messages {
+.no-messages,
+.empty-messages,
+[class*="no-content"] {
   color: #888;
   font-style: italic;
 }
 
 /* Adjust right sidebar position when scoreboard is hidden */
-.scoreboard-hidden .right-sidebar {
+.scoreboard-hidden .right-sidebar,
+.scoreboard-hidden aside,
+.scoreboard-hidden [class*="chat-sidebar"],
+.scoreboard-hidden [class*="sidebar-right"] {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- CHAT TABS --- */
-.chat-tabs {
+.chat-tabs,
+[class*="tabs-container"],
+.tabs,
+.nav-tabs {
   display: flex;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 15px;
   overflow-x: auto;
 }
 
-.chat-tabs button {
+.chat-tabs button,
+[class*="tabs-container"] button,
+.tabs button,
+.nav-tabs button,
+.tab-button {
   display: flex;
   align-items: center;
   padding: 10px 15px;
@@ -309,22 +412,37 @@ body {
   white-space: nowrap;
 }
 
-.chat-tabs button span {
+.chat-tabs button span,
+[class*="tabs-container"] button span,
+.tabs button span,
+.nav-tabs button span,
+.tab-button span {
   margin-left: 8px;
 }
 
-.chat-tabs button:hover {
+.chat-tabs button:hover,
+[class*="tabs-container"] button:hover,
+.tabs button:hover,
+.nav-tabs button:hover,
+.tab-button:hover {
   background-color: var(--hover-color);
 }
 
-.chat-tabs button.active {
+.chat-tabs button.active,
+[class*="tabs-container"] button.active,
+.tabs button.active,
+.nav-tabs button.active,
+.tab-button.active {
   border-bottom: 3px solid var(--accent-color);
   color: var(--accent-color);
   font-weight: 600;
 }
 
 /* --- ACTION BUTTONS --- */
-.action-button {
+.action-button,
+button[class*="action"],
+.btn-primary,
+.toggle-button {
   background-color: var(--accent-color);
   color: white;
   border: none;
@@ -338,11 +456,17 @@ body {
   transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
 }
 
-.action-button svg {
+.action-button svg,
+button[class*="action"] svg,
+.btn-primary svg,
+.toggle-button svg {
   margin-right: 8px;
 }
 
-.action-button:hover {
+.action-button:hover,
+button[class*="action"]:hover,
+.btn-primary:hover,
+.toggle-button:hover {
   background-color: #b30017;
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(212, 0, 28, 0.3);
@@ -445,39 +569,57 @@ body {
 
 /* --- RESPONSIVE STYLES --- */
 @media (max-width: 1200px) {
-  .right-sidebar {
+  .right-sidebar,
+  aside,
+  [class*="chat-sidebar"],
+  [class*="sidebar-right"] {
     width: 250px;
   }
   
-  .main-content {
+  .main-content,
+  #main-content,
+  .content-wrapper {
     margin-right: 250px;
   }
 }
 
 @media (max-width: 992px) {
-  .left-sidebar {
+  .left-sidebar,
+  nav[class*="sidebar"],
+  .sidebar-navigation {
     width: 50px;
   }
   
-  .left-sidebar.expanded {
+  .left-sidebar.expanded,
+  nav[class*="sidebar"].expanded,
+  .sidebar-navigation.expanded {
     width: 180px;
   }
   
-  .main-content {
+  .main-content,
+  #main-content,
+  .content-wrapper {
     margin-left: 50px;
   }
   
-  .left-sidebar.expanded ~ .main-content {
+  .left-sidebar.expanded ~ .main-content,
+  nav[class*="sidebar"].expanded ~ .main-content,
+  .sidebar-navigation.expanded ~ .content-wrapper,
+  .sidebar-navigation.expanded ~ #main-content {
     margin-left: 180px;
   }
 }
 
 @media (max-width: 768px) {
-  .fan-hub-container {
+  .fan-hub-container,
+  #fan-hub,
+  #fan-hub-container {
     flex-direction: column;
   }
   
-  .left-sidebar {
+  .left-sidebar,
+  nav[class*="sidebar"],
+  .sidebar-navigation {
     width: 100%;
     height: 50px;
     bottom: auto;
@@ -485,31 +627,42 @@ body {
     overflow-x: auto;
   }
   
-  .left-sidebar ul {
+  .left-sidebar ul,
+  nav[class*="sidebar"] ul,
+  .sidebar-navigation ul {
     display: flex;
     width: 100%;
   }
   
-  .left-sidebar li {
+  .left-sidebar li,
+  nav[class*="sidebar"] li,
+  .sidebar-navigation li {
     flex-direction: column;
     justify-content: center;
     padding: 5px 10px;
   }
   
-  .left-sidebar li .label {
+  .left-sidebar li .label,
+  nav[class*="sidebar"] li .label,
+  .sidebar-navigation li .label {
     font-size: 0.7rem;
     margin-left: 0;
     margin-top: 2px;
     opacity: 1;
   }
   
-  .main-content {
+  .main-content,
+  #main-content,
+  .content-wrapper {
     margin-left: 0;
     margin-right: 0;
     margin-top: 50px;
   }
   
-  .right-sidebar {
+  .right-sidebar,
+  aside,
+  [class*="chat-sidebar"],
+  [class*="sidebar-right"] {
     position: fixed;
     width: 100%;
     height: 300px;
@@ -518,12 +671,17 @@ body {
     display: none; /* Hidden on small screens by default */
   }
   
-  .sticky-header .header-content {
+  .sticky-header .header-content,
+  .welcome-header .header-content,
+  [class*="header-container"] [class*="header-inner"],
+  header[class*="sticky"] .welcome-content {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .team-selector {
+  .team-selector,
+  select[id*="team"],
+  [class*="team-dropdown"] {
     margin-top: 10px;
     width: 100%;
   }
