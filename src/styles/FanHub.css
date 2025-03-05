@@ -12,6 +12,7 @@
   --sidebar-width: 60px;
   --sidebar-expanded-width: 200px;
   --right-sidebar-width: 300px;
+  --scoreboard-height: 0px;
 }
 
 * {
@@ -36,6 +37,7 @@ body {
   width: 100%;
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height)); /* Full viewport minus top bars */
   margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height)); /* Push below top bars */
+  transition: margin-top var(--transition-speed) ease, height var(--transition-speed) ease;
 }
 
 /* Adjust when scoreboard is hidden */
@@ -55,8 +57,9 @@ body {
   border-right: 1px solid var(--border-color);
   transition: width var(--transition-speed) ease, top var(--transition-speed) ease;
   overflow: hidden;
-  z-index: 990;
+  z-index: 1000; /* Increased z-index to be above all other elements */
   box-shadow: 2px 0 5px var(--shadow-color);
+  padding-top: 5px; /* Add some padding at the top */
 }
 
 .left-sidebar.expanded {
@@ -118,6 +121,8 @@ body {
   transition: margin-left var(--transition-speed) ease;
   height: 100%;
   background-color: var(--background-color);
+  position: relative; /* Add position relative */
+  z-index: 900; /* Lower than sidebars but higher than most content */
 }
 
 .left-sidebar.expanded ~ .main-content {
@@ -225,7 +230,7 @@ body {
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  z-index: 990;
+  z-index: 999; /* High z-index but below left sidebar */
   box-shadow: -2px 0 5px var(--shadow-color);
   transition: top var(--transition-speed) ease;
 }
@@ -345,6 +350,16 @@ body {
   background-color: #b30017;
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(212, 0, 28, 0.3);
+}
+
+/* --- SCOREBOARD STYLES --- */
+[class*="scoreboard"] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 998; /* Just below sidebars */
+  transition: transform 0.3s ease;
 }
 
 /* --- TEAM LOGO STYLES --- */

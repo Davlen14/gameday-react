@@ -100,6 +100,23 @@ function FanHub({ scoreboardVisible = true }) {
     }
   };
 
+  // Handle scroll events for scoreboard visibility
+  const handleScroll = () => {
+    const scrollPosition = window.scrollY;
+    const scoreboardElement = document.querySelector('[class*="scoreboard"]');
+    
+    if (scoreboardElement) {
+      // Hide scoreboard on scroll
+      if (scrollPosition > 50) {
+        scoreboardElement.style.transform = 'translateY(-100%)';
+        setActualScoreboardVisible(false);
+      } else {
+        scoreboardElement.style.transform = 'translateY(0)';
+        setActualScoreboardVisible(true);
+      }
+    }
+  };
+
   // Detect if scoreboard is actually visible in the DOM
   useEffect(() => {
     // Add a small delay to ensure DOM is fully rendered
@@ -116,11 +133,13 @@ function FanHub({ scoreboardVisible = true }) {
     
     // Add global event listeners for additional detection
     window.addEventListener('resize', adjustLayoutForScoreboard);
+    window.addEventListener('scroll', handleScroll);
     
     return () => {
       clearTimeout(timer);
       resizeObserver.disconnect();
       window.removeEventListener('resize', adjustLayoutForScoreboard);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [scoreboardVisible]);
 
