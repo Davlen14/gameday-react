@@ -331,201 +331,280 @@ const SEC = () => {
       </section>
 
       <style jsx>{`
-        :root {
-          --primary-color: #ffffff;
-          --accent-color: #D4001C;
-          --text-color: #333333;
-          --background-color: #f5f5f5;
-          --border-color: #dddddd;
-        }
-        .sec-page {
-          font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-          color: var(--text-color);
-          padding: 20px;
-          background: var(--background-color);
-        }
-        .hero {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 20px;
-          text-align: center;
-          background: url("/photos/sec-background.jpg") no-repeat center center/cover;
-          color: var(--primary-color);
-          margin-bottom: 40px;
-        }
-        .hero-logo {
-          width: 150px;
-          height: 150px;
-          object-fit: contain;
-          margin-bottom: 20px;
-        }
-        .hero h1 {
-          font-size: 3rem;
-          margin-bottom: 10px;
-        }
-        .hero p {
-          font-size: 1.5rem;
-        }
-        .section {
-          padding: 40px 20px;
-          margin-bottom: 40px;
-        }
-        .news-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 20px;
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .news-card {
-          background: var(--primary-color);
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .news-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        }
-        .news-image {
-          width: 100%;
-          height: 150px;
-          object-fit: cover;
-          border-radius: 8px;
-          margin-bottom: 15px;
-        }
-        .scores-list,
-        .recruits-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 20px;
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .game-card,
-        .recruit-card {
-          background: var(--primary-color);
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px;
-          text-align: center;
-        }
-        .game-card-header,
-        .game-card-footer {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          justify-content: center;
-          margin-bottom: 10px;
-        }
-        .game-team-logo {
-          width: 40px;
-          height: 40px;
-          object-fit: contain;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 0 auto;
-        }
-        th,
-        td {
-          border: 1px solid var(--border-color);
-          padding: 8px;
-          text-align: center;
-        }
-        th {
-          background: var(--accent-color);
-          color: var(--primary-color);
-        }
-        /* Recruiting Section Styles */
-        .team-recruits {
-          margin-bottom: 40px;
-          border-bottom: 1px solid var(--border-color);
-          padding-bottom: 20px;
-        }
-        .team-header {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 15px;
-        }
-        .team-recruit-logo {
-          width: 40px;
-          height: 40px;
-          object-fit: contain;
-          border-radius: 50%;
-          border: 1px solid var(--border-color);
-        }
-        .recruits-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 20px;
-        }
-        .recruit-card.minimal {
-          background: var(--primary-color);
-          border: 1px solid var(--border-color);
-          border-radius: 6px;
-          padding: 10px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 5px;
-        }
-        .recruit-info h4 {
-          font-size: 1rem;
-          margin: 0;
-          color: var(--text-color);
-        }
-        .recruit-info p {
-          font-size: 0.9rem;
-          margin: 0;
-          color: var(--text-color);
-        }
-        .recruit-stars {
-          display: flex;
-          gap: 2px;
-        }
-        .star-icon {
-          font-size: 0.9rem;
-          color: var(--accent-color);
-        }
-        .star-icon.empty {
-          color: var(--border-color);
-        }
-        .stat-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 20px;
-          max-width: 800px;
-          margin: 20px auto 0 auto;
-        }
-        .stat-box {
-          background: var(--primary-color);
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-          padding: 20px;
-        }
-        .stat-number {
-          font-size: 2rem;
-          font-weight: bold;
-          color: var(--accent-color);
-        }
-        @media (max-width: 768px) {
-          .hero h1 {
-            font-size: 2.5rem;
-          }
-          .hero p {
-            font-size: 1.2rem;
-          }
-          .hero-logo {
-            width: 120px;
-            height: 120px;
-          }
-        }
+    /* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
+/* ===============================    COLOR SCHEME & GLOBALS =============================== */
+:root {
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --border-color: #dddddd;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --hover-shadow-color: rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #333333;
+    --text-color: #ffffff;
+    --background-color: #1e1e1e;
+    --border-color: #444444;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --hover-shadow-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* ===============================    GLOBAL RESET & BASE STYLES =============================== */
+.sec-page {
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  color: var(--text-color);
+  background: var(--background-color);
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+}
+
+/* ===============================    HERO SECTION =============================== */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.25rem;
+  text-align: center;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+              url("/photos/sec-background.jpg") no-repeat center center/cover;
+  color: var(--primary-color);
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-logo {
+  width: 9.375rem;
+  height: 9.375rem;
+  object-fit: contain;
+  margin-bottom: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.hero-logo:hover {
+  transform: scale(1.05);
+}
+
+.hero h1 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 3rem;
+  margin-bottom: 0.625rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero p {
+  font-family: "Titillium Web", sans-serif;
+  font-size: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ===============================    NEWS & CARD STYLES =============================== */
+.news-grid, .scores-list, .recruits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  gap: 1.25rem;
+  max-width: 87.5rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.news-card, .game-card, .recruit-card {
+  background: var(--primary-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.news-card:hover, .game-card:hover, .recruit-card:hover {
+  transform: translateY(-0.3125rem);
+  box-shadow: 0 0.5rem 1rem var(--hover-shadow-color);
+}
+
+.news-image {
+  width: 100%;
+  height: 9.375rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 0.9375rem;
+  transition: transform 0.3s ease;
+}
+
+.news-image:hover {
+  transform: scale(1.05);
+}
+
+/* ===============================    TEAM & LOGO STYLES =============================== */
+.game-team-logo, .team-recruit-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.game-team-logo:hover, .team-recruit-logo:hover {
+  transform: rotate(10deg);
+}
+
+/* ===============================    TABLE STYLES =============================== */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem auto;
+  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+th {
+  background: var(--accent-color);
+  color: var(--primary-color);
+  font-family: "Orbitron", sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(212, 0, 28, 0.05);
+}
+
+tr:hover {
+  background-color: rgba(212, 0, 28, 0.1);
+}
+
+/* ===============================    RECRUITING SECTION =============================== */
+.team-recruits {
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.25rem;
+}
+
+.recruits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: 1.25rem;
+}
+
+.recruit-card.minimal {
+  background: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  padding: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3125rem;
+  transition: all 0.3s ease;
+}
+
+.recruit-card.minimal:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+}
+
+.recruit-info h4 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.recruit-info p {
+  font-family: "Titillium Web", sans-serif;
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.recruit-stars {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.star-icon {
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  transition: color 0.3s ease;
+}
+
+.star-icon:hover {
+  color: darken(var(--accent-color), 10%);
+}
+
+.star-icon.empty {
+  color: var(--border-color);
+}
+
+/* ===============================    STATS & METRICS =============================== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: 1.25rem;
+  max-width: 50rem;
+  margin: 1.25rem auto 0;
+}
+
+.stat-box {
+  background: var(--primary-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.stat-box:hover {
+  transform: translateY(-0.3125rem);
+  box-shadow: 0 0.5rem 1rem var(--hover-shadow-color);
+}
+
+.stat-number {
+  font-family: "Orbitron", sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+/* ===============================    RESPONSIVE DESIGN =============================== */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+  }
+
+  .hero-logo {
+    width: 7.5rem;
+    height: 7.5rem;
+  }
+
+  .news-grid, .scores-list, .recruits-grid {
+    grid-template-columns: 1fr;
+  }
+}
       `}</style>
     </div>
   );
