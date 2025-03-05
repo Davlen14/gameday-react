@@ -1,29 +1,32 @@
-/* Commitments.css - Modern styling for the football recruiting map */
+/* Commitments.css - Modern styling for the football recruiting map (Optimized & Modernized) */
 
 :root {
+  /* Updated Color Palette */
   --primary-color: #ffffff;
   --accent-color: #D4001C;
+  --accent-dark: #a50016;
+  --accent-light: #ff3b4e;
   --text-color: #333333;
+  --text-light: #777777;
   --background-color: #f5f5f5;
   --border-color: #dddddd;
-  
-  /* Additional color palette */
-  --accent-light: #ff3b4e;
-  --accent-dark: #a50016;
-  --text-light: #777777;
   --success-color: #28a745;
   --warning-color: #ffc107;
   --info-color: #17a2b8;
   
-  /* Star colors */
+  /* Star colors for markers */
   --five-star: #f54242;
   --four-star: #f5a742;
   --three-star: #4287f5;
+  
+  /* Glassmorphism variables */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.3);
 }
 
 /* Base container */
 .commitments-container {
-  background-color: var(--background-color);
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
   color: var(--text-color);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   padding: 0 0 2rem;
@@ -40,6 +43,19 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 0 0 15px 15px;
   margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.commitments-header::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  transform: rotate(25deg);
 }
 
 .commitments-header h1 {
@@ -47,6 +63,9 @@
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.5px;
+  text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
 }
 
 .commitments-subtitle {
@@ -54,6 +73,8 @@
   opacity: 0.9;
   margin-top: 0.5rem;
   font-weight: 400;
+  position: relative;
+  z-index: 1;
 }
 
 /* Loading state */
@@ -103,16 +124,20 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 1.5rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .commitments-error button:hover {
   background-color: var(--accent-dark);
+  transform: translateY(-2px);
 }
 
-/* Map controls */
+/* Map controls with glassmorphism effect */
 .map-controls {
-  background-color: var(--primary-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 1.25rem;
   margin: 0 1.5rem 1.5rem;
@@ -138,25 +163,28 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background-color: var(--background-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: 500;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s;
 }
 
 .mode-button:hover, .action-button:hover {
-  background-color: #eeeeee;
+  background: #eeeeee;
+  transform: translateY(-2px);
 }
 
 .mode-button.active {
-  background-color: var(--accent-color);
+  background: var(--accent-color);
   color: var(--primary-color);
   border-color: var(--accent-color);
 }
 
+/* Filter controls */
 .filter-controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -183,7 +211,7 @@
   font-size: 0.95rem;
   background-color: var(--primary-color);
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, transform 0.2s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -195,6 +223,7 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--accent-color);
+  transform: scale(1.02);
 }
 
 .search-input-container {
@@ -216,12 +245,13 @@
   font-size: 0.95rem;
   background-color: var(--primary-color);
   width: 100%;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, transform 0.2s;
 }
 
 .team-search:focus {
   outline: none;
   border-color: var(--accent-color);
+  transform: scale(1.02);
 }
 
 /* Map container */
@@ -251,11 +281,12 @@
   width: 300px !important;
 }
 
-/* Marker styling */
+/* Marker styling with 3D gradient glass effect */
 .marker-container {
   position: relative;
   width: 40px;
   height: 40px;
+  perspective: 800px;
 }
 
 .star-badge {
@@ -271,9 +302,12 @@
   font-size: 14px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) perspective(500px) rotateX(10deg);
   left: 50%;
   top: 50%;
+  background: linear-gradient(135deg, var(--five-star), var(--accent-dark));
+  border: 2px solid rgba(255,255,255,0.8);
+  text-shadow: 0px 1px 3px rgba(0,0,0,0.3);
 }
 
 .pulse-ring {
@@ -304,18 +338,23 @@
   }
 }
 
-/* Prospect popup styling */
+/* Prospect popup styling with glass effect */
 .prospect-popup-content {
   padding: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
 }
 
 .prospect-popup-header {
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
   color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .prospect-popup-stars {
@@ -386,14 +425,16 @@
   object-fit: contain;
 }
 
-/* Stats panel */
+/* Stats panel with modern glass and gradient effect */
 .stats-panel {
   position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
   width: 350px;
-  background-color: var(--primary-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid var(--glass-border);
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   display: flex;
@@ -404,7 +445,7 @@
 
 .stats-panel-header {
   padding: 1.25rem;
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   color: white;
   display: flex;
   justify-content: space-between;
@@ -430,6 +471,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s;
+}
+
+.close-stats:hover {
+  transform: scale(1.1);
 }
 
 .stats-panel-content {
@@ -446,10 +492,18 @@
 }
 
 .stat-card {
-  background-color: var(--background-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
@@ -480,7 +534,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: var(--background-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 0.75rem;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -488,7 +544,7 @@
 
 .team-rank-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
 .team-rank-position {
@@ -497,7 +553,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   color: white;
   border-radius: 50%;
   font-size: 0.8rem;
@@ -565,7 +621,8 @@
   gap: 1.5rem;
   margin: 1.5rem;
   padding: 1rem;
-  background-color: var(--primary-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(6px);
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   flex-wrap: wrap;
@@ -585,15 +642,15 @@
 }
 
 .legend-marker.five-star {
-  background-color: var(--five-star);
+  background: linear-gradient(135deg, var(--five-star), var(--accent-dark));
 }
 
 .legend-marker.four-star {
-  background-color: var(--four-star);
+  background: linear-gradient(135deg, var(--four-star), var(--accent-dark));
 }
 
 .legend-marker.three-star {
-  background-color: var(--three-star);
+  background: linear-gradient(135deg, var(--three-star), var(--accent-dark));
 }
 
 .legend-info {
@@ -606,7 +663,8 @@
 
 /* Recruit stats */
 .recruit-stats {
-  background-color: var(--primary-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   margin: 1.5rem;
   padding: 1.5rem;
   border-radius: 12px;
@@ -626,7 +684,9 @@
 }
 
 .stat-box {
-  background-color: var(--background-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
   padding: 1.25rem;
   border-radius: 8px;
   text-align: center;
