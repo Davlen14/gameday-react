@@ -1,9 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../styles/FanHub.css";
 
-// Import FontAwesome icons (ensure you have the proper packages installed)
+// Import FontAwesome icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faCommentAlt, faUsers, faLocationDot, faChartBar, faFire } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faHouse, 
+  faCommentAlt, 
+  faUsers, 
+  faLocationDot, 
+  faChartBar, 
+  faFire, 
+  faFootball,
+  faChartLine,
+  faBell,
+  faPeopleGroup,
+  faMessage
+} from "@fortawesome/free-solid-svg-icons";
 
 function FanHub({ scoreboardVisible }) {
   // State for left sidebar expansion (default collapsed)
@@ -57,8 +69,13 @@ function FanHub({ scoreboardVisible }) {
   ];
 
   // State for the active chat room tab in the Game-Based Chat Rooms section
-  const [activeChatTab, setActiveChatTab] = useState("🏟️ Game Day Chat");
-  const chatTabs = ["🏟️ Game Day Chat", "📊 Betting & Predictions", "🔔 Breaking News", "👥 Team-Specific Chat"];
+  const [activeChatTab, setActiveChatTab] = useState("Game Day Chat");
+  const chatTabs = [
+    { label: "Game Day Chat", icon: faFootball },
+    { label: "Betting & Predictions", icon: faChartLine },
+    { label: "Breaking News", icon: faBell },
+    { label: "Team-Specific Chat", icon: faPeopleGroup }
+  ];
 
   // Handle live chat message submission
   const handleChatSubmit = (e) => {
@@ -93,81 +110,104 @@ function FanHub({ scoreboardVisible }) {
       <div className="main-content">
         {/* Sticky Top Header */}
         <div className="sticky-header" ref={homeRef}>
-          <h2>🏟️ Welcome to the Fan Hub!</h2>
-          <select
-            className="team-selector"
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-          >
-            <option value="">Select Your Team Affiliation 🏈</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.name}>
-                {team.name}
-              </option>
-            ))}
-          </select>
+          <div className="header-content">
+            <h2>
+              <FontAwesomeIcon icon={faFootball} className="header-icon" />
+              Welcome to the Fan Hub!
+            </h2>
+            <select
+              className="team-selector"
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value)}
+            >
+              <option value="">Select Your Team Affiliation <FontAwesomeIcon icon={faFootball} /></option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.name}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Live Game Chat Section */}
         <div className="section" ref={liveGameChatRef}>
-          <h3>Live Game Chat</h3>
+          <div className="section-header">
+            <FontAwesomeIcon icon={faMessage} className="section-icon" />
+            <h3>Live Game Chat</h3>
+          </div>
           <p>
-            Select which game’s chat to join. Chat syncs across the site (Fan Hub and Game Pages). Reactions, GIFs, and mentions are supported.
+            Select which game's chat to join. Chat syncs across the site (Fan Hub and Game Pages). Reactions, GIFs, and mentions are supported.
           </p>
           {/* Placeholder for live game chat content */}
-          <div style={{ height: "150px", backgroundColor: "#eaeaea", borderRadius: "4px" }}></div>
+          <div className="content-placeholder"></div>
         </div>
 
         {/* Game-Based Chat Rooms Section */}
         <div className="section" ref={gameRoomsRef}>
-          <h3>Game-Based Chat Rooms</h3>
+          <div className="section-header">
+            <FontAwesomeIcon icon={faUsers} className="section-icon" />
+            <h3>Game-Based Chat Rooms</h3>
+          </div>
           <div className="chat-tabs">
             {chatTabs.map((tab, index) => (
               <button
                 key={index}
-                className={activeChatTab === tab ? "active" : ""}
-                onClick={() => setActiveChatTab(tab)}
+                className={activeChatTab === tab.label ? "active" : ""}
+                onClick={() => setActiveChatTab(tab.label)}
               >
-                {tab}
+                <FontAwesomeIcon icon={tab.icon} />
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
           <div>
             <p>{activeChatTab} content goes here.</p>
             {/* Placeholder for chat room content */}
-            <div style={{ height: "100px", backgroundColor: "#eaeaea", borderRadius: "4px" }}></div>
+            <div className="content-placeholder"></div>
           </div>
         </div>
 
         {/* Fan Check-Ins Section */}
         <div className="section" ref={checkinsRef}>
-          <h3>Fan Check-Ins</h3>
-          <button>Toggle “Going to Home/Away Game”</button>
+          <div className="section-header">
+            <FontAwesomeIcon icon={faLocationDot} className="section-icon" />
+            <h3>Fan Check-Ins</h3>
+          </div>
+          <button className="action-button">
+            <FontAwesomeIcon icon={faFootball} /> Toggle "Going to Home/Away Game"
+          </button>
           <p>
             List of attendees with profile pictures and team logos will appear here.
           </p>
           {/* Placeholder for check-ins */}
-          <div style={{ height: "100px", backgroundColor: "#eaeaea", borderRadius: "4px" }}></div>
+          <div className="content-placeholder"></div>
         </div>
 
         {/* Fan Polls Section */}
         <div className="section" ref={pollsRef}>
-          <h3>Fan Polls</h3>
+          <div className="section-header">
+            <FontAwesomeIcon icon={faChartBar} className="section-icon" />
+            <h3>Fan Polls</h3>
+          </div>
           <p>
             Users vote on game outcomes and player performances. Live results update instantly.
           </p>
           {/* Placeholder for polls */}
-          <div style={{ height: "100px", backgroundColor: "#eaeaea", borderRadius: "4px" }}></div>
+          <div className="content-placeholder"></div>
         </div>
 
         {/* Hype Tracker Section */}
         <div className="section" ref={hypeTrackerRef}>
-          <h3>Hype Tracker</h3>
+          <div className="section-header">
+            <FontAwesomeIcon icon={faFire} className="section-icon" />
+            <h3>Hype Tracker</h3>
+          </div>
           <p>
             Fans vote on upcoming games. A grid showing matchups, team logos, and ratings will be displayed.
           </p>
           {/* Placeholder for hype tracker */}
-          <div style={{ height: "100px", backgroundColor: "#eaeaea", borderRadius: "4px" }}></div>
+          <div className="content-placeholder"></div>
         </div>
       </div>
 
@@ -176,9 +216,10 @@ function FanHub({ scoreboardVisible }) {
         <div className="mini-feed">
           <p><strong>Latest Messages:</strong></p>
           {/* Mini feed placeholder; could be expanded to show a summary */}
-          <p>No new messages.</p>
+          <p className="no-messages">No new messages.</p>
         </div>
         <div className="chat-header">
+          <FontAwesomeIcon icon={faMessage} className="chat-icon" />
           <p>Live Game Chat</p>
         </div>
         <div className="chat-messages">
