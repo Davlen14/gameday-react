@@ -1,189 +1,118 @@
-/***********************************************************
- * Modern, 3D-Enhanced Ultra-HD Scoreboard (Minimal Version)
- ***********************************************************/
-
-/* Refined font stack with variable font support */
+/* Modern, Slim Scoreboard Styling */
 .scoreboard-bar {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
-    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", sans-serif;
-  background: linear-gradient(to bottom, #ffffff, #f8f8f8);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px; /* reduced from 6px 12px */
+  padding: 4px 10px;
   width: 100%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  min-height: 39px; /* reduced from 60px */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  min-height: 44px;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   z-index: 100;
 }
 
-/* Premium Week Filter & NCAAF Label */
 .scoreboard-filters {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10px; /* reduced from 13px */
+  gap: 4px;
+  font-size: 11px;
   flex: 0 0 auto;
-  min-width: 110px; /* slightly reduced */
-  background: rgba(255, 255, 255, 0.7);
-  padding: 3px 6px; /* reduced from 4px 8px */
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  min-width: 110px;
+  background: rgba(250, 250, 250, 0.6);
+  padding: 2px 6px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .scoreboard-divider {
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
-  height: 18px;
-  margin: 0 6px;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  height: 14px;
+  margin: 0 4px;
 }
 
 .scoreboard-ncaaf-dropdown {
-  font-size: 10px; /* reduced from 13px */
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   color: #333;
-  padding: 2px 4px; /* reduced from 3px 6px */
-  background: transparent;
-  transition: all 0.2s ease;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.3px;
-}
-
-.scoreboard-ncaaf-dropdown:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  transform: translateY(-1px);
+  padding: 2px 4px;
 }
 
 .scoreboard-week-dropdown {
-  font-size: 10px; /* reduced from 13px */
+  font-size: 11px;
   font-weight: 500;
   color: #444;
   cursor: pointer;
   border: none;
-  border-radius: 6px;
-  background: rgba(240, 240, 240, 0.8);
-  padding: 3px 6px; /* reduced from 4px 10px */
-  transition: all 0.2s ease;
-  min-width: 70px; /* reduced from 85px */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  background: rgba(240, 240, 240, 0.6);
+  padding: 2px 8px;
+  min-width: 70px;
   -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px top 50%; /* adjusted position */
-  background-size: 8px auto; /* slightly smaller arrow */
-  padding-right: 16px; /* adjusted accordingly */
 }
 
-.scoreboard-week-dropdown:hover {
-  background-color: rgba(230, 230, 230, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.scoreboard-week-dropdown:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 120, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-/* Premium horizontally scrolling game cards */
 .scoreboard-games {
   display: flex;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   flex: 1;
-  margin-left: 15px;
+  margin-left: 10px;
   scrollbar-width: none;
-  min-height: 27px; /* reduced from 42px */
+  min-height: 36px;
   position: relative;
   gap: 1px;
-  padding: 2px 0;
+  padding: 1px 0;
 }
 
 .scoreboard-games::-webkit-scrollbar {
   display: none;
 }
 
-.scoreboard-games::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 40px;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
-  pointer-events: none;
-  z-index: 2;
-}
-
 .scoreboard-game-link {
   text-decoration: none;
   color: inherit;
   flex: 0 0 auto;
-  transition: transform 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .scoreboard-game-link:hover {
-  transform: translateY(-2px);
+  opacity: 0.8;
 }
 
-/* Enhanced 3D Game card styling */
 .scoreboard-game-card {
   flex: 0 0 auto;
-  min-width: 80px;  /* reduced from 120px */
-  max-width: 98px;  /* reduced from 150px */
+  min-width: 100px;
+  max-width: 130px;
   display: flex;
   flex-direction: column;
-  padding: 4px 6px; /* reduced from 6px 8px */
-  border-right: 1px solid rgba(0, 0, 0, 0.07);
-  background: rgba(255, 255, 255, 0.65);
-  transition: all 0.2s ease;
-  border-radius: 8px;
-  margin: 0 1px; /* reduced margin */
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    0 3px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  padding: 4px 6px;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 0.2s ease;
+  border-radius: 6px;
+  margin: 0 1px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.scoreboard-game-card:last-child {
-  border-right: none;
-}
-
-.scoreboard-game-card:hover {
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 
-    0 4px 10px rgba(0, 0, 0, 0.07),
-    0 6px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-/* Enhanced Game header row (status + TV outlet) */
 .scoreboard-game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 2px; /* reduced from 3px */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  padding-bottom: 2px; /* reduced from 3px */
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .scoreboard-game-time {
-  font-size: 9px; /* reduced from 11px */
+  font-size: 9px;
   font-weight: 500;
-  color: #555;
-  letter-spacing: 0.2px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  color: #666;
+  letter-spacing: 0.1px;
 }
 
 .scoreboard-game-time.final {
@@ -194,177 +123,71 @@
 .scoreboard-game-network {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(240, 240, 240, 0.5);
-  padding: 1px 2px; /* slightly reduced */
-  border-radius: 4px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
-  font-size: 9px; /* adjusted font-size */
+  gap: 3px;
+  background: rgba(240, 240, 240, 0.4);
+  padding: 1px 3px;
+  border-radius: 3px;
 }
 
-/* Enhanced TV outlet and icon */
 .scoreboard-tv-outlet {
-  font-size: 8px; /* reduced from 10px */
+  font-size: 8px;
   font-weight: 500;
-  color: #444;
-  display: inline-block;
-  max-width: 50px;
+  color: #555;
+  max-width: 40px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .scoreboard-tv-icon {
-  font-size: 10px; /* reduced from 12px */
-  color: #111;
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7));
+  font-size: 10px;
+  color: #333;
 }
 
-/* Enhanced Team rows: both away and home */
 .scoreboard-card-team {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 3px 0; /* slightly reduced */
-  padding: 2px 3px; /* reduced from 3px 4px */
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.scoreboard-card-team:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+  margin: 2px 0;
+  padding: 2px 3px;
+  border-radius: 3px;
 }
 
 .scoreboard-team-info {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
 }
 
-/* Enhanced team logos with 3D effect */
 .scoreboard-team-logo {
-  width: 14px; /* reduced from 20px */
-  height: 14px; /* reduced from 20px */
+  width: 16px;
+  height: 16px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: 4px;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-  background: rgba(255, 255, 255, 0.7);
-  padding: 1px;
-  transition: transform 0.2s ease;
-}
-
-.scoreboard-card-team:hover .scoreboard-team-logo {
-  transform: scale(1.1);
 }
 
 .scoreboard-team-name {
-  font-size: 10px; /* reduced from 12px */
+  font-size: 10px;
   font-weight: 600;
   color: #222;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.2px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .scoreboard-team-score {
-  font-size: 10px; /* reduced from 12px */
+  font-size: 10px;
   font-weight: 700;
   color: #000;
-  min-width: 20px;
+  min-width: 16px;
   text-align: right;
-  background: rgba(240, 240, 240, 0.6);
-  border-radius: 4px;
-  padding: 2px 3px; /* slightly reduced */
-  box-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.2s ease;
-}
-
-.scoreboard-card-team:hover .scoreboard-team-score {
-  background: rgba(220, 220, 220, 0.7);
-  transform: scale(1.05);
-}
-
-/* Enhanced O/U or Spread info */
-.scoreboard-sportsbook.scoreboard-home-ou {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(245, 245, 245, 0.7);
-  border-radius: 4px;
-  padding: 2px 4px;
-  margin-top: 2px;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.03);
-}
-
-.scoreboard-sportsbook-logo {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
-}
-
-.scoreboard-sportsbook-ou {
-  font-size: 8px; /* reduced from 10px */
-  font-weight: 600;
-  color: #666;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-/* Enhanced Loading spinner for scoreboard */
-.scoreboard-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 10;
-}
-
-.scoreboard-spinner {
-  width: 17px; /* reduced from 26px */
-  height: 17px; /* reduced from 26px */
-  border: 2px solid rgba(212, 0, 28, 0.1); /* reduced border width */
-  border-radius: 50%;
-  border-left-color: #D4001C;
-  animation: scoreboardSpin 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-@keyframes scoreboardSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Enhanced Placeholder cards during loading */
-.scoreboard-placeholder-card {
-  width: 78px; /* reduced from 120px */
-  height: 27px; /* reduced from 42px */
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading-pulse 1.7s infinite;
-  border-radius: 8px;
-  margin-right: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-@keyframes loading-pulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  background: rgba(240, 240, 240, 0.5);
+  border-radius: 3px;
+  padding: 1px 3px;
 }
 
 /* Responsive Adjustments */
@@ -372,13 +195,13 @@
   .scoreboard-bar {
     flex-wrap: wrap;
     padding: 4px;
-    min-height: 55px; /* reduced from 84px */
+    min-height: 64px;
   }
   
   .scoreboard-filters,
   .scoreboard-games {
     width: 100%;
-    margin-bottom: 4px; /* reduced from 6px */
+    margin-bottom: 4px;
   }
   
   .scoreboard-games {
@@ -386,18 +209,7 @@
   }
   
   .scoreboard-game-card {
-    min-width: 72px; /* reduced from 110px */
-    padding: 4px 6px;
-  }
-  
-  .scoreboard-ncaaf-dropdown,
-  .scoreboard-week-dropdown {
-    font-size: 9px; /* reduced from 11px */
-    padding: 2px 4px;
-  }
-  
-  .scoreboard-team-logo {
-    width: 12px; /* reduced from 18px */
-    height: 12px; /* reduced from 18px */
+    min-width: 90px;
+    padding: 3px 4px;
   }
 }
