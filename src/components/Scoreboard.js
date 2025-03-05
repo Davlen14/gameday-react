@@ -60,10 +60,10 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   // MODIFIED THIS SECTION - The intersection observer was causing navbar issues
   useEffect(() => {
     // Only set up the observer if setScoreboardVisible is provided
-    if (typeof setScoreboardVisible === "function") {
+    if (typeof setScoreboardVisible === 'function') {
       // Initialize as visible by default
       setScoreboardVisible(true);
-
+      
       const observer = new IntersectionObserver(
         ([entry]) => {
           // Only handle scoreboard visibility, don't affect other nav elements
@@ -71,17 +71,17 @@ const Scoreboard = ({ setScoreboardVisible }) => {
             setScoreboardVisible(entry.isIntersecting);
           }
         },
-        {
-          root: null,
+        { 
+          root: null, 
           threshold: 0.1, // Slightly higher threshold to prevent flickering
-          rootMargin: "0px 0px 0px 0px", // Default margin
+          rootMargin: "0px 0px 0px 0px" // Default margin
         }
       );
 
       if (scoreboardRef.current) {
         observer.observe(scoreboardRef.current);
       }
-
+      
       return () => {
         if (scoreboardRef.current) {
           observer.unobserve(scoreboardRef.current);
@@ -132,15 +132,9 @@ const Scoreboard = ({ setScoreboardVisible }) => {
 
   return (
     <div className="scoreboard-bar" ref={scoreboardRef}>
-      {/* Filters on the left (Football image replacing NCAAF + Week Selector) */}
+      {/* Filters on the left (NCAAF + Week Selector) */}
       <div className="scoreboard-filters">
-        {/* Replaced text "NCAAF" with the football image */}
-        <img
-          src="/photos/football.avif"
-          alt="NCAAF"
-          className="scoreboard-ncaaf-dropdown"
-          style={{ height: "1em", width: "auto" }}
-        />
+        <span className="scoreboard-ncaaf-dropdown">NCAAF</span>
         <div className="scoreboard-divider" />
         <select
           id="weekSelect"
