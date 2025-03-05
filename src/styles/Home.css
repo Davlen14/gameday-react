@@ -7,13 +7,9 @@
 :root {
   --primary-color: #ffffff;
   --accent-color: #D4001C;
-  --accent-gradient: linear-gradient(135deg, #D4001C 0%, #8C0014 50%, #D4001C 100%);
   --text-color: #333333;
   --background-color: #f5f5f5;
   --border-color: #dddddd;
-  --sidebar-bg: #f9f9f9;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,41 +18,18 @@
     --text-color: #ffffff;
     --background-color: #1e1e1e;
     --border-color: #444444;
-    --sidebar-bg: #2a2a2a;
   }
 }
 
 /* ===============================
-   HOME CONTAINER & MAIN LAYOUT
+   HOME CONTAINER
 =============================== */
 .home-container {
-  font-family: "Titillium Web", sans-serif;
-  padding: 0.5rem 1rem;
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  padding: 0.5rem 1.5rem; /* Reduced top padding */
   background-color: var(--background-color);
   color: var(--text-color);
   min-height: 100vh;
-  max-width: 1320px;
-  margin: 0 auto;
-}
-
-/* Main content grid layout (2 columns) */
-.main-content-grid {
-  display: grid;
-  grid-template-columns: 7fr 3fr; /* Main content takes 70%, sidebar 30% */
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.main-content-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.sidebar-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* ===============================
@@ -68,9 +41,6 @@
   margin-bottom: 1.5rem;
   position: relative;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .hero-header h1 {
@@ -82,7 +52,6 @@
   font-weight: 800;
   position: relative;
   display: inline-block;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
   
   /* Modern 3D Gradient Effect */
   background-image: linear-gradient(135deg, #D4001C 0%, #8C0014 50%, #D4001C 100%);
@@ -137,31 +106,19 @@
   }
 }
 
-/* Week Selector */
+/* Optional Week Selector in Hero */
 .week-selector {
   margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--primary-color);
-  border-radius: 4px;
-  box-shadow: var(--card-shadow);
-}
-
-.week-selector label {
-  font-weight: 600;
-  font-size: 0.9rem;
 }
 
 select {
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem;
+  margin-left: 0.5rem;
   background: var(--primary-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
+  font-size: 0.9rem; /* Slightly smaller than 0.95rem */
 }
 
 /* ===============================
@@ -170,480 +127,118 @@ select {
 .section-title {
   color: var(--accent-color);
   border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 0.4rem;
-  margin-bottom: 1.2rem;
-  font-size: 1.4rem;
-  font-weight: 700;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-  text-transform: uppercase;
-}
-
-.sidebar-title {
-  color: var(--text-color);
-  padding-bottom: 0.4rem;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.sidebar-section {
-  background-color: var(--sidebar-bg);
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: var(--card-shadow);
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-/* ===============================
-   FEATURED TEAMS SECTION
-=============================== */
-.featured-teams-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.featured-team-item {
-  background-color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-
-.featured-team-item:hover {
-  transform: scale(1.05);
-  box-shadow: var(--card-shadow);
-}
-
-.featured-team-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.find-team-button {
-  background-color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background-color 0.2s ease;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-
-.find-team-button:hover {
-  background-color: rgba(212, 0, 28, 0.05);
-}
-
-.search-icon {
-  color: var(--accent-color);
-  font-size: 0.9rem;
+  padding-bottom: 0.4rem; /* Slightly reduced */
+  margin-bottom: 1.2rem;  /* Slightly reduced */
+  font-size: 1.4rem;      /* Slightly smaller than 1.6rem */
+  font-weight: 600;
 }
 
 /* ===============================
    POLLS SECTION
 =============================== */
-.poll-tabs {
+.poll-title {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 8px;              /* Reduced gap */
+  font-size: 1.2rem;     /* Slightly smaller than 1.4rem */
+  font-weight: bold;
 }
 
-.poll-tab {
-  background: none;
-  border: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+.poll-logo {
+  width: 1.2rem;         /* Reduced from 1.5rem */
+  height: 1.2rem;
+  object-fit: contain;
 }
 
-.poll-tab.active {
-  background-color: var(--accent-color);
-  color: white;
+.polls-grid {
+  display: grid;
+  gap: 1rem;             /* Tighter gap than 1.5rem */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 1.5rem; /* Slightly reduced bottom margin */
 }
 
-.poll-tab:hover:not(.active) {
-  background-color: rgba(212, 0, 28, 0.1);
+.poll-card {
+  background: #fff;
+  padding: 0.75rem;      /* Reduced from 1rem */
+  border-radius: 10px;   /* Smaller radius than 16px */
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ddd;
 }
 
-.rankings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+@media (prefers-color-scheme: dark) {
+  .poll-card {
+    background: #2e2e2e;
+    border: 1px solid #444;
+  }
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.85rem;
-  transition: background-color 0.2s ease;
+  gap: 6px;         /* Add small horizontal gap for inline items */
+  padding: 0.5rem 0; 
+  border-bottom: 1px solid #ddd;
+  font-size: 0.85rem; /* Smaller text for poll items */
 }
 
-.ranking-item:last-child {
-  border-bottom: none;
+@media (prefers-color-scheme: dark) {
+  .ranking-item {
+    border-bottom: 1px solid #444;
+  }
 }
 
-.ranking-item:hover {
-  background-color: rgba(212, 0, 28, 0.05);
-}
-
+/* Replacing .team-logo with .team-poll-logo for polls specifically */
 .team-poll-logo {
-  width: 24px;
-  height: 24px;
+  width: 18px;       /* Slightly smaller than 20px */
+  height: 18px;
   object-fit: contain;
+  border: none;      /* No border */
+  border-radius: 0;  /* No radius */
 }
 
 .poll-rank {
   color: var(--accent-color);
-  font-size: 0.85rem;
+  font-size: 0.85rem; /* Smaller rank text */
   font-weight: bold;
-  min-width: 24px;
 }
 
 .poll-team-name {
-  font-size: 0.85rem;
-  font-weight: 500;
-  flex-grow: 1;
+  font-size: 0.8rem;  /* Make the team name smaller */
+  font-weight: 500;   /* Slightly lighter than 600 */
+  color: #333;
 }
 
 .poll-points {
-  font-size: 0.75rem;
+  font-size: 0.75rem; /* Smaller points text */
   color: #666;
-  margin-left: auto;
-}
-
-.view-all-link {
-  margin-top: 0.75rem;
-  text-align: right;
-}
-
-.view-all-link a {
-  font-size: 0.85rem;
-  color: var(--accent-color);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: color 0.2s ease;
-}
-
-.view-all-link a:hover {
-  text-decoration: underline;
-}
-
-/* ===============================
-   CRYSTAL BALLS / RECRUITS SECTION
-=============================== */
-.recruits-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.recruit-item {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem;
-  background-color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.recruit-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hover-shadow);
-}
-
-.recruit-photo {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-}
-
-.recruit-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recruit-placeholder {
-  width: 100%;
-  height: 100%;
-  background-color: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-}
-
-.recruit-details {
-  flex-grow: 1;
-}
-
-.recruit-name-position {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.25rem;
-}
-
-.recruit-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.recruit-position {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.stars-container {
-  display: flex;
-  gap: 2px;
-}
-
-.star-icon {
-  color: gold;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
-}
-
-.recruit-commitment {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-
-.committed-team-logo {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.commitment-rank {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background-color: #FFCC00;
-  color: #000;
-}
-
-/* ===============================
-   NEWS ARTICLES SECTION
-=============================== */
-.news-articles-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.news-article-card {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--primary-color);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-decoration: none;
-  color: var(--text-color);
-  height: 100%;
-}
-
-.news-article-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--hover-shadow);
-}
-
-.news-article-image {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.news-article-content {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.news-article-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-  line-height: 1.4;
-}
-
-.news-article-source {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: auto;
-}
-
-.view-more-news {
-  text-align: right;
-  margin-top: 1rem;
-}
-
-.view-more-news a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--accent-color);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: color 0.2s ease;
-}
-
-.view-more-news a:hover {
-  text-decoration: underline;
-}
-
-/* ===============================
-   FEATURED SECTION (ARTICLES)
-=============================== */
-.featured-section {
-  margin-bottom: 1.5rem;
-}
-
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, auto);
-  grid-gap: 0.75rem;
-  grid-template-areas:
-    "big big small1"
-    "big big small2"
-    "small3 small4 small5";
-}
-
-.featured-grid > :nth-child(1) { grid-area: big; }
-.featured-grid > :nth-child(2) { grid-area: small1; }
-.featured-grid > :nth-child(3) { grid-area: small2; }
-.featured-grid > :nth-child(4) { grid-area: small3; }
-.featured-grid > :nth-child(5) { grid-area: small4; }
-.featured-grid > :nth-child(6) { grid-area: small5; }
-
-.featured-card {
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease;
-}
-
-.big-card {
-  height: 360px;
-}
-
-.small-card {
-  height: 180px;
-}
-
-.featured-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.featured-card:hover {
-  transform: translateY(-4px);
-}
-
-.featured-card:hover img {
-  transform: scale(1.05);
-}
-
-.featured-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(212, 0, 28, 0.85);
-  color: #fff;
-  padding: 0.8rem;
-}
-
-.featured-overlay h2,
-.featured-overlay h3 {
-  margin: 0 0 0.25rem;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.featured-overlay p {
-  margin: 0;
-  font-size: 0.85rem;
 }
 
 /* ===============================
    MODERN GAME CARDS (Slider)
 =============================== */
-.games-section {
-  margin-bottom: 1.5rem;
-}
-
 .games-slider {
   display: flex;
   overflow-x: auto;
-  gap: 1rem;
-  padding: 0.25rem 0.1rem 1.5rem;
-  scroll-snap-type: x mandatory;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .game-card-link {
   text-decoration: none;
   color: inherit;
-  flex: 0 0 280px;
-  scroll-snap-align: start;
+  display: block;
+  transition: transform 0.3s ease;
 }
 
 .game-card {
+  flex: 0 0 280px;
   background: linear-gradient(145deg, #ffffff, #f8f8f8);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: var(--card-shadow);
-  border: 1px solid var(--border-color);
+  border-radius: 14px; 
+  padding: 0.8rem;     
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 100%;
+  transition: all 0.3s ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -655,7 +250,7 @@ select {
 
 .game-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--hover-shadow);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
 
 .game-header {
@@ -663,7 +258,7 @@ select {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.8rem;
-  font-size: 0.8rem;
+  font-size: 0.8rem; 
   color: #666;
 }
 
@@ -673,17 +268,10 @@ select {
   }
 }
 
-.game-time {
-  font-weight: 500;
-}
-
 .network {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background-color: rgba(212, 0, 28, 0.08);
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
 }
 
 .network-icon {
@@ -712,16 +300,11 @@ select {
 }
 
 .team img {
-  width: 60px;
-  height: 60px;
+  width: 58px; 
+  height: 58px;
+  margin-bottom: 0.4rem;
   object-fit: contain;
-  margin-bottom: 0.5rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  transition: transform 0.3s ease;
-}
-
-.team:hover img {
-  transform: scale(1.1);
 }
 
 .team-name {
@@ -733,15 +316,11 @@ select {
 .team-record {
   font-size: 0.75rem;
   color: #666;
-  background-color: rgba(0,0,0,0.04);
-  padding: 0.1rem 0.4rem;
-  border-radius: 10px;
 }
 
 @media (prefers-color-scheme: dark) {
   .team-record {
     color: #aaa;
-    background-color: rgba(255,255,255,0.1);
   }
 }
 
@@ -749,12 +328,12 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.4rem;
 }
 
 .vs-circle {
-  background: var(--accent-gradient);
-  width: 36px;
+  background: linear-gradient(135deg, var(--accent-color), #b30000);
+  width: 36px; 
   height: 36px;
   border-radius: 50%;
   display: flex;
@@ -762,13 +341,13 @@ select {
   justify-content: center;
   font-weight: 700;
   color: white;
-  font-size: 0.9rem;
+  font-size: 0.9rem; 
   box-shadow: 0 3px 10px rgba(142, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
 
 .game-card:hover .vs-circle {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.06);
 }
 
 .score-container {
@@ -778,14 +357,12 @@ select {
 }
 
 .score {
-  font-size: 1rem;
+  font-size: 1rem; 
   font-weight: 700;
   color: var(--text-color);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.04);
-  min-width: 30px;
-  text-align: center;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -796,7 +373,7 @@ select {
 
 .score-divider {
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.9rem; 
   color: #999;
 }
 
@@ -807,12 +384,11 @@ select {
 }
 
 .game-footer {
-  padding-top: 0.5rem;
+  padding-top: 0.5rem; 
   margin-top: 0.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.75rem;
+  font-size: 0.75rem; 
   color: #666;
-  text-align: center;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -822,111 +398,131 @@ select {
   }
 }
 
-.game-venue {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.6rem;
-  background-color: rgba(0,0,0,0.04);
-  border-radius: 12px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-venue {
-    background-color: rgba(255,255,255,0.08);
-  }
-}
-
 /* Scrollbar Styling for Slider */
 .games-slider::-webkit-scrollbar {
-  height: 5px;
+  height: 4px; 
 }
 .games-slider::-webkit-scrollbar-track {
   background: rgba(0,0,0,0.05);
-  border-radius: 2.5px;
 }
 .games-slider::-webkit-scrollbar-thumb {
-  background: rgba(212, 0, 28, 0.3);
-  border-radius: 2.5px;
+  background: rgba(142, 0, 0, 0.3);
+  border-radius: 4px;
 }
 .games-slider::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 0, 28, 0.5);
+  background: rgba(142, 0, 0, 0.4);
 }
 
 /* ===============================
    LOADING & ERROR STATES
 =============================== */
 .loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 70vh;
   text-align: center;
-  padding: 2rem;
-}
-
-.loading-container::before {
-  content: "";
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(212, 0, 28, 0.1);
-  border-radius: 50%;
-  border-top-color: var(--accent-color);
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: var(--accent-color);
+  padding: 1.5rem; 
+  font-size: 1rem; 
 }
 
 /* ===============================
-   RESPONSIVE ADJUSTMENTS
+   FEATURED SECTION
 =============================== */
+.featured-section {
+  margin-bottom: 2rem; 
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, auto);
+  grid-gap: 0.5rem; 
+  grid-template-areas:
+    "big big small1"
+    "big big small2"
+    "small3 small4 small5";
+}
+
+.featured-grid > :nth-child(1) {
+  grid-area: big;
+  position: relative;
+}
+.featured-grid > :nth-child(2) {
+  grid-area: small1;
+  position: relative;
+}
+.featured-grid > :nth-child(3) {
+  grid-area: small2;
+  position: relative;
+}
+.featured-grid > :nth-child(4) {
+  grid-area: small3;
+  position: relative;
+}
+.featured-grid > :nth-child(5) {
+  grid-area: small4;
+  position: relative;
+}
+.featured-grid > :nth-child(6) {
+  grid-area: small5;
+  position: relative;
+}
+
+.featured-card {
+  border-radius: 12px; 
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.featured-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.featured-card:hover img {
+  transform: scale(1.02);
+}
+
+.featured-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(212, 0, 28, 0.85);
+  color: #fff;
+  padding: 0.6rem; 
+}
+
+.featured-overlay h2,
+.featured-overlay h3 {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+  font-size: 0.95rem; 
+}
+
+.featured-overlay p {
+  margin: 0;
+  font-size: 0.75rem; 
+}
+
 @media (max-width: 992px) {
-  .main-content-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .featured-grid {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, auto);
+    grid-gap: 0.5rem;
     grid-template-areas:
       "big big"
       "small1 small2"
       "small3 small4"
       "small5 small5";
   }
-  
-  .sidebar-column {
-    order: -1; /* Move sidebar above main content on mobile */
-  }
-  
-  .hero-header h1 {
-    font-size: 2.5rem;
-  }
 }
 
-@media (max-width: 768px) {
-  .news-articles-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .featured-teams-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .game-card-link {
-    flex: 0 0 260px;
-  }
-}
-
-@media (max-width: 576px) {
+@media (max-width: 600px) {
   .featured-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-gap: 0.5rem;
     grid-template-areas:
       "big"
       "small1"
@@ -935,21 +531,120 @@ select {
       "small4"
       "small5";
   }
-  
-  .home-container {
-    padding: 0.3rem 0.8rem;
+}
+
+/* ===============================
+   POLLS & RECRUITS SECTION (Two-Column Layout)
+=============================== */
+.polls-recruits-container {
+  display: flex;
+  gap: 1.5rem; 
+  margin-bottom: 1.5rem; 
+}
+
+.left-column,
+.right-column {
+  flex: 1;
+}
+
+.recruits-section .section-title {
+  margin-bottom: 0.8rem; 
+}
+
+.recruits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem; 
+}
+
+/* ~~~~ RECRUIT ITEM 10% BIGGER ~~~~ */
+.recruit-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 7px 12px; /* was 6px 10px -> about 10% bigger */
+  display: flex;
+  align-items: center;
+  gap: 8px;          /* slightly bigger gap than 6px */
+  font-size: 0.95rem; /* was 0.85rem -> about 10% bigger */
+}
+
+.recruit-rank {
+  font-weight: bold;
+  color: var(--accent-color);
+  font-size: 0.95rem; /* was 0.85rem */
+}
+
+.recruit-name {
+  font-weight: 600;
+  font-size: 0.95rem; /* was 0.85rem */
+}
+
+.recruit-position {
+  color: #666;
+  font-size: 0.9rem;  /* was 0.8rem */
+}
+
+/* Committed team logo: 20px instead of 18px */
+.recruit-commit {
+  display: flex;
+  align-items: center;
+  gap: 4px;    /* slightly bigger gap than 3px */
+  margin-left: auto;
+  font-weight: 500;
+  color: #333;
+}
+
+.committed-team-logo {
+  width: 20px;  /* was 18px */
+  height: 20px;
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+}
+
+.commit-check {
+  font-size: 15px; /* was 14px */
+  color: green;
+}
+
+@media (prefers-color-scheme: dark) {
+  .recruit-item {
+    background: #2e2e2e;
+    border-color: #444;
   }
-  
-  .hero-header h1 {
-    font-size: 2rem;
-  }
-  
-  .featured-teams-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .section-title,
-  .sidebar-title {
-    font-size: 1.1rem;
+  .recruit-rank {
+    color: #ff4444;
   }
 }
+
+/* Responsive: Stack polls and recruits on mobile */
+@media (max-width: 768px) {
+  .polls-recruits-container {
+    flex-direction: column;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filters-container select,
+  .team-search input {
+    width: 80%;
+  }
+
+  .player-cell {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .committed-cell {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ===============================
+   END OF FILE
+=============================== */
