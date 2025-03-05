@@ -13,12 +13,10 @@
   position: sticky;
   top: 50px; /* sticks below the top bar */
   width: 100%;
-
-  /* X CHANGED: lowered from 999 to 900 so modal can appear above if needed */
   z-index: 900;
-
   border-bottom: 1px solid #e0e0e0;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  transition: transform 0.3s ease; /* Add transition */
 }
 
 .secondary-bar-container {

@@ -14,10 +14,11 @@
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: 1000; /* Lowered from 1100 to 1000 so modal can appear above */
+  z-index: 1000;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  transition: transform 0.3s ease; /* Add transition for smooth appearance/disappearance */
 }
 
 .top-bar-container {
