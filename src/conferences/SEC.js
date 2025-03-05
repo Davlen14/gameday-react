@@ -23,17 +23,6 @@ const SEC = () => {
   const [teams, setTeams] = useState([]); // For team logo lookup
 
   // --------------------------
-  // Recruiting Filters
-  // --------------------------
-  const [filters, setFilters] = useState({
-    position: "All",
-    stars: 0,
-    team: "",
-    committed: "all", // "all", "committed", "uncommitted"
-    state: "All",
-  });
-
-  // --------------------------
   // Cache for team logos
   // --------------------------
   const teamLogoCache = useRef({});
@@ -105,12 +94,11 @@ const SEC = () => {
         }
         setSecTeamRatings(ratings);
 
-        // Fetch all recruits for 2025 and filter for SEC-related recruits.
-        // Include recruits that are either committed to SEC teams or uncommitted but relevant.
+        // Fetch all recruits for 2025 and only show those committed to SEC teams
         const recruitsData = await teamsService.getAllRecruits(2025);
         setProspects(
           recruitsData
-            .filter((r) => !r.committedTo || secTeamNames.includes(r.committedTo))
+            .filter((r) => r.committedTo && secTeamNames.includes(r.committedTo))
             .map((prospect, index) => ({
               ...prospect,
               id: prospect.id || `prospect-${index}`,
@@ -130,75 +118,19 @@ const SEC = () => {
   }, []);
 
   // --------------------------
-  // Recruiting Filters Logic
+  // Group recruits by committed SEC team
   // --------------------------
-  const filteredProspects = useMemo(() => {
-    return prospects.filter((prospect) => {
-      if (filters.position !== "All" && prospect.position !== filters.position) {
-        return false;
-      }
-      if (filters.stars > 0 && (prospect.stars || 0) < filters.stars) {
-        return false;
-      }
-      if (
-        filters.team &&
-        (!prospect.committedTo ||
-          !prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase()))
-      ) {
-        return false;
-      }
-      if (
-        (filters.committed === "committed" && !prospect.committedTo) ||
-        (filters.committed === "uncommitted" && prospect.committedTo)
-      ) {
-        return false;
-      }
-      if (filters.state !== "All" && prospect.stateProvince !== filters.state) {
-        return false;
-      }
-      return true;
-    });
-  }, [prospects, filters]);
-
-  // Calculate recruiting stats by team
-  const teamStats = useMemo(() => {
-    const stats = {};
-    const committedProspects = prospects.filter((p) => p.committedTo);
-    committedProspects.forEach((prospect) => {
+  const recruitsByTeam = useMemo(() => {
+    const groups = {};
+    prospects.forEach((prospect) => {
       const team = prospect.committedTo;
-      if (!stats[team]) {
-        stats[team] = {
-          name: team,
-          count: 0,
-          totalStars: 0,
-          fiveStars: 0,
-          fourStars: 0,
-          threeStars: 0,
-        };
+      if (!groups[team]) {
+        groups[team] = [];
       }
-      stats[team].count++;
-      stats[team].totalStars += prospect.stars || 0;
-      if (prospect.stars === 5) stats[team].fiveStars++;
-      if (prospect.stars === 4) stats[team].fourStars++;
-      if (prospect.stars === 3) stats[team].threeStars++;
+      groups[team].push(prospect);
     });
-    Object.keys(stats).forEach((team) => {
-      stats[team].avgStars =
-        stats[team].count > 0 ? stats[team].totalStars / stats[team].count : 0;
-    });
-    return Object.values(stats).sort((a, b) => {
-      const diff = b.totalStars - a.totalStars;
-      return diff !== 0 ? diff : b.avgStars - a.avgStars;
-    });
+    return groups;
   }, [prospects]);
-
-  const handleFilterChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: name === "stars" ? parseInt(value, 10) : value,
-    }));
-  }, []);
 
   if (loading) return <div className="loading">Loading SEC data...</div>;
 
@@ -323,139 +255,35 @@ const SEC = () => {
       {/* Recruiting Section */}
       <section className="section recruiting">
         <h2>2025 SEC Recruiting</h2>
-        <div className="filter-controls">
-          <div className="filter-group">
-            <label htmlFor="position-select">Position:</label>
-            <select
-              id="position-select"
-              name="position"
-              value={filters.position}
-              onChange={handleFilterChange}
-              className="filter-select"
-            >
-              <option value="All">All Positions</option>
-              {[...new Set(prospects.map((p) => p.position))]
-                .filter(Boolean)
-                .sort()
-                .map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="filter-group">
-            <label htmlFor="stars-select">Min Stars:</label>
-            <select
-              id="stars-select"
-              name="stars"
-              value={filters.stars}
-              onChange={handleFilterChange}
-              className="filter-select"
-            >
-              <option value="0">Any Rating</option>
-              <option value="3">3+ Stars</option>
-              <option value="4">4+ Stars</option>
-              <option value="5">5 Stars</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label htmlFor="commitment-select">Status:</label>
-            <select
-              id="commitment-select"
-              name="committed"
-              value={filters.committed}
-              onChange={handleFilterChange}
-              className="filter-select"
-            >
-              <option value="all">All Recruits</option>
-              <option value="committed">Committed Only</option>
-              <option value="uncommitted">Uncommitted Only</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label htmlFor="state-select">State:</label>
-            <select
-              id="state-select"
-              name="state"
-              value={filters.state}
-              onChange={handleFilterChange}
-              className="filter-select"
-            >
-              <option value="All">All States</option>
-              {[...new Set(prospects.map((p) => p.stateProvince))]
-                .filter(Boolean)
-                .sort()
-                .map((st) => (
-                  <option key={st} value={st}>
-                    {st}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="filter-group search-group">
-            <label htmlFor="team-search">School:</label>
-            <div className="search-input-container">
-              <FaSearch className="search-icon" />
-              <input
-                id="team-search"
-                type="text"
-                name="team"
-                value={filters.team}
-                onChange={handleFilterChange}
-                placeholder="Search school..."
-                className="team-search"
-              />
-            </div>
-          </div>
-        </div>
-        {filteredProspects.length === 0 ? (
-          <p>No recruiting data available for selected filters.</p>
+        {Object.keys(recruitsByTeam).length === 0 ? (
+          <p>No SEC recruiting data available.</p>
         ) : (
-          <div className="recruits-grid">
-            {filteredProspects.map((prospect) => (
-              <div key={prospect.id} className="recruit-card">
-                <div className="recruit-header">
-                  <div className="recruit-stars">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={`star-icon ${i < prospect.stars ? "filled" : "empty"}`}
-                      />
-                    ))}
-                  </div>
-                  <h3 className="recruit-name">{prospect.name}</h3>
-                </div>
-                <div className="recruit-details">
-                  <p>{prospect.position || "Unknown Position"}</p>
-                  <p>
-                    {prospect.city || ""}{prospect.city && prospect.stateProvince ? ", " : ""}
-                    {prospect.stateProvince || ""}
-                  </p>
-                  <p>
-                    {prospect.height
-                      ? `${Math.floor(prospect.height / 12)}'${prospect.height % 12}"`
-                      : ""}{" "}
-                    {prospect.weight ? `· ${prospect.weight} lbs` : ""}
-                  </p>
-                </div>
-                {prospect.committedTo ? (
-                  <div className="recruit-commitment">
-                    <img
-                      src={getTeamLogo(prospect.committedTo)}
-                      alt={`${prospect.committedTo} Logo`}
-                      className="commitment-logo"
-                    />
-                    <p>Committed to {prospect.committedTo}</p>
-                  </div>
-                ) : (
-                  <div className="recruit-uncommitted">
-                    <p>Uncommitted</p>
-                  </div>
-                )}
+          Object.entries(recruitsByTeam).map(([team, recruits]) => (
+            <div key={team} className="team-recruits">
+              <div className="team-header">
+                <img src={getTeamLogo(team)} alt={team} className="team-recruit-logo" />
+                <h3>{team}</h3>
               </div>
-            ))}
-          </div>
+              <div className="recruits-list">
+                {recruits.map((recruit) => (
+                  <div key={recruit.id} className="recruit-card minimal">
+                    <div className="recruit-info">
+                      <h4>{recruit.name}</h4>
+                      <p>{recruit.position}</p>
+                    </div>
+                    <div className="recruit-stars">
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={`star-icon ${i < recruit.stars ? "filled" : "empty"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
         )}
       </section>
 
@@ -503,10 +331,18 @@ const SEC = () => {
       </section>
 
       <style jsx>{`
+        :root {
+          --primary-color: #ffffff;
+          --accent-color: #D4001C;
+          --text-color: #333333;
+          --background-color: #f5f5f5;
+          --border-color: #dddddd;
+        }
         .sec-page {
           font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-          color: #333;
+          color: var(--text-color);
           padding: 20px;
+          background: var(--background-color);
         }
         .hero {
           display: flex;
@@ -516,7 +352,7 @@ const SEC = () => {
           padding: 60px 20px;
           text-align: center;
           background: url("/photos/sec-background.jpg") no-repeat center center/cover;
-          color: #fff;
+          color: var(--primary-color);
           margin-bottom: 40px;
         }
         .hero-logo {
@@ -544,7 +380,7 @@ const SEC = () => {
           margin: 0 auto;
         }
         .news-card {
-          background: #fff;
+          background: var(--primary-color);
           border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
           padding: 20px;
@@ -571,7 +407,7 @@ const SEC = () => {
         }
         .game-card,
         .recruit-card {
-          background: #fff;
+          background: var(--primary-color);
           border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
           padding: 20px;
@@ -597,36 +433,68 @@ const SEC = () => {
         }
         th,
         td {
-          border: 1px solid #ddd;
+          border: 1px solid var(--border-color);
           padding: 8px;
           text-align: center;
         }
         th {
-          background: #d4001c;
-          color: #fff;
+          background: var(--accent-color);
+          color: var(--primary-color);
         }
-        .filter-controls {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-bottom: 20px;
-          justify-content: center;
+        /* Recruiting Section Styles */
+        .team-recruits {
+          margin-bottom: 40px;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 20px;
         }
-        .filter-group {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-        .filter-select,
-        .team-search {
-          padding: 5px 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        }
-        .search-input-container {
+        .team-header {
           display: flex;
           align-items: center;
+          gap: 10px;
+          margin-bottom: 15px;
+        }
+        .team-recruit-logo {
+          width: 40px;
+          height: 40px;
+          object-fit: contain;
+          border-radius: 50%;
+          border: 1px solid var(--border-color);
+        }
+        .recruits-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+        }
+        .recruit-card.minimal {
+          background: var(--primary-color);
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           gap: 5px;
+        }
+        .recruit-info h4 {
+          font-size: 1rem;
+          margin: 0;
+          color: var(--text-color);
+        }
+        .recruit-info p {
+          font-size: 0.9rem;
+          margin: 0;
+          color: var(--text-color);
+        }
+        .recruit-stars {
+          display: flex;
+          gap: 2px;
+        }
+        .star-icon {
+          font-size: 0.9rem;
+          color: var(--accent-color);
+        }
+        .star-icon.empty {
+          color: var(--border-color);
         }
         .stat-grid {
           display: grid;
@@ -636,15 +504,15 @@ const SEC = () => {
           margin: 20px auto 0 auto;
         }
         .stat-box {
-          background: #fff;
+          background: var(--primary-color);
           border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
           padding: 20px;
         }
         .stat-number {
           font-size: 2rem;
           font-weight: bold;
-          color: #d4001c;
+          color: var(--accent-color);
         }
         @media (max-width: 768px) {
           .hero h1 {
