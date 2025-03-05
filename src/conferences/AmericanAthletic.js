@@ -11,13 +11,17 @@ const AmericanAthletic = () => {
     minHeight: "80vh",
     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
     color: "#333",
+    perspective: "1200px",
   };
 
   const logoStyle = {
-    width: "120px",
-    height: "120px",
+    width: "150px",
+    height: "150px",
     objectFit: "contain",
     marginBottom: "20px",
+    transformStyle: "preserve-3d",
+    boxShadow: "0 10px 20px rgba(0, 0, 0, 0.3)",
+    borderRadius: "8px",
   };
 
   const headingStyle = {
@@ -36,12 +40,47 @@ const AmericanAthletic = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <img src="/photos/American Athletic.png" alt="American Athletic Logo" style={logoStyle} />
-      <h1 style={headingStyle}>American Athletic Conference</h1>
-      <p style={messageStyle}>American Athletic Conference page is under construction.</p>
-      <div style={constructionStyle}>🚧</div>
-    </div>
+    <>
+      {/* CSS for rotating, 3D tilt, and metallic glare */}
+      <style>
+        {`
+          @keyframes rotate {
+            from { transform: perspective(1000px) rotateX(15deg) rotateY(0deg); }
+            to { transform: perspective(1000px) rotateX(15deg) rotateY(360deg); }
+          }
+          .rotating-logo {
+            animation: rotate 20s linear infinite;
+            position: relative;
+            transform-style: preserve-3d;
+          }
+          .rotating-logo::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%);
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            border-radius: inherit;
+          }
+        `}
+      </style>
+      <div style={containerStyle}>
+        <img
+          src="/photos/American Athletic.png"
+          alt="American Athletic Logo"
+          style={logoStyle}
+          className="rotating-logo"
+        />
+        <h1 style={headingStyle}>American Athletic Conference</h1>
+        <p style={messageStyle}>
+          American Athletic Conference page is under construction.
+        </p>
+        <div style={constructionStyle}>🚧</div>
+      </div>
+    </>
   );
 };
 

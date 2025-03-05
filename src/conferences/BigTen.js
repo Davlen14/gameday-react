@@ -11,14 +11,17 @@ const BigTen = () => {
     minHeight: "80vh",
     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
     color: "#333",
+    perspective: "1200px", // adds depth to the 3D effect
   };
 
   const logoStyle = {
-    width: "120px",
-    height: "120px",
+    width: "150px", // increased size for HD appearance
+    height: "150px",
     objectFit: "contain",
     marginBottom: "20px",
     transformStyle: "preserve-3d",
+    boxShadow: "0 10px 20px rgba(0, 0, 0, 0.3)", // drop shadow for extra depth
+    borderRadius: "8px", // optional, for a smooth edge if desired
   };
 
   const headingStyle = {
@@ -38,12 +41,12 @@ const BigTen = () => {
 
   return (
     <>
-      {/* CSS styles for rotation, 3D effect, and metal glare */}
+      {/* CSS styles for rotation, 3D tilt, and enhanced metal glare */}
       <style>
         {`
           @keyframes rotate {
-            from { transform: perspective(1000px) rotateY(0deg); }
-            to { transform: perspective(1000px) rotateY(360deg); }
+            from { transform: perspective(1000px) rotateX(15deg) rotateY(0deg); }
+            to { transform: perspective(1000px) rotateX(15deg) rotateY(360deg); }
           }
           .rotating-logo {
             animation: rotate 20s linear infinite;
@@ -53,13 +56,14 @@ const BigTen = () => {
           .rotating-logo::after {
             content: "";
             position: absolute;
-            top: 0; 
+            top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%);
             pointer-events: none;
             mix-blend-mode: overlay;
+            border-radius: inherit;
           }
         `}
       </style>
