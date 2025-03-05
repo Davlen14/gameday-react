@@ -1,103 +1,158 @@
 /***********************************************************
- * Modern, Apple-Like Minimal Scoreboard (Refined & Reduced)
+ * Modern, 3D-Enhanced Ultra-HD Scoreboard 
  ***********************************************************/
 
-/* System font stack for a sleeker look */
+/* Refined font stack with variable font support */
 .scoreboard-bar {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
-    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-    "Arial", sans-serif;
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", sans-serif;
+  background: linear-gradient(to bottom, #ffffff, #f8f8f8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px; /* Reduced padding */
+  padding: 6px 12px;
   width: 100%;
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
-  min-height: 52px; /* Fixed minimum height to prevent layout shifting */
-  position: relative; /* Added for loading spinner positioning */
-  overflow: hidden; /* Prevent content from spilling out */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 100;
 }
 
-/* Minimal Week Filter & NCAAF Label */
+/* Premium Week Filter & NCAAF Label */
 .scoreboard-filters {
   display: flex;
   align-items: center;
-  gap: 4px; /* Reduced gap */
-  font-size: 12px; /* Smaller overall text */
-  flex: 0 0 auto; /* Prevent from stretching */
-  min-width: 120px; /* Minimum width */
+  gap: 6px;
+  font-size: 13px;
+  flex: 0 0 auto;
+  min-width: 130px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 8px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .scoreboard-divider {
-  border-left: 1px solid #ddd;
-  height: 16px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  height: 18px;
   margin: 0 6px;
 }
 
 .scoreboard-ncaaf-dropdown {
-  font-size: 12px;
-  font-weight: 600; /* Slightly bolder */
-  color: #666;
-  padding: 2px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  padding: 3px 6px;
   background: transparent;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.3px;
 }
 
 .scoreboard-ncaaf-dropdown:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .scoreboard-week-dropdown {
-  font-size: 12px;
-  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
   cursor: pointer;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  background-color: #fafafa;
-  padding: 2px 6px;
-  transition: background-color 0.2s ease;
-  min-width: 70px; /* Prevent from getting too narrow */
+  border: none;
+  border-radius: 6px;
+  background: rgba(240, 240, 240, 0.8);
+  padding: 4px 10px;
+  transition: all 0.2s ease;
+  min-width: 85px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px top 50%;
+  background-size: 10px auto;
+  padding-right: 20px;
 }
 
 .scoreboard-week-dropdown:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(230, 230, 230, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-/* Horizontally scrolling game cards */
+.scoreboard-week-dropdown:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 120, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Premium horizontally scrolling game cards */
 .scoreboard-games {
   display: flex;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   flex: 1;
-  margin-left: 10px;
-  scrollbar-width: none; /* Firefox */
-  min-height: 36px; /* Minimum height to prevent layout shifts */
-  position: relative; /* For loading spinner */
+  margin-left: 15px;
+  scrollbar-width: none;
+  min-height: 42px;
+  position: relative;
+  gap: 1px;
+  padding: 2px 0;
 }
 
 .scoreboard-games::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
+  display: none;
+}
+
+.scoreboard-games::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 40px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+  pointer-events: none;
+  z-index: 2;
 }
 
 .scoreboard-game-link {
   text-decoration: none;
   color: inherit;
-  flex: 0 0 auto; /* Prevent from stretching */
+  flex: 0 0 auto;
+  transition: transform 0.15s ease;
 }
 
-/* Game card styling */
+.scoreboard-game-link:hover {
+  transform: translateY(-2px);
+}
+
+/* Enhanced 3D Game card styling */
 .scoreboard-game-card {
   flex: 0 0 auto;
-  min-width: 110px; /* Tighter min-width */
-  max-width: 140px; /* Maximum width */
+  min-width: 120px;
+  max-width: 150px;
   display: flex;
   flex-direction: column;
-  padding: 4px 6px; /* Less padding */
-  border-right: 1px solid #ccc;
-  background: none;
-  transition: background-color 0.2s ease;
+  padding: 6px 8px;
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.65);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0 2px;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 3px 6px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .scoreboard-game-card:last-child {
@@ -105,113 +160,165 @@
 }
 
 .scoreboard-game-card:hover {
-  background-color: #f9f9f9;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.07),
+    0 6px 6px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Game header row (status + TV outlet) */
+/* Enhanced Game header row (status + TV outlet) */
 .scoreboard-game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  padding-bottom: 3px;
 }
 
 .scoreboard-game-time {
-  font-size: 10px;
-  font-weight: 400;
-  color: #444;
+  font-size: 11px;
+  font-weight: 500;
+  color: #555;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .scoreboard-game-time.final {
-  color: #c00;
+  color: #d20a2c;
+  font-weight: 600;
 }
 
 .scoreboard-game-network {
   display: flex;
   align-items: center;
   gap: 4px;
+  background: rgba(240, 240, 240, 0.5);
+  padding: 2px 4px;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-/* TV outlet and icon: outlet text is limited and subtle */
+/* Enhanced TV outlet and icon */
 .scoreboard-tv-outlet {
   font-size: 10px;
-  font-weight: 400;
-  color: #666;
+  font-weight: 500;
+  color: #444;
   display: inline-block;
-  max-width: 50px; /* Limit width so long names are truncated */
+  max-width: 50px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .scoreboard-tv-icon {
   font-size: 12px;
-  color: #000;
+  color: #111;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7));
 }
 
-/* Team rows: both away and home */
+/* Enhanced Team rows: both away and home */
 .scoreboard-card-team {
   display: flex;
-  justify-content: space-between; /* Logo+name left, score right */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 2px 0;
+  margin: 4px 0;
+  padding: 3px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.scoreboard-card-team:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .scoreboard-team-info {
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex: 1; /* Take available space */
-  min-width: 0; /* Allow truncation */
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
-/* Smaller team logos */
+/* Enhanced team logos with 3D effect */
 .scoreboard-team-logo {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
-  border-radius: 4px;
-  flex-shrink: 0; /* Don't shrink logos */
+  border-radius: 6px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1px;
+  transition: transform 0.2s ease;
+}
+
+.scoreboard-card-team:hover .scoreboard-team-logo {
+  transform: scale(1.1);
 }
 
 .scoreboard-team-name {
-  font-size: 11px;
-  font-weight: 500;
-  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .scoreboard-team-score {
-  font-size: 11px;
-  font-weight: 600;
-  color: #111;
-  min-width: 16px; /* Fixed width for scores */
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  min-width: 20px;
   text-align: right;
+  background: rgba(240, 240, 240, 0.6);
+  border-radius: 4px;
+  padding: 2px 4px;
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
 }
 
-/* Optional: O/U or Spread info */
+.scoreboard-card-team:hover .scoreboard-team-score {
+  background: rgba(220, 220, 220, 0.7);
+  transform: scale(1.05);
+}
+
+/* Enhanced O/U or Spread info */
 .scoreboard-sportsbook.scoreboard-home-ou {
   display: flex;
   align-items: center;
   gap: 4px;
+  background: rgba(245, 245, 245, 0.7);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-top: 2px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.03);
 }
 
 .scoreboard-sportsbook-logo {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
 }
 
 .scoreboard-sportsbook-ou {
   font-size: 10px;
-  font-weight: 500;
-  color: #888;
+  font-weight: 600;
+  color: #666;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-/* Loading spinner for scoreboard */
+/* Enhanced Loading spinner for scoreboard */
 .scoreboard-loading {
   position: absolute;
   top: 0;
@@ -221,32 +328,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 10;
 }
 
 .scoreboard-spinner {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border: 3px solid rgba(212, 0, 28, 0.1);
   border-radius: 50%;
-  border-left-color: #D4001C; /* Use your accent color */
-  animation: scoreboardSpin 1s linear infinite;
+  border-left-color: #D4001C;
+  animation: scoreboardSpin 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes scoreboardSpin {
-  to { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Placeholder cards during loading */
+/* Enhanced Placeholder cards during loading */
 .scoreboard-placeholder-card {
-  width: 110px;
-  height: 36px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  width: 120px;
+  height: 42px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: loading-pulse 1.5s infinite;
-  border-radius: 4px;
+  animation: loading-pulse 1.7s infinite;
+  border-radius: 8px;
   margin-right: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 @keyframes loading-pulse {
@@ -257,44 +369,34 @@
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .scoreboard-bar {
-      flex-wrap: wrap;
-      padding: 4px;
-      min-height: 80px; /* Adjust for wrapping */
+    flex-wrap: wrap;
+    padding: 6px;
+    min-height: 84px;
   }
   
   .scoreboard-filters,
   .scoreboard-games {
-      width: 100%;
-      margin-bottom: 4px;
+    width: 100%;
+    margin-bottom: 6px;
   }
   
   .scoreboard-games {
-      margin-left: 0;
+    margin-left: 0;
   }
   
   .scoreboard-game-card {
-      min-width: 100px;
-      padding: 3px 4px;
+    min-width: 110px;
+    padding: 4px 6px;
   }
   
   .scoreboard-ncaaf-dropdown,
   .scoreboard-week-dropdown {
-      font-size: 10px;
-      padding: 2px 4px;
+    font-size: 11px;
+    padding: 3px 5px;
   }
   
-  .scoreboard-game-time,
-  .scoreboard-team-name,
-  .scoreboard-team-score {
-      font-size: 9px;
-  }
-  
-  .scoreboard-tv-icon {
-      font-size: 10px;
-  }
-  
-  .scoreboard-tv-outlet {
-      max-width: 40px;
-      font-size: 9px;
+  .scoreboard-team-logo {
+    width: 18px;
+    height: 18px;
   }
 }
