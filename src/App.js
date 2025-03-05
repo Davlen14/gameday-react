@@ -273,38 +273,34 @@ function App() {
             </div>
           </header>
 
-          {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
-          <nav
-            className={`secondary-bar ${menuOpen ? "active" : ""}`}
-            style={{
-              transition: "transform 0.3s ease",
-              transform: scoreboardVisible ? "translateY(0)" : "translateY(-50px)",
-            }}
-          >
-            <div className="secondary-bar-container">
-              <Link to="/" className="nav-item" onClick={toggleMenu}>
-                Home
-              </Link>
-              <Link to="/teams" className="nav-item" onClick={toggleMenu}>
-                Teams
-              </Link>
-              <Link to="/games" className="nav-item" onClick={toggleMenu}>
-                Games
-              </Link>
-              <Link to="/stats" className="nav-item" onClick={toggleMenu}>
-                Stats
-              </Link>
-              <Link to="/more" className="nav-item" onClick={toggleMenu}>
-                More
-              </Link>
-              <Link to="/pickem-predictions" className="nav-item">
-                Pick'em &amp; Predictions
-              </Link>
-              <Link to="/fan-hub" className="nav-item">
-                Fan Hub
-              </Link>
-            </div>
-          </nav>
+        {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
+        <nav
+          className={`secondary-bar ${menuOpen ? "active" : ""}`}
+        >
+          <div className="secondary-bar-container">
+            <Link to="/" className="nav-item" onClick={toggleMenu}>
+              Home
+            </Link>
+            <Link to="/teams" className="nav-item" onClick={toggleMenu}>
+              Teams
+            </Link>
+            <Link to="/games" className="nav-item" onClick={toggleMenu}>
+              Games
+            </Link>
+            <Link to="/stats" className="nav-item" onClick={toggleMenu}>
+              Stats
+            </Link>
+            <Link to="/more" className="nav-item" onClick={toggleMenu}>
+              More
+            </Link>
+            <Link to="/pickem-predictions" className="nav-item">
+              Pick'em &amp; Predictions
+            </Link>
+            <Link to="/fan-hub" className="nav-item">
+              Fan Hub
+            </Link>
+          </div>
+        </nav>
 
           {/* MAIN CONTENT */}
           <main className="app-content">
