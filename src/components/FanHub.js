@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../styles/FanHub.css";
 
+// This will help us detect scoreboard visibility
+const SCOREBOARD_HEIGHT = 30; // Approximate height of scoreboard in pixels
+
 // Import FontAwesome icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -17,7 +20,49 @@ import {
   faMessage
 } from "@fortawesome/free-solid-svg-icons";
 
-function FanHub({ scoreboardVisible }) {
+function FanHub({ scoreboardVisible = true }) {
+  // Force a re-render when the component loads to calculate proper positioning
+  const [loaded, setLoaded] = useState(false);
+  // Local state to track actual scoreboard visibility
+  const [actualScoreboardVisible, setActualScoreboardVisible] = useState(scoreboardVisible);
+  
+  // Detect if scoreboard is actually visible in the DOM
+  useEffect(() => {
+    setLoaded(true);
+    
+    // Add a small delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      adjustLayoutForScoreboard();
+    }, 100);
+    
+    // Set up a resize observer to adjust layout when window size changes
+    const resizeObserver = new ResizeObserver(() => {
+      adjustLayoutForScoreboard();
+    });
+    
+    resizeObserver.observe(document.body);
+    
+    return () => {
+      clearTimeout(timer);
+      resizeObserver.disconnect();
+    };
+  }, [scoreboardVisible]);
+  
+  // Function to check for scoreboard visibility and adjust layout
+  const adjustLayoutForScoreboard = () => {
+    const scoreboardElement = document.querySelector('.scoreboard') || 
+                              document.querySelector('[class*="scoreboard"]') || 
+                              document.querySelector('header + div'); // Generic selector for possible scoreboard
+    
+    if (scoreboardElement) {
+      const isVisible = window.getComputedStyle(scoreboardElement).display !== 'none';
+      setActualScoreboardVisible(isVisible);
+      
+      // Dynamically adjust CSS variables based on actual measurements
+      document.documentElement.style.setProperty('--scoreboard-height', 
+        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px');
+    }
+  };
   // State for left sidebar expansion (default collapsed)
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
@@ -87,8 +132,7 @@ function FanHub({ scoreboardVisible }) {
   };
 
   return (
-    <div className={`fan-hub-container ${!scoreboardVisible ? "scoreboard-hidden" : ""}`}>
-      {/* LEFT SIDEBAR */}
+    <div className={`fan-hub-container ${!actualScoreboardVisible ? "scoreboard-hidden" : ""}`}>
       <nav
         className={`left-sidebar ${sidebarExpanded ? "expanded" : ""}`}
         onMouseEnter={handleSidebarMouseEnter}
