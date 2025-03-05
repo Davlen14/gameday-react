@@ -17,12 +17,7 @@ import {
   faMessage
 } from "@fortawesome/free-solid-svg-icons";
 
-// This will help us detect scoreboard visibility
-const SCOREBOARD_HEIGHT = 30; // Approximate height of scoreboard in pixels
-
 function FanHub({ scoreboardVisible = true }) {
-  // Force a re-render when the component loads to calculate proper positioning
-  const [loaded, setLoaded] = useState(false);
   // Local state to track actual scoreboard visibility
   const [actualScoreboardVisible, setActualScoreboardVisible] = useState(scoreboardVisible);
   
@@ -47,28 +42,70 @@ function FanHub({ scoreboardVisible = true }) {
 
   // Function to check for scoreboard visibility and adjust layout
   const adjustLayoutForScoreboard = () => {
-    const scoreboardElement = document.querySelector('.scoreboard') || 
-                              document.querySelector('[class*="scoreboard"]') || 
-                              document.querySelector('header + div'); // Generic selector for possible scoreboard
+    // Expanded set of selectors to find scoreboard
+    const scoreboardSelectors = [
+      '.div-scoreboard-bar', 
+      '.scoreboard-bar', 
+      '.scoreboard', 
+      '[class*="scoreboard"]', 
+      '[data-testid="scoreboard"]',
+      '.gameday-scoreboard',
+      'header + div'
+    ];
+
+    let scoreboardElement = null;
     
+    // Try each selector until we find a matching element
+    for (const selector of scoreboardSelectors) {
+      scoreboardElement = document.querySelector(selector);
+      
+      // If an element is found, log additional diagnostic information
+      if (scoreboardElement) {
+        console.log('Scoreboard element found:', {
+          selector,
+          element: scoreboardElement,
+          display: window.getComputedStyle(scoreboardElement).display,
+          visibility: window.getComputedStyle(scoreboardElement).visibility,
+          opacity: window.getComputedStyle(scoreboardElement).opacity,
+          height: scoreboardElement.offsetHeight
+        });
+        break;
+      }
+    }
+
     if (scoreboardElement) {
-      const isVisible = window.getComputedStyle(scoreboardElement).display !== 'none';
+      // More robust visibility check
+      const computedStyle = window.getComputedStyle(scoreboardElement);
+      const isVisible = 
+        computedStyle.display !== 'none' && 
+        computedStyle.visibility !== 'hidden' && 
+        parseFloat(computedStyle.opacity) > 0 &&
+        scoreboardElement.offsetHeight > 0;
+
+      console.log('Scoreboard visibility determined:', isVisible);
+      
       setActualScoreboardVisible(isVisible);
       
       // Dynamically adjust CSS variables based on actual measurements
-      document.documentElement.style.setProperty('--scoreboard-height', 
-        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px');
+      document.documentElement.style.setProperty(
+        '--scoreboard-height', 
+        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px'
+      );
+    } else {
+      console.warn('No scoreboard element found. Checking all DOM elements:', 
+        document.body.innerHTML.substring(0, 500) + '...'
+      );
+      // Fallback to the prop if no element is found
+      setActualScoreboardVisible(scoreboardVisible);
     }
   };
 
   // Detect if scoreboard is actually visible in the DOM
   useEffect(() => {
-    setLoaded(true);
-    
     // Add a small delay to ensure DOM is fully rendered
     const timer = setTimeout(() => {
       adjustLayoutForScoreboard();
-    }, 100);
+    }, 250); // Increased delay for more reliable detection
     
     // Set up a resize observer to adjust layout when window size changes
     const resizeObserver = new ResizeObserver(() => {
@@ -77,9 +114,13 @@ function FanHub({ scoreboardVisible = true }) {
     
     resizeObserver.observe(document.body);
     
+    // Add global event listeners for additional detection
+    window.addEventListener('resize', adjustLayoutForScoreboard);
+    
     return () => {
       clearTimeout(timer);
       resizeObserver.disconnect();
+      window.removeEventListener('resize', adjustLayoutForScoreboard);
     };
   }, [scoreboardVisible]);
 
