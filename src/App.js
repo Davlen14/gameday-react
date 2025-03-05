@@ -106,7 +106,7 @@ function App() {
   return (
     <WeekProvider>
       <Router>
-        <div className="app">
+      <div className={`app ${dropdownOpen ? 'dropdown-active' : ''}`}>
           {/* TOP SCOREBOARD BAR */}
           <Scoreboard setScoreboardVisible={setScoreboardVisible} />
 
