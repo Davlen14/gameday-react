@@ -2,11 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:wght@200..900&display=swap');
 
 /* =============================== */
-/* TOP BAR (Bright Scarlet) */
+/* TOP BAR (Modern Metallic Gradient) */
 /* =============================== */
 
 .top-bar {
-  background-color: #D4001C; /* Bright scarlet */
+  background: linear-gradient(135deg, #990014 0%, #D4001C 50%, #990014 100%);
   color: #ffffff;
   height: 50px;
   display: flex;
@@ -15,10 +15,27 @@
   top: 0;
   width: 100%;
   z-index: 1000;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   box-sizing: border-box;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  transition: transform 0.3s ease; /* Add transition for smooth appearance/disappearance */
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+/* Add subtle metallic texture */
+.top-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
 }
 
 .top-bar-container {
@@ -28,6 +45,8 @@
   width: 100%;
   height: 100%;
   padding: 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .top-bar-logo {
@@ -39,7 +58,9 @@
   position: absolute;
   left: 10px;
   padding-right: 20px;
-  border-right: 1px solid #ffffff;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
 }
 
 .top-bar-nav {
@@ -57,28 +78,71 @@
   margin-left: auto;
 }
 
+/* 3D Metallic Buttons */
 .top-bar-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   text-decoration: none;
-  font-weight: 400;
+  font-weight: 600;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
-  font-size: 0.85rem; /* Slightly smaller font size */
-  letter-spacing: 0.25px;
-  padding: 6px 16px; /* Reduced padding for a more compact button */
-  border-radius: 2px;  /* Less rounded, sharper corners */
-  background-color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 6px 16px;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
   color: #D4001C;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: background-color 0.25s, box-shadow 0.25s, color 0.25s;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 
+    0 2px 5px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  min-width: 80px;
+}
+
+/* Shine effect for buttons */
+.top-bar-button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 30%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  transition: transform 0.5s ease-out;
+  pointer-events: none;
 }
 
 .top-bar-button:hover {
-  background-color: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%);
   color: #D4001C;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 3px 7px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.top-bar-button:hover::before {
+  transform: rotate(30deg) translate(50%, 50%);
+}
+
+.top-bar-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* DROPDOWN */
@@ -97,17 +161,34 @@
   border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 300;
+  font-weight: 500;
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   padding: 8px 12px;
-  border-radius: 4px; /* Slightly rounded */
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-button::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0);
+  transition: background 0.3s ease;
 }
 
 .dropdown-button:hover {
-  background-color: #ffffff;
-  color: #D4001C;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.dropdown-button:hover::after {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* Modernized Dropdown Menu */
@@ -115,27 +196,47 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px) saturate(120%);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 6px;  /* Slightly rounded corners */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px) saturate(180%);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
   z-index: 2000;
-  padding: 6px 0;
-  min-width: 160px;
+  padding: 8px 0;
+  min-width: 180px;
   font-size: 0.85rem;
-  font-weight: 300;
+  font-weight: 400;
+  transform-origin: top center;
+  animation: dropdownAppear 0.2s ease-out forwards;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: scaleY(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
 }
 
 .dropdown-menu a {
-  display: block;
-  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
   text-decoration: none;
   color: #333333;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
+  position: relative;
+  border-left: 3px solid transparent;
 }
 
 .dropdown-menu a:hover {
-  background-color: #f2f2f2;
+  background-color: rgba(212, 0, 28, 0.05);
+  color: #D4001C;
+  border-left: 3px solid #D4001C;
 }
 
 /* =============================== */
@@ -161,7 +262,7 @@
     font-size: 18px;
     left: 5px;
     padding-right: 10px;
-    border-right: 1px solid #ffffff;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .top-bar-nav {
@@ -174,13 +275,14 @@
   }
 
   .top-bar-button {
-    padding: 6px 10px;
+    padding: 5px 10px;
     font-size: 0.75rem;
+    min-width: 60px;
   }
 
   /* Adjust dropdown menu for mobile */
   .dropdown-button {
-    padding: 6px 10px;
+    padding: 6px 8px;
     font-size: 0.75rem;
   }
 
