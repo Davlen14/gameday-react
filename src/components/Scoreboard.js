@@ -57,22 +57,39 @@ const Scoreboard = ({ setScoreboardVisible }) => {
     fetchData();
   }, [week]);
 
+  // MODIFIED THIS SECTION - The intersection observer was causing navbar issues
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setScoreboardVisible(entry.isIntersecting);
-      },
-      { root: null, threshold: 0 }
-    );
+    // Only set up the observer if setScoreboardVisible is provided
+    if (typeof setScoreboardVisible === 'function') {
+      // Initialize as visible by default
+      setScoreboardVisible(true);
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          // Only handle scoreboard visibility, don't affect other nav elements
+          if (entry.target === scoreboardRef.current) {
+            setScoreboardVisible(entry.isIntersecting);
+          }
+        },
+        { 
+          root: null, 
+          threshold: 0.1, // Slightly higher threshold to prevent flickering
+          rootMargin: "0px 0px 0px 0px" // Default margin
+        }
+      );
 
-    if (scoreboardRef.current) {
-      observer.observe(scoreboardRef.current);
-    }
-    return () => {
       if (scoreboardRef.current) {
-        observer.unobserve(scoreboardRef.current);
+        observer.observe(scoreboardRef.current);
       }
-    };
+      
+      return () => {
+        if (scoreboardRef.current) {
+          observer.unobserve(scoreboardRef.current);
+          // Reset to visible when component unmounts
+          setScoreboardVisible(true);
+        }
+      };
+    }
   }, [setScoreboardVisible]);
 
   // Helper functions
