@@ -78,14 +78,14 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   // Helper functions
   const getTeamLogo = (teamName) => {
     const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return team?.logos?.[0] || "/photos/default_team.png";
   };
 
   const getTeamAbbreviation = (teamName) => {
     const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
+      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return team?.abbreviation || teamName;
   };
@@ -93,11 +93,24 @@ const Scoreboard = ({ setScoreboardVisible }) => {
   const getMediaForGame = (gameId) =>
     media.find((m) => m.id === gameId) || null;
 
-  if (isLoading) {
-    return <div className="loading-container">Loading...</div>;
-  }
+  // Render placeholder cards for loading state
+  const renderPlaceholderCards = () => {
+    return Array(8)
+      .fill(0)
+      .map((_, index) => (
+        <div key={`placeholder-${index}`} className="scoreboard-placeholder-card"></div>
+      ));
+  };
+
+  // If there's an error, render error message
   if (error) {
-    return <div className="error-container">Error: {error}</div>;
+    return (
+      <div className="scoreboard-bar" ref={scoreboardRef}>
+        <div className="error-container">
+          Error loading scoreboard: {error}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -111,6 +124,7 @@ const Scoreboard = ({ setScoreboardVisible }) => {
           className="scoreboard-week-dropdown"
           value={week}
           onChange={(e) => setWeek(e.target.value)}
+          disabled={isLoading}
         >
           {[...Array(17).keys()].map((w) => (
             <option key={w + 1} value={w + 1}>{`Week ${w + 1}`}</option>
@@ -119,74 +133,87 @@ const Scoreboard = ({ setScoreboardVisible }) => {
         </select>
       </div>
 
-      {/* Scrollable list of games */}
+      {/* Scrollable list of games with loading state */}
       <div className="scoreboard-games">
-        {games.map((game) => {
-          const isFinal = game.completed;
-          const mediaInfo = getMediaForGame(game.id);
+        {isLoading ? (
+          <>
+            {/* Show loading spinner */}
+            <div className="scoreboard-loading">
+              <div className="scoreboard-spinner"></div>
+            </div>
+            {/* Show placeholder cards while loading */}
+            {renderPlaceholderCards()}
+          </>
+        ) : games.length > 0 ? (
+          games.map((game) => {
+            const isFinal = game.completed;
+            const mediaInfo = getMediaForGame(game.id);
 
-          return (
-            <Link
-              to={`/games/${game.id}`}
-              key={game.id}
-              className="scoreboard-game-link"
-            >
-              <div className="scoreboard-game-card">
-                {/* Top row: status + TV outlet */}
-                <div className="scoreboard-game-header">
-                  <div
-                    className={`scoreboard-game-time ${isFinal ? "final" : ""}`}
-                  >
-                    {isFinal ? "Final" : "Live"}
+            return (
+              <Link
+                to={`/games/${game.id}`}
+                key={game.id}
+                className="scoreboard-game-link"
+              >
+                <div className="scoreboard-game-card">
+                  {/* Top row: status + TV outlet */}
+                  <div className="scoreboard-game-header">
+                    <div
+                      className={`scoreboard-game-time ${isFinal ? "final" : ""}`}
+                    >
+                      {isFinal ? "Final" : "Live"}
+                    </div>
+                    <div className="scoreboard-game-network">
+                      {/* Put the outlet first, then the TV icon */}
+                      {mediaInfo?.outlet && (
+                        <span className="scoreboard-tv-outlet">
+                          {mediaInfo.outlet}
+                        </span>
+                      )}
+                      <FaTv className="scoreboard-tv-icon" />
+                    </div>
                   </div>
-                  <div className="scoreboard-game-network">
-                    {/* Put the outlet first, then the TV icon */}
-                    {mediaInfo?.outlet && (
-                      <span className="scoreboard-tv-outlet">
-                        {mediaInfo.outlet}
+
+                  {/* Away Team Row */}
+                  <div className="scoreboard-card-team">
+                    <div className="scoreboard-team-info">
+                      <img
+                        src={getTeamLogo(game.awayTeam)}
+                        alt={game.awayTeam}
+                        className="scoreboard-team-logo"
+                      />
+                      <span className="scoreboard-team-name">
+                        {getTeamAbbreviation(game.awayTeam)}
                       </span>
-                    )}
-                    <FaTv className="scoreboard-tv-icon" />
-                  </div>
-                </div>
-
-                {/* Away Team Row */}
-                <div className="scoreboard-card-team">
-                  <div className="scoreboard-team-info">
-                    <img
-                      src={getTeamLogo(game.awayTeam)}
-                      alt={game.awayTeam}
-                      className="scoreboard-team-logo"
-                    />
-                    <span className="scoreboard-team-name">
-                      {getTeamAbbreviation(game.awayTeam)}
+                    </div>
+                    <span className="scoreboard-team-score">
+                      {game.awayPoints ?? ""}
                     </span>
                   </div>
-                  <span className="scoreboard-team-score">
-                    {game.awayPoints ?? ""}
-                  </span>
-                </div>
 
-                {/* Home Team Row */}
-                <div className="scoreboard-card-team">
-                  <div className="scoreboard-team-info">
-                    <img
-                      src={getTeamLogo(game.homeTeam)}
-                      alt={game.homeTeam}
-                      className="scoreboard-team-logo"
-                    />
-                    <span className="scoreboard-team-name">
-                      {getTeamAbbreviation(game.homeTeam)}
+                  {/* Home Team Row */}
+                  <div className="scoreboard-card-team">
+                    <div className="scoreboard-team-info">
+                      <img
+                        src={getTeamLogo(game.homeTeam)}
+                        alt={game.homeTeam}
+                        className="scoreboard-team-logo"
+                      />
+                      <span className="scoreboard-team-name">
+                        {getTeamAbbreviation(game.homeTeam)}
+                      </span>
+                    </div>
+                    <span className="scoreboard-team-score">
+                      {game.homePoints ?? ""}
                     </span>
                   </div>
-                  <span className="scoreboard-team-score">
-                    {game.homePoints ?? ""}
-                  </span>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })
+        ) : (
+          <div className="no-games-message">No games available for this week</div>
+        )}
       </div>
     </div>
   );
