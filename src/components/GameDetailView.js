@@ -68,6 +68,12 @@ const GameDetailView = () => {
   if (error) return <div className="error-container">Error: {error}</div>;
   if (!game) return <div className="error-container">Game not found</div>;
 
+  // Determine the last play (if any)
+  const lastPlay =
+    Array.isArray(game.plays) && game.plays.length > 0
+      ? game.plays[game.plays.length - 1]
+      : null;
+
   return (
     <div className="game-detail-container">
       <div className="field-container">
@@ -161,37 +167,20 @@ const GameDetailView = () => {
 
         {/* Game Details Panel */}
         <div className="game-details-panel">
-          {/* Updated Game Recap / Key Moments Section */}
-          <div className="play-by-play">
-            <h3>Game Recap / Key Moments</h3>
-            {Array.isArray(game.plays) && game.plays.length > 0 ? (
-              <ul className="play-list">
-                {game.plays.slice(-5).map((play, index) => (
-                  <li key={index}>{play.playText}</li>
-                ))}
-              </ul>
+          <div className="last-play">
+            <h3>Last Play Details</h3>
+            {lastPlay ? (
+              <>
+                <p>{lastPlay.playText}</p>
+                <div className="last-play-stats">
+                  <span>Down: {lastPlay.down}</span>
+                  <span>Yards to Go: {lastPlay.yardsToGoal}</span>
+                  <span>Possession: {game.possession || "N/A"}</span>
+                </div>
+              </>
             ) : (
-              <p>
-                {game.recap ||
-                  game.lastPlay ||
-                  "No key moment details available at this time."}
-              </p>
+              <p>No play information available</p>
             )}
-          </div>
-
-          <div className="game-stats">
-            <div className="stat-item">
-              <span>Possession</span>
-              <strong>{game.possession || "—"}</strong>
-            </div>
-            <div className="stat-item">
-              <span>Down</span>
-              <strong>{game.down || "—"}</strong>
-            </div>
-            <div className="stat-item">
-              <span>Yards to Go</span>
-              <strong>{game.yardsToGo || "—"}</strong>
-            </div>
           </div>
         </div>
       </div>
@@ -389,44 +378,23 @@ const GameDetailView = () => {
 
         .game-details-panel {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr;
           gap: 2rem;
           margin-top: 2rem;
         }
 
-        /* Updated play-by-play (Game Recap / Key Moments) styling */
-        .play-by-play {
+        .last-play {
           padding: 1.5rem;
           background: rgba(0, 0, 0, 0.7);
           border-radius: 8px;
           color: white;
         }
 
-        .play-list {
-          list-style: none;
-          padding-left: 0;
-        }
-
-        .play-list li {
-          margin-bottom: 0.5rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-          padding-bottom: 0.25rem;
-        }
-
-        .game-stats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
+        .last-play-stats {
+          margin-top: 0.5rem;
+          display: flex;
           gap: 1rem;
-          padding: 1.5rem;
-          background: rgba(0, 0, 0, 0.7);
-          border-radius: 8px;
-        }
-
-        .stat-item {
-          text-align: center;
-          padding: 1rem;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 6px;
+          font-weight: bold;
         }
 
         @media (max-width: 768px) {
