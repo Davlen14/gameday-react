@@ -52,24 +52,20 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         // Temporary object to store annual wins data
         const annualWinsData = {};
         
-        // Fetch data for each year in the range
+        // Fetch records data for each year in the range
         for (let year = startYear; year <= endYear; year++) {
-          // Get games for this year to calculate wins
-          const gamesResponse = await teamsService.getGames(year);
+          // Use the records endpoint to get win/loss data
+          const recordsResponse = await teamsService.getTeamRecords(null, year);
           
-          // Process games to count wins for each team
+          // Create a map of team to wins for this year
           const teamWins = {};
-          gamesResponse.forEach(game => {
-            if (game.home_points > game.away_points) {
-              // Home team win
-              if (!teamWins[game.home_team]) teamWins[game.home_team] = 0;
-              teamWins[game.home_team]++;
-            } else if (game.away_points > game.home_points) {
-              // Away team win
-              if (!teamWins[game.away_team]) teamWins[game.away_team] = 0;
-              teamWins[game.away_team]++;
-            }
-            // In case of tie, no wins added
+          
+          // Process records response which contains data like:
+          // { team: "Alabama", total: { wins: 10, losses: 2 } }
+          recordsResponse.forEach(record => {
+            // Get wins from the total section of the record
+            const wins = record.total?.wins || 0;
+            teamWins[record.team] = wins;
           });
           
           annualWinsData[year] = teamWins;
@@ -112,6 +108,13 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (conference !== "All Conferences") {
       filteredData = filteredData.filter(team => team.conference === conference);
     }
+
+    // Filter for FBS teams only (could be made configurable)
+    filteredData = filteredData.filter(team => {
+      // Find the team in original teams array to check if it's FBS
+      const teamInfo = teams.find(t => t.school === team.team);
+      return teamInfo?.division === "FBS" || !teamInfo?.division; // Include if FBS or division not specified
+    });
 
     // Filter out teams with no wins
     filteredData = filteredData.filter(team => (team.wins[year] || 0) > 0);
@@ -230,6 +233,15 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .selectAll("text")
       .attr("font-size", "12px");
 
+    // Add x-axis label
+    g.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight + margin.bottom - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .attr("fill", "#666")
+      .text("Total Wins");
+
     // Add y-axis
     g.append("g")
       .call(d3.axisLeft(yScale))
@@ -298,6 +310,15 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("font-weight", "bold")
       .attr("opacity", 0.5)
       .text(year);
+      
+    // Add title
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "18px")
+      .attr("font-weight", "bold")
+      .text(`Cumulative Football Wins (${startYear}-${year})`);
   };
 
   if (isLoading) {
