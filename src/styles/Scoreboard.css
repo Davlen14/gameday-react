@@ -1,69 +1,35 @@
-/* Modern, Slim Scoreboard Styling */
+/* Modern, Sleek Scoreboard Styling 2025 */
 .scoreboard-bar {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  background: #121212; /* Dark background for the entire bar */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Roboto", sans-serif;
+  background: linear-gradient(to right, rgba(250, 250, 250, 0.95), rgba(248, 248, 248, 0.95));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px 10px;
+  justify-content: flex-start;
+  padding: 6px 12px;
   width: 100%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  min-height: 46px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  min-height: 48px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 100;
-}
-
-.scoreboard-filters {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  flex: 0 0 auto;
-  min-width: 110px;
-  background: rgba(40, 40, 40, 0.6);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.scoreboard-divider {
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  height: 14px;
-  margin: 0 4px;
-}
-
-.scoreboard-ncaaf-dropdown {
-  font-size: 11px;
-  font-weight: 600;
-  color: #ffffff;
-  padding: 2px 4px;
-}
-
-.scoreboard-week-dropdown {
-  font-size: 11px;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  border: none;
-  border-radius: 4px;
-  background: rgba(60, 60, 60, 0.8);
-  padding: 2px 8px;
-  min-width: 70px;
-  -webkit-appearance: none;
-  appearance: none;
 }
 
 .scoreboard-games {
   display: flex;
   overflow-x: auto;
   flex: 1;
-  margin-left: 10px;
   scrollbar-width: none;
-  min-height: 36px;
+  min-height: 42px;
   position: relative;
-  gap: 6px;
-  padding: 3px 0;
+  gap: 8px;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
 
 .scoreboard-games::-webkit-scrollbar {
@@ -74,25 +40,31 @@
   text-decoration: none;
   color: inherit;
   flex: 0 0 auto;
-  transition: opacity 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .scoreboard-game-link:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
 }
 
 .scoreboard-game-card {
   flex: 0 0 auto;
   min-width: 110px;
-  max-width: 140px;
+  max-width: 135px;
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  background: #1e1e1e; /* Darker card background */
-  transition: background 0.2s ease;
-  border-radius: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+  border-radius: 10px;
   margin: 0 1px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(225, 225, 225, 0.5);
+}
+
+.scoreboard-game-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .scoreboard-game-header {
@@ -100,51 +72,51 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 6px;
-  padding-bottom: 3px;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .scoreboard-game-time {
-  font-size: 10px;
-  font-weight: 500;
-  color: #cccccc;
-  letter-spacing: 0.1px;
-  background: rgba(40, 40, 40, 0.7);
-  padding: 2px 4px;
-  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  background: rgba(240, 240, 240, 0.5);
+  padding: 1px 5px;
+  border-radius: 4px;
 }
 
 .scoreboard-game-time.final {
-  background-color: #d20a2c; /* Red for final status */
-  color: #ffffff;
+  color: #fff;
+  background: rgba(210, 10, 44, 0.85);
   font-weight: 600;
-  padding: 2px 6px;
-  text-transform: uppercase;
 }
 
 .scoreboard-game-network {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(60, 60, 60, 0.5);
+  background: rgba(245, 245, 245, 0.7);
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .scoreboard-tv-outlet {
-  font-size: 9px;
-  font-weight: 500;
-  color: #ffffff;
-  max-width: 50px;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #444;
+  max-width: 40px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .scoreboard-tv-icon {
-  font-size: 10px;
-  color: #cccccc;
-  margin-right: 2px;
+  font-size: 8px;
+  color: #222;
 }
 
 .scoreboard-card-team {
@@ -152,128 +124,179 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 4px 0;
-  padding: 2px 3px;
+  margin: 3px 0;
+  padding: 3px 4px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.scoreboard-card-team:hover {
+  background: rgba(245, 245, 245, 0.5);
 }
 
 .scoreboard-team-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
   min-width: 0;
 }
 
 .scoreboard-team-logo {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
-  border-radius: 3px;
+  border-radius: 4px;
   flex-shrink: 0;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
 }
 
 .scoreboard-team-name {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  color: #ffffff;
+  color: #222;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.1px;
 }
 
 .scoreboard-team-score {
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 700;
-  color: #ffffff;
-  min-width: 32px;
+  color: #000;
+  min-width: 20px;
   text-align: center;
-  background: rgba(70, 70, 70, 0.7);
-  border-radius: 4px;
-  padding: 2px 6px;
+  background: rgba(240, 240, 240, 0.7);
+  border-radius: 5px;
+  padding: 2px 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-/* Light Mode */
-@media (prefers-color-scheme: light) {
-  .scoreboard-bar {
-    background: #ffffff;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .scoreboard-filters {
-    background: rgba(240, 240, 240, 0.8);
-  }
-  
-  .scoreboard-divider {
-    border-left: 1px solid rgba(0, 0, 0, 0.1);
-  }
-  
-  .scoreboard-ncaaf-dropdown {
-    color: #333333;
-  }
-  
-  .scoreboard-week-dropdown {
-    color: #333333;
-    background: rgba(230, 230, 230, 0.8);
-  }
-  
-  .scoreboard-game-card {
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .scoreboard-game-time {
-    color: #666666;
-    background: rgba(240, 240, 240, 0.8);
-  }
-  
-  .scoreboard-game-time.final {
-    background-color: #d20a2c; /* Red stays the same for final in light mode */
-    color: #ffffff;
-  }
-  
-  .scoreboard-game-network {
-    background: rgba(230, 230, 230, 0.7);
-  }
-  
-  .scoreboard-tv-outlet {
-    color: #333333;
-  }
-  
-  .scoreboard-tv-icon {
-    color: #333333;
-  }
-  
-  .scoreboard-team-name {
-    color: #333333;
-  }
-  
-  .scoreboard-team-score {
-    color: #333333;
-    background: rgba(230, 230, 230, 0.9);
-  }
+/* Loading states styling */
+.scoreboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.scoreboard-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(210, 10, 44, 0.2);
+  border-top: 2px solid #d20a2c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.scoreboard-placeholder-card {
+  background: linear-gradient(90deg, #f8f8f8 0%, #efefef 50%, #f8f8f8 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  width: 120px;
+  height: 70px;
+  border-radius: 10px;
+  margin: 0 4px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.no-games-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  padding: 12px;
+  background: rgba(250, 250, 250, 0.5);
+  border-radius: 8px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.03);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .scoreboard-bar {
-    flex-wrap: wrap;
-    padding: 4px;
-    min-height: 64px;
+    padding: 5px;
+    min-height: 46px;
   }
   
-  .scoreboard-filters,
   .scoreboard-games {
     width: 100%;
-    margin-bottom: 4px;
-  }
-  
-  .scoreboard-games {
-    margin-left: 0;
+    padding-right: 20px;
   }
   
   .scoreboard-game-card {
-    min-width: 100px;
-    padding: 6px;
+    min-width: 115px;
+    padding: 5px 7px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .scoreboard-bar {
+    background: linear-gradient(to right, rgba(25, 25, 25, 0.95), rgba(30, 30, 30, 0.95));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .scoreboard-game-card {
+    background: rgba(40, 40, 40, 0.85);
+    border: 1px solid rgba(50, 50, 50, 0.7);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .scoreboard-game-card:hover {
+    background: rgba(45, 45, 45, 0.95);
+  }
+  
+  .scoreboard-game-time {
+    color: #ccc;
+    background: rgba(60, 60, 60, 0.7);
+  }
+  
+  .scoreboard-game-network {
+    background: rgba(50, 50, 50, 0.7);
+  }
+  
+  .scoreboard-tv-outlet {
+    color: #ddd;
+  }
+  
+  .scoreboard-tv-icon {
+    color: #eee;
+  }
+  
+  .scoreboard-team-name {
+    color: #ddd;
+  }
+  
+  .scoreboard-team-score {
+    color: #fff;
+    background: rgba(60, 60, 60, 0.9);
+  }
+  
+  .scoreboard-card-team:hover {
+    background: rgba(50, 50, 50, 0.6);
+  }
+  
+  .no-games-message {
+    color: #bbb;
+    background: rgba(40, 40, 40, 0.6);
+  }
+  
+  .scoreboard-placeholder-card {
+    background: linear-gradient(90deg, #2a2a2a 0%, #333 50%, #2a2a2a 100%);
   }
 }
