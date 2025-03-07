@@ -42,31 +42,21 @@ function FanHub({ scoreboardVisible = true }) {
 
   // Function to check for scoreboard visibility and adjust layout
   const adjustLayoutForScoreboard = () => {
-    // Expanded set of selectors to find scoreboard
+    // Selectors that might match your scoreboard
     const scoreboardSelectors = [
-      '.scoreboard-bar', 
-      '.div-scoreboard-bar', 
-      '.scoreboard', 
-      '[class*="scoreboard"]', 
+      '.scoreboard-bar',
+      '.div-scoreboard-bar',
+      '.scoreboard',
+      '[class*="scoreboard"]',
       '[data-testid="scoreboard"]',
       '.gameday-scoreboard',
       'header + div'
     ];
 
     let scoreboardElement = null;
-    
-    // Try each selector until we find a matching element
     for (const selector of scoreboardSelectors) {
       scoreboardElement = document.querySelector(selector);
       if (scoreboardElement) {
-        console.log('Scoreboard element found:', {
-          selector,
-          element: scoreboardElement,
-          display: window.getComputedStyle(scoreboardElement).display,
-          visibility: window.getComputedStyle(scoreboardElement).visibility,
-          opacity: window.getComputedStyle(scoreboardElement).opacity,
-          height: scoreboardElement.offsetHeight
-        });
         break;
       }
     }
@@ -74,41 +64,43 @@ function FanHub({ scoreboardVisible = true }) {
     if (scoreboardElement) {
       const computedStyle = window.getComputedStyle(scoreboardElement);
       const isVisible = 
-        computedStyle.display !== 'none' && 
-        computedStyle.visibility !== 'hidden' && 
+        computedStyle.display !== 'none' &&
+        computedStyle.visibility !== 'hidden' &&
         parseFloat(computedStyle.opacity) > 0 &&
         scoreboardElement.offsetHeight > 0;
 
-      console.log('Scoreboard visibility determined:', isVisible);
-      
+      // Update React state based on whether scoreboard is actually visible
       setActualScoreboardVisible(isVisible);
-      
-      // Update CSS variable for scoreboard height
+
+      // Update the CSS variable to match the scoreboard’s real height (or 0 if hidden)
       document.documentElement.style.setProperty(
-        '--scoreboard-height', 
+        '--scoreboard-height',
         isVisible ? `${scoreboardElement.offsetHeight}px` : '0px'
       );
     } else {
-      console.warn('No scoreboard element found. Falling back to prop value.');
+      // If we don't find a scoreboard, default to the prop or hide entirely
       setActualScoreboardVisible(scoreboardVisible);
+      document.documentElement.style.setProperty(
+        '--scoreboard-height',
+        scoreboardVisible ? '50px' : '0px' // fallback
+      );
     }
   };
 
-  // Detect if scoreboard is visible in the DOM
+  // Detect if scoreboard is visible in the DOM on load and on resize
   useEffect(() => {
-    // Delay to ensure DOM is fully rendered
     const timer = setTimeout(() => {
       adjustLayoutForScoreboard();
     }, 250);
-    
-    // Resize observer to adjust layout on window size changes
+
+    // Watch for window size changes
     const resizeObserver = new ResizeObserver(() => {
       adjustLayoutForScoreboard();
     });
-    
+
     resizeObserver.observe(document.body);
     window.addEventListener('resize', adjustLayoutForScoreboard);
-    
+
     return () => {
       clearTimeout(timer);
       resizeObserver.disconnect();
@@ -116,17 +108,8 @@ function FanHub({ scoreboardVisible = true }) {
     };
   }, [scoreboardVisible]);
 
-  // When the left sidebar is expanded, force the scoreboard to hide
-  useEffect(() => {
-    if (sidebarExpanded) {
-      setActualScoreboardVisible(false);
-      // Also update the CSS variable so container uses zero height for scoreboard
-      document.documentElement.style.setProperty('--scoreboard-height', '0px');
-    } else {
-      // Re-check the scoreboard visibility when sidebar collapses
-      adjustLayoutForScoreboard();
-    }
-  }, [sidebarExpanded]);
+  // REMOVE the old effect that forced scoreboard to hide when sidebar is expanded
+  // so the scoreboard’s visibility is based solely on the actual scoreboard element + prop
 
   // Handle smooth scrolling when a nav item is clicked
   const scrollToSection = (ref) => {
@@ -173,7 +156,7 @@ function FanHub({ scoreboardVisible = true }) {
     e.preventDefault();
     if (chatInput.trim() === "") return;
     const newMessage = { id: Date.now(), text: chatInput };
-    setChatMessages([...chatMessages, newMessage]);
+    setChatMessages((prev) => [...prev, newMessage]);
     setChatInput("");
   };
 
@@ -230,7 +213,8 @@ function FanHub({ scoreboardVisible = true }) {
             <h3>Live Game Chat</h3>
           </div>
           <p>
-            Select which game's chat to join. Chat syncs across the site (Fan Hub and Game Pages). Reactions, GIFs, and mentions are supported.
+            Select which game's chat to join. Chat syncs across the site (Fan Hub and Game Pages).
+            Reactions, GIFs, and mentions are supported.
           </p>
           <div className="content-placeholder"></div>
         </div>
