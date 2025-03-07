@@ -441,7 +441,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   gap: 1.25rem;
   padding: 1rem 1.5rem;
   background: rgba(255, 255, 255, 0.8);
@@ -575,10 +575,10 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* SVG styling for modern look */
+/* SVG styling for modern look - made to fill available height */
 .team-wins-chart-container svg {
   width: 100%;
-  height: auto;
+  height: calc(100% - 60px); /* Subtract control panel height */
   overflow: visible;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
 }
@@ -594,148 +594,14 @@ h1, h2, h3, h4, h5, h6 {
   filter: brightness(1.05);
 }
 
-/* Modern tooltip */
-.tooltip {
-  position: absolute;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  pointer-events: none;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-/* 3D Metallic team logo style */
-.team-logo-circle {
+/* Team logo styling - now placed outside the bar */
+.team-logo {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-/* Add shine effect to logos */
-.logo-shine {
-  stop-color: rgba(255, 255, 255, 0.8);
-  stop-opacity: 1;
-}
-
-/* Win value text */
-.win-value {
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Year label styling */
-.year-label {
-  font-weight: 800;
-  fill: rgba(0, 0, 0, 0.06);
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* Chart title */
-.chart-title {
-  font-weight: 700;
-  fill: #1a202c;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* Loading indicator styling */
-.loading-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-size: 1.2rem;
-  color: #718096;
-}
-
-/* Error message styling */
-.error-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-size: 1.2rem;
-  color: #e53e3e;
-  background-color: #fff5f5;
-  border-radius: 12px;
-  padding: 2rem;
-}
-
-/* Mobile responsiveness with improved layout */
-@media (max-width: 768px) {
-  .chart-controls {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-  }
-  
-  .timeline-slider {
-    order: 1;
-    width: 100%;
-    margin: 0.5rem 0;
-  }
-  
-  .timeline-control-button {
-    order: 2;
-    margin-right: auto;
-  }
-  
-  .year-display {
-    order: 3;
-  }
-  
-  .timeline-speed-select {
-    order: 4;
-  }
-  
-  .team-logo-circle {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-/* Handle dark mode compatibility */
-@media (prefers-color-scheme: dark) {
-  .chart-controls {
-    background: rgba(26, 32, 44, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .timeline-slider {
-    background: linear-gradient(to right, #2d3748, #4a5568);
-  }
-  
-  .year-display {
-    background: linear-gradient(to bottom, #f7fafc, #e2e8f0);
-    background-clip: text;
-    -webkit-background-clip: text;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.3);
-  }
-  
-  .timeline-speed-select {
-    background-color: #2d3748;
-    color: #e2e8f0;
-    border-color: #4a5568;
-  }
-  
-  .tooltip {
-    background: rgba(26, 32, 44, 0.95);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .win-value {
-    fill: #e2e8f0;
-  }
-  
-  .chart-title {
-    fill: #e2e8f0;
-  }
-  
-  .year-label {
-    fill: rgba(255, 255, 255, 0.06);
-  }
+/* Team logo hover effect */
+.team-logo:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
 }
