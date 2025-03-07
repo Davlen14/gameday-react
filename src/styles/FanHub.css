@@ -7,13 +7,15 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hover-color: #f9f9f9;
   --top-navbar-height: 50px;
-  --secondary-navbar-height: 50px;
+  --secondary-navbar-height: 50px; /* This value is now replaced by --scoreboard-height when visible */
   --transition-speed: 0.3s;
   --sidebar-width: 60px;
   --sidebar-expanded-width: 200px;
   --right-sidebar-width: 300px;
+  --scoreboard-height: 50px; /* default scoreboard height */
 }
 
+/* Global Box Sizing */
 * {
   box-sizing: border-box;
 }
@@ -31,11 +33,9 @@ body {
 
 /* --- FAN HUB CONTAINER --- */
 .fan-hub-container {
-  display: flex;
-  position: relative;
-  width: 100%;
-  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height)); /* Full viewport minus top bars */
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height)); /* Push below top bars */
+  /* When scoreboard is visible, we reserve space for it */
+  height: calc(100vh - var(--top-navbar-height) - var(--scoreboard-height));
+  margin-top: calc(var(--top-navbar-height) + var(--scoreboard-height));
   transition: margin-top var(--transition-speed) ease, height var(--transition-speed) ease;
 }
 
@@ -48,7 +48,7 @@ body {
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
   position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+  top: calc(var(--top-navbar-height) + var(--scoreboard-height));
   left: 0;
   bottom: 0;
   width: var(--sidebar-width);
@@ -221,7 +221,7 @@ body {
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
   position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+  top: calc(var(--top-navbar-height) + var(--scoreboard-height));
   right: 0;
   bottom: 0;
   width: var(--right-sidebar-width);

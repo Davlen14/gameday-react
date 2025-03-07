@@ -58,8 +58,6 @@ function FanHub({ scoreboardVisible = true }) {
     // Try each selector until we find a matching element
     for (const selector of scoreboardSelectors) {
       scoreboardElement = document.querySelector(selector);
-      
-      // If an element is found, log additional diagnostic information
       if (scoreboardElement) {
         console.log('Scoreboard element found:', {
           selector,
@@ -74,7 +72,6 @@ function FanHub({ scoreboardVisible = true }) {
     }
 
     if (scoreboardElement) {
-      // More robust visibility check
       const computedStyle = window.getComputedStyle(scoreboardElement);
       const isVisible = 
         computedStyle.display !== 'none' && 
@@ -86,35 +83,30 @@ function FanHub({ scoreboardVisible = true }) {
       
       setActualScoreboardVisible(isVisible);
       
-      // Dynamically adjust CSS variables based on actual measurements
+      // Update CSS variable for scoreboard height
       document.documentElement.style.setProperty(
         '--scoreboard-height', 
         isVisible ? `${scoreboardElement.offsetHeight}px` : '0px'
       );
     } else {
-      console.warn('No scoreboard element found. Checking all DOM elements:', 
-        document.body.innerHTML.substring(0, 500) + '...'
-      );
-      // Fallback to the prop if no element is found
+      console.warn('No scoreboard element found. Falling back to prop value.');
       setActualScoreboardVisible(scoreboardVisible);
     }
   };
 
-  // Detect if scoreboard is actually visible in the DOM
+  // Detect if scoreboard is visible in the DOM
   useEffect(() => {
-    // Add a small delay to ensure DOM is fully rendered
+    // Delay to ensure DOM is fully rendered
     const timer = setTimeout(() => {
       adjustLayoutForScoreboard();
-    }, 250); // Increased delay for more reliable detection
+    }, 250);
     
-    // Set up a resize observer to adjust layout when window size changes
+    // Resize observer to adjust layout on window size changes
     const resizeObserver = new ResizeObserver(() => {
       adjustLayoutForScoreboard();
     });
     
     resizeObserver.observe(document.body);
-    
-    // Add global event listeners for additional detection
     window.addEventListener('resize', adjustLayoutForScoreboard);
     
     return () => {
@@ -123,6 +115,18 @@ function FanHub({ scoreboardVisible = true }) {
       window.removeEventListener('resize', adjustLayoutForScoreboard);
     };
   }, [scoreboardVisible]);
+
+  // When the left sidebar is expanded, force the scoreboard to hide
+  useEffect(() => {
+    if (sidebarExpanded) {
+      setActualScoreboardVisible(false);
+      // Also update the CSS variable so container uses zero height for scoreboard
+      document.documentElement.style.setProperty('--scoreboard-height', '0px');
+    } else {
+      // Re-check the scoreboard visibility when sidebar collapses
+      adjustLayoutForScoreboard();
+    }
+  }, [sidebarExpanded]);
 
   // Handle smooth scrolling when a nav item is clicked
   const scrollToSection = (ref) => {
@@ -207,7 +211,9 @@ function FanHub({ scoreboardVisible = true }) {
               value={selectedTeam}
               onChange={(e) => setSelectedTeam(e.target.value)}
             >
-              <option value="">Select Your Team Affiliation <FontAwesomeIcon icon={faFootball} /></option>
+              <option value="">
+                Select Your Team Affiliation <FontAwesomeIcon icon={faFootball} />
+              </option>
               {teams.map((team) => (
                 <option key={team.id} value={team.name}>
                   {team.name}
@@ -226,7 +232,6 @@ function FanHub({ scoreboardVisible = true }) {
           <p>
             Select which game's chat to join. Chat syncs across the site (Fan Hub and Game Pages). Reactions, GIFs, and mentions are supported.
           </p>
-          {/* Placeholder for live game chat content */}
           <div className="content-placeholder"></div>
         </div>
 
@@ -250,7 +255,6 @@ function FanHub({ scoreboardVisible = true }) {
           </div>
           <div>
             <p>{activeChatTab} content goes here.</p>
-            {/* Placeholder for chat room content */}
             <div className="content-placeholder"></div>
           </div>
         </div>
@@ -267,7 +271,6 @@ function FanHub({ scoreboardVisible = true }) {
           <p>
             List of attendees with profile pictures and team logos will appear here.
           </p>
-          {/* Placeholder for check-ins */}
           <div className="content-placeholder"></div>
         </div>
 
@@ -280,7 +283,6 @@ function FanHub({ scoreboardVisible = true }) {
           <p>
             Users vote on game outcomes and player performances. Live results update instantly.
           </p>
-          {/* Placeholder for polls */}
           <div className="content-placeholder"></div>
         </div>
 
@@ -293,7 +295,6 @@ function FanHub({ scoreboardVisible = true }) {
           <p>
             Fans vote on upcoming games. A grid showing matchups, team logos, and ratings will be displayed.
           </p>
-          {/* Placeholder for hype tracker */}
           <div className="content-placeholder"></div>
         </div>
       </div>
@@ -302,7 +303,6 @@ function FanHub({ scoreboardVisible = true }) {
       <aside className="right-sidebar">
         <div className="mini-feed">
           <p><strong>Latest Messages:</strong></p>
-          {/* Mini feed placeholder; could be expanded to show a summary */}
           <p className="no-messages">No new messages.</p>
         </div>
         <div className="chat-header">
