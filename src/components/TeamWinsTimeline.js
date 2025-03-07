@@ -11,7 +11,6 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [teamData, setTeamData] = useState([]);
-  const [yearsData, setYearsData] = useState({});
   const [teams, setTeams] = useState([]);
 
   // Parse year range
@@ -50,8 +49,8 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
           wins: {}
         }));
         
-        // Store all years data to avoid refetching
-        const yearsDataObj = {};
+        // Temporary object to store annual wins data
+        const annualWinsData = {};
         
         // Fetch data for each year in the range
         for (let year = startYear; year <= endYear; year++) {
@@ -78,7 +77,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
               // In case of tie, no wins added
             });
             
-            yearsDataObj[year] = teamWins;
+            annualWinsData[year] = teamWins;
           } else {
             // Process records response
             const teamWins = {};
@@ -87,7 +86,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
               teamWins[record.team] = record.total?.wins || 0;
             });
             
-            yearsDataObj[year] = teamWins;
+            annualWinsData[year] = teamWins;
           }
         }
         
@@ -95,14 +94,13 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         processedTeams.forEach(team => {
           let cumulativeWins = 0;
           for (let year = startYear; year <= endYear; year++) {
-            const winsThisYear = yearsDataObj[year][team.team] || 0;
+            const winsThisYear = annualWinsData[year][team.team] || 0;
             cumulativeWins += winsThisYear;
             team.wins[year] = cumulativeWins;
           }
         });
         
         setTeamData(processedTeams);
-        setYearsData(yearsDataObj);
         setIsLoading(false);
         
         // Set initial year to start year
@@ -129,6 +127,9 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (conference !== "All Conferences") {
       filteredData = filteredData.filter(team => team.conference === conference);
     }
+
+    // Filter out teams with no wins
+    filteredData = filteredData.filter(team => (team.wins[year] || 0) > 0);
 
     // Get win data for the specific year
     const dataForYear = filteredData.map(team => ({
@@ -174,6 +175,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
+      setIsPlaying(false);
     } else {
       // Start or resume animation
       let nextYear = currentYear;
@@ -183,12 +185,13 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         nextYear++;
       }
       
-      const lastTimestamp = performance.now();
+      let lastTimestamp = performance.now();
       const animate = (timestamp) => {
         const elapsed = timestamp - lastTimestamp;
         
         if (elapsed > animationSpeed) {
           setCurrentYear(nextYear);
+          lastTimestamp = timestamp;
           
           if (nextYear < endYear) {
             nextYear++;
@@ -202,9 +205,8 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       };
       
       animationRef.current = requestAnimationFrame(animate);
+      setIsPlaying(true);
     }
-    
-    setIsPlaying(!isPlaying);
   };
 
   // Draw the chart for a specific year
