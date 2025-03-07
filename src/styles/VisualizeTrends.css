@@ -193,24 +193,21 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(10, 10, 25, 0.85);
-  backdrop-filter: blur(12px);
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 25, 0.75);
+  backdrop-filter: blur(10px);
 
   /* Center the modal horizontally & vertically */
   display: flex;
   align-items: center;
   justify-content: center;
 
-  /* Ultra-high z-index to appear above ALL elements */
-  z-index: 2147483647 !important; /* Maximum z-index value */
+  /* Extremely high z-index to appear over everything */
+  z-index: 9999999 !important;
   opacity: 0;
   transition: opacity 0.4s ease;
   animation: modalFadeIn 0.4s forwards;
-  
-  /* Ensure it covers everything */
-  isolation: isolate;
 }
 
 @keyframes modalFadeIn {
@@ -219,28 +216,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-content {
-  /* Glassmorphism effect */
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-
-  color: var(--text-color);
-  border-radius: var(--border-radius);
-  position: relative;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-
-  /* Good width for the modal */
-  width: 90%;
-  max-width: 1200px;
-
-  /* Fixed positioning to ensure it's centered in viewport regardless of scroll */
+  /* Position fixed and centered */
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) translateY(30px);
-  max-height: 85vh;
-  margin: 0;
+  transform: translate(-50%, -50%);
 
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+
+  /* Sizing */
+  width: 92%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
   padding: 2.5rem;
 
   /* Center internal content */
@@ -250,26 +244,24 @@ h1, h2, h3, h4, h5, h6 {
   
   /* Animation */
   opacity: 0;
+  transform: translate(-50%, -40%);
   animation: modalContentIn 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  
-  /* Ensure modal content appears above everything */
-  z-index: 2147483647;
-}
-
-@media (prefers-color-scheme: dark) {
-  .modal-content {
-    background: rgba(30, 30, 45, 0.9);
-  }
 }
 
 @keyframes modalContentIn {
   from { 
     opacity: 0;
-    transform: translate(-50%, -50%) translateY(30px);
+    transform: translate(-50%, -40%);
   }
   to { 
     opacity: 1;
-    transform: translate(-50%, -50%) translateY(0);
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: rgba(30, 30, 45, 0.85);
   }
 }
 
@@ -290,7 +282,6 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 4px 12px rgba(212, 0, 28, 0.2);
-  z-index: 5; /* Ensure button is clickable */
 }
 
 .close-button::before {
@@ -372,7 +363,6 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1rem;
-
   width: 100%;
   height: 680px;
   box-sizing: border-box;
@@ -381,7 +371,6 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease;
 }
 
-/* Ensure any SVG inside the wrapper fills the space */
 .chart-wrapper svg {
   display: block;
   width: 100%;
@@ -401,8 +390,7 @@ h1, h2, h3, h4, h5, h6 {
   
   .modal-content {
     padding: 1.5rem;
-    width: 95%;
-    max-height: 80vh;
+    margin: 80px auto 60px auto;
   }
   
   .chart-wrapper {
@@ -434,36 +422,4 @@ h1, h2, h3, h4, h5, h6 {
   .chart-card:hover {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   }
-}
-
-/* Portal for modal - helps with stacking context issues */
-#modal-portal {
-  position: relative;
-  z-index: 2147483647;
-}
-
-/* Helper class to fix body when modal is open */
-body.modal-open {
-  overflow: hidden;
-  padding-right: var(--scrollbar-width, 0); /* Prevent layout shift */
-}
-
-/* Fix for iframes and other stacking context elements */
-.modal-overlay iframe,
-.modal-overlay object,
-.modal-overlay embed,
-.modal-overlay video {
-  z-index: 1;
-  position: relative;
-}
-
-/* Prevent interaction with background when modal is open */
-.modal-overlay::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2147483646;
 }
