@@ -20,7 +20,7 @@ const VisualizeTrends = () => {
   const [teams, setTeams] = useState([]);
 
   // New state for team wins timeline
-  const [selectedYearRange, setSelectedYearRange] = useState("2000-2024");
+  const [selectedYearRange, setSelectedYearRange] = useState("2015-2023");
   const [selectedConference, setSelectedConference] = useState("All Conferences");
   const [topTeamCount, setTopTeamCount] = useState("10");
 
@@ -146,15 +146,15 @@ const VisualizeTrends = () => {
             {/* Team Wins Timeline Modal */}
             {activeModal === "teamWins" && (
               <>
-                <h2>Team Wins Timeline (2000-2024)</h2>
+                <h2>College Football Teams Cumulative Wins</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
                     <label>Year Range</label>
                     <select value={selectedYearRange} onChange={handleYearRangeChange}>
-                      <option value="2000-2024">2000-2024</option>
-                      <option value="2010-2024">2010-2024</option>
-                      <option value="2015-2024">2015-2024</option>
-                      <option value="2020-2024">2020-2024</option>
+                      <option value="2000-2023">2000-2023</option>
+                      <option value="2010-2023">2010-2023</option>
+                      <option value="2015-2023">2015-2023</option>
+                      <option value="2020-2023">2020-2023</option>
                     </select>
                   </div>
                   <div className="filter-group">
