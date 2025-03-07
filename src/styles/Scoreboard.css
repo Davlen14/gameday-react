@@ -1,80 +1,17 @@
-/* ===============================
-   SCOREBOARD COLOR VARIABLES
-=============================== */
-:root {
-  /* Scoreboard Bar & Overall */
-  --scoreboard-bg: linear-gradient(to bottom, #ffffff, #f9f9f9);
-  --scoreboard-border: rgba(0, 0, 0, 0.06);
-  --scoreboard-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-
-  /* Filters & Dropdowns */
-  --scoreboard-filter-bg: rgba(250, 250, 250, 0.6);
-  --scoreboard-filter-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --scoreboard-divider: rgba(0, 0, 0, 0.08);
-  --scoreboard-dropdown-text: #333;
-  --scoreboard-week-dropdown-bg: rgba(240, 240, 240, 0.6);
-
-  /* Game Card */
-  --scoreboard-game-card-bg: rgba(255, 255, 255, 0.6);
-  --scoreboard-game-card-border: rgba(0, 0, 0, 0.05);
-  
-  /* Game Times & Network */
-  --scoreboard-game-time: #666;
-  --scoreboard-game-time-final: #d20a2c;
-  --scoreboard-network-bg: rgba(240, 240, 240, 0.4);
-
-  /* TV & Team Info */
-  --scoreboard-tv-text: #555;
-  --scoreboard-tv-icon: #333;
-  --scoreboard-team-name: #222;
-  --scoreboard-team-score-text: #000;
-  --scoreboard-team-score-bg: rgba(240, 240, 240, 0.5);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --scoreboard-bg: linear-gradient(to bottom, #333333, #2b2b2b);
-    --scoreboard-border: rgba(255, 255, 255, 0.1);
-    --scoreboard-shadow: 0 1px 4px rgba(255, 255, 255, 0.02);
-
-    --scoreboard-filter-bg: rgba(50, 50, 50, 0.6);
-    --scoreboard-filter-shadow: 0 1px 2px rgba(255, 255, 255, 0.05);
-    --scoreboard-divider: rgba(255, 255, 255, 0.1);
-    --scoreboard-dropdown-text: #ddd;
-    --scoreboard-week-dropdown-bg: rgba(60, 60, 60, 0.6);
-
-    --scoreboard-game-card-bg: rgba(50, 50, 50, 0.6);
-    --scoreboard-game-card-border: rgba(255, 255, 255, 0.1);
-    
-    --scoreboard-game-time: #aaa;
-    --scoreboard-game-time-final: #ff6b6b;
-    --scoreboard-network-bg: rgba(60, 60, 60, 0.4);
-
-    --scoreboard-tv-text: #ccc;
-    --scoreboard-tv-icon: #ddd;
-    --scoreboard-team-name: #ddd;
-    --scoreboard-team-score-text: #fff;
-    --scoreboard-team-score-bg: rgba(60, 60, 60, 0.5);
-  }
-}
-
-/* ===============================
-   Modern, Slim Scoreboard Styling
-=============================== */
+/* Modern, Slim Scoreboard Styling */
 .scoreboard-bar {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  background: var(--scoreboard-bg);
-  border-bottom: 1px solid var(--scoreboard-border);
+  background: #121212; /* Dark background for the entire bar */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 4px 10px;
   width: 100%;
-  box-shadow: var(--scoreboard-shadow);
-  min-height: 44px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  min-height: 46px;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(8px);
   z-index: 100;
 }
 
@@ -85,14 +22,13 @@
   font-size: 11px;
   flex: 0 0 auto;
   min-width: 110px;
-  background: var(--scoreboard-filter-bg);
+  background: rgba(40, 40, 40, 0.6);
   padding: 2px 6px;
-  border-radius: 6px;
-  box-shadow: var(--scoreboard-filter-shadow);
+  border-radius: 4px;
 }
 
 .scoreboard-divider {
-  border-left: 1px solid var(--scoreboard-divider);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
   height: 14px;
   margin: 0 4px;
 }
@@ -100,18 +36,18 @@
 .scoreboard-ncaaf-dropdown {
   font-size: 11px;
   font-weight: 600;
-  color: var(--scoreboard-dropdown-text);
+  color: #ffffff;
   padding: 2px 4px;
 }
 
 .scoreboard-week-dropdown {
   font-size: 11px;
   font-weight: 500;
-  color: var(--scoreboard-dropdown-text);
+  color: #ffffff;
   cursor: pointer;
   border: none;
   border-radius: 4px;
-  background: var(--scoreboard-week-dropdown-bg);
+  background: rgba(60, 60, 60, 0.8);
   padding: 2px 8px;
   min-width: 70px;
   -webkit-appearance: none;
@@ -126,8 +62,8 @@
   scrollbar-width: none;
   min-height: 36px;
   position: relative;
-  gap: 1px;
-  padding: 1px 0;
+  gap: 6px;
+  padding: 3px 0;
 }
 
 .scoreboard-games::-webkit-scrollbar {
@@ -142,22 +78,21 @@
 }
 
 .scoreboard-game-link:hover {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .scoreboard-game-card {
   flex: 0 0 auto;
-  min-width: 100px;
-  max-width: 130px;
+  min-width: 110px;
+  max-width: 140px;
   display: flex;
   flex-direction: column;
-  padding: 4px 6px;
-  border-right: 1px solid var(--scoreboard-game-card-border);
-  background: var(--scoreboard-game-card-bg);
+  padding: 8px;
+  background: #1e1e1e; /* Darker card background */
   transition: background 0.2s ease;
   border-radius: 6px;
   margin: 0 1px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .scoreboard-game-header {
@@ -165,37 +100,42 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 2px;
-  padding-bottom: 2px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  margin-bottom: 6px;
+  padding-bottom: 3px;
 }
 
 .scoreboard-game-time {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
-  color: var(--scoreboard-game-time);
+  color: #cccccc;
   letter-spacing: 0.1px;
+  background: rgba(40, 40, 40, 0.7);
+  padding: 2px 4px;
+  border-radius: 2px;
 }
 
 .scoreboard-game-time.final {
-  color: var(--scoreboard-game-time-final);
+  background-color: #d20a2c; /* Red for final status */
+  color: #ffffff;
   font-weight: 600;
+  padding: 2px 6px;
+  text-transform: uppercase;
 }
 
 .scoreboard-game-network {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: var(--scoreboard-network-bg);
-  padding: 1px 3px;
+  background: rgba(60, 60, 60, 0.5);
+  padding: 2px 4px;
   border-radius: 3px;
 }
 
 .scoreboard-tv-outlet {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 500;
-  color: var(--scoreboard-tv-text);
-  max-width: 40px;
+  color: #ffffff;
+  max-width: 50px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -203,7 +143,8 @@
 
 .scoreboard-tv-icon {
   font-size: 10px;
-  color: var(--scoreboard-tv-icon);
+  color: #cccccc;
+  margin-right: 2px;
 }
 
 .scoreboard-card-team {
@@ -211,45 +152,106 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 2px 0;
+  margin: 4px 0;
   padding: 2px 3px;
-  border-radius: 3px;
 }
 
 .scoreboard-team-info {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 
 .scoreboard-team-logo {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
 .scoreboard-team-name {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--scoreboard-team-name);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .scoreboard-team-score {
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--scoreboard-team-score-text);
-  min-width: 16px;
-  text-align: right;
-  background: var(--scoreboard-team-score-bg);
-  border-radius: 3px;
-  padding: 1px 3px;
+  color: #ffffff;
+  min-width: 32px;
+  text-align: center;
+  background: rgba(70, 70, 70, 0.7);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Light Mode */
+@media (prefers-color-scheme: light) {
+  .scoreboard-bar {
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .scoreboard-filters {
+    background: rgba(240, 240, 240, 0.8);
+  }
+  
+  .scoreboard-divider {
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .scoreboard-ncaaf-dropdown {
+    color: #333333;
+  }
+  
+  .scoreboard-week-dropdown {
+    color: #333333;
+    background: rgba(230, 230, 230, 0.8);
+  }
+  
+  .scoreboard-game-card {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .scoreboard-game-time {
+    color: #666666;
+    background: rgba(240, 240, 240, 0.8);
+  }
+  
+  .scoreboard-game-time.final {
+    background-color: #d20a2c; /* Red stays the same for final in light mode */
+    color: #ffffff;
+  }
+  
+  .scoreboard-game-network {
+    background: rgba(230, 230, 230, 0.7);
+  }
+  
+  .scoreboard-tv-outlet {
+    color: #333333;
+  }
+  
+  .scoreboard-tv-icon {
+    color: #333333;
+  }
+  
+  .scoreboard-team-name {
+    color: #333333;
+  }
+  
+  .scoreboard-team-score {
+    color: #333333;
+    background: rgba(230, 230, 230, 0.9);
+  }
 }
 
 /* Responsive Adjustments */
@@ -271,7 +273,7 @@
   }
   
   .scoreboard-game-card {
-    min-width: 90px;
-    padding: 3px 4px;
+    min-width: 100px;
+    padding: 6px;
   }
 }

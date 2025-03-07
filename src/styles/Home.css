@@ -10,14 +10,34 @@
   --text-color: #333333;
   --background-color: #f5f5f5;
   --border-color: #dddddd;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --card-shadow: rgba(0, 0, 0, 0.08);
+  --secondary-text: #666666;
+  --tertiary-text: #999999;
+  --divider-color: rgba(0, 0, 0, 0.08);
+  --hover-bg: rgba(0, 0, 0, 0.04);
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(142, 0, 0, 0.3);
+  --scrollbar-thumb-hover: rgba(142, 0, 0, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #333333;
-    --text-color: #ffffff;
-    --background-color: #1e1e1e;
+    --primary-color: #1e1e1e;
+    --text-color: #f0f0f0;
+    --background-color: #121212;
     --border-color: #444444;
+    --card-bg: #2a2a2a;
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-shadow: rgba(0, 0, 0, 0.2);
+    --secondary-text: #b0b0b0;
+    --tertiary-text: #888888;
+    --divider-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --scrollbar-track: rgba(255, 255, 255, 0.05);
+    --scrollbar-thumb: rgba(212, 0, 28, 0.4);
+    --scrollbar-thumb-hover: rgba(212, 0, 28, 0.6);
   }
 }
 
@@ -30,6 +50,7 @@
   background-color: var(--background-color);
   color: var(--text-color);
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ===============================
@@ -51,6 +72,7 @@
   letter-spacing: 1px; /* Added letter spacing for wider appearance */
   text-transform: uppercase; /* Makes the text all caps */
   font-weight: 800; /* Makes the font bolder */
+  transition: color 0.3s ease;
 }
 
 /* Optional Week Selector in Hero */
@@ -66,6 +88,7 @@ select {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem; /* Slightly smaller than 0.95rem */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* ===============================
@@ -78,6 +101,7 @@ select {
   margin-bottom: 1.2rem;  /* Slightly reduced */
   font-size: 1.4rem;      /* Slightly smaller than 1.6rem */
   font-weight: 600;
+  transition: color 0.3s ease, border-bottom 0.3s ease;
 }
 
 /* ===============================
@@ -89,6 +113,8 @@ select {
   gap: 8px;              /* Reduced gap */
   font-size: 1.2rem;     /* Slightly smaller than 1.4rem */
   font-weight: bold;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .poll-logo {
@@ -105,18 +131,12 @@ select {
 }
 
 .poll-card {
-  background: #fff;
+  background: var(--card-bg);
   padding: 0.75rem;      /* Reduced from 1rem */
   border-radius: 10px;   /* Smaller radius than 16px */
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ddd;
-}
-
-@media (prefers-color-scheme: dark) {
-  .poll-card {
-    background: #2e2e2e;
-    border: 1px solid #444;
-  }
+  box-shadow: 0 3px 5px var(--card-shadow);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .ranking-item {
@@ -124,14 +144,9 @@ select {
   align-items: center;
   gap: 6px;         /* Add small horizontal gap for inline items */
   padding: 0.5rem 0; 
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.85rem; /* Smaller text for poll items */
-}
-
-@media (prefers-color-scheme: dark) {
-  .ranking-item {
-    border-bottom: 1px solid #444;
-  }
+  transition: border-bottom 0.3s ease;
 }
 
 /* Replacing .team-logo with .team-poll-logo for polls specifically */
@@ -147,17 +162,20 @@ select {
   color: var(--accent-color);
   font-size: 0.85rem; /* Smaller rank text */
   font-weight: bold;
+  transition: color 0.3s ease;
 }
 
 .poll-team-name {
   font-size: 0.8rem;  /* Make the team name smaller */
   font-weight: 500;   /* Slightly lighter than 600 */
-  color: #333;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .poll-points {
   font-size: 0.75rem; /* Smaller points text */
-  color: #666;
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
 }
 
 /* ===============================
@@ -179,25 +197,18 @@ select {
 
 .game-card {
   flex: 0 0 280px;
-  background: linear-gradient(145deg, #ffffff, #f8f8f8);
+  background: var(--card-bg);
   border-radius: 14px; 
   padding: 0.8rem;     
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 5px 16px var(--card-shadow);
+  border: 1px solid var(--card-border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .game-card {
-    background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-}
-
 .game-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 28px var(--card-shadow);
 }
 
 .game-header {
@@ -206,13 +217,8 @@ select {
   align-items: center;
   margin-bottom: 0.8rem;
   font-size: 0.8rem; 
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-header {
-    color: #aaa;
-  }
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
 }
 
 .network {
@@ -224,11 +230,14 @@ select {
 .network-icon {
   font-size: 0.9rem;
   color: var(--accent-color);
+  transition: color 0.3s ease;
 }
 
 .network-name {
   font-weight: 500;
   font-size: 0.8rem;
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
 }
 
 .teams-container {
@@ -251,24 +260,22 @@ select {
   height: 58px;
   margin-bottom: 0.4rem;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 2px 4px var(--card-shadow));
+  transition: filter 0.3s ease;
 }
 
 .team-name {
   font-weight: 600;
   font-size: 0.9rem;
   margin-bottom: 0.2rem;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .team-record {
   font-size: 0.75rem;
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .team-record {
-    color: #aaa;
-  }
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
 }
 
 .vs-container {
@@ -309,40 +316,24 @@ select {
   color: var(--text-color);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.04);
-}
-
-@media (prefers-color-scheme: dark) {
-  .score {
-    background: rgba(255, 255, 255, 0.1);
-  }
+  background: var(--hover-bg);
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 .score-divider {
   font-weight: 500;
   font-size: 0.9rem; 
-  color: #999;
-}
-
-@media (prefers-color-scheme: dark) {
-  .score-divider {
-    color: #777;
-  }
+  color: var(--tertiary-text);
+  transition: color 0.3s ease;
 }
 
 .game-footer {
   padding-top: 0.5rem; 
   margin-top: 0.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--divider-color);
   font-size: 0.75rem; 
-  color: #666;
-}
-
-@media (prefers-color-scheme: dark) {
-  .game-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: #aaa;
-  }
+  color: var(--secondary-text);
+  transition: color 0.3s ease, border-top 0.3s ease;
 }
 
 /* Scrollbar Styling for Slider */
@@ -350,14 +341,14 @@ select {
   height: 4px; 
 }
 .games-slider::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05);
+  background: var(--scrollbar-track);
 }
 .games-slider::-webkit-scrollbar-thumb {
-  background: rgba(142, 0, 0, 0.3);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 .games-slider::-webkit-scrollbar-thumb:hover {
-  background: rgba(142, 0, 0, 0.4);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ===============================
@@ -367,6 +358,8 @@ select {
   text-align: center;
   padding: 1.5rem; 
   font-size: 1rem; 
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 /* ===============================
@@ -506,30 +499,35 @@ select {
 
 /* ~~~~ RECRUIT ITEM 10% BIGGER ~~~~ */
 .recruit-item {
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 7px 12px; /* was 6px 10px -> about 10% bigger */
   display: flex;
   align-items: center;
   gap: 8px;          /* slightly bigger gap than 6px */
   font-size: 0.95rem; /* was 0.85rem -> about 10% bigger */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .recruit-rank {
   font-weight: bold;
   color: var(--accent-color);
   font-size: 0.95rem; /* was 0.85rem */
+  transition: color 0.3s ease;
 }
 
 .recruit-name {
   font-weight: 600;
   font-size: 0.95rem; /* was 0.85rem */
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .recruit-position {
-  color: #666;
+  color: var(--secondary-text);
   font-size: 0.9rem;  /* was 0.8rem */
+  transition: color 0.3s ease;
 }
 
 /* Committed team logo: 20px instead of 18px */
@@ -539,7 +537,8 @@ select {
   gap: 4px;    /* slightly bigger gap than 3px */
   margin-left: auto;
   font-weight: 500;
-  color: #333;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .committed-team-logo {
@@ -552,17 +551,15 @@ select {
 
 .commit-check {
   font-size: 15px; /* was 14px */
-  color: green;
+  color: #00b300; /* Bright green that works in both light/dark modes */
+  transition: color 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  .recruit-item {
-    background: #2e2e2e;
-    border-color: #444;
-  }
-  .recruit-rank {
-    color: #ff4444;
-  }
+.uncommitted-tag {
+  margin-left: auto;
+  color: var(--secondary-text);
+  font-style: italic;
+  transition: color 0.3s ease;
 }
 
 /* Responsive: Stack polls and recruits on mobile */
