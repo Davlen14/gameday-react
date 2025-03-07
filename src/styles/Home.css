@@ -730,7 +730,7 @@ select {
 }
 
 .star-icon.empty {
-  color: #E0E0E0; /* Light gray for empty stars */
+  color: #b6b6b6; /* Light gray for empty stars */
 }
 
 .committed-team-logo {
