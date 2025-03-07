@@ -8,36 +8,19 @@
   --primary-color: #ffffff;
   --accent-color: #D4001C;
   --text-color: #333333;
+  --secondary-text-color: #666666;
   --background-color: #f5f5f5;
   --border-color: #dddddd;
-  --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.1);
-  --card-shadow: rgba(0, 0, 0, 0.08);
-  --secondary-text: #666666;
-  --tertiary-text: #999999;
-  --divider-color: rgba(0, 0, 0, 0.08);
-  --hover-bg: rgba(0, 0, 0, 0.04);
-  --scrollbar-track: rgba(0, 0, 0, 0.05);
-  --scrollbar-thumb: rgba(142, 0, 0, 0.3);
-  --scrollbar-thumb-hover: rgba(142, 0, 0, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #1e1e1e;
-    --text-color: #f0f0f0;
-    --background-color: #121212;
+    --primary-color: #333333;
+    --accent-color: #D4001C;
+    --text-color: #ffffff;
+    --secondary-text-color: #aaaaaa;
+    --background-color: #1e1e1e;
     --border-color: #444444;
-    --card-bg: #2a2a2a;
-    --card-border: rgba(255, 255, 255, 0.1);
-    --card-shadow: rgba(0, 0, 0, 0.2);
-    --secondary-text: #b0b0b0;
-    --tertiary-text: #888888;
-    --divider-color: rgba(255, 255, 255, 0.08);
-    --hover-bg: rgba(255, 255, 255, 0.1);
-    --scrollbar-track: rgba(255, 255, 255, 0.05);
-    --scrollbar-thumb: rgba(212, 0, 28, 0.4);
-    --scrollbar-thumb-hover: rgba(212, 0, 28, 0.6);
   }
 }
 
@@ -50,7 +33,6 @@
   background-color: var(--background-color);
   color: var(--text-color);
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ===============================
@@ -72,7 +54,6 @@
   letter-spacing: 1px; /* Added letter spacing for wider appearance */
   text-transform: uppercase; /* Makes the text all caps */
   font-weight: 800; /* Makes the font bolder */
-  transition: color 0.3s ease;
 }
 
 /* Optional Week Selector in Hero */
@@ -88,7 +69,6 @@ select {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem; /* Slightly smaller than 0.95rem */
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* ===============================
@@ -101,7 +81,6 @@ select {
   margin-bottom: 1.2rem;  /* Slightly reduced */
   font-size: 1.4rem;      /* Slightly smaller than 1.6rem */
   font-weight: 600;
-  transition: color 0.3s ease, border-bottom 0.3s ease;
 }
 
 /* ===============================
@@ -114,7 +93,6 @@ select {
   font-size: 1.2rem;     /* Slightly smaller than 1.4rem */
   font-weight: bold;
   color: var(--text-color);
-  transition: color 0.3s ease;
 }
 
 .poll-logo {
@@ -131,22 +109,33 @@ select {
 }
 
 .poll-card {
-  background: var(--card-bg);
+  background: var(--primary-color);
   padding: 0.75rem;      /* Reduced from 1rem */
   border-radius: 10px;   /* Smaller radius than 16px */
-  box-shadow: 0 3px 5px var(--card-shadow);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .poll-card {
+    background: #2e2e2e;
+    border: 1px solid var(--border-color);
+  }
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
-  gap: 6px;         /* Add small horizontal gap for inline items */
+  gap: 6px;         /* Small horizontal gap */
   padding: 0.5rem 0; 
   border-bottom: 1px solid var(--border-color);
   font-size: 0.85rem; /* Smaller text for poll items */
-  transition: border-bottom 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ranking-item {
+    border-bottom: 1px solid var(--border-color);
+  }
 }
 
 /* Replacing .team-logo with .team-poll-logo for polls specifically */
@@ -162,20 +151,17 @@ select {
   color: var(--accent-color);
   font-size: 0.85rem; /* Smaller rank text */
   font-weight: bold;
-  transition: color 0.3s ease;
 }
 
 .poll-team-name {
   font-size: 0.8rem;  /* Make the team name smaller */
   font-weight: 500;   /* Slightly lighter than 600 */
   color: var(--text-color);
-  transition: color 0.3s ease;
 }
 
 .poll-points {
   font-size: 0.75rem; /* Smaller points text */
-  color: var(--secondary-text);
-  transition: color 0.3s ease;
+  color: var(--secondary-text-color);
 }
 
 /* ===============================
@@ -197,18 +183,25 @@ select {
 
 .game-card {
   flex: 0 0 280px;
-  background: var(--card-bg);
-  border-radius: 14px; 
-  padding: 0.8rem;     
-  box-shadow: 0 5px 16px var(--card-shadow);
-  border: 1px solid var(--card-border);
+  background: linear-gradient(145deg, var(--primary-color), var(--background-color));
+  border-radius: 14px;
+  padding: 0.8rem;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
+@media (prefers-color-scheme: dark) {
+  .game-card {
+    background: linear-gradient(145deg, #2e2e2e, #3a3a3a);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
 .game-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 28px var(--card-shadow);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
 
 .game-header {
@@ -216,9 +209,14 @@ select {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.8rem;
-  font-size: 0.8rem; 
-  color: var(--secondary-text);
-  transition: color 0.3s ease;
+  font-size: 0.8rem;
+  color: var(--secondary-text-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .game-header {
+    color: #aaa;
+  }
 }
 
 .network {
@@ -230,14 +228,11 @@ select {
 .network-icon {
   font-size: 0.9rem;
   color: var(--accent-color);
-  transition: color 0.3s ease;
 }
 
 .network-name {
   font-weight: 500;
   font-size: 0.8rem;
-  color: var(--secondary-text);
-  transition: color 0.3s ease;
 }
 
 .teams-container {
@@ -256,26 +251,28 @@ select {
 }
 
 .team img {
-  width: 58px; 
+  width: 58px;
   height: 58px;
   margin-bottom: 0.4rem;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px var(--card-shadow));
-  transition: filter 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .team-name {
   font-weight: 600;
   font-size: 0.9rem;
   margin-bottom: 0.2rem;
-  color: var(--text-color);
-  transition: color 0.3s ease;
 }
 
 .team-record {
   font-size: 0.75rem;
-  color: var(--secondary-text);
-  transition: color 0.3s ease;
+  color: var(--secondary-text-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .team-record {
+    color: #aaa;
+  }
 }
 
 .vs-container {
@@ -287,15 +284,15 @@ select {
 
 .vs-circle {
   background: linear-gradient(135deg, var(--accent-color), #b30000);
-  width: 36px; 
+  width: 36px;
   height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: white;
-  font-size: 0.9rem; 
+  color: #fff;
+  font-size: 0.9rem;
   box-shadow: 0 3px 10px rgba(142, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
@@ -311,69 +308,84 @@ select {
 }
 
 .score {
-  font-size: 1rem; 
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-color);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
-  background: var(--hover-bg);
-  transition: color 0.3s ease, background-color 0.3s ease;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  .score {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .score-divider {
   font-weight: 500;
-  font-size: 0.9rem; 
-  color: var(--tertiary-text);
-  transition: color 0.3s ease;
+  font-size: 0.9rem;
+  color: #999;
+}
+
+@media (prefers-color-scheme: dark) {
+  .score-divider {
+    color: #777;
+  }
 }
 
 .game-footer {
-  padding-top: 0.5rem; 
+  padding-top: 0.5rem;
   margin-top: 0.5rem;
-  border-top: 1px solid var(--divider-color);
-  font-size: 0.75rem; 
-  color: var(--secondary-text);
-  transition: color 0.3s ease, border-top 0.3s ease;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .game-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
 }
 
 /* Scrollbar Styling for Slider */
 .games-slider::-webkit-scrollbar {
-  height: 4px; 
+  height: 4px;
 }
 .games-slider::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: rgba(0,0,0,0.05);
 }
 .games-slider::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: rgba(142, 0, 0, 0.3);
   border-radius: 4px;
 }
 .games-slider::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
+  background: rgba(142, 0, 0, 0.4);
 }
 
 /* ===============================
    LOADING & ERROR STATES
 =============================== */
-.loading-container, .error-container {
+.loading-container,
+.error-container {
   text-align: center;
-  padding: 1.5rem; 
-  font-size: 1rem; 
-  color: var(--text-color);
-  transition: color 0.3s ease;
+  padding: 1.5rem;
+  font-size: 1rem;
 }
 
 /* ===============================
    FEATURED SECTION
 =============================== */
 .featured-section {
-  margin-bottom: 2rem; 
+  margin-bottom: 2rem;
 }
 
 .featured-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, auto);
-  grid-gap: 0.5rem; 
+  grid-gap: 0.5rem;
   grid-template-areas:
     "big big small1"
     "big big small2"
@@ -406,7 +418,7 @@ select {
 }
 
 .featured-card {
-  border-radius: 12px; 
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
 }
@@ -430,19 +442,19 @@ select {
   width: 100%;
   background-color: rgba(212, 0, 28, 0.85);
   color: #fff;
-  padding: 0.6rem; 
+  padding: 0.6rem;
 }
 
 .featured-overlay h2,
 .featured-overlay h3 {
   margin: 0 0 0.25rem;
   font-weight: 600;
-  font-size: 0.95rem; 
+  font-size: 0.95rem;
 }
 
 .featured-overlay p {
   margin: 0;
-  font-size: 0.75rem; 
+  font-size: 0.75rem;
 }
 
 @media (max-width: 992px) {
@@ -478,8 +490,8 @@ select {
 =============================== */
 .polls-recruits-container {
   display: flex;
-  gap: 1.5rem; 
-  margin-bottom: 1.5rem; 
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .left-column,
@@ -488,18 +500,18 @@ select {
 }
 
 .recruits-section .section-title {
-  margin-bottom: 0.8rem; 
+  margin-bottom: 0.8rem;
 }
 
 .recruits-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem; 
+  gap: 0.6rem;
 }
 
 /* ~~~~ RECRUIT ITEM 10% BIGGER ~~~~ */
 .recruit-item {
-  background: var(--card-bg);
+  background: var(--primary-color);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 7px 12px; /* was 6px 10px -> about 10% bigger */
@@ -507,30 +519,25 @@ select {
   align-items: center;
   gap: 8px;          /* slightly bigger gap than 6px */
   font-size: 0.95rem; /* was 0.85rem -> about 10% bigger */
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  color: var(--text-color);
 }
 
 .recruit-rank {
   font-weight: bold;
   color: var(--accent-color);
   font-size: 0.95rem; /* was 0.85rem */
-  transition: color 0.3s ease;
 }
 
 .recruit-name {
   font-weight: 600;
   font-size: 0.95rem; /* was 0.85rem */
-  color: var(--text-color);
-  transition: color 0.3s ease;
 }
 
 .recruit-position {
-  color: var(--secondary-text);
-  font-size: 0.9rem;  /* was 0.8rem */
-  transition: color 0.3s ease;
+  color: var(--secondary-text-color);
+  font-size: 0.9rem;
 }
 
-/* Committed team logo: 20px instead of 18px */
 .recruit-commit {
   display: flex;
   align-items: center;
@@ -538,7 +545,6 @@ select {
   margin-left: auto;
   font-weight: 500;
   color: var(--text-color);
-  transition: color 0.3s ease;
 }
 
 .committed-team-logo {
@@ -551,15 +557,17 @@ select {
 
 .commit-check {
   font-size: 15px; /* was 14px */
-  color: #00b300; /* Bright green that works in both light/dark modes */
-  transition: color 0.3s ease;
+  color: green;
 }
 
-.uncommitted-tag {
-  margin-left: auto;
-  color: var(--secondary-text);
-  font-style: italic;
-  transition: color 0.3s ease;
+@media (prefers-color-scheme: dark) {
+  .recruit-item {
+    background: #2e2e2e;
+    border-color: var(--border-color);
+  }
+  .recruit-rank {
+    color: #ff4444;
+  }
 }
 
 /* Responsive: Stack polls and recruits on mobile */
