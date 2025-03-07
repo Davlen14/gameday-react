@@ -54,40 +54,25 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         
         // Fetch data for each year in the range
         for (let year = startYear; year <= endYear; year++) {
-          // Use the /records endpoint as it likely has win/loss data
-          const recordsResponse = await teamsService.getRecords(year);
+          // Get games for this year to calculate wins
+          const gamesResponse = await teamsService.getGames(year);
           
-          // If no records endpoint, we could calculate from games
-          if (!recordsResponse || recordsResponse.length === 0) {
-            // Fallback: Get games for this year to calculate wins
-            const gamesResponse = await teamsService.getGames(year);
-            
-            // Process games to count wins for each team
-            const teamWins = {};
-            gamesResponse.forEach(game => {
-              if (game.home_points > game.away_points) {
-                // Home team win
-                if (!teamWins[game.home_team]) teamWins[game.home_team] = 0;
-                teamWins[game.home_team]++;
-              } else if (game.away_points > game.home_points) {
-                // Away team win
-                if (!teamWins[game.away_team]) teamWins[game.away_team] = 0;
-                teamWins[game.away_team]++;
-              }
-              // In case of tie, no wins added
-            });
-            
-            annualWinsData[year] = teamWins;
-          } else {
-            // Process records response
-            const teamWins = {};
-            recordsResponse.forEach(record => {
-              // Assuming the API returns data in a format like { team: "Alabama", wins: 12, ... }
-              teamWins[record.team] = record.total?.wins || 0;
-            });
-            
-            annualWinsData[year] = teamWins;
-          }
+          // Process games to count wins for each team
+          const teamWins = {};
+          gamesResponse.forEach(game => {
+            if (game.home_points > game.away_points) {
+              // Home team win
+              if (!teamWins[game.home_team]) teamWins[game.home_team] = 0;
+              teamWins[game.home_team]++;
+            } else if (game.away_points > game.home_points) {
+              // Away team win
+              if (!teamWins[game.away_team]) teamWins[game.away_team] = 0;
+              teamWins[game.away_team]++;
+            }
+            // In case of tie, no wins added
+          });
+          
+          annualWinsData[year] = teamWins;
         }
         
         // Calculate cumulative wins for each team across years
