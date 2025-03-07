@@ -72,33 +72,60 @@ function FanHub({ scoreboardVisible = true }) {
       // Update React state based on whether scoreboard is actually visible
       setActualScoreboardVisible(isVisible);
 
-      // Update the CSS variable to match the scoreboard’s real height (or 0 if hidden)
+      // Set an explicit height rather than auto, based on actual height
+      const actualHeight = isVisible ? Math.max(scoreboardElement.offsetHeight, 50) : 0;
+      
+      // Update the CSS variable to match the scoreboard's real height
       document.documentElement.style.setProperty(
         '--scoreboard-height',
-        isVisible ? `${scoreboardElement.offsetHeight}px` : '0px'
+        isVisible ? `${actualHeight}px` : '0px'
       );
+      
+      // Apply an immediate update to fix the transition
+      if (isVisible) {
+        document.querySelectorAll('.left-sidebar, .right-sidebar').forEach(sidebar => {
+          sidebar.style.top = `calc(var(--top-navbar-height) + var(--secondary-navbar-height) + ${actualHeight}px)`;
+        });
+        
+        // After transition completes, remove the inline style to let CSS variables take over
+        setTimeout(() => {
+          document.querySelectorAll('.left-sidebar, .right-sidebar').forEach(sidebar => {
+            sidebar.style.top = '';
+          });
+        }, 300); // Match your transition speed
+      }
     } else {
-      // If we don't find a scoreboard, default to the prop or hide entirely
+      // If we don't find a scoreboard, default to the prop
       setActualScoreboardVisible(scoreboardVisible);
       document.documentElement.style.setProperty(
         '--scoreboard-height',
-        scoreboardVisible ? '50px' : '0px' // fallback
+        scoreboardVisible ? '50px' : '0px'
       );
     }
   };
 
-  // Detect if scoreboard is visible in the DOM on load and on resize
+  // Run adjustment immediately after mount to prevent initial layout jump
   useEffect(() => {
+    // Apply immediate adjustment
+    adjustLayoutForScoreboard();
+    
+    // Then set a short timeout for a second adjustment in case DOM is still settling
     const timer = setTimeout(() => {
       adjustLayoutForScoreboard();
-    }, 250);
+    }, 100);
 
-    // Watch for window size changes
+    // Set up resize observer to continuously monitor for changes
     const resizeObserver = new ResizeObserver(() => {
       adjustLayoutForScoreboard();
     });
 
+    // Observe both body and specific parent elements that might affect layout
     resizeObserver.observe(document.body);
+    
+    // Try to observe navbar elements too if they exist
+    const navbars = document.querySelectorAll('nav, header, [class*="navbar"]');
+    navbars.forEach(navbar => resizeObserver.observe(navbar));
+    
     window.addEventListener('resize', adjustLayoutForScoreboard);
 
     return () => {
@@ -108,8 +135,13 @@ function FanHub({ scoreboardVisible = true }) {
     };
   }, [scoreboardVisible]);
 
-  // REMOVE the old effect that forced scoreboard to hide when sidebar is expanded
-  // so the scoreboard’s visibility is based solely on the actual scoreboard element + prop
+  // Add an effect that runs on prop change
+  useEffect(() => {
+    // If the prop changes, we should adjust
+    if (scoreboardVisible !== actualScoreboardVisible) {
+      adjustLayoutForScoreboard();
+    }
+  }, [scoreboardVisible]);
 
   // Handle smooth scrolling when a nav item is clicked
   const scrollToSection = (ref) => {

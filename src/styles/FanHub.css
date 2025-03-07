@@ -7,7 +7,7 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hover-color: #f9f9f9;
 
-  /* Heights for the three bars (each 50px) */
+  /* Heights for the three bars - FIXED positioning values */
   --top-navbar-height: 50px;
   --secondary-navbar-height: 50px;
   --scoreboard-height: 50px; /* Dynamically overridden to 0px if scoreboard is hidden */
@@ -35,23 +35,23 @@ body {
 }
 
 /* --- FAN HUB CONTAINER --- */
-/* Default: scoreboard is visible => total 150px offset (50 + 50 + 50) */
+/* FIXED: Removed margin-top to fix the gap issue and added padding-top instead */
 .fan-hub-container {
+  position: relative;
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height));
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-  transition: margin-top var(--transition-speed) ease, height var(--transition-speed) ease;
+  padding-top: 0; /* No padding needed since we fixed the positioning of sidebars */
+  transition: height var(--transition-speed) ease;
 }
 
-/* If scoreboard is hidden => only top + secondary remain => 100px offset (50 + 50) */
+/* If scoreboard is hidden => only top + secondary remain */
 .fan-hub-container.scoreboard-hidden {
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height));
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
   position: fixed;
-  /* By default, sit below top + secondary + scoreboard => 150px */
+  /* FIXED: Use both top and bottom positioning consistently */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   left: 0;
   bottom: 0;
@@ -108,28 +108,29 @@ body {
   opacity: 1;
 }
 
-/* When scoreboard is hidden => top + secondary only => 100px */
+/* When scoreboard is hidden => top + secondary only */
 .scoreboard-hidden .left-sidebar {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- MAIN CONTENT --- */
 .main-content {
-  flex: 1;
-  margin-left: var(--sidebar-width);
-  margin-right: var(--right-sidebar-width);
+  /* FIXED: Added top, left and right positioning */
+  position: absolute;
+  top: 0;
+  left: var(--sidebar-width);
+  right: var(--right-sidebar-width);
+  bottom: 0;
   padding: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: margin-left var(--transition-speed) ease;
-  height: 100%;
+  transition: left var(--transition-speed) ease, right var(--transition-speed) ease;
   background-color: var(--background-color);
-  position: relative; /* So z-index works as intended */
   z-index: 900; /* Below sidebars but above base content */
 }
 
 .left-sidebar.expanded ~ .main-content {
-  margin-left: var(--sidebar-expanded-width);
+  left: var(--sidebar-expanded-width);
 }
 
 /* --- STICKY HEADER --- */
@@ -226,7 +227,7 @@ body {
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
   position: fixed;
-  /* By default => below top + secondary + scoreboard => 150px */
+  /* FIXED: Use top positioning to match the left sidebar */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   right: 0;
   bottom: 0;
@@ -292,7 +293,7 @@ body {
   font-style: italic;
 }
 
-/* When scoreboard is hidden => top + secondary only => 100px */
+/* When scoreboard is hidden => top + secondary only */
 .scoreboard-hidden .right-sidebar {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
@@ -459,7 +460,7 @@ body {
   }
   
   .main-content {
-    margin-right: 250px;
+    right: 250px;
   }
 }
 
@@ -473,17 +474,19 @@ body {
   }
   
   .main-content {
-    margin-left: 50px;
+    left: 50px;
   }
   
   .left-sidebar.expanded ~ .main-content {
-    margin-left: 180px;
+    left: 180px;
   }
 }
 
 @media (max-width: 768px) {
+  /* FIXED: Mobile layout adjustments */
   .fan-hub-container {
-    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height));
   }
   
   .left-sidebar {
@@ -492,7 +495,13 @@ body {
     bottom: auto;
     display: flex;
     overflow-x: auto;
-    top: 0 !important; /* On small screens, pinned at top */
+    top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
+    position: fixed;
+    z-index: 1100;
+  }
+  
+  .scoreboard-hidden .left-sidebar {
+    top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
   }
   
   .left-sidebar ul {
@@ -514,9 +523,10 @@ body {
   }
   
   .main-content {
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 50px; /* Enough space for the small-screen left nav */
+    left: 0;
+    right: 0;
+    top: 50px; /* Account for mobile left sidebar height */
+    padding-bottom: 50px; /* Make room for the bottom sidebar on mobile */
   }
   
   .right-sidebar {
