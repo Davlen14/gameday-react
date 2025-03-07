@@ -30,18 +30,18 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     return team?.logos?.[0] || "/photos/default-team.png";
   };
 
-  // Effect to fetch data from the API
+  // Fetch data on mount or whenever props change
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // First get all teams to have team info (colors, logos, etc.)
+        // 1. Get all teams
         const teamsResponse = await teamsService.getTeams();
         setTeams(teamsResponse);
 
-        // Process teams to get the color, logo, etc.
+        // 2. Process them for color, logo, etc.
         const processedTeams = teamsResponse.map((team) => ({
           id: team.id,
           team: team.school,
@@ -52,66 +52,55 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
           alt_color: team.alt_color || "#999999",
           conference: team.conference,
           wins: {},
-          yearlyWins: {}, // Add property to store yearly wins (not cumulative)
+          yearlyWins: {},
         }));
 
-        // Temporary object to store annual wins data
+        // 3. For each year in the range, fetch records and store wins
         const annualWinsData = {};
-
-        // Fetch records data for each year in the range
         for (let year = startYear; year <= endYear; year++) {
-          // Use the records endpoint to get win/loss data
           const recordsResponse = await teamsService.getTeamRecords(null, year);
-
-          // Create a map of team to wins for this year
           const teamWins = {};
-
-          // Process records response which contains data like:
-          // { team: "Alabama", total: { wins: 10, losses: 2 } }
           recordsResponse.forEach((record) => {
-            // Get wins from the total section of the record
             const wins = record.total?.wins || 0;
             teamWins[record.team] = wins;
           });
-
           annualWinsData[year] = teamWins;
         }
 
-        // Calculate cumulative wins for each team across years
-        processedTeams.forEach((team) => {
+        // 4. Calculate cumulative wins for each team across all years
+        processedTeams.forEach((t) => {
           let cumulativeWins = 0;
           for (let year = startYear; year <= endYear; year++) {
-            const winsThisYear = annualWinsData[year][team.team] || 0;
-            team.yearlyWins[year] = winsThisYear; // Store individual year wins
+            const winsThisYear = annualWinsData[year][t.team] || 0;
+            t.yearlyWins[year] = winsThisYear;
             cumulativeWins += winsThisYear;
-            team.wins[year] = cumulativeWins;
+            t.wins[year] = cumulativeWins;
           }
         });
 
-        // Create yearly rankings data structure to use for animations
+        // 5. Build a "yearlyRankings" object for quick access
         const rankings = {};
         for (let year = startYear; year <= endYear; year++) {
-          // Get all teams with wins for this year
           const teamsWithWins = processedTeams
-            .filter((team) => {
-              // Filter by conference if needed
+            .filter((t) => {
+              // Filter by conference if specified
               if (
                 conference !== "All Conferences" &&
-                team.conference !== conference
+                t.conference !== conference
               ) {
                 return false;
               }
-              // Filter for FBS teams only
-              const teamInfo = teamsResponse.find((t) => t.school === team.team);
+              // Filter for FBS or unknown (treat unknown as FBS)
+              const teamInfo = teamsResponse.find((x) => x.school === t.team);
               const isFBS =
                 teamInfo?.division === "FBS" || !teamInfo?.division;
 
-              return isFBS && team.wins[year] > 0;
+              return isFBS && t.wins[year] > 0;
             })
-            .map((team) => ({
-              ...team,
-              currentWins: team.wins[year],
-              winsThisYear: team.yearlyWins[year],
+            .map((t) => ({
+              ...t,
+              currentWins: t.wins[year],
+              winsThisYear: t.yearlyWins[year],
             }))
             .sort((a, b) => b.currentWins - a.currentWins)
             .slice(0, parseInt(topTeamCount));
@@ -123,7 +112,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         setTeamData(processedTeams);
         setIsLoading(false);
 
-        // Set initial year to start year
+        // Set initial year if not set
         if (!currentYear) {
           setCurrentYear(startYear);
           setInterpolatedYear(startYear);
@@ -136,9 +125,9 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     };
 
     fetchData();
-  }, [yearRange, startYear, endYear, conference, topTeamCount]);
+  }, [yearRange, startYear, endYear, conference, topTeamCount, currentYear]);
 
-  // Function to interpolate team data between years
+  // Interpolate data between two integer years for a smooth animation
   const getInterpolatedData = (year) => {
     if (
       !yearlyRankings[Math.floor(year)] ||
@@ -147,7 +136,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       return yearlyRankings[Math.floor(year)] || [];
     }
 
-    // If the year is an integer, just return that year's data
+    // If "year" is an integer, just return that year's data
     if (year === Math.floor(year)) {
       return yearlyRankings[year];
     }
@@ -156,34 +145,31 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     const upperYear = Math.ceil(year);
     const fraction = year - lowerYear;
 
-    // Get data for the lower and upper years
     const lowerData = yearlyRankings[lowerYear];
     const upperData = yearlyRankings[upperYear];
 
-    // Create a set of all teams in either year
+    // Gather all teams in both sets
     const allTeams = new Set([
       ...lowerData.map((d) => d.team),
       ...upperData.map((d) => d.team),
     ]);
 
-    // Create interpolated data for each team
+    // For each team, interpolate the currentWins between the two years
     const interpolatedData = Array.from(allTeams)
       .map((teamName) => {
         const lowerTeam = lowerData.find((d) => d.team === teamName);
         const upperTeam = upperData.find((d) => d.team === teamName);
 
-        // If team isn't in one of the years, use the data from the year it's in
         if (!lowerTeam) return upperTeam;
         if (!upperTeam) return lowerTeam;
 
-        // Calculate interpolated wins
-        const interpolatedWins =
+        const winsInterpolated =
           lowerTeam.currentWins +
           (upperTeam.currentWins - lowerTeam.currentWins) * fraction;
 
         return {
           ...lowerTeam,
-          currentWins: interpolatedWins,
+          currentWins: winsInterpolated,
         };
       })
       .sort((a, b) => b.currentWins - a.currentWins)
@@ -192,29 +178,31 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     return interpolatedData;
   };
 
-  // Draw the chart with interpolation between years
+  // Draw the chart (or update it) for a given fractional year
   const drawChart = (year) => {
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
 
-    // Initialize the chart container if it doesn't exist
+    // Smaller margins so the chart is wider
+    const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    // If no chart-container yet, create initial elements
     if (svg.select(".chart-container").empty()) {
       svg.selectAll("*").remove();
 
-      // Maximize space for the chart
-      const margin = { top: 40, right: 60, bottom: 30, left: 60 };
-
-      // Create container with margins
+      // Chart container
       svg
         .append("g")
         .attr("class", "chart-container")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      // Create defs for patterns and gradients
+      // "defs" if needed
       svg.append("defs");
 
-      // Create year label
+      // Large year label (upper-right)
       svg
         .append("text")
         .attr("class", "year-label")
@@ -226,7 +214,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .attr("opacity", 0.15)
         .text(Math.floor(year));
 
-      // Create chart title with modern styling
+      // Chart title (top-center)
       svg
         .append("text")
         .attr("class", "chart-title")
@@ -237,7 +225,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .attr("font-weight", "bold")
         .text(`Cumulative Football Wins (${startYear}-${Math.floor(year)})`);
 
-      // Add "Presented by GAMEDAY+" text
+      // "Presented by GAMEDAY+"
       const textGroup = svg
         .append("g")
         .attr("class", "presented-by")
@@ -267,43 +255,32 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .style("text-anchor", "end");
     }
 
-    // Maximize space for the chart
-    const margin = { top: 40, right: 60, bottom: 30, left: 60 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
-    // Get interpolated data for the current fractional year
+    // Get the current data
     const interpolatedData = getInterpolatedData(year);
-
     if (interpolatedData.length === 0) return;
 
-    // Calculate height needed per team based on number of teams
+    // Calculate bar height so it fills the vertical space
     const teamCount = interpolatedData.length;
-    let bandHeight;
+    const bandHeight = innerHeight / teamCount;
 
-    if (teamCount <= 5) {
-      bandHeight = Math.min(innerHeight / teamCount, 60); // Bigger bars for few teams
-    } else if (teamCount <= 10) {
-      bandHeight = Math.min(innerHeight / teamCount, 45); // Medium bars
-    } else {
-      bandHeight = Math.min(innerHeight / teamCount, 35); // Smaller bars for many teams
-    }
-
-    // Create scales
+    // Scales
     const xScale = d3
       .scaleLinear()
-      .domain([0, d3.max(interpolatedData, (d) => d.currentWins) * 1.1]) // Add 10% padding
+      .domain([
+        0,
+        d3.max(interpolatedData, (d) => d.currentWins) * 1.05, // slight padding
+      ])
       .range([0, innerWidth]);
 
     const yScale = d3
       .scaleBand()
       .domain(interpolatedData.map((d) => d.team))
-      .range([0, bandHeight * interpolatedData.length])
+      .range([0, bandHeight * teamCount])
       .padding(0.25);
 
     const g = svg.select(".chart-container");
 
-    // Create or update axes
+    // If no x-axis yet, create it. Otherwise, update it.
     if (g.select(".x-axis").empty()) {
       g.append("g")
         .attr("class", "x-axis")
@@ -312,32 +289,34 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .selectAll("text")
         .attr("font-size", "12px");
 
+      // X-axis label
       g.append("text")
         .attr("class", "x-axis-label")
         .attr("x", innerWidth / 2)
-        .attr("y", yScale.range()[1] + margin.bottom - 5)
+        .attr("y", yScale.range()[1] + 30) // a bit below the axis
         .attr("text-anchor", "middle")
         .attr("font-size", "12px")
         .attr("fill", "#666")
         .text("Total Wins");
 
+      // Y-axis group
       g.append("g").attr("class", "y-axis");
     } else {
-      // Update x-axis smoothly
+      // Update the x-axis
       g.select(".x-axis")
         .transition()
-        .duration(100)
+        .duration(200)
         .attr("transform", `translate(0, ${yScale.range()[1]})`)
         .call(d3.axisBottom(xScale).ticks(5));
 
-      // Update x-axis label
+      // Update x-axis label position
       g.select(".x-axis-label")
         .transition()
-        .duration(100)
-        .attr("y", yScale.range()[1] + margin.bottom - 5);
+        .duration(200)
+        .attr("y", yScale.range()[1] + 30);
     }
 
-    // Update y-axis with animation
+    // Update y-axis
     g.select(".y-axis")
       .transition()
       .duration(300)
@@ -346,10 +325,10 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("font-size", "14px")
       .attr("font-weight", "bold");
 
-    // Update bar groups with data join pattern
+    // Data join for bar groups
     const barGroups = g.selectAll(".bar-group").data(interpolatedData, (d) => d.team);
 
-    // Remove exiting bars with smooth animation
+    // Remove old
     barGroups
       .exit()
       .transition()
@@ -358,7 +337,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("transform", "translate(0, 30)")
       .remove();
 
-    // Add new bar groups with smooth entrance
+    // Enter new
     const enterGroups = barGroups
       .enter()
       .append("g")
@@ -366,7 +345,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .style("opacity", 0)
       .attr("transform", "translate(0, -10)");
 
-    // Add bars to new groups
+    // The bar
     enterGroups
       .append("rect")
       .attr("class", "bar")
@@ -378,69 +357,67 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("rx", 6)
       .attr("ry", 6);
 
-    // === LOGO ON THE RIGHT ===
-    // Add team logos to the right side of the bar
+    // Logo on the right side of the bar
     enterGroups
       .append("svg:image")
       .attr("class", "team-logo")
-      // We'll place it just beyond the bar's right edge (xScale(d.currentWins) + 5)
       .attr("x", (d) => xScale(d.currentWins) + 5)
-      .attr("y", (d) => yScale(d.team))
+      .attr("y", (d) =>
+        yScale(d.team) + (yScale.bandwidth() - Math.min(yScale.bandwidth() * 1.3, 40)) / 2
+      )
       .attr("width", (d) => Math.min(yScale.bandwidth() * 1.3, 40))
       .attr("height", (d) => Math.min(yScale.bandwidth() * 1.3, 40))
       .attr("href", (d) => d.logo);
 
-    // Add win values text INSIDE the bars
+    // Win value text
     enterGroups
       .append("text")
       .attr("class", "win-value")
-      .attr("x", (d) => Math.min(xScale(d.currentWins) / 2, xScale(d.currentWins) - 40)) // center or near the end
+      .attr("x", (d) =>
+        Math.min(xScale(d.currentWins) / 2, xScale(d.currentWins) - 40)
+      )
       .attr("y", (d) => yScale(d.team) + yScale.bandwidth() / 2)
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
-      .attr("fill", "#fff") // White text for contrast
+      .attr("fill", "#fff")
       .attr("font-size", "14px")
       .attr("font-weight", "bold")
       .text((d) => Math.round(d.currentWins));
 
-    // Apply entrance animation to new elements
+    // Animate entrance
     enterGroups
       .transition()
       .duration(300)
       .style("opacity", 1)
       .attr("transform", "translate(0, 0)");
 
-    // Update all bars (new and existing)
+    // Merge new + existing
     const allGroups = enterGroups.merge(barGroups);
 
-    // Update bar positions and dimensions
+    // Update bar
     allGroups
       .select(".bar")
       .transition()
-      .duration(100)
+      .duration(200)
       .attr("y", (d) => yScale(d.team))
       .attr("height", yScale.bandwidth())
       .attr("width", (d) => xScale(d.currentWins));
 
-    // === UPDATE LOGO POSITIONS ===
-    // Place the logo just to the right of the bar, centered vertically
+    // Update logo
     allGroups
       .select(".team-logo")
       .transition()
-      .duration(100)
+      .duration(200)
       .attr("x", (d) => xScale(d.currentWins) + 5)
-      .attr(
-        "y",
-        (d) =>
-          yScale(d.team) +
-          (yScale.bandwidth() - Math.min(yScale.bandwidth() * 1.3, 40)) / 2
+      .attr("y", (d) =>
+        yScale(d.team) + (yScale.bandwidth() - Math.min(yScale.bandwidth() * 1.3, 40)) / 2
       );
 
-    // Update win value text positions and values
+    // Update win-value text
     allGroups
-      .select("text.win-value")
+      .select(".win-value")
       .transition()
-      .duration(100)
+      .duration(200)
       .attr(
         "x",
         (d) =>
@@ -450,53 +427,50 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .textTween(function (d) {
         const node = this;
         const currentValue = parseFloat(node.textContent) || 0;
-        const targetValue = Math.round(d.currentWins * 10) / 10; // Round to 1 decimal
+        const targetValue = Math.round(d.currentWins);
         const i = d3.interpolateNumber(currentValue, targetValue);
         return function (t) {
-          return Math.round(i(t) * 10) / 10;
+          return Math.round(i(t));
         };
       });
 
-    // Update year label with smooth transition
+    // Update year label (no decimals)
     svg
       .select(".year-label")
       .transition()
-      .duration(100)
-      .text(year.toFixed(1))
+      .duration(200)
+      .text(Math.floor(year))
       .attr("opacity", 0.15);
 
-    // Update title with smooth transition
+    // Update title (no decimals)
     svg
       .select(".chart-title")
       .transition()
       .duration(300)
-      .text(`Cumulative Football Wins (${startYear}-${year.toFixed(1)})`);
+      .text(`Cumulative Football Wins (${startYear}-${Math.floor(year)})`);
   };
 
-  // Effect to handle animation
+  // Redraw whenever data or size changes
   useEffect(() => {
     if (!currentYear) {
       setCurrentYear(startYear);
       setInterpolatedYear(startYear);
     }
-
-    // Draw chart on data or size changes
     if (!isLoading && interpolatedYear !== null) {
       drawChart(interpolatedYear);
     }
-  }, [teamData, interpolatedYear, width, height, isLoading]);
+  }, [teamData, interpolatedYear, width, height, isLoading, drawChart]);
 
-  // Separate effect to handle smooth year interpolation
+  // Smooth interpolation for the "Play" animation
   useEffect(() => {
     if (isPlaying) {
-      // Clear any existing animation
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
 
       let lastTimestamp = null;
       const yearDuration = animationSpeed; // ms per year
-      const fps = 60; // target frames per second
+      const fps = 60;
       const msPerFrame = 1000 / fps;
       const yearPerFrame = 1 / (yearDuration / msPerFrame);
 
@@ -508,36 +482,29 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         }
 
         const elapsed = timestamp - lastTimestamp;
-
         if (elapsed > msPerFrame) {
           lastTimestamp = timestamp;
 
-          // Calculate new interpolated year
           const newYear = Math.min(
             endYear,
             interpolatedYear + yearPerFrame * (elapsed / msPerFrame)
           );
 
           setInterpolatedYear(newYear);
-
-          // Update integer current year for UI
           if (Math.floor(newYear) !== Math.floor(interpolatedYear)) {
             setCurrentYear(Math.floor(newYear));
           }
 
-          // Stop animation if we've reached the end
           if (newYear >= endYear) {
             setIsPlaying(false);
             return;
           }
         }
-
         animationRef.current = requestAnimationFrame(animate);
       };
 
       animationRef.current = requestAnimationFrame(animate);
 
-      // Cleanup function
       return () => {
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current);
@@ -546,15 +513,12 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     }
   }, [isPlaying, interpolatedYear, endYear, animationSpeed]);
 
-  // Animation control function
+  // Play/Pause
   const togglePlayPause = () => {
     if (isPlaying) {
-      // Pause animation
       setIsPlaying(false);
     } else {
-      // Start or resume animation
       if (interpolatedYear >= endYear) {
-        // If at the end, restart from beginning
         setInterpolatedYear(startYear);
         setCurrentYear(startYear);
       }
@@ -562,11 +526,11 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     }
   };
 
-  // Handle slider change
+  // Slider
   const handleSliderChange = (e) => {
-    const year = parseFloat(e.target.value);
-    setCurrentYear(Math.floor(year));
-    setInterpolatedYear(year);
+    const yearVal = parseFloat(e.target.value);
+    setCurrentYear(Math.floor(yearVal));
+    setInterpolatedYear(yearVal);
   };
 
   if (isLoading) {
@@ -598,7 +562,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
           className="timeline-slider"
         />
         <span className="year-display">
-          {interpolatedYear ? interpolatedYear.toFixed(1) : startYear}
+          {interpolatedYear ? Math.floor(interpolatedYear) : startYear}
         </span>
         <select
           value={animationSpeed}
@@ -617,7 +581,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         ref={svgRef}
         width={width}
         height={height}
-        style={{ background: "transparent" }}
+        style={{ background: "transparent", maxWidth: "100%" }}
       ></svg>
     </div>
   );
