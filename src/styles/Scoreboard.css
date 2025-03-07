@@ -1,14 +1,76 @@
-/* Modern, Slim Scoreboard Styling */
+/* ===============================
+   SCOREBOARD COLOR VARIABLES
+=============================== */
+:root {
+  /* Scoreboard Bar & Overall */
+  --scoreboard-bg: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  --scoreboard-border: rgba(0, 0, 0, 0.06);
+  --scoreboard-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+
+  /* Filters & Dropdowns */
+  --scoreboard-filter-bg: rgba(250, 250, 250, 0.6);
+  --scoreboard-filter-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --scoreboard-divider: rgba(0, 0, 0, 0.08);
+  --scoreboard-dropdown-text: #333;
+  --scoreboard-week-dropdown-bg: rgba(240, 240, 240, 0.6);
+
+  /* Game Card */
+  --scoreboard-game-card-bg: rgba(255, 255, 255, 0.6);
+  --scoreboard-game-card-border: rgba(0, 0, 0, 0.05);
+  
+  /* Game Times & Network */
+  --scoreboard-game-time: #666;
+  --scoreboard-game-time-final: #d20a2c;
+  --scoreboard-network-bg: rgba(240, 240, 240, 0.4);
+
+  /* TV & Team Info */
+  --scoreboard-tv-text: #555;
+  --scoreboard-tv-icon: #333;
+  --scoreboard-team-name: #222;
+  --scoreboard-team-score-text: #000;
+  --scoreboard-team-score-bg: rgba(240, 240, 240, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --scoreboard-bg: linear-gradient(to bottom, #333333, #2b2b2b);
+    --scoreboard-border: rgba(255, 255, 255, 0.1);
+    --scoreboard-shadow: 0 1px 4px rgba(255, 255, 255, 0.02);
+
+    --scoreboard-filter-bg: rgba(50, 50, 50, 0.6);
+    --scoreboard-filter-shadow: 0 1px 2px rgba(255, 255, 255, 0.05);
+    --scoreboard-divider: rgba(255, 255, 255, 0.1);
+    --scoreboard-dropdown-text: #ddd;
+    --scoreboard-week-dropdown-bg: rgba(60, 60, 60, 0.6);
+
+    --scoreboard-game-card-bg: rgba(50, 50, 50, 0.6);
+    --scoreboard-game-card-border: rgba(255, 255, 255, 0.1);
+    
+    --scoreboard-game-time: #aaa;
+    --scoreboard-game-time-final: #ff6b6b;
+    --scoreboard-network-bg: rgba(60, 60, 60, 0.4);
+
+    --scoreboard-tv-text: #ccc;
+    --scoreboard-tv-icon: #ddd;
+    --scoreboard-team-name: #ddd;
+    --scoreboard-team-score-text: #fff;
+    --scoreboard-team-score-bg: rgba(60, 60, 60, 0.5);
+  }
+}
+
+/* ===============================
+   Modern, Slim Scoreboard Styling
+=============================== */
 .scoreboard-bar {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--scoreboard-bg);
+  border-bottom: 1px solid var(--scoreboard-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 4px 10px;
   width: 100%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--scoreboard-shadow);
   min-height: 44px;
   position: relative;
   overflow: hidden;
@@ -23,14 +85,14 @@
   font-size: 11px;
   flex: 0 0 auto;
   min-width: 110px;
-  background: rgba(250, 250, 250, 0.6);
+  background: var(--scoreboard-filter-bg);
   padding: 2px 6px;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--scoreboard-filter-shadow);
 }
 
 .scoreboard-divider {
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 1px solid var(--scoreboard-divider);
   height: 14px;
   margin: 0 4px;
 }
@@ -38,18 +100,18 @@
 .scoreboard-ncaaf-dropdown {
   font-size: 11px;
   font-weight: 600;
-  color: #333;
+  color: var(--scoreboard-dropdown-text);
   padding: 2px 4px;
 }
 
 .scoreboard-week-dropdown {
   font-size: 11px;
   font-weight: 500;
-  color: #444;
+  color: var(--scoreboard-dropdown-text);
   cursor: pointer;
   border: none;
   border-radius: 4px;
-  background: rgba(240, 240, 240, 0.6);
+  background: var(--scoreboard-week-dropdown-bg);
   padding: 2px 8px;
   min-width: 70px;
   -webkit-appearance: none;
@@ -90,8 +152,8 @@
   display: flex;
   flex-direction: column;
   padding: 4px 6px;
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
-  background: rgba(255, 255, 255, 0.6);
+  border-right: 1px solid var(--scoreboard-game-card-border);
+  background: var(--scoreboard-game-card-bg);
   transition: background 0.2s ease;
   border-radius: 6px;
   margin: 0 1px;
@@ -111,12 +173,12 @@
 .scoreboard-game-time {
   font-size: 9px;
   font-weight: 500;
-  color: #666;
+  color: var(--scoreboard-game-time);
   letter-spacing: 0.1px;
 }
 
 .scoreboard-game-time.final {
-  color: #d20a2c;
+  color: var(--scoreboard-game-time-final);
   font-weight: 600;
 }
 
@@ -124,7 +186,7 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(240, 240, 240, 0.4);
+  background: var(--scoreboard-network-bg);
   padding: 1px 3px;
   border-radius: 3px;
 }
@@ -132,7 +194,7 @@
 .scoreboard-tv-outlet {
   font-size: 8px;
   font-weight: 500;
-  color: #555;
+  color: var(--scoreboard-tv-text);
   max-width: 40px;
   white-space: nowrap;
   overflow: hidden;
@@ -141,7 +203,7 @@
 
 .scoreboard-tv-icon {
   font-size: 10px;
-  color: #333;
+  color: var(--scoreboard-tv-icon);
 }
 
 .scoreboard-card-team {
@@ -173,7 +235,7 @@
 .scoreboard-team-name {
   font-size: 10px;
   font-weight: 600;
-  color: #222;
+  color: var(--scoreboard-team-name);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -182,10 +244,10 @@
 .scoreboard-team-score {
   font-size: 10px;
   font-weight: 700;
-  color: #000;
+  color: var(--scoreboard-team-score-text);
   min-width: 16px;
   text-align: right;
-  background: rgba(240, 240, 240, 0.5);
+  background: var(--scoreboard-team-score-bg);
   border-radius: 3px;
   padding: 1px 3px;
 }
