@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "../styles/VisualizeTrends.css";
 import PollsBumpChart from "./PollsBumpChart"; // D3 chart component
-import PlayerStatsChart from "./PlayerStatsChart"; // New D3 chart component
+import PlayerStatsChart from "./PlayerStatsChart"; // D3 chart component
+import TeamWinsTimeline from "./TeamWinsTimeline"; // New D3 chart component for team wins
 import teamsService from "../services/teamsService";
 
 const VisualizeTrends = () => {
@@ -17,6 +18,11 @@ const VisualizeTrends = () => {
   const [selectedStatType, setSelectedStatType] = useState("Passing Yards");
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
+
+  // New state for team wins timeline
+  const [selectedYearRange, setSelectedYearRange] = useState("2000-2024");
+  const [selectedConference, setSelectedConference] = useState("All Conferences");
+  const [topTeamCount, setTopTeamCount] = useState("10");
 
   // Fetch players and teams on mount
   useEffect(() => {
@@ -54,6 +60,32 @@ const VisualizeTrends = () => {
   const handleStatTypeChange = (e) => {
     setSelectedStatType(e.target.value);
   };
+  
+  // New handlers for team wins timeline
+  const handleYearRangeChange = (e) => {
+    setSelectedYearRange(e.target.value);
+  };
+  const handleConferenceChange = (e) => {
+    setSelectedConference(e.target.value);
+  };
+  const handleTopTeamCountChange = (e) => {
+    setTopTeamCount(e.target.value);
+  };
+
+  // List of conferences for filter
+  const conferences = [
+    "All Conferences",
+    "SEC",
+    "Big Ten",
+    "ACC",
+    "Big 12",
+    "Pac-12",
+    "American",
+    "Conference USA",
+    "Mountain West",
+    "Sun Belt",
+    "MAC"
+  ];
 
   return (
     <div className="visualize-container">
@@ -67,6 +99,13 @@ const VisualizeTrends = () => {
 
       {/* Dashboard Cards: Click to Open Modals */}
       <section className="visualize-dashboard">
+        <div className="chart-card" onClick={() => openModal("teamWins")}>
+          <div className="chart-header">
+            <h2>Team Wins Timeline</h2>
+          </div>
+          <div className="chart-placeholder">Historical team wins evolution by year</div>
+        </div>
+
         <div className="chart-card" onClick={() => openModal("pollRankings")}>
           <div className="chart-header">
             <h2>Animated Poll Rankings</h2>
@@ -101,8 +140,54 @@ const VisualizeTrends = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-button" onClick={closeModal}>
-              &times;
+              Close
             </button>
+
+            {/* Team Wins Timeline Modal */}
+            {activeModal === "teamWins" && (
+              <>
+                <h2>Team Wins Timeline (2000-2024)</h2>
+                <div className="modal-filters">
+                  <div className="filter-group">
+                    <label>Year Range</label>
+                    <select value={selectedYearRange} onChange={handleYearRangeChange}>
+                      <option value="2000-2024">2000-2024</option>
+                      <option value="2010-2024">2010-2024</option>
+                      <option value="2015-2024">2015-2024</option>
+                      <option value="2020-2024">2020-2024</option>
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Conference</label>
+                    <select value={selectedConference} onChange={handleConferenceChange}>
+                      {conferences.map((conf) => (
+                        <option key={conf} value={conf}>
+                          {conf}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Top Teams</label>
+                    <select value={topTeamCount} onChange={handleTopTeamCountChange}>
+                      <option value="5">Top 5</option>
+                      <option value="10">Top 10</option>
+                      <option value="15">Top 15</option>
+                      <option value="20">Top 20</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="chart-wrapper">
+                  <TeamWinsTimeline
+                    width={800}
+                    height={600}
+                    yearRange={selectedYearRange}
+                    conference={selectedConference}
+                    topTeamCount={topTeamCount}
+                  />
+                </div>
+              </>
+            )}
 
             {/* 1. Poll Rankings Modal */}
             {activeModal === "pollRankings" && (
@@ -110,6 +195,7 @@ const VisualizeTrends = () => {
                 <h2>Animated Poll Rankings</h2>
                 <div className="modal-filters">
                   <div className="filter-group">
+                    <label>Week Range</label>
                     <select
                       value={selectedWeekRange}
                       onChange={handleWeekRangeChange}
@@ -121,6 +207,7 @@ const VisualizeTrends = () => {
                     </select>
                   </div>
                   <div className="filter-group">
+                    <label>Poll Type</label>
                     <select
                       value={selectedPollType}
                       onChange={handlePollTypeChange}

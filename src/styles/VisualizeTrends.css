@@ -423,3 +423,153 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   }
 }
+
+/* ===============================
+   New Additions
+=============================== */
+
+.team-wins-chart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: rgba(var(--background-color-rgb, 245, 245, 245), 0.5);
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(5px);
+}
+
+.chart-controls button {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(212, 0, 28, 0.2);
+  min-width: 90px;
+}
+
+.chart-controls button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(212, 0, 28, 0.3);
+}
+
+.chart-controls button:active {
+  transform: translateY(0);
+}
+
+.chart-controls input[type="range"] {
+  flex: 1;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 5px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.chart-controls input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-controls input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px rgba(212, 0, 28, 0.2);
+}
+
+.year-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-width: 60px;
+  text-align: center;
+}
+
+.chart-controls select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1em;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chart-controls select:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* SVG styling */
+.team-wins-chart-container svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Bar animation */
+.bar {
+  transition: width 0.5s ease-out, fill 0.3s ease;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  pointer-events: none;
+  font-size: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  transition: opacity 0.3s;
+}
+
+/* Team logo circles */
+.team-logo-circle {
+  stroke: white;
+  stroke-width: 2px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .chart-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .chart-controls input[type="range"] {
+    order: 1;
+    width: 100%;
+  }
+  
+  .chart-controls button,
+  .chart-controls .year-display,
+  .chart-controls select {
+    order: 2;
+  }
+}
