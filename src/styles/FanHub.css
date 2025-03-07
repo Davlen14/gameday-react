@@ -7,10 +7,10 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hover-color: #f9f9f9;
 
-  /* Heights for the three bars */
+  /* Heights for the three bars (each 50px) */
   --top-navbar-height: 50px;
-  --secondary-navbar-height: 50px; 
-  --scoreboard-height: 50px; /* Default scoreboard height */
+  --secondary-navbar-height: 50px;
+  --scoreboard-height: 50px; /* Dynamically overridden to 0px if scoreboard is hidden */
 
   --transition-speed: 0.3s;
   --sidebar-width: 60px;
@@ -35,14 +35,14 @@ body {
 }
 
 /* --- FAN HUB CONTAINER --- */
-/* When all three bars (top, secondary, scoreboard) are visible: total 150px offset */
+/* Default: scoreboard is visible => total 150px offset (50 + 50 + 50) */
 .fan-hub-container {
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height));
   margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   transition: margin-top var(--transition-speed) ease, height var(--transition-speed) ease;
 }
 
-/* Adjust when scoreboard is hidden (only top + secondary nav remain, total 100px) */
+/* If scoreboard is hidden => only top + secondary remain => 100px offset (50 + 50) */
 .fan-hub-container.scoreboard-hidden {
   height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height));
   margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
@@ -51,7 +51,7 @@ body {
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
   position: fixed;
-  /* Start below top + secondary + scoreboard (150px) */
+  /* By default, sit below top + secondary + scoreboard => 150px */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   left: 0;
   bottom: 0;
@@ -60,9 +60,9 @@ body {
   border-right: 1px solid var(--border-color);
   transition: width var(--transition-speed) ease, top var(--transition-speed) ease;
   overflow: hidden;
-  z-index: 1050; /* Higher than scoreboard and other content */
+  z-index: 1050; /* Above main content, below nav */
   box-shadow: 2px 0 5px var(--shadow-color);
-  padding-top: 5px; /* Add some padding at the top */
+  padding-top: 5px; /* optional top padding */
 }
 
 .left-sidebar.expanded {
@@ -108,7 +108,7 @@ body {
   opacity: 1;
 }
 
-/* When scoreboard is hidden, sidebars start below top + secondary nav (100px) */
+/* When scoreboard is hidden => top + secondary only => 100px */
 .scoreboard-hidden .left-sidebar {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
@@ -124,8 +124,8 @@ body {
   transition: margin-left var(--transition-speed) ease;
   height: 100%;
   background-color: var(--background-color);
-  position: relative; /* Add position relative */
-  z-index: 900; /* Lower than sidebars but higher than most content */
+  position: relative; /* So z-index works as intended */
+  z-index: 900; /* Below sidebars but above base content */
 }
 
 .left-sidebar.expanded ~ .main-content {
@@ -171,7 +171,8 @@ body {
   transition: border-color var(--transition-speed) ease;
 }
 
-.team-selector:hover, .team-selector:focus {
+.team-selector:hover,
+.team-selector:focus {
   border-color: var(--accent-color);
   outline: none;
 }
@@ -225,7 +226,7 @@ body {
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
   position: fixed;
-  /* Start below top + secondary + scoreboard (150px) */
+  /* By default => below top + secondary + scoreboard => 150px */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   right: 0;
   bottom: 0;
@@ -291,7 +292,7 @@ body {
   font-style: italic;
 }
 
-/* When scoreboard is hidden, sidebars start below top + secondary nav (100px) */
+/* When scoreboard is hidden => top + secondary only => 100px */
 .scoreboard-hidden .right-sidebar {
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
@@ -373,7 +374,7 @@ body {
   overflow: hidden;
   
   /* Create depth with box shadow */
-  box-shadow: 
+  box-shadow:
     0 6px 10px rgba(0, 0, 0, 0.3),
     0 2px 2px rgba(0, 0, 0, 0.2);
 }
@@ -386,7 +387,7 @@ body {
   transition: all 0.3s ease;
   
   /* This works with any image source */
-  filter: 
+  filter:
     contrast(1.1)
     saturate(1.1)
     drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
@@ -515,7 +516,7 @@ body {
   .main-content {
     margin-left: 0;
     margin-right: 0;
-    margin-top: 50px; /* enough space for the small-screen left nav */
+    margin-top: 50px; /* Enough space for the small-screen left nav */
   }
   
   .right-sidebar {
