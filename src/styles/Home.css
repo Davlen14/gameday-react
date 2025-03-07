@@ -712,6 +712,26 @@ select {
     background: rgba(255, 255, 255, 0.12);
   }
 }
+.stars-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-icon {
+  color: #FFD700; /* Gold color */
+  font-size: 0.9rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* For TopProspects.js which uses filled and empty classes */
+.star-icon.filled {
+  color: #FFD700; /* Gold color */
+}
+
+.star-icon.empty {
+  color: #E0E0E0; /* Light gray for empty stars */
+}
 
 .committed-team-logo {
   width: 24px;
