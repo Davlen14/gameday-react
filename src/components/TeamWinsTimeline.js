@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
+import teamsService from '../services/teamsService';
 
 const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }) => {
   const svgRef = useRef();
@@ -7,63 +8,114 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   const [isPlaying, setIsPlaying] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1000); // milliseconds per year
   const animationRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [teamData, setTeamData] = useState([]);
+  const [yearsData, setYearsData] = useState({});
 
   // Parse year range
   const startYear = parseInt(yearRange.split('-')[0]);
   const endYear = parseInt(yearRange.split('-')[1]);
   
-  // Mock data - you would replace this with real data from your API
-  // Format: { team: string, logo: string, color: string, wins: { [year: number]: number } }
-  const generateMockData = () => {
-    const teams = [
-      { team: 'Alabama', logo: 'ALA', color: '#A50F31', wins: {} },
-      { team: 'Ohio State', logo: 'OSU', color: '#BB0000', wins: {} },
-      { team: 'Clemson', logo: 'CLEM', color: '#F56600', wins: {} },
-      { team: 'Georgia', logo: 'UGA', color: '#BA0C2F', wins: {} },
-      { team: 'Oklahoma', logo: 'OKLA', color: '#841617', wins: {} },
-      { team: 'LSU', logo: 'LSU', color: '#461D7C', wins: {} },
-      { team: 'Michigan', logo: 'MICH', color: '#00274C', wins: {} },
-      { team: 'Notre Dame', logo: 'ND', color: '#0C2340', wins: {} },
-      { team: 'Penn State', logo: 'PSU', color: '#041E42', wins: {} },
-      { team: 'Florida', logo: 'FLA', color: '#0021A5', wins: {} },
-      { team: 'USC', logo: 'USC', color: '#990000', wins: {} },
-      { team: 'Texas', logo: 'TEX', color: '#BF5700', wins: {} },
-      { team: 'Oregon', logo: 'ORE', color: '#154733', wins: {} },
-      { team: 'Wisconsin', logo: 'WIS', color: '#C5050C', wins: {} },
-      { team: 'Auburn', logo: 'AUB', color: '#0C2340', wins: {} },
-      { team: 'Miami', logo: 'MIA', color: '#F47321', wins: {} },
-      { team: 'Washington', logo: 'WASH', color: '#4B2E83', wins: {} },
-      { team: 'Florida State', logo: 'FSU', color: '#782F40', wins: {} },
-      { team: 'Texas A&M', logo: 'TAMU', color: '#500000', wins: {} },
-      { team: 'Iowa', logo: 'IOWA', color: '#000000', wins: {} },
-    ];
-
-    // Generate random win data for each team for each year
-    for (let team of teams) {
-      let cumulativeWins = 0;
-      for (let year = startYear; year <= endYear; year++) {
-        const winsThisYear = Math.floor(Math.random() * 10) + 1; // 1-10 wins per year
-        cumulativeWins += winsThisYear;
-        team.wins[year] = cumulativeWins;
+  // Effect to fetch data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // First get all teams to have team info (colors, logos, etc.)
+        const teams = await teamsService.getTeams();
+        
+        // Process teams to get the color, logo, etc.
+        const processedTeams = teams.map(team => ({
+          id: team.id,
+          team: team.school,
+          logo: team.abbreviation || team.school.substring(0, 4).toUpperCase(),
+          color: team.color || '#333333',
+          alt_color: team.alt_color || '#999999',
+          conference: team.conference,
+          wins: {}
+        }));
+        
+        // Store all years data to avoid refetching
+        const yearsDataObj = {};
+        
+        // Fetch data for each year in the range
+        for (let year = startYear; year <= endYear; year++) {
+          // Use the /records endpoint as it likely has win/loss data
+          const recordsResponse = await teamsService.getRecords(year);
+          
+          // If no records endpoint, we could calculate from games
+          if (!recordsResponse || recordsResponse.length === 0) {
+            // Fallback: Get games for this year to calculate wins
+            const gamesResponse = await teamsService.getGames(year);
+            
+            // Process games to count wins for each team
+            const teamWins = {};
+            gamesResponse.forEach(game => {
+              if (game.home_points > game.away_points) {
+                // Home team win
+                if (!teamWins[game.home_team]) teamWins[game.home_team] = 0;
+                teamWins[game.home_team]++;
+              } else if (game.away_points > game.home_points) {
+                // Away team win
+                if (!teamWins[game.away_team]) teamWins[game.away_team] = 0;
+                teamWins[game.away_team]++;
+              }
+              // In case of tie, no wins added
+            });
+            
+            yearsDataObj[year] = teamWins;
+          } else {
+            // Process records response
+            const teamWins = {};
+            recordsResponse.forEach(record => {
+              // Assuming the API returns data in a format like { team: "Alabama", wins: 12, ... }
+              teamWins[record.team] = record.total?.wins || 0;
+            });
+            
+            yearsDataObj[year] = teamWins;
+          }
+        }
+        
+        // Calculate cumulative wins for each team across years
+        processedTeams.forEach(team => {
+          let cumulativeWins = 0;
+          for (let year = startYear; year <= endYear; year++) {
+            const winsThisYear = yearsDataObj[year][team.team] || 0;
+            cumulativeWins += winsThisYear;
+            team.wins[year] = cumulativeWins;
+          }
+        });
+        
+        setTeamData(processedTeams);
+        setYearsData(yearsDataObj);
+        setIsLoading(false);
+        
+        // Set initial year to start year
+        if (!currentYear) {
+          setCurrentYear(startYear);
+        }
+      } catch (err) {
+        console.error("Error fetching team data:", err);
+        setError("Failed to load team data. Please try again later.");
+        setIsLoading(false);
       }
-    }
-
-    return teams;
-  };
-
-  const data = generateMockData();
+    };
+    
+    fetchData();
+  }, [yearRange, startYear, endYear]); // Only re-fetch when year range changes
 
   // Create filtered data based on current props
   const getFilteredData = (year) => {
-    if (!year) return [];
+    if (!year || isLoading || teamData.length === 0) return [];
 
-    let filteredData = [...data];
+    let filteredData = [...teamData];
     
     // Filter by conference if needed
     if (conference !== "All Conferences") {
-      // This would use real conference data from your API
-      // For now, we'll just simulate filtering
-      filteredData = filteredData.slice(0, 15); // Simulated conference filter
+      filteredData = filteredData.filter(team => team.conference === conference);
     }
 
     // Get win data for the specific year
@@ -71,6 +123,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       team: team.team,
       logo: team.logo,
       color: team.color,
+      alt_color: team.alt_color,
       wins: team.wins[year] || 0
     }));
 
@@ -94,9 +147,11 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       setIsPlaying(false);
     }
     
-    // Draw the chart
-    drawChart(currentYear || startYear);
-  }, [yearRange, conference, topTeamCount, currentYear, width, height]);
+    // Only draw the chart if we have data and a current year
+    if (!isLoading && currentYear) {
+      drawChart(currentYear);
+    }
+  }, [teamData, currentYear, conference, topTeamCount, width, height, isLoading]);
 
   // Animation control function
   const togglePlayPause = () => {
@@ -230,10 +285,18 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .text(year);
   };
 
+  if (isLoading) {
+    return <div className="loading-indicator">Loading team data...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
   return (
     <div className="team-wins-chart-container">
       <div className="chart-controls">
-        <button onClick={togglePlayPause}>
+        <button onClick={togglePlayPause} disabled={isLoading}>
           {isPlaying ? "Pause" : "Play"}
         </button>
         <input
@@ -242,11 +305,13 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
           max={endYear}
           value={currentYear || startYear}
           onChange={(e) => setCurrentYear(parseInt(e.target.value))}
+          disabled={isLoading}
         />
         <span className="year-display">{currentYear}</span>
         <select 
           value={animationSpeed} 
           onChange={(e) => setAnimationSpeed(parseInt(e.target.value))}
+          disabled={isLoading}
         >
           <option value="2000">Slow</option>
           <option value="1000">Medium</option>
