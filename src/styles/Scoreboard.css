@@ -92,6 +92,7 @@
   color: #fff;
   background: rgba(210, 10, 44, 0.85);
   font-weight: 600;
+  text-transform: capitalize;
 }
 
 .scoreboard-game-network {
