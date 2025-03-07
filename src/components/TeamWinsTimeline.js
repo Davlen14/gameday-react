@@ -190,38 +190,132 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (svg.select(".chart-container").empty()) {
       svg.selectAll("*").remove();
       
-      const margin = { top: 30, right: 120, bottom: 30, left: 150 };
+      // Modified to make more space for teams
+      const margin = { top: 40, right: 120, bottom: 30, left: 130 };
       
       // Create container with margins
       svg.append("g")
         .attr("class", "chart-container")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
         
-      // Create defs for patterns
-      svg.append("defs");
+      // Create defs for patterns and gradients
+      const defs = svg.append("defs");
       
-      // Create year label
+      // Add metallic shine gradient for logo effect
+      const metallicGradient = defs.append("linearGradient")
+        .attr("id", "metallic-shine")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "100%");
+        
+      metallicGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("class", "logo-shine")
+        .attr("stop-color", "rgba(255, 255, 255, 0.8)");
+        
+      metallicGradient.append("stop")
+        .attr("offset", "50%")
+        .attr("stop-color", "rgba(255, 255, 255, 0)")
+        .attr("stop-opacity", 0.5);
+        
+      metallicGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "rgba(255, 255, 255, 0.2)")
+        .attr("stop-opacity", 0.8);
+      
+      // Create soft shadow filter for 3D effect
+      const dropShadow = defs.append("filter")
+        .attr("id", "logo-shadow")
+        .attr("filterUnits", "userSpaceOnUse")
+        .attr("width", "250%")
+        .attr("height", "250%");
+        
+      dropShadow.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", 4)
+        .attr("result", "blur");
+        
+      dropShadow.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", 4)
+        .attr("dy", 4)
+        .attr("result", "offsetBlur");
+        
+      dropShadow.append("feComponentTransfer")
+        .append("feFuncA")
+        .attr("type", "linear")
+        .attr("slope", 0.3);
+        
+      const feMerge = dropShadow.append("feMerge");
+      feMerge.append("feMergeNode");
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+      
+      // Create metallic bevel filter for 3D shiny effect
+      const bevelFilter = defs.append("filter")
+        .attr("id", "bevel")
+        .attr("filterUnits", "objectBoundingBox")
+        .attr("x", "-50%")
+        .attr("y", "-50%")
+        .attr("width", "200%")
+        .attr("height", "200%");
+        
+      // Create composite lighting effects for metallic look
+      const lighting = bevelFilter.append("feSpecularLighting")
+        .attr("in", "SourceGraphic")
+        .attr("surfaceScale", 5)
+        .attr("specularConstant", 0.75)
+        .attr("specularExponent", 20)
+        .attr("lighting-color", "#FFFFFF")
+        .attr("result", "specOut");
+        
+      lighting.append("fePointLight")
+        .attr("x", 50)
+        .attr("y", -50)
+        .attr("z", 200);
+        
+      bevelFilter.append("feComposite")
+        .attr("in", "specOut")
+        .attr("in2", "SourceGraphic")
+        .attr("operator", "arithmetic")
+        .attr("k1", 0)
+        .attr("k2", 1)
+        .attr("k3", 1)
+        .attr("k4", 0)
+        .attr("result", "specOut");
+        
+      bevelFilter.append("feComposite")
+        .attr("in", "SourceGraphic")
+        .attr("in2", "specOut")
+        .attr("operator", "arithmetic")
+        .attr("k1", 0)
+        .attr("k2", 1)
+        .attr("k3", 1)
+        .attr("k4", 0)
+        .attr("result", "litPaint");
+      
+      // Create modern year label
       svg.append("text")
         .attr("class", "year-label")
-        .attr("x", width - 80)
+        .attr("x", width - 100)
         .attr("y", height / 2)
         .attr("text-anchor", "middle")
-        .attr("font-size", "60px")
-        .attr("font-weight", "bold")
-        .attr("opacity", 0.4)
+        .attr("font-size", "80px")
+        .attr("font-weight", "800")
+        .attr("opacity", 0.15)
         .text(Math.floor(year));
         
-      // Create chart title
+      // Create chart title with modern styling
       svg.append("text")
         .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", 20)
         .attr("text-anchor", "middle")
-        .attr("font-size", "18px")
+        .attr("font-size", "20px")
         .attr("font-weight", "bold")
         .text(`Cumulative Football Wins (${startYear}-${Math.floor(year)})`);
         
-      // Add "Presented by GAMEDAY+" text
+      // Add "Presented by GAMEDAY+" text with modern styling
       const textGroup = svg.append("g")
         .attr("class", "presented-by")
         .attr("transform", `translate(${width - 20}, ${height - 20})`);
@@ -234,20 +328,22 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .style("fill", "#000")
         .style("font-weight", "normal")
         .style("text-anchor", "end")
-        .style("font-family", "sans-serif");
+        .style("font-family", "'Inter', system-ui, sans-serif");
         
       textGroup.append("text")
         .text("GAMEDAY+")
         .attr("x", 0)
         .attr("y", 16)
-        .style("font-size", "12px")
+        .style("font-size", "14px")
         .style("fill", "#D4001C")
         .style("font-style", "italic")
+        .style("font-weight", "700")
         .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
         .style("text-anchor", "end");
     }
     
-    const margin = { top: 30, right: 120, bottom: 30, left: 150 };
+    // Modified to make more space for teams
+    const margin = { top: 40, right: 120, bottom: 30, left: 130 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -256,6 +352,12 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     
     if (interpolatedData.length === 0) return;
     
+    // Calculate height needed per team to show all teams
+    const bandHeight = Math.min(
+      innerHeight / interpolatedData.length,
+      35 // Maximum height for aesthetics
+    );
+    
     // Create scales
     const xScale = d3.scaleLinear()
       .domain([0, d3.max(interpolatedData, d => d.currentWins) * 1.1]) // Add 10% padding
@@ -263,8 +365,8 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
 
     const yScale = d3.scaleBand()
       .domain(interpolatedData.map(d => d.team))
-      .range([0, innerHeight])
-      .padding(0.3);
+      .range([0, bandHeight * interpolatedData.length]) // Dynamic height based on number of teams
+      .padding(0.25); // Reduced padding to fit more teams
       
     const g = svg.select(".chart-container");
     
@@ -272,7 +374,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (g.select(".x-axis").empty()) {
       g.append("g")
         .attr("class", "x-axis")
-        .attr("transform", `translate(0, ${innerHeight})`)
+        .attr("transform", `translate(0, ${yScale.range()[1]})`) // Position at bottom of teams
         .call(d3.axisBottom(xScale).ticks(5))
         .selectAll("text")
         .attr("font-size", "12px");
@@ -280,7 +382,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       g.append("text")
         .attr("class", "x-axis-label")
         .attr("x", innerWidth / 2)
-        .attr("y", innerHeight + margin.bottom - 5)
+        .attr("y", yScale.range()[1] + margin.bottom - 5)
         .attr("text-anchor", "middle")
         .attr("font-size", "12px")
         .attr("fill", "#666")
@@ -293,7 +395,14 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       g.select(".x-axis")
         .transition()
         .duration(100) // Shorter to feel more responsive
+        .attr("transform", `translate(0, ${yScale.range()[1]})`)
         .call(d3.axisBottom(xScale).ticks(5));
+        
+      // Update x-axis label
+      g.select(".x-axis-label")
+        .transition()
+        .duration(100)
+        .attr("y", yScale.range()[1] + margin.bottom - 5);
     }
     
     // Update y-axis with animation
@@ -306,25 +415,34 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("font-weight", "bold");
     
     // Define or update SVG patterns for team logos
-    let defs = svg.select("defs");
+    const defs = svg.select("defs");
     
-    // Update existing patterns and add new ones
+    // Update existing patterns and add new ones with 3D effect
     interpolatedData.forEach((d) => {
       let patternId = `logo-${d.team.replace(/\s+/g, '-')}`;
       let pattern = defs.select(`#${patternId}`);
       
       if (pattern.empty()) {
+        // Create pattern with gradient overlay
         pattern = defs.append("pattern")
           .attr("id", patternId)
           .attr("width", 1)
           .attr("height", 1)
           .attr("patternContentUnits", "objectBoundingBox");
           
+        // Add base logo image
         pattern.append("image")
           .attr("href", d.logo)
           .attr("width", 1)
           .attr("height", 1)
           .attr("preserveAspectRatio", "xMidYMid slice");
+          
+        // Add shine overlay
+        pattern.append("rect")
+          .attr("width", 1)
+          .attr("height", 1)
+          .attr("fill", "url(#metallic-shine)")
+          .attr("opacity", 0.5);
       }
     });
     
@@ -355,17 +473,35 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("x", 0)
       .attr("width", 0)
       .attr("fill", d => d.color)
-      .attr("rx", 4)
-      .attr("ry", 4);
+      .attr("rx", 6)
+      .attr("ry", 6);
       
-    // Add team logos to new groups
-    enterGroups.append("circle")
-      .attr("class", "team-logo-circle")
-      .attr("cx", 0)
-      .attr("cy", d => yScale(d.team) + yScale.bandwidth() / 2)
-      .attr("r", Math.min(yScale.bandwidth() / 2.5, 20))
-      .attr("stroke", "white")
-      .attr("stroke-width", 2);
+    // Add team logos with 3D metallic effect
+    enterGroups.append("svg:image")
+      .attr("class", "team-logo")
+      .attr("x", 0)
+      .attr("y", d => yScale(d.team))
+      .attr("width", Math.min(yScale.bandwidth() * 1.3, 40))
+      .attr("height", Math.min(yScale.bandwidth() * 1.3, 40))
+      .attr("href", d => d.logo)
+      .attr("filter", "url(#bevel)")
+      .style("transform-origin", "center center")
+      .style("transform", "perspective(100px) rotateY(5deg)")
+      .attr("clip-path", d => `url(#logo-clip-${d.team.replace(/\s+/g, '-')})`);
+      
+    // Create clip paths for logo (no circle background)
+    interpolatedData.forEach((d) => {
+      let clipId = `logo-clip-${d.team.replace(/\s+/g, '-')}`;
+      if (defs.select(`#${clipId}`).empty()) {
+        const clipSize = Math.min(yScale.bandwidth() * 1.3, 40);
+        defs.append("clipPath")
+          .attr("id", clipId)
+          .append("rect")
+          .attr("width", clipSize)
+          .attr("height", clipSize)
+          .attr("rx", 0); // Square clip for modern look
+      }
+    });
       
     // Add win values text to new groups
     enterGroups.append("text")
@@ -396,16 +532,48 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("height", yScale.bandwidth())
       .attr("width", d => xScale(d.currentWins));
       
-    // Update logo positions and patterns
-    allGroups.select("circle")
+    // Update logo positions with 3D effect
+    allGroups.select(".team-logo")
       .transition()
       .duration(100) // Very short for smooth real-time feel
-      .attr("cy", d => yScale(d.team) + yScale.bandwidth() / 2)
-      .attr("cx", d => Math.min(xScale(d.currentWins) - 30, xScale(d.currentWins) * 0.8))
-      .attr("fill", d => `url(#logo-${d.team.replace(/\s+/g, '-')})`);
+      .attr("y", d => yScale(d.team) + (yScale.bandwidth() - Math.min(yScale.bandwidth() * 1.3, 40)) / 2)
+      .attr("x", d => Math.min(xScale(d.currentWins) - 50, xScale(d.currentWins) * 0.6));
+      
+    // Add subtle animation to logos for 3D effect
+    allGroups.select(".team-logo")
+      .each(function() {
+        // Clear any existing animation
+        const elem = d3.select(this);
+        if (elem.property("animation")) {
+          elem.property("animation").pause();
+        }
+        
+        // Create shine animation
+        const startTime = Date.now();
+        const duration = 3000 + Math.random() * 2000; // Random duration for each logo
+        
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const t = (elapsed % duration) / duration;
+          
+          // Subtle rotation animation
+          const rotY = 5 + Math.sin(t * Math.PI * 2) * 3;
+          const rotX = Math.sin(t * Math.PI * 2 + Math.PI/2) * 2;
+          
+          elem.style("transform", `perspective(100px) rotateY(${rotY}deg) rotateX(${rotX}deg) scale(1.05)`);
+          
+          elem.property("animationFrame", requestAnimationFrame(animate));
+        };
+        
+        elem.property("animation", { 
+          pause: () => cancelAnimationFrame(elem.property("animationFrame")) 
+        });
+        
+        animate();
+      });
       
     // Update win value text positions and values
-    allGroups.select("text")
+    allGroups.select("text.win-value")
       .transition()
       .duration(100) // Very short for smooth real-time feel
       .attr("x", d => xScale(d.currentWins) + 10)
@@ -425,7 +593,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .transition()
       .duration(100)
       .text(year.toFixed(1))
-      .attr("opacity", 0.4);
+      .attr("opacity", 0.15);
       
     // Update title with smooth transition
     svg.select(".chart-title")
@@ -445,6 +613,19 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (!isLoading && interpolatedYear !== null) {
       drawChart(interpolatedYear);
     }
+    
+    // Cleanup function to stop animations
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll(".team-logo").each(function() {
+          const elem = d3.select(this);
+          if (elem.property("animation")) {
+            elem.property("animation").pause();
+          }
+        });
+      }
+    };
   }, [teamData, interpolatedYear, width, height, isLoading]);
   
   // Separate effect to handle smooth year interpolation
@@ -525,8 +706,8 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   
   // Handle slider change
   const handleSliderChange = (e) => {
-    const year = parseInt(e.target.value);
-    setCurrentYear(year);
+    const year = parseFloat(e.target.value);
+    setCurrentYear(Math.floor(year));
     setInterpolatedYear(year);
   };
 
