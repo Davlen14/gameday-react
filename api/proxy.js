@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       return res.status(200).json(newsData);
     }
 
-    // Gemini API block - Modified to analyze all teams for seasons 2000-2024
+    // Gemini API block
     else if (endpoint === "/gemini") {
       const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
       const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -44,105 +44,32 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Server misconfiguration: missing GEMINI_API_KEY" });
       }
 
-      // Use the provided years parameter if given; otherwise, default to 2000-2024
-      const years = params?.years || Array.from({ length: 25 }, (_, i) => i + 2000);
+      console.log(`🔍 Sending prompt to Gemini: ${prompt}`);
 
-      try {
-        // Fetch list of all FBS teams
-        const teamsResponse = await fetch("https://api.collegefootballdata.com/teams/fbs", {
-          headers: { Authorization: `Bearer ${process.env.COLLEGE_FOOTBALL_API_KEY}` },
-        });
+      const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt || "" }],
+            },
+          ],
+        }),
+      });
 
-        if (!teamsResponse.ok) {
-          console.error(`❌ Failed to fetch teams (${teamsResponse.status}):`, await teamsResponse.text());
-          return res.status(500).json({ error: "Failed to fetch teams" });
-        }
-
-        const teams = await teamsResponse.json();
-        console.log(`✅ Found ${teams.length} teams for analysis`);
-
-        // Fetch season stats for each year in parallel and combine the results
-        const allStatsArrays = await Promise.all(
-          years.map(async (year) => {
-            const statsResponse = await fetch(`https://api.collegefootballdata.com/stats/season?year=${year}`, {
-              headers: { Authorization: `Bearer ${process.env.COLLEGE_FOOTBALL_API_KEY}` },
-            });
-            if (!statsResponse.ok) {
-              console.error(`❌ Failed to fetch team stats for ${year} (${statsResponse.status}):`, await statsResponse.text());
-              return [];
-            }
-            const statsData = await statsResponse.json();
-            // Add a year property if needed for further analysis
-            statsData.forEach(stat => stat.year = year);
-            return statsData;
-          })
-        );
-        const allStats = allStatsArrays.flat();
-
-        // Build structured cumulative data for each team by summing stats across the years
-        const teamsWithStats = teams.map(team => {
-          const teamStats = allStats.filter(stat => stat.team === team.school);
-          // Helper to sum a stat across all available records for this team
-          const sumStat = (statName) =>
-            teamStats.reduce((acc, cur) => acc + (Number(cur.statValue) || 0), 0);
-          return {
-            name: team.school,
-            conference: team.conference,
-            passingYards: teamStats.length > 0 ? sumStat("netPassingYards") : "N/A",
-            rushingYards: teamStats.length > 0 ? sumStat("rushingYards") : "N/A",
-            totalYards: teamStats.length > 0 ? sumStat("totalYards") : "N/A",
-            pointsAllowed: teamStats.length > 0 ? sumStat("opponentPoints") : "N/A",
-          };
-        });
-
-        // Prepare Gemini prompt with all team data and indicate the period
-        const fullPrompt = `
-Here is the cumulative season data for all FBS college football teams from 2000 to 2024. Provide an in-depth analysis:
-
-${teamsWithStats
-  .map(
-    team => `
-**${team.name} (${team.conference})**
-- **Cumulative Passing Yards:** ${team.passingYards}
-- **Cumulative Rushing Yards:** ${team.rushingYards}
-- **Cumulative Total Yards:** ${team.totalYards}
-- **Cumulative Points Allowed:** ${team.pointsAllowed}`
-  )
-  .join("\n\n")}
-
-Based on these cumulative stats:
-- Identify the top-performing offenses and defenses.
-- Highlight any surprising teams that have overperformed or underperformed over this period.
-- Predict potential playoff or championship contenders based on long-term trends.
-        `;
-
-        console.log(`🔍 Sending enriched prompt to Gemini with ${teams.length} teams (2000-2024 data)`);
-
-        // Send the data to Gemini for analysis
-        const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: fullPrompt }] }],
-          }),
-        });
-
-        if (!geminiResponse.ok) {
-          const errorData = await geminiResponse.json();
-          console.error(`❌ Gemini API Error (${geminiResponse.status}):`, errorData);
-          return res.status(geminiResponse.status).json({ error: errorData });
-        }
-
-        const geminiData = await geminiResponse.json();
-        console.log("✅ Gemini API Response:", geminiData);
-        return res.status(200).json({
-          stats: teamsWithStats,
-          ai_analysis: geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini API",
-        });
-      } catch (error) {
-        console.error("❌ Gemini Integration Error:", error.message);
-        return res.status(500).json({ error: "Error processing Gemini integration" });
+      if (!geminiResponse.ok) {
+        const error = await geminiResponse.json();
+        console.error(`❌ Gemini API Error (${geminiResponse.status}):`, error);
+        return res.status(geminiResponse.status).json({ error });
       }
+
+      const geminiData = await geminiResponse.json();
+      console.log("✅ Gemini API Response:", geminiData);
+      return res.status(200).json({
+        message:
+          geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini API",
+      });
     }
 
     // YouTube API block
