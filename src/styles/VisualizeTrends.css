@@ -7,89 +7,183 @@
 :root {
   --primary-color: #ffffff;
   --accent-color: #D4001C;
+  --accent-gradient: linear-gradient(135deg, #D4001C, #FF3D57);
   --text-color: #333333;
-  --background-color: #f5f5f5;
-  --border-color: #dddddd;
+  --background-color: #f9f9fc;
+  --border-color: rgba(221, 221, 221, 0.5);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --transition-speed: 0.4s;
+  --border-radius: 12px;
+  --hover-scale: 1.03;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #333333;
-    --text-color: #ffffff;
-    --background-color: #1e1e1e;
-    --border-color: #444444;
+    --primary-color: #242535;
+    --text-color: #f0f0f0;
+    --background-color: #121220;
+    --border-color: rgba(80, 80, 95, 0.3);
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   }
 }
 
 body {
   margin: 0;
-  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* ===============================
    VISUALIZE TRENDS CONTAINER
 =============================== */
 .visualize-container {
-  padding: 2rem;
+  padding: 3rem 5%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Header */
 .visualize-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3.5rem;
+  position: relative;
+}
+
+.visualize-header::after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 4px;
+  background: var(--accent-gradient);
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50px;
 }
 
 .visualize-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  margin-bottom: 0.8rem;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .visualize-header p {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  max-width: 700px;
+  margin: 0 auto;
   opacity: 0.9;
+  font-weight: 300;
 }
 
 /* Dashboard Grid */
 .visualize-dashboard {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+  perspective: 1000px;
 }
 
 /* Chart Card */
 .chart-card {
   background-color: var(--primary-color);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: all var(--transition-speed) cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
+
+.chart-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--accent-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-speed) ease;
+}
+
 .chart-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px) scale(var(--hover-scale));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  border-color: transparent;
+}
+
+.chart-card:hover::before {
+  transform: scaleX(1);
 }
 
 .chart-header {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-header::after {
+  content: '→';
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: all var(--transition-speed) ease;
+  font-size: 1.2rem;
+}
+
+.chart-card:hover .chart-header::after {
+  opacity: 0.7;
+  right: 0;
 }
 
 .chart-header h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
+  transition: transform var(--transition-speed) ease;
+}
+
+.chart-card:hover .chart-header h2 {
+  transform: translateX(-5px);
 }
 
 .chart-placeholder {
-  height: 120px;
-  background-color: var(--background-color);
+  height: 180px;
+  background-color: rgba(var(--background-color-rgb, 245, 245, 245), 0.3);
   border: 1px dashed var(--border-color);
+  border-radius: calc(var(--border-radius) - 4px);
   display: flex;
   justify-content: center;
   align-items: center;
   font-style: italic;
   color: var(--text-color);
+  transition: all var(--transition-speed) ease;
+  backdrop-filter: blur(2px);
+}
+
+.chart-card:hover .chart-placeholder {
+  background-color: rgba(var(--background-color-rgb, 245, 245, 245), 0.5);
 }
 
 /* ===============================
@@ -101,7 +195,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 10, 25, 0.75);
+  backdrop-filter: blur(10px);
 
   /* Center the modal horizontally & vertically */
   display: flex;
@@ -110,95 +205,169 @@ body {
 
   /* Must remain very high to appear above (if desired) */
   z-index: 9999999 !important;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: modalFadeIn 0.4s forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
-  /* Transparent + subtle blur for a modern look */
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(6px);
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
 
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 
   /* Good width for the modal */
-  width: 90%;
-  max-width: 1100px;
+  width: 92%;
+  max-width: 1200px;
 
-  /* X CHANGED: Increased top margin to push it down, and bottom margin for extra space.
-     So total vertical margin = 200 (top) + 100 (bottom) = 300. */
-  margin: 200px auto 50px auto;
-  /* X CHANGED: Since total vertical margin is 300, subtract that from 100vh. */
-  max-height: calc(100vh - 250px);
+  margin: 120px auto 80px auto;
+  max-height: calc(100vh - 200px);
 
-  padding: 2rem;
+  padding: 2.5rem;
 
   /* Center internal content */
   display: flex;
   flex-direction: column;
   align-items: center;
+  
+  /* Animation */
+  opacity: 0;
+  transform: translateY(30px);
+  animation: modalContentIn 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: rgba(30, 30, 45, 0.85);
+  }
+}
+
+@keyframes modalContentIn {
+  from { 
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .close-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: var(--accent-color);
-  color: var(--primary-color);
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--accent-gradient);
+  color: white;
   border: none;
   cursor: pointer;
-  padding: 0.5rem 0.8rem;
-  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
   font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(212, 0, 28, 0.2);
 }
+
+.close-button::before {
+  content: '×';
+  font-size: 1.2rem;
+}
+
 .close-button:hover {
-  background-color: darkred;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(212, 0, 28, 0.3);
+}
+
+.close-button:active {
+  transform: translateY(0);
 }
 
 /* Modal Filters */
 .modal-filters {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  padding: 1rem;
+  background: rgba(var(--background-color-rgb, 245, 245, 245), 0.5);
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(5px);
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   text-align: left;
+  min-width: 180px;
 }
 
 .filter-group label {
-  margin-bottom: 0.4rem;
-  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-color);
 }
 
 .filter-group select {
-  padding: 0.4rem;
+  padding: 0.7rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   background-color: var(--primary-color);
   color: var(--text-color);
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.2em;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.filter-group select:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(212, 0, 28, 0.15);
 }
 
 /* Chart Wrapper in Modal */
 .chart-wrapper {
-  margin-top: 1rem;
-  background-color: transparent;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem;
+  margin-top: 1.5rem;
+  background-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
 
   width: 100%;
-  height: 650px;
+  height: 680px;
   box-sizing: border-box;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 /* Ensure any SVG inside the wrapper fills the space */
@@ -206,4 +375,51 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  transition: opacity 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .visualize-container {
+    padding: 2rem 5%;
+  }
+  
+  .visualize-dashboard {
+    gap: 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+    margin: 80px auto 60px auto;
+  }
+  
+  .chart-wrapper {
+    height: 500px;
+  }
+  
+  .filter-group {
+    min-width: 150px;
+  }
+}
+
+/* Add subtle animation for interactive elements */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Dark mode refinements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color-rgb: 30, 30, 32;
+  }
+  
+  .visualize-header h1 {
+    text-shadow: 0 2px 8px rgba(212, 0, 28, 0.2);
+  }
+  
+  .chart-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  }
 }
