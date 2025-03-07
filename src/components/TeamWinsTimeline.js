@@ -12,10 +12,20 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   const [error, setError] = useState(null);
   const [teamData, setTeamData] = useState([]);
   const [yearsData, setYearsData] = useState({});
+  const [teams, setTeams] = useState([]);
 
   // Parse year range
   const startYear = parseInt(yearRange.split('-')[0]);
   const endYear = parseInt(yearRange.split('-')[1]);
+
+  // Helper function to get team logo
+  const getTeamLogo = (teamName) => {
+    if (!teamName) return "/logos/default.png";
+    const team = teams.find(
+      (t) => t.school?.toLowerCase().replace(/[^a-z]/g, "") === teamName.toLowerCase().replace(/[^a-z]/g, "")
+    );
+    return team?.logos?.[0] || "/logos/default.png";
+  };
   
   // Effect to fetch data from the API
   useEffect(() => {
@@ -25,13 +35,15 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       
       try {
         // First get all teams to have team info (colors, logos, etc.)
-        const teams = await teamsService.getTeams();
+        const teamsResponse = await teamsService.getTeams();
+        setTeams(teamsResponse);
         
         // Process teams to get the color, logo, etc.
-        const processedTeams = teams.map(team => ({
+        const processedTeams = teamsResponse.map(team => ({
           id: team.id,
           team: team.school,
-          logo: team.abbreviation || team.school.substring(0, 4).toUpperCase(),
+          logo: getTeamLogo(team.school),
+          abbreviation: team.abbreviation || team.school.substring(0, 4).toUpperCase(),
           color: team.color || '#333333',
           alt_color: team.alt_color || '#999999',
           conference: team.conference,
@@ -122,6 +134,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     const dataForYear = filteredData.map(team => ({
       team: team.team,
       logo: team.logo,
+      abbreviation: team.abbreviation,
       color: team.color,
       alt_color: team.alt_color,
       wins: team.wins[year] || 0
@@ -253,16 +266,31 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       .attr("rx", 4) // Rounded corners
       .attr("ry", 4);
 
-    // Add team logos
-    bars.append("text")
-      .attr("x", d => xScale(d.wins) - 30)
-      .attr("y", d => yScale(d.team) + yScale.bandwidth() / 2)
-      .attr("dy", ".35em")
-      .attr("text-anchor", "end")
-      .attr("fill", "white")
-      .attr("font-size", "16px")
-      .attr("font-weight", "bold")
-      .text(d => d.logo);
+    // Define SVG patterns for team logos
+    const defs = svg.append("defs");
+    
+    filteredData.forEach((d, i) => {
+      defs.append("pattern")
+        .attr("id", `logo-${i}`)
+        .attr("width", 1)
+        .attr("height", 1)
+        .attr("patternContentUnits", "objectBoundingBox")
+        .append("image")
+        .attr("href", d.logo)
+        .attr("width", 1)
+        .attr("height", 1)
+        .attr("preserveAspectRatio", "xMidYMid slice");
+    });
+
+    // Add team logos as circles with patterns
+    bars.append("circle")
+      .attr("class", "team-logo-circle")
+      .attr("cx", d => Math.min(xScale(d.wins) - 30, xScale(d.wins) * 0.8))
+      .attr("cy", d => yScale(d.team) + yScale.bandwidth() / 2)
+      .attr("r", Math.min(yScale.bandwidth() / 2.5, 20))
+      .attr("fill", (d, i) => `url(#logo-${i})`)
+      .attr("stroke", "white")
+      .attr("stroke-width", 2);
 
     // Add win values
     bars.append("text")
