@@ -34,15 +34,24 @@ body {
   background-color: var(--background-color);
 }
 
-/* --- FAN HUB CONTAINER --- */
-/* Let the body handle scrolling, so remove forced height/position here */
+/* --- FAN HUB LAYOUT --- */
+.fan-hub-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
 .fan-hub-container {
-  padding-top: 0; /* No padding needed since sidebars are fixed */
-  transition: height var(--transition-speed) ease;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr var(--right-sidebar-width);
+  grid-template-areas: "sidebar main chat";
+  width: 100%;
+  transition: grid-template-columns var(--transition-speed) ease;
 }
 
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
+  grid-area: sidebar;
   position: fixed;
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   left: 0;
@@ -59,6 +68,10 @@ body {
 
 .left-sidebar.expanded {
   width: var(--sidebar-expanded-width);
+}
+
+.left-sidebar.expanded ~ .main-content {
+  grid-template-columns: var(--sidebar-expanded-width) 1fr var(--right-sidebar-width);
 }
 
 .left-sidebar ul {
@@ -106,27 +119,17 @@ body {
 }
 
 /* --- MAIN CONTENT --- */
-/* Removed position: absolute; top/bottom. Let the body scroll.
-   Use margins to avoid overlapping fixed sidebars. */
 .main-content {
-  position: relative;
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-  margin-left: var(--sidebar-width);
-  margin-right: var(--right-sidebar-width);
-  padding: 0;
+  grid-area: main;
   background-color: var(--background-color);
-  transition: margin-left var(--transition-speed) ease, margin-right var(--transition-speed) ease;
+  transition: grid-template-columns var(--transition-speed) ease;
   z-index: 900; /* Below sidebars but above base content */
+  padding-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
 }
 
-/* If scoreboard is hidden => reduce the margin-top accordingly */
+/* If scoreboard is hidden => reduce the padding-top accordingly */
 .scoreboard-hidden .main-content {
-  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
-}
-
-/* If left sidebar expands, push main content further right */
-.left-sidebar.expanded ~ .main-content {
-  margin-left: var(--sidebar-expanded-width);
+  padding-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
 }
 
 /* --- STICKY HEADER --- */
@@ -222,6 +225,7 @@ body {
 
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
+  grid-area: chat;
   position: fixed;
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   right: 0;
@@ -450,6 +454,9 @@ body {
 
 /* --- RESPONSIVE STYLES --- */
 @media (max-width: 1200px) {
+  .fan-hub-container {
+    grid-template-columns: var(--sidebar-width) 1fr 250px;
+  }
   .right-sidebar {
     width: 250px;
   }
@@ -459,6 +466,9 @@ body {
 }
 
 @media (max-width: 992px) {
+  .fan-hub-container {
+    grid-template-columns: 50px 1fr var(--right-sidebar-width);
+  }
   .left-sidebar {
     width: 50px;
   }
@@ -469,27 +479,29 @@ body {
     margin-left: 50px;
   }
   .left-sidebar.expanded ~ .main-content {
-    margin-left: 180px;
+    grid-template-columns: 180px 1fr var(--right-sidebar-width);
   }
 }
 
 @media (max-width: 768px) {
-  /* Remove forced heights on fan-hub-container so body can scroll */
   .fan-hub-container {
-    padding-top: 0;
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "main"
+      "chat";
   }
 
-  /* Left sidebar becomes a horizontal bar pinned at top. */
   .left-sidebar {
+    position: fixed;
     width: 100%;
     height: 50px;
     bottom: auto;
     display: flex;
     overflow-x: auto;
     top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-    position: fixed;
     z-index: 1100;
   }
+
   .scoreboard-hidden .left-sidebar {
     top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
   }
@@ -512,12 +524,11 @@ body {
     opacity: 1;
   }
 
-  /* Main content just uses margin-top for the pinned left-sidebar. */
   .main-content {
-    margin-top: 50px; /* Account for the 50px horizontal sidebar at the top */
+    padding-top: 50px;
     margin-left: 0;
     margin-right: 0;
-    padding-bottom: 50px; /* Make room if you had a bottom bar or just for spacing */
+    padding-bottom: 50px;
   }
 
   .right-sidebar {
@@ -526,7 +537,7 @@ body {
     height: 300px;
     top: auto;
     bottom: 0;
-    display: none; /* Hidden on small screens by default */
+    display: none;
   }
 
   .sticky-header .header-content {
