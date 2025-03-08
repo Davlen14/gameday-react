@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { WeekProvider } from "./context/WeekContext"; // ✅ Import WeekProvider
 import Home from "./components/Home";
@@ -94,19 +94,61 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [scoreboardVisible, setScoreboardVisible] = useState(true);
+  // Add state for mobile navigation
+  const [mobileNavActive, setMobileNavActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if screen is mobile size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    checkMobile();
+    
+    // Add event listener for resize
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
   const toggleDropdown = (menu) => {
+    if (isMobile) return; // Don't toggle dropdowns on hover for mobile
+    setDropdownOpen((prev) => (prev === menu ? null : menu));
+  };
+
+  // Toggle mobile navigation
+  const toggleMobileNav = () => {
+    setMobileNavActive(!mobileNavActive);
+    if (!mobileNavActive) {
+      // When opening mobile nav, close any open dropdowns
+      setDropdownOpen(null);
+    }
+    // Toggle body scroll
+    document.body.style.overflow = !mobileNavActive ? 'hidden' : '';
+  };
+
+  // Close mobile navigation when a link is clicked
+  const closeMobileNav = () => {
+    setMobileNavActive(false);
+    document.body.style.overflow = '';
+  };
+
+  // Toggle mobile dropdown menus
+  const toggleMobileDropdown = (menu) => {
     setDropdownOpen((prev) => (prev === menu ? null : menu));
   };
 
   return (
     <WeekProvider>
       <Router>
-      <div className={`app ${dropdownOpen ? 'dropdown-active' : ''}`}>
+        <div className={`app ${dropdownOpen ? 'dropdown-active' : ''} ${mobileNavActive ? 'mobile-nav-active' : ''}`}>
           {/* TOP SCOREBOARD BAR */}
           <Scoreboard setScoreboardVisible={setScoreboardVisible} />
 
@@ -114,7 +156,17 @@ function App() {
           <header className="top-bar">
             <div className="top-bar-container">
               {/* Logo on the Left */}
-              <h1 className="top-bar-logo">GAMEDAY+</h1>
+              <Link to="/" className="top-bar-logo">GAMEDAY+</Link>
+
+              {/* Hamburger Menu for Mobile */}
+              <div 
+                className={`hamburger-menu ${mobileNavActive ? 'active' : ''}`} 
+                onClick={toggleMobileNav}
+              >
+                <span className="hamburger-line"></span>
+                <span className="hamburger-line"></span>
+                <span className="hamburger-line"></span>
+              </div>
 
               {/* Navigation with Multiple Dropdowns */}
               <nav className="top-bar-nav">
@@ -273,34 +325,98 @@ function App() {
             </div>
           </header>
 
-        {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
-        <nav
-          className={`secondary-bar ${menuOpen ? "active" : ""}`}
-        >
-          <div className="secondary-bar-container">
-            <Link to="/" className="nav-item" onClick={toggleMenu}>
-              Home
-            </Link>
-            <Link to="/teams" className="nav-item" onClick={toggleMenu}>
-              Teams
-            </Link>
-            <Link to="/games" className="nav-item" onClick={toggleMenu}>
-              Games
-            </Link>
-            <Link to="/stats" className="nav-item" onClick={toggleMenu}>
-              Stats
-            </Link>
-            <Link to="/more" className="nav-item" onClick={toggleMenu}>
-              More
-            </Link>
-            <Link to="/pickem-predictions" className="nav-item">
-              Pick'em &amp; Predictions
-            </Link>
-            <Link to="/fan-hub" className="nav-item">
-              Fan Hub
-            </Link>
+          {/* Mobile Navigation Overlay */}
+          <div 
+            className={`mobile-nav-overlay ${mobileNavActive ? 'active' : ''}`}
+            onClick={closeMobileNav}
+          ></div>
+
+          {/* Mobile Navigation Menu */}
+          <div className={`mobile-nav ${mobileNavActive ? 'active' : ''}`}>
+            <div className="mobile-nav-header">
+              <h2 className="mobile-nav-title">GAMEDAY+</h2>
+            </div>
+            
+            {/* Main Navigation Section */}
+            <div className="mobile-nav-section">
+              <h3 className="mobile-nav-section-title">Navigation</h3>
+              <Link to="/" className="mobile-nav-link" onClick={closeMobileNav}>Home</Link>
+              <Link to="/teams" className="mobile-nav-link" onClick={closeMobileNav}>Teams</Link>
+              <Link to="/games" className="mobile-nav-link" onClick={closeMobileNav}>Games</Link>
+              <Link to="/stats" className="mobile-nav-link" onClick={closeMobileNav}>Stats</Link>
+              <Link to="/pickem-predictions" className="mobile-nav-link" onClick={closeMobileNav}>Pick'em &amp; Predictions</Link>
+              <Link to="/fan-hub" className="mobile-nav-link" onClick={closeMobileNav}>Fan Hub</Link>
+              
+              {/* Conferences */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-conferences")}>
+                Conferences <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-conferences" && (
+                <>
+                  {conferenceList.map((conf) => (
+                    <Link 
+                      to={`/${conf.toLowerCase().replace(/ /g, "")}`}
+                      key={conf}
+                      className="mobile-nav-link"
+                      style={{ paddingLeft: '25px', fontSize: '14px' }}
+                      onClick={closeMobileNav}
+                    >
+                      {conferenceAbbr[conf] || conf}
+                    </Link>
+                  ))}
+                </>
+              )}
+              
+              {/* Lines */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-lines")}>
+                Lines <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-lines" && (
+                <>
+                  <Link to="/current-lines" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Current Game Lines</Link>
+                  <Link to="/spread-analysis" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Spread + Analysis</Link>
+                  <Link to="/arbitrage-ev" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Arbitrage + EV</Link>
+                  <Link to="/over-under-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Over/Under Metrics</Link>
+                </>
+              )}
+              
+              {/* Add more mobile sections for other dropdown menus */}
+            </div>
+            
+            {/* Action Buttons Section */}
+            <div className="mobile-nav-actions">
+              <a href="/get-started" className="mobile-nav-button" onClick={closeMobileNav}>Get Started</a>
+              <a href="/upgrade" className="mobile-nav-button" onClick={closeMobileNav}>Upgrade</a>
+              <a href="/signin" className="mobile-nav-button" onClick={closeMobileNav}>Login</a>
+            </div>
           </div>
-        </nav>
+
+          {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
+          <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
+            <div className="secondary-bar-container">
+              <Link to="/" className="nav-item" onClick={toggleMenu}>
+                Home
+              </Link>
+              <Link to="/teams" className="nav-item" onClick={toggleMenu}>
+                Teams
+              </Link>
+              <Link to="/games" className="nav-item" onClick={toggleMenu}>
+                Games
+              </Link>
+              <Link to="/stats" className="nav-item" onClick={toggleMenu}>
+                Stats
+              </Link>
+              <Link to="/more" className="nav-item" onClick={toggleMenu}>
+                More
+              </Link>
+              <Link to="/pickem-predictions" className="nav-item">
+                Pick'em &amp; Predictions
+              </Link>
+              <Link to="/fan-hub" className="nav-item">
+                Fan Hub
+              </Link>
+            </div>
+          </nav>
 
           {/* MAIN CONTENT */}
           <main className="app-content">
