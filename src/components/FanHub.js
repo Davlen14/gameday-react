@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaFootballBall, 
@@ -10,103 +10,11 @@ import {
   FaSearch,
   FaTrophy,
   FaChartLine,
-  FaPoll
+  FaPoll,
+  FaFireAlt
 } from 'react-icons/fa';
+import teamsService from '../services/teamsService';
 import "../styles/FanHub.css";
-
-const mockLivePolls = [
-  {
-    id: 1,
-    question: "Who wins the SEC Championship?",
-    options: [
-      { text: "Georgia", votes: 45, percentage: 45 },
-      { text: "Alabama", votes: 35, percentage: 35 },
-      { text: "LSU", votes: 20, percentage: 20 }
-    ]
-  },
-  {
-    id: 2, 
-    question: "Top Transfer Portal QB?",
-    options: [
-      { text: "Michael Penix Jr.", votes: 52, percentage: 52 },
-      { text: "Caleb Williams", votes: 38, percentage: 38 },
-      { text: "Drake Maye", votes: 10, percentage: 10 }
-    ]
-  }
-];
-
-const mockDiscussionTopics = [
-  { 
-    id: 1, 
-    title: "Week 1 Showdown: Ohio State vs Texas", 
-    category: "Game Analysis", 
-    activeUsers: 564, 
-    lastActivity: "1 hour ago" 
-  },
-  { 
-    id: 2, 
-    title: "Transfer Portal Megathread: Biggest Moves", 
-    category: "Recruiting", 
-    activeUsers: 742, 
-    lastActivity: "30 mins ago" 
-  },
-  { 
-    id: 3, 
-    title: "Bill Belichick to College Football: Potential Landing Spots", 
-    category: "Coaching", 
-    activeUsers: 421, 
-    lastActivity: "3 hours ago" 
-  },
-  { 
-    id: 4, 
-    title: "16-Team Playoff: What It Means for College Football", 
-    category: "NCAA Updates", 
-    activeUsers: 612, 
-    lastActivity: "45 mins ago" 
-  },
-  { 
-    id: 5, 
-    title: "NIL Deals: Top Earning College Athletes", 
-    category: "Name, Image, Likeness", 
-    activeUsers: 503, 
-    lastActivity: "2 hours ago" 
-  },
-  { 
-    id: 6, 
-    title: "Breaking Down Conference Realignment", 
-    category: "College Football Landscape", 
-    activeUsers: 389, 
-    lastActivity: "4 hours ago" 
-  },
-  { 
-    id: 7, 
-    title: "Freshman QBs to Watch in 2024", 
-    category: "Recruiting", 
-    activeUsers: 276, 
-    lastActivity: "5 hours ago" 
-  },
-  { 
-    id: 8, 
-    title: "Dark Horse Teams for National Championship", 
-    category: "Predictions", 
-    activeUsers: 532, 
-    lastActivity: "1 day ago" 
-  },
-  { 
-    id: 9, 
-    title: "Best Tailgate Locations Across College Football", 
-    category: "Fan Culture", 
-    activeUsers: 215, 
-    lastActivity: "6 hours ago" 
-  },
-  { 
-    id: 10, 
-    title: "Analytics Revolution in College Football", 
-    category: "Strategy", 
-    activeUsers: 187, 
-    lastActivity: "12 hours ago" 
-  }
-];
 
 const FanHub = () => {
   // State management
@@ -116,9 +24,70 @@ const FanHub = () => {
     category: 'All',
     sortBy: 'Recent'
   });
+  
+  // State for featured game and discussions
+  const [featuredGame, setFeaturedGame] = useState(null);
+  const [discussions, setDiscussions] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch featured game and discussions
+  useEffect(() => {
+    const fetchFeaturedContent = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch teams first
+        const teamsData = await teamsService.getTeams();
+        setTeams(teamsData);
+
+        // Fetch games for Week 1
+        const gamesData = await teamsService.getGames(1);
+        
+        // Find Ohio State vs Texas game
+        const ohioStateTexasGame = gamesData.find(game => 
+          (game.homeTeam === "Ohio State" && game.awayTeam === "Texas") ||
+          (game.awayTeam === "Ohio State" && game.homeTeam === "Texas")
+        );
+
+        if (ohioStateTexasGame) {
+          setFeaturedGame(ohioStateTexasGame);
+        }
+
+        // Curate discussions based on the game
+        const featuredDiscussions = [
+          { 
+            id: 1, 
+            title: `Week 1 Showdown: ${ohioStateTexasGame.homeTeam} vs ${ohioStateTexasGame.awayTeam}`, 
+            category: "Game Analysis", 
+            activeUsers: 564, 
+            lastActivity: "1 hour ago"
+          },
+          // Add more context-specific discussions
+          { 
+            id: 2, 
+            title: "Transfer Portal Impact on This Matchup", 
+            category: "Recruiting", 
+            activeUsers: 742, 
+            lastActivity: "30 mins ago" 
+          }
+        ];
+
+        setDiscussions(featuredDiscussions);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching featured content:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeaturedContent();
+  }, []);
 
   // Filtered discussion topics
-  const filteredTopics = mockDiscussionTopics.filter(topic => 
+  const filteredTopics = discussions.filter(topic => 
     topic.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedFilters.category === 'All' || topic.category === selectedFilters.category)
   );
@@ -150,10 +119,67 @@ const FanHub = () => {
     }
   ];
 
+  // Helper to get team logo
+  const getTeamLogo = (teamName) => {
+    const team = teams.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team?.logos?.[0] || "/photos/default_team.png";
+  };
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="fanhub-container loading">
+        <FaFootballBall className="loading-icon spinning" />
+        <p>Loading Fan Hub...</p>
+      </div>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="fanhub-container error">
+        <FaTrophy className="error-icon" />
+        <h2>Oops! Something went wrong</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="fanhub-container">
-      {/* Header */}
+      {/* Header with Featured Game */}
       <header className="fanhub-header">
+        {featuredGame && (
+          <div className="featured-game-banner">
+            <div className="teams-matchup">
+              <div className="team home-team">
+                <img 
+                  src={getTeamLogo(featuredGame.homeTeam)} 
+                  alt={featuredGame.homeTeam} 
+                />
+                <span>{featuredGame.homeTeam}</span>
+              </div>
+              <div className="vs">VS</div>
+              <div className="team away-team">
+                <img 
+                  src={getTeamLogo(featuredGame.awayTeam)} 
+                  alt={featuredGame.awayTeam} 
+                />
+                <span>{featuredGame.awayTeam}</span>
+              </div>
+            </div>
+            <div className="game-details">
+              <span className="venue">{featuredGame.venue}</span>
+              <span className="date">
+                {new Date(featuredGame.startDate).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        )}
+        
         <div className="header-content">
           <FaFootballBall className="header-icon" />
           <h1>Gameday+ Fan Hub</h1>
@@ -161,6 +187,7 @@ const FanHub = () => {
         </div>
       </header>
 
+      {/* Rest of the component remains the same as previous version */}
       {/* Navigation Tabs */}
       <div className="fanhub-tabs">
         {tabs.map(tab => (
@@ -263,7 +290,15 @@ const FanHub = () => {
               className="polls-container"
             >
               <h2>Live Community Polls</h2>
-              {mockLivePolls.map(poll => (
+              {[{
+                id: 1,
+                question: `Who wins ${featuredGame ? `${featuredGame.homeTeam} vs ${featuredGame.awayTeam}` : 'Week 1 Showdown'}?`,
+                options: [
+                  { text: featuredGame ? featuredGame.homeTeam : "Ohio State", votes: 52, percentage: 52 },
+                  { text: featuredGame ? featuredGame.awayTeam : "Texas", votes: 38, percentage: 38 },
+                  { text: "Too Close to Call", votes: 10, percentage: 10 }
+                ]
+              }].map(poll => (
                 <div key={poll.id} className="live-poll">
                   <h3>{poll.question}</h3>
                   {poll.options.map(option => (
