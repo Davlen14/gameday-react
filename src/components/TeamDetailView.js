@@ -291,30 +291,35 @@ const TeamDetail = () => {
           </div>
         </div>
 
-        {/* Roster Card */}
+        {/* Team Roster Card */}
         <div className="dashboard-card team-roster-card">
-          <div className="card-header">Top 5 All-Time Track & Field Performers</div>
+          <div className="card-header">Team Roster</div>
           <div className="card-body">
             <table className="roster-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
                   <th>Name</th>
-                  <th>Pos.</th>
-                  <th>Performance</th>
+                  <th>Position</th>
+                  <th>Height</th>
                   <th>Year</th>
                 </tr>
               </thead>
               <tbody>
-                {roster.slice(0, 10).map((player, index) => (
+                {roster.map((player, index) => (
                   <tr key={index}>
-                    <td>#{index + 1}</td>
                     <td>{player.fullName}</td>
                     <td>{player.position || "N/A"}</td>
                     <td>{player.height || "N/A"}</td>
                     <td>{player.year || "N/A"}</td>
                   </tr>
                 ))}
+                {roster.length === 0 && (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: "center" }}>
+                      {isLoading.roster ? "Loading roster..." : "No roster information available"}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
