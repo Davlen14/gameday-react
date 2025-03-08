@@ -23,7 +23,29 @@ const TopProspects = () => {
           throw new Error("Failed to fetch data");
         }
 
-        // Add a unique ID if not present
+        // Add a unique ID if not present and process commitment ranks
+        const committedProspects = {};
+        
+        // First pass to count committed prospects per team
+        prospectData.forEach(prospect => {
+          if (prospect.committedTo) {
+            const teamName = prospect.committedTo.trim().toLowerCase();
+            if (!committedProspects[teamName]) {
+              committedProspects[teamName] = [];
+            }
+            committedProspects[teamName].push(prospect);
+          }
+        });
+        
+        // Sort each team's commits by ranking and assign commitment rank
+        Object.keys(committedProspects).forEach(team => {
+          committedProspects[team].sort((a, b) => a.ranking - b.ranking);
+          committedProspects[team].forEach((prospect, index) => {
+            prospect.commitmentRank = index + 1;
+          });
+        });
+        
+        // Process all prospects with unique IDs
         const processedProspects = prospectData.map((prospect, index) => ({
           ...prospect,
           id: prospect.id || `prospect-${index}`,
@@ -248,8 +270,8 @@ const TopProspects = () => {
                 <th onClick={() => handleSort('rating')} className="sortable-header">
                   Rating {getSortIndicator('rating')}
                 </th>
-                <th>
-                  Committed
+                <th onClick={() => handleSort('commitmentRank')} className="sortable-header">
+                  Committed {getSortIndicator('commitmentRank')}
                 </th>
               </tr>
             </thead>
@@ -292,6 +314,9 @@ const TopProspects = () => {
                           className="team-logo"
                         />
                         <span className="team-name">{prospect.committedTo}</span>
+                        {prospect.commitmentRank && (
+                          <span className="commit-rank">#{prospect.commitmentRank}</span>
+                        )}
                         <FaCheckCircle className="commit-check" />
                       </div>
                     ) : (
