@@ -38,10 +38,73 @@ const mockLivePolls = [
 const mockDiscussionTopics = [
   { 
     id: 1, 
-    title: "Week 1 Transfer Portal Megathread", 
+    title: "Week 1 Showdown: Ohio State vs Texas", 
+    category: "Game Analysis", 
+    activeUsers: 564, 
+    lastActivity: "1 hour ago" 
+  },
+  { 
+    id: 2, 
+    title: "Transfer Portal Megathread: Biggest Moves", 
     category: "Recruiting", 
-    activeUsers: 342, 
+    activeUsers: 742, 
+    lastActivity: "30 mins ago" 
+  },
+  { 
+    id: 3, 
+    title: "Bill Belichick to College Football: Potential Landing Spots", 
+    category: "Coaching", 
+    activeUsers: 421, 
+    lastActivity: "3 hours ago" 
+  },
+  { 
+    id: 4, 
+    title: "16-Team Playoff: What It Means for College Football", 
+    category: "NCAA Updates", 
+    activeUsers: 612, 
+    lastActivity: "45 mins ago" 
+  },
+  { 
+    id: 5, 
+    title: "NIL Deals: Top Earning College Athletes", 
+    category: "Name, Image, Likeness", 
+    activeUsers: 503, 
     lastActivity: "2 hours ago" 
+  },
+  { 
+    id: 6, 
+    title: "Breaking Down Conference Realignment", 
+    category: "College Football Landscape", 
+    activeUsers: 389, 
+    lastActivity: "4 hours ago" 
+  },
+  { 
+    id: 7, 
+    title: "Freshman QBs to Watch in 2024", 
+    category: "Recruiting", 
+    activeUsers: 276, 
+    lastActivity: "5 hours ago" 
+  },
+  { 
+    id: 8, 
+    title: "Dark Horse Teams for National Championship", 
+    category: "Predictions", 
+    activeUsers: 532, 
+    lastActivity: "1 day ago" 
+  },
+  { 
+    id: 9, 
+    title: "Best Tailgate Locations Across College Football", 
+    category: "Fan Culture", 
+    activeUsers: 215, 
+    lastActivity: "6 hours ago" 
+  },
+  { 
+    id: 10, 
+    title: "Analytics Revolution in College Football", 
+    category: "Strategy", 
+    activeUsers: 187, 
+    lastActivity: "12 hours ago" 
   }
 ];
 
