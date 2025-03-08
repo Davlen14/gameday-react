@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import { ResponsiveContainer } from "recharts";
 import { 
   FaMapMarkerAlt, 
   FaTrophy, 
@@ -66,147 +65,81 @@ const GaugeNew = ({ label, rawValue, metricType }) => {
   // Create a unique ID for this gauge's gradients
   const uniqueId = `${label.toLowerCase().replace(/\s/g, '')}`;
 
-  // Helpers for drawing SVG arcs
-  const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-    return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians)
-    };
-  };
-
-  const describeArc = (x, y, radius, startAngle, endAngle) => {
-    const start = polarToCartesian(x, y, radius, endAngle);
-    const end = polarToCartesian(x, y, radius, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-    
-    return [
-      "M", start.x, start.y, 
-      "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
-      "L", x, y,
-      "Z"
-    ].join(" ");
-  };
-
   return (
     <div className="gauge">
-      <div style={{ 
-        position: 'relative', 
-        width: '150px', 
-        height: '120px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
+      <svg width="120" height="70" viewBox="0 0 120 70">
+        {/* Background colors */}
+        {/* Red sector - Left for offense/overall, Right for defense */}
+        <path 
+          d={isDefense ? 
+            "M 60 60 L 110 60 A 50 50 0 0 0 85 18.5 L 60 60 Z" : 
+            "M 60 60 L 10 60 A 50 50 0 0 1 35 18.5 L 60 60 Z"} 
+          fill="#ff4d4d" 
+          stroke="#ddd" 
+          strokeWidth="0.5"
+        />
+        
+        {/* Yellow sector - Middle */}
+        <path 
+          d="M 60 60 L 35 18.5 A 50 50 0 0 1 85 18.5 L 60 60 Z" 
+          fill="#ffc700" 
+          stroke="#ddd" 
+          strokeWidth="0.5"
+        />
+        
+        {/* Green sector - Right for offense/overall, Left for defense */}
+        <path 
+          d={isDefense ? 
+            "M 60 60 L 10 60 A 50 50 0 0 1 35 18.5 L 60 60 Z" : 
+            "M 60 60 L 110 60 A 50 50 0 0 0 85 18.5 L 60 60 Z"} 
+          fill="#04aa6d" 
+          stroke="#ddd" 
+          strokeWidth="0.5"
+        />
+        
+        {/* Gauge border */}
+        <path 
+          d="M 10 60 A 50 50 0 0 1 110 60" 
+          fill="none" 
+          stroke="#aaa" 
+          strokeWidth="1" 
+        />
+        
+        {/* Tick marks */}
+        <line x1="10" y1="60" x2="10" y2="55" stroke="#666" strokeWidth="1" />
+        <text x="10" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          {Math.round(isDefense ? max : min)}
+        </text>
+        
+        <line x1="60" y1="60" x2="60" y2="55" stroke="#666" strokeWidth="1" />
+        <text x="60" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          {Math.round(avg)}
+        </text>
+        
+        <line x1="110" y1="60" x2="110" y2="55" stroke="#666" strokeWidth="1" />
+        <text x="110" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          {Math.round(isDefense ? min : max)}
+        </text>
+        
+        {/* Needle */}
+        <g transform={`rotate(${needleRotation}, 60, 60)`}>
+          <line x1="60" y1="60" x2="60" y2="15" stroke="#000" strokeWidth="2" />
+          <circle cx="60" cy="60" r="4" fill="#000" />
+        </g>
+      </svg>
+      
+      <div style={{
+        fontSize: '18px',
+        fontWeight: 'bold',
+        color: needleColor,
+        textAlign: 'center',
+        marginTop: '5px'
       }}>
-        <svg 
-          viewBox="0 0 120 70" 
-          width="120"
-          height="70"
-          style={{ filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))' }}
-        >
-          {/* Gradient definitions */}
-          <defs>
-            <linearGradient id={`redGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ff6b6b" />
-              <stop offset="100%" stopColor="#ff4d4d" />
-            </linearGradient>
-            <linearGradient id={`yellowGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ffd166" />
-              <stop offset="100%" stopColor="#ffc700" />
-            </linearGradient>
-            <linearGradient id={`greenGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#06d6a0" />
-              <stop offset="100%" stopColor="#04aa6d" />
-            </linearGradient>
-            <filter id={`shadow-${uniqueId}`} x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
-            </filter>
-          </defs>
-          
-          {/* Color Sectors */}
-          {/* Left Sector */}
-          <path 
-            d={isDefense ? 
-              describeArc(60, 60, 50, 180, 240) : 
-              describeArc(60, 60, 50, 180, 240)} 
-            fill={isDefense ? "#04aa6d" : "#ff4d4d"}
-            stroke="#ddd" 
-            strokeWidth="0.5"
-          />
-          
-          {/* Middle Sector */}
-          <path 
-            d={describeArc(60, 60, 50, 240, 300)}
-            fill="#ffc700"
-            stroke="#ddd" 
-            strokeWidth="0.5"
-          />
-          
-          {/* Right Sector */}
-          <path 
-            d={isDefense ? 
-              describeArc(60, 60, 50, 300, 360) : 
-              describeArc(60, 60, 50, 300, 360)} 
-            fill={isDefense ? "#ff4d4d" : "#04aa6d"}
-            stroke="#ddd" 
-            strokeWidth="0.5"
-          />
-          
-          {/* Gauge border */}
-          <path 
-            d="M 10 60 A 50 50 0 0 1 110 60" 
-            fill="none" 
-            stroke="#aaa" 
-            strokeWidth="1"
-          />
-          
-          {/* Min, Avg, Max tick marks and labels */}
-          <line x1="10" y1="60" x2="10" y2="55" stroke="#666" strokeWidth="1" />
-          <text x="10" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-            {Math.round(min)}
-          </text>
-          
-          <line x1="60" y1="60" x2="60" y2="55" stroke="#666" strokeWidth="1" />
-          <text x="60" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-            {Math.round(avg)}
-          </text>
-          
-          <line x1="110" y1="60" x2="110" y2="55" stroke="#666" strokeWidth="1" />
-          <text x="110" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-            {Math.round(max)}
-          </text>
-          
-          {/* Needle */}
-          <g transform={`rotate(${needleRotation}, 60, 60)`}>
-            <line 
-              x1="60" 
-              y1="60" 
-              x2="60" 
-              y2="15" 
-              stroke="#000"
-              strokeWidth="2"
-            />
-            <circle cx="60" cy="60" r="4" fill="#000" />
-            <circle cx="60" cy="15" r="3" fill={needleColor} stroke="#fff" strokeWidth="1" />
-          </g>
-        </svg>
-        
-        {/* Value display */}
-        <div 
-          style={{ 
-            textAlign: 'center',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: needleColor,
-            marginTop: '5px'
-          }}
-        >
-          {displayValue}
-        </div>
-        
-        <div className="gauge-title">
-          {label}
-        </div>
+        {displayValue}
+      </div>
+      
+      <div className="gauge-title">
+        {label}
       </div>
     </div>
   );
