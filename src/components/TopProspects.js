@@ -8,7 +8,7 @@ const TopProspects = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({ position: "All", team: "" });
+  const [filters, setFilters] = useState({ position: "All", team: "", commitmentStatus: "All" });
   const [sortConfig, setSortConfig] = useState({ key: "ranking", direction: "asc" });
 
   useEffect(() => {
@@ -89,10 +89,28 @@ const TopProspects = () => {
   // Sort and filter prospects
   const sortedAndFilteredProspects = React.useMemo(() => {
     let filtered = [...prospects].filter((prospect) => {
-      return (
-        (filters.position === "All" || prospect.position === filters.position) &&
-        (filters.team === "" || (prospect.committedTo && prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase())))
-      );
+      // Filter by position
+      const positionMatch = filters.position === "All" || prospect.position === filters.position;
+      
+      // Filter by commitment status
+      let commitmentMatch = true;
+      if (filters.commitmentStatus === "Committed") {
+        commitmentMatch = prospect.committedTo && prospect.committedTo.trim() !== "";
+      } else if (filters.commitmentStatus === "Undecided") {
+        commitmentMatch = !prospect.committedTo || prospect.committedTo.trim() === "";
+      }
+      
+      // Filter by team name (only if not searching specifically for undecided)
+      let teamMatch = true;
+      if (filters.team !== "") {
+        if (filters.team.toLowerCase() === "undecided") {
+          teamMatch = !prospect.committedTo || prospect.committedTo.trim() === "";
+        } else {
+          teamMatch = prospect.committedTo && prospect.committedTo.toLowerCase().includes(filters.team.toLowerCase());
+        }
+      }
+      
+      return positionMatch && commitmentMatch && teamMatch;
     });
 
     if (sortConfig.key) {
@@ -165,6 +183,18 @@ const TopProspects = () => {
                 <option key={pos} value={pos}>{pos}</option>
               ))}
           </select>
+          
+          <select 
+            name="commitmentStatus" 
+            value={filters.commitmentStatus} 
+            onChange={handleFilterChange}
+            className="commitment-filter"
+            id="commitment-select"
+          >
+            <option value="All">All Commitments</option>
+            <option value="Committed">Committed</option>
+            <option value="Undecided">Undecided</option>
+          </select>
         </div>
 
         <div className="search-container">
@@ -174,7 +204,7 @@ const TopProspects = () => {
             name="team"
             value={filters.team}
             onChange={handleFilterChange}
-            placeholder="Search team commitment..."
+            placeholder="Search team or type 'undecided'..."
             className="team-search"
           />
         </div>
@@ -184,7 +214,7 @@ const TopProspects = () => {
         <div className="no-results">
           <h3>No prospects match your search criteria</h3>
           <p>Try changing your filters or search terms</p>
-          <button onClick={() => setFilters({ position: "All", team: "" })}>
+          <button onClick={() => setFilters({ position: "All", team: "", commitmentStatus: "All" })}>
             Reset Filters
           </button>
         </div>
