@@ -35,23 +35,15 @@ body {
 }
 
 /* --- FAN HUB CONTAINER --- */
-/* FIXED: Removed margin-top to fix the gap issue and added padding-top instead */
+/* Let the body handle scrolling, so remove forced height/position here */
 .fan-hub-container {
-  position: relative;
-  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height));
-  padding-top: 0; /* No padding needed since we fixed the positioning of sidebars */
+  padding-top: 0; /* No padding needed since sidebars are fixed */
   transition: height var(--transition-speed) ease;
-}
-
-/* If scoreboard is hidden => only top + secondary remain */
-.fan-hub-container.scoreboard-hidden {
-  height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height));
 }
 
 /* --- LEFT SIDEBAR --- */
 .left-sidebar {
   position: fixed;
-  /* FIXED: Use both top and bottom positioning consistently */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   left: 0;
   bottom: 0;
@@ -114,23 +106,27 @@ body {
 }
 
 /* --- MAIN CONTENT --- */
+/* Removed position: absolute; top/bottom. Let the body scroll.
+   Use margins to avoid overlapping fixed sidebars. */
 .main-content {
-  /* FIXED: Added top, left and right positioning */
-  position: absolute;
-  top: 0;
-  left: var(--sidebar-width);
-  right: var(--right-sidebar-width);
-  bottom: 0;
+  position: relative;
+  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
+  margin-left: var(--sidebar-width);
+  margin-right: var(--right-sidebar-width);
   padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  transition: left var(--transition-speed) ease, right var(--transition-speed) ease;
   background-color: var(--background-color);
+  transition: margin-left var(--transition-speed) ease, margin-right var(--transition-speed) ease;
   z-index: 900; /* Below sidebars but above base content */
 }
 
+/* If scoreboard is hidden => reduce the margin-top accordingly */
+.scoreboard-hidden .main-content {
+  margin-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
+}
+
+/* If left sidebar expands, push main content further right */
 .left-sidebar.expanded ~ .main-content {
-  left: var(--sidebar-expanded-width);
+  margin-left: var(--sidebar-expanded-width);
 }
 
 /* --- STICKY HEADER --- */
@@ -227,7 +223,6 @@ body {
 /* --- RIGHT SIDEBAR --- */
 .right-sidebar {
   position: fixed;
-  /* FIXED: Use top positioning to match the left sidebar */
   top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
   right: 0;
   bottom: 0;
@@ -458,9 +453,8 @@ body {
   .right-sidebar {
     width: 250px;
   }
-  
   .main-content {
-    right: 250px;
+    margin-right: 250px;
   }
 }
 
@@ -468,27 +462,24 @@ body {
   .left-sidebar {
     width: 50px;
   }
-  
   .left-sidebar.expanded {
     width: 180px;
   }
-  
   .main-content {
-    left: 50px;
+    margin-left: 50px;
   }
-  
   .left-sidebar.expanded ~ .main-content {
-    left: 180px;
+    margin-left: 180px;
   }
 }
 
 @media (max-width: 768px) {
-  /* FIXED: Mobile layout adjustments */
+  /* Remove forced heights on fan-hub-container so body can scroll */
   .fan-hub-container {
-    height: auto;
-    min-height: calc(100vh - var(--top-navbar-height) - var(--secondary-navbar-height) - var(--scoreboard-height));
+    padding-top: 0;
   }
-  
+
+  /* Left sidebar becomes a horizontal bar pinned at top. */
   .left-sidebar {
     width: 100%;
     height: 50px;
@@ -499,36 +490,36 @@ body {
     position: fixed;
     z-index: 1100;
   }
-  
   .scoreboard-hidden .left-sidebar {
     top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
   }
-  
+
   .left-sidebar ul {
     display: flex;
     width: 100%;
   }
-  
+
   .left-sidebar li {
     flex-direction: column;
     justify-content: center;
     padding: 5px 10px;
   }
-  
+
   .left-sidebar li .label {
     font-size: 0.7rem;
     margin-left: 0;
     margin-top: 2px;
     opacity: 1;
   }
-  
+
+  /* Main content just uses margin-top for the pinned left-sidebar. */
   .main-content {
-    left: 0;
-    right: 0;
-    top: 50px; /* Account for mobile left sidebar height */
-    padding-bottom: 50px; /* Make room for the bottom sidebar on mobile */
+    margin-top: 50px; /* Account for the 50px horizontal sidebar at the top */
+    margin-left: 0;
+    margin-right: 0;
+    padding-bottom: 50px; /* Make room if you had a bottom bar or just for spacing */
   }
-  
+
   .right-sidebar {
     position: fixed;
     width: 100%;
@@ -537,12 +528,12 @@ body {
     bottom: 0;
     display: none; /* Hidden on small screens by default */
   }
-  
+
   .sticky-header .header-content {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .team-selector {
     margin-top: 10px;
     width: 100%;
