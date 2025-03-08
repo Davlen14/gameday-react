@@ -1,155 +1,156 @@
 :root {
-    --primary-color: #ffffff;
-    --accent-color: #D4001C;
-    --text-color: #333333;
-    --background-color: #f5f5f5;
-    --border-color: #dddddd;
-    --secondary-bg-color: #ffffff;
-    --transition-speed: 0.3s;
-    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  }
-  
-  /* Ensure HTML and body allow scrolling */
-  html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: var(--background-color);
-    color: var(--text-color);
-    font-family: var(--font-family-sans);
-  }
-  
-  /* Stats Container */
-  .stats-container {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
-  
-  /* Header */
-  .stats-header {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    text-align: center;
-  }
-  
-  /* Toggle Buttons */
-  .view-toggle {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2rem;
-  }
-  
-  .toggle-btn {
-    background: transparent;
-    border: 2px solid var(--accent-color);
-    color: var(--accent-color);
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0 1rem;
-    padding: 0.5rem 1.5rem;
-    border-radius: 30px;
-    transition: background var(--transition-speed), color var(--transition-speed);
-    cursor: pointer;
-  }
-  
-  .toggle-btn:hover,
-  .toggle-btn.active {
-    background: var(--accent-color);
-    color: var(--primary-color);
-  }
-  
-  /* Leaders Layout */
-  .leaders-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    justify-content: space-between;
-  }
-  
-  .leaders-column {
-    flex: 1;
-    min-width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  
-  .leaders-header {
-    font-size: 1.5rem;
-    color: var(--text-color);
-    margin-bottom: 0.5rem;
-    border-bottom: 3px solid var(--accent-color);
-    padding-bottom: 0.25rem;
-  }
-  
-  /* Leaders Card */
-  .leaders-card {
-    background: var(--secondary-bg-color);
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    padding: 1rem 1.25rem;
-    transition: box-shadow var(--transition-speed);
-  }
-  
-  .leaders-card:hover {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  }
-  
-  .leaders-card h3 {
-    font-size: 1.25rem;
-    margin: 0 0 1rem 0;
-    color: var(--accent-color);
-  }
-  
-  /* Leader Row */
-  .leader-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 8px;
-    transition: background var(--transition-speed);
-  }
-  
-  .leader-row:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-  
-  /* Logo Styles - Not rounded */
-  .stats-player-logo,
-  .team-stat-logo {
-    width: 40px;
-    height: 40px;
-    /* Removed border-radius to display the logo as-is */
-    background: transparent;
-    object-fit: contain;
-    margin-right: 0.75rem;
-  }
-  
-  /* Leader Name and Stat */
-  .leader-name {
-    flex: 1;
-    font-weight: 600;
-    font-size: 1rem;
-  }
-  
-  .leader-stat {
-    font-weight: bold;
-    font-size: 1rem;
-    margin-left: 1rem;
-    color: var(--accent-color);
-  }
-  
-  /* Placeholder / Error Message */
-  .stat-placeholder {
-    font-size: 1rem;
-    color: var(--border-color);
-    font-style: italic;
-    margin: 1rem 0;
-  }
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  /* Changed background color to pure white */
+  --background-color: #ffffff;
+  --border-color: #dddddd;
+  --secondary-bg-color: #ffffff;
+  --transition-speed: 0.3s;
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+/* Ensure HTML and body allow scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family-sans);
+}
+
+/* Stats Container */
+.stats-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Header */
+.stats-header {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Toggle Buttons */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: 2px solid var(--accent-color);
+  color: var(--accent-color);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 1rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 30px;
+  transition: background var(--transition-speed), color var(--transition-speed);
+  cursor: pointer;
+}
+
+.toggle-btn:hover,
+.toggle-btn.active {
+  background: var(--accent-color);
+  color: var(--primary-color);
+}
+
+/* Leaders Layout */
+.leaders-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.leaders-column {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.leaders-header {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  border-bottom: 3px solid var(--accent-color);
+  padding-bottom: 0.25rem;
+}
+
+/* Leaders Card */
+.leaders-card {
+  background: var(--secondary-bg-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  transition: box-shadow var(--transition-speed);
+}
+
+.leaders-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.leaders-card h3 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: var(--accent-color);
+}
+
+/* Leader Row */
+.leader-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background var(--transition-speed);
+}
+
+.leader-row:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Logo Styles - Not rounded */
+.stats-player-logo,
+.team-stat-logo {
+  width: 40px;
+  height: 40px;
+  /* Removed border-radius to display the logo as-is */
+  background: transparent;
+  object-fit: contain;
+  margin-right: 0.75rem;
+}
+
+/* Leader Name and Stat */
+.leader-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.leader-stat {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-left: 1rem;
+  color: var(--accent-color);
+}
+
+/* Placeholder / Error Message */
+.stat-placeholder {
+  font-size: 1rem;
+  color: var(--border-color);
+  font-style: italic;
+  margin: 1rem 0;
+}
