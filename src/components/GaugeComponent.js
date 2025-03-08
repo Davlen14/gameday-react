@@ -2,9 +2,9 @@ import React from "react";
 
 // National Averages
 const NATIONAL_AVERAGES = {
-  overall: 0.55, // Overall is on a different scale
-  offense: 27.14,
-  defense: 26.61
+  overall: 16, // Updated based on your gauge image
+  offense: 27, // Updated based on your gauge image
+  defense: 27  // Updated based on your gauge image
 };
 
 /**
@@ -34,34 +34,31 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
   // Get ranges based on metric type (offense, defense, overall)
   const isDefense = metricType === "defense";
   
-  // Set min and max values based on national averages
+  // Set min and max values based on the gauge ranges shown in your image
+  let min = 1;
+  let max = 45;
   const avg = NATIONAL_AVERAGES[metricType || "overall"];
   
-  // For defense lower is better, for offense higher is better
-  const min = isDefense ? Math.max(1, avg - 15) : 1;
-  const max = isDefense ? 45 : Math.min(45, avg + 15);
-  
-  // Determine the range size for proper scaling
-  const totalRange = max - min;
-  
-  // Calculate normalized value between min and max
-  const clampedValue = Math.max(min, Math.min(valueToUse, max));
-  const valuePercentage = (clampedValue - min) / totalRange;
-  
   // Calculate needle angle (0-180 degrees)
-  // For defense, we need to invert the rotation since lower is better
-  const needleRotation = isDefense ? 
-    180 - (valuePercentage * 180) : 
-    valuePercentage * 180;
+  let needleRotation;
+  if (isDefense) {
+    // For defense - lower is better, so invert
+    needleRotation = 180 - ((valueToUse - min) / (max - min) * 180);
+  } else {
+    needleRotation = (valueToUse - min) / (max - min) * 180;
+  }
+  
+  // Ensure the needle stays within the gauge bounds
+  needleRotation = Math.max(0, Math.min(180, needleRotation));
   
   // Determine zone color based on value
   let zone;
   if (isDefense) {
-    zone = clampedValue <= avg - (avg - min) / 2 ? "green" :
-           clampedValue >= avg + (max - avg) / 2 ? "red" : "yellow";
+    zone = valueToUse <= 15 ? "green" :
+           valueToUse >= 30 ? "red" : "yellow";
   } else {
-    zone = clampedValue >= avg + (max - avg) / 2 ? "green" :
-           clampedValue <= avg - (avg - min) / 2 ? "red" : "yellow";
+    zone = valueToUse >= 30 ? "green" :
+           valueToUse <= 15 ? "red" : "yellow";
   }
   
   // Get needle color based on zone
@@ -70,7 +67,7 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
                       "#04aa6d";
                       
   // Format value for display
-  const displayValue = Math.round(clampedValue);
+  const displayValue = Math.round(valueToUse);
   
   // Create a unique ID for this gauge's gradients
   const uniqueId = `${label.toLowerCase().replace(/\s/g, '')}`;
@@ -115,23 +112,23 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
           strokeWidth="1" 
         />
         
-        {/* Tick marks */}
+        {/* Tick marks - showing 1, 45 at ends and custom value for the middle */}
         <line x1="10" y1="60" x2="10" y2="55" stroke="#666" strokeWidth="1" />
         <text x="10" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {Math.round(isDefense ? max : min)}
+          {isDefense ? "45" : "1"}
         </text>
         
         <line x1="60" y1="60" x2="60" y2="55" stroke="#666" strokeWidth="1" />
         <text x="60" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {Math.round(avg)}
+          {avg}
         </text>
         
         <line x1="110" y1="60" x2="110" y2="55" stroke="#666" strokeWidth="1" />
         <text x="110" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {Math.round(isDefense ? min : max)}
+          {isDefense ? "1" : "45"}
         </text>
         
-        {/* Needle with black ticker pointing at correct angle */}
+        {/* Needle with properly sized ticker at the end */}
         <g transform={`rotate(${needleRotation}, 60, 60)`}>
           <line 
             x1="60" 
@@ -139,17 +136,17 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
             x2="60" 
             y2="10" 
             stroke="#000" 
-            strokeWidth="2"
+            strokeWidth="1.5"
           />
           <circle 
             cx="60" 
             cy="60" 
-            r="4" 
+            r="3" 
             fill="#000" 
           />
-          <path 
-            d="M 57 12 L 63 12 L 60 5 Z" 
-            fill="#000" 
+          <polygon 
+            points="57,16 63,16 60,6" 
+            fill="#000"
           />
         </g>
       </svg>
