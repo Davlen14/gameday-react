@@ -66,11 +66,60 @@ const GaugeNew = ({ label, rawValue, metricType }) => {
   // Create a unique ID for this gauge's gradients
   const uniqueId = `${label.toLowerCase().replace(/\s/g, '')}`;
 
+  // Calculate the angle positions for the gauge segments
+  const startAngle = 180; // Start at bottom left
+  const endAngle = 0;     // End at bottom right
+  
+  // Calculate angles for color transitions based on value ranges
+  // For normal gauges (offense, overall): red->yellow->green from left to right
+  // For defense gauge: green->yellow->red from left to right (low numbers are better)
+  let redStartAngle, redEndAngle, yellowStartAngle, yellowEndAngle, greenStartAngle, greenEndAngle;
+  
+  if (isDefense) {
+    // For defense: green (left) -> yellow (middle) -> red (right)
+    greenStartAngle = startAngle;
+    greenEndAngle = startAngle - 60;
+    yellowStartAngle = greenEndAngle;
+    yellowEndAngle = yellowStartAngle - 60;
+    redStartAngle = yellowEndAngle;
+    redEndAngle = endAngle;
+  } else {
+    // For offense/overall: red (left) -> yellow (middle) -> green (right)
+    redStartAngle = startAngle;
+    redEndAngle = startAngle - 60;
+    yellowStartAngle = redEndAngle;
+    yellowEndAngle = yellowStartAngle - 60;
+    greenStartAngle = yellowEndAngle;
+    greenEndAngle = endAngle;
+  }
+
+  // Helpers for drawing SVG arcs
+  const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+      x: centerX + (radius * Math.cos(angleInRadians)),
+      y: centerY + (radius * Math.sin(angleInRadians))
+    };
+  };
+
+  const describeArc = (x, y, radius, startAngle, endAngle) => {
+    const start = polarToCartesian(x, y, radius, endAngle);
+    const end = polarToCartesian(x, y, radius, startAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    
+    return [
+      "M", start.x, start.y, 
+      "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+      "L", x, y,
+      "Z"
+    ].join(" ");
+  };
+
   return (
     <div className="gauge">
       <div style={{ position: 'relative', width: '160px', height: '100px' }}>
         <svg 
-          viewBox="0 0 200 100" 
+          viewBox="0 0 200 120" 
           style={{ width: '100%', height: '100%', filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))' }}
         >
           {/* Gradient definitions */}
@@ -97,58 +146,54 @@ const GaugeNew = ({ label, rawValue, metricType }) => {
             </linearGradient>
           </defs>
           
-          {/* Gauge background - Create the three color zones */}
-          {/* Red Zone (Below Average) */}
+          {/* Gauge background - Create the three color zones as distinct arc segments */}
+          {/* Red Zone */}
           <path 
-            d={isDefense ? 
-              `M 100 100 A 60 60 0 0 1 160 100` : 
-              `M 100 100 A 60 60 0 0 1 40 100`} 
-            fill={`url(#redGradient-${uniqueId})`} 
+            d={describeArc(100, 100, 60, redStartAngle, redEndAngle)}
+            fill={`url(#redGradient-${uniqueId})`}
             stroke="#ddd" 
             strokeWidth="0.5"
           />
           
-          {/* Yellow Zone (Average) */}
+          {/* Yellow Zone */}
           <path 
-            d="M 100 100 A 60 60 0 0 1 100 40" 
-            fill={`url(#yellowGradient-${uniqueId})`} 
+            d={describeArc(100, 100, 60, yellowStartAngle, yellowEndAngle)}
+            fill={`url(#yellowGradient-${uniqueId})`}
             stroke="#ddd" 
             strokeWidth="0.5"
           />
           
-          {/* Green Zone (Above Average) */}
+          {/* Green Zone */}
           <path 
-            d={isDefense ? 
-              `M 100 100 A 60 60 0 0 1 40 100` : 
-              `M 100 100 A 60 60 0 0 1 160 100`} 
-            fill={`url(#greenGradient-${uniqueId})`} 
+            d={describeArc(100, 100, 60, greenStartAngle, greenEndAngle)}
+            fill={`url(#greenGradient-${uniqueId})`}
             stroke="#ddd" 
             strokeWidth="0.5"
           />
           
-          {/* Gauge border */}
+          {/* Gauge outer border */}
           <path 
-            d="M 40 100 A 60 60 0 1 1 160 100" 
-            fill="none" 
-            stroke="#aaa" 
+            d="M 40 100 A 60 60 0 1 1 160 100"
+            fill="none"
+            stroke="#aaa"
             strokeWidth="1"
           />
           
           {/* Tick marks and labels */}
           {/* Min value */}
-          <text x="40" y="110" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          <text x="40" y="110" textAnchor="middle" fontSize="9" fill="#666" fontWeight="bold">
             {Math.round(min)}
           </text>
           <line x1="40" y1="100" x2="40" y2="95" stroke="#666" strokeWidth="1" />
           
           {/* Average value */}
-          <text x="100" y="130" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          <text x="100" y="130" textAnchor="middle" fontSize="9" fill="#666" fontWeight="bold">
             {Math.round(avg)} (Avg)
           </text>
           <line x1="100" y1="100" x2="100" y2="90" stroke="#666" strokeWidth="1" />
           
           {/* Max value */}
-          <text x="160" y="110" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+          <text x="160" y="110" textAnchor="middle" fontSize="9" fill="#666" fontWeight="bold">
             {Math.round(max)}
           </text>
           <line x1="160" y1="100" x2="160" y2="95" stroke="#666" strokeWidth="1" />
