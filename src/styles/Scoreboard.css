@@ -6,10 +6,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 4px 10px; /* Reduced padding */
+  padding: 2px 8px; /* Further reduced padding */
   width: 100%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  min-height: 38px; /* Reduced min-height */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  min-height: 32px; /* Further reduced min-height */
   position: relative;
   overflow: visible;
   backdrop-filter: blur(10px);
@@ -22,10 +22,10 @@
   overflow-x: auto;
   flex: 1;
   scrollbar-width: none;
-  min-height: 32px; /* Reduced min-height */
+  min-height: 28px; /* Further reduced min-height */
   position: relative;
-  gap: 6px; /* Reduced gap */
-  padding: 2px 0; /* Reduced padding */
+  gap: 4px; /* Further reduced gap */
+  padding: 1px 0; /* Further reduced padding */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   mask-image: linear-gradient(to right, black 85%, transparent 100%);
@@ -40,31 +40,31 @@
   text-decoration: none;
   color: inherit;
   flex: 0 0 auto;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .scoreboard-game-link:hover {
-  transform: translateY(-1px); /* Reduced transform */
+  transform: translateY(-1px);
 }
 
 .scoreboard-game-card {
   flex: 0 0 auto;
-  min-width: 110px;
-  max-width: 135px;
+  min-width: 105px;
+  max-width: 130px;
   display: flex;
   flex-direction: column;
-  padding: 4px 6px; /* Reduced padding */
+  padding: 3px 5px; /* Further reduced padding */
   background: rgba(255, 255, 255, 0.85);
-  transition: all 0.2s ease;
-  border-radius: 8px; /* Slightly reduced border-radius */
+  transition: all 0.15s ease;
+  border-radius: 6px; /* Further reduced border-radius */
   margin: 0 1px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(225, 225, 225, 0.5);
 }
 
 .scoreboard-game-card:hover {
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07), 0 2px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .scoreboard-game-header {
@@ -72,20 +72,20 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 2px; /* Reduced margin */
-  padding-bottom: 2px; /* Reduced padding */
+  margin-bottom: 1px; /* Further reduced margin */
+  padding-bottom: 1px; /* Further reduced padding */
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .scoreboard-game-time {
-  font-size: 8px; /* Reduced font size */
+  font-size: 7px; /* Further reduced font size */
   font-weight: 600;
   color: #555;
   letter-spacing: 0.2px;
   text-transform: uppercase;
   background: rgba(240, 240, 240, 0.5);
-  padding: 1px 4px; /* Reduced padding */
-  border-radius: 3px; /* Reduced border-radius */
+  padding: 1px 3px; /* Further reduced padding */
+  border-radius: 2px; /* Further reduced border-radius */
 }
 
 .scoreboard-game-time.final {
@@ -98,25 +98,25 @@
 .scoreboard-game-network {
   display: flex;
   align-items: center;
-  gap: 2px; /* Reduced gap */
+  gap: 1px; /* Further reduced gap */
   background: rgba(245, 245, 245, 0.7);
-  padding: 1px 3px; /* Reduced padding */
-  border-radius: 3px; /* Reduced border-radius */
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+  padding: 1px 2px; /* Further reduced padding */
+  border-radius: 2px; /* Further reduced border-radius */
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.01);
 }
 
 .scoreboard-tv-outlet {
-  font-size: 7.5px; /* Reduced font size */
+  font-size: 7px; /* Further reduced font size */
   font-weight: 600;
   color: #444;
-  max-width: 40px;
+  max-width: 38px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .scoreboard-tv-icon {
-  font-size: 7px; /* Reduced font size */
+  font-size: 6px; /* Further reduced font size */
   color: #222;
 }
 
@@ -125,9 +125,9 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin: 2px 0; /* Reduced margin */
-  padding: 2px 3px; /* Reduced padding */
-  border-radius: 5px; /* Reduced border-radius */
+  margin: 1px 0; /* Further reduced margin */
+  padding: 1px 2px; /* Further reduced padding */
+  border-radius: 4px; /* Further reduced border-radius */
   transition: background 0.15s ease;
 }
 
@@ -138,22 +138,22 @@
 .scoreboard-team-info {
   display: flex;
   align-items: center;
-  gap: 4px; /* Reduced gap */
+  gap: 3px; /* Further reduced gap */
   flex: 1;
   min-width: 0;
 }
 
 .scoreboard-team-logo {
-  width: 16px; /* Reduced width */
-  height: 16px; /* Reduced height */
+  width: 14px; /* Further reduced width */
+  height: 14px; /* Further reduced height */
   object-fit: contain;
-  border-radius: 3px; /* Reduced border-radius */
+  border-radius: 2px; /* Further reduced border-radius */
   flex-shrink: 0;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
 }
 
 .scoreboard-team-name {
-  font-size: 9.5px; /* Reduced font size */
+  font-size: 9px; /* Further reduced font size */
   font-weight: 600;
   color: #222;
   white-space: nowrap;
@@ -163,15 +163,15 @@
 }
 
 .scoreboard-team-score {
-  font-size: 10px; /* Reduced font size */
+  font-size: 9px; /* Further reduced font size */
   font-weight: 700;
   color: #000;
-  min-width: 18px; /* Reduced min-width */
+  min-width: 16px; /* Further reduced min-width */
   text-align: center;
   background: rgba(240, 240, 240, 0.7);
-  border-radius: 4px; /* Reduced border-radius */
-  padding: 1px 3px; /* Reduced padding */
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+  border-radius: 3px; /* Further reduced border-radius */
+  padding: 1px 2px; /* Further reduced padding */
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.01);
 }
 
 /* Loading states styling */
@@ -179,12 +179,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 12px; /* Reduced padding */
+  padding: 0 10px; /* Further reduced padding */
 }
 
 .scoreboard-spinner {
-  width: 14px; /* Reduced width */
-  height: 14px; /* Reduced height */
+  width: 12px; /* Further reduced width */
+  height: 12px; /* Further reduced height */
   border: 2px solid rgba(210, 10, 44, 0.2);
   border-top: 2px solid #d20a2c;
   border-radius: 50%;
@@ -200,12 +200,12 @@
   background: linear-gradient(90deg, #f8f8f8 0%, #efefef 50%, #f8f8f8 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  width: 120px;
-  height: 56px; /* Reduced height */
-  border-radius: 8px; /* Reduced border-radius */
-  margin: 0 3px; /* Reduced margin */
+  width: 115px;
+  height: 44px; /* Further reduced height */
+  border-radius: 6px; /* Further reduced border-radius */
+  margin: 0 2px; /* Further reduced margin */
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 @keyframes shimmer {
@@ -218,30 +218,30 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  font-size: 11px; /* Reduced font size */
+  font-size: 10px; /* Further reduced font size */
   color: #666;
   font-weight: 500;
-  padding: 8px; /* Reduced padding */
+  padding: 6px; /* Further reduced padding */
   background: rgba(250, 250, 250, 0.5);
-  border-radius: 6px; /* Reduced border-radius */
-  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.02);
+  border-radius: 5px; /* Further reduced border-radius */
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.02);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .scoreboard-bar {
-    padding: 3px; /* Reduced padding */
-    min-height: 36px; /* Reduced min-height */
+    padding: 2px; /* Further reduced padding */
+    min-height: 30px; /* Further reduced min-height */
   }
   
   .scoreboard-games {
     width: 100%;
-    padding-right: 16px; /* Reduced padding */
+    padding-right: 12px; /* Further reduced padding */
   }
   
   .scoreboard-game-card {
-    min-width: 110px;
-    padding: 4px 5px; /* Reduced padding */
+    min-width: 105px;
+    padding: 3px 4px; /* Further reduced padding */
   }
 }
 
@@ -255,7 +255,7 @@
   .scoreboard-game-card {
     background: rgba(40, 40, 40, 0.85);
     border: 1px solid rgba(50, 50, 50, 0.7);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   }
   
   .scoreboard-game-card:hover {
