@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
+import { ResponsiveContainer } from "recharts";
 import { 
   FaMapMarkerAlt, 
   FaTrophy, 
@@ -14,192 +14,181 @@ import {
 } from "react-icons/fa";
 import "../styles/TeamDetail.css";
 
-// --- Modern Gauge Component for Ratings ---
-const GAUGE_MIN = 1;
-const GAUGE_MAX = 45;
-const GAUGE_RANGE = GAUGE_MAX - GAUGE_MIN;
+// --- National Averages from the data ---
+const NATIONAL_AVERAGES = {
+  overall: 0.55, // Overall is on a different scale
+  offense: 27.14,
+  defense: 26.61
+};
 
-// Define sections with gradients for more realistic look
-const RED_LENGTH = 15 - 1;    
-const YELLOW_LENGTH = 30 - 15; 
-const GREEN_LENGTH = 45 - 30;  
-
-const redPercent = (RED_LENGTH / GAUGE_RANGE) * 100;
-const yellowPercent = (YELLOW_LENGTH / GAUGE_RANGE) * 100;
-const greenPercent = (GREEN_LENGTH / GAUGE_RANGE) * 100;
-
-// Enhanced gauge data with custom gradient stops
-const gaugeData = [
-  { 
-    name: "Red", 
-    value: redPercent, 
-    fill: "url(#redGradient)" 
-  },
-  { 
-    name: "Yellow", 
-    value: yellowPercent, 
-    fill: "url(#yellowGradient)" 
-  },
-  { 
-    name: "Green", 
-    value: greenPercent, 
-    fill: "url(#greenGradient)" 
-  },
-];
-
-const TICK_VALUES = [1, 15, 30, 45];
-
-const Gauge = ({ label, rawValue }) => {
-  const clampedValue = Math.max(GAUGE_MIN, Math.min(rawValue, GAUGE_MAX));
-  const normalizedValue = ((clampedValue - GAUGE_MIN) / GAUGE_RANGE) * 100;
-  const centerX = 75;
-  const centerY = 75;
-  const needleLength = 60;
-  const angle = 180 - (normalizedValue * 180) / 100;
-  const rad = (angle * Math.PI) / 180;
-  const needleX = centerX + needleLength * Math.cos(rad);
-  const needleY = centerY - needleLength * Math.sin(rad);
-
-  // Get color based on value for needle tip color
-  const getNeedleColor = () => {
-    if (clampedValue <= 15) return "#ff4d4d";
-    if (clampedValue <= 30) return "#ffc700";
-    return "#04aa6d";
-  };
-
-  // Enhanced tick marks with metallic effect
-  const ticks = TICK_VALUES.map((tickVal) => {
-    const tickPercent = ((tickVal - GAUGE_MIN) / GAUGE_RANGE) * 100;
-    const tickAngle = 180 - (tickPercent * 180) / 100;
-    const tickRad = (tickAngle * Math.PI) / 180;
-    const tickX = centerX + 65 * Math.cos(tickRad);
-    const tickY = centerY - 65 * Math.sin(tickRad);
-    return {
-      label: tickVal,
-      x: tickX,
-      y: tickY,
-    };
-  });
+// --- New Gauge Component for Ratings ---
+const GaugeNew = ({ label, rawValue, metricType }) => {
+  // Get ranges based on metric type (offense, defense, overall)
+  const isDefense = metricType === "defense";
+  
+  // Set min and max values based on national averages
+  const avg = NATIONAL_AVERAGES[metricType || "overall"];
+  
+  // For defense lower is better, for offense higher is better
+  const min = isDefense ? Math.max(1, avg - 15) : 1;
+  const max = isDefense ? 45 : Math.min(45, avg + 15);
+  
+  // Determine the range size for proper scaling
+  const totalRange = max - min;
+  
+  // Calculate normalized value between min and max
+  const clampedValue = Math.max(min, Math.min(rawValue, max));
+  const valuePercentage = (clampedValue - min) / totalRange;
+  
+  // For defense, invert the needle position (lower is better)
+  const needleRotation = isDefense ? 
+    180 - (valuePercentage * 180) : 
+    valuePercentage * 180;
+  
+  // Determine zone color based on value
+  let zone;
+  if (isDefense) {
+    zone = clampedValue <= avg - (avg - min) / 2 ? "green" :
+           clampedValue >= avg + (max - avg) / 2 ? "red" : "yellow";
+  } else {
+    zone = clampedValue >= avg + (max - avg) / 2 ? "green" :
+           clampedValue <= avg - (avg - min) / 2 ? "red" : "yellow";
+  }
+  
+  // Get needle color based on zone
+  const needleColor = zone === "red" ? "#ff4d4d" : 
+                      zone === "yellow" ? "#ffc700" : 
+                      "#04aa6d";
+                      
+  // Format value for display
+  const displayValue = Math.round(clampedValue);
+  
+  // Create a unique ID for this gauge's gradients
+  const uniqueId = `${label.toLowerCase().replace(/\s/g, '')}`;
 
   return (
     <div className="gauge">
-      <ResponsiveContainer width={160} height={160}>
-        <RadialBarChart
-          width={160}
-          height={160}
-          cx={centerX}
-          cy={centerY}
-          innerRadius={50}
-          outerRadius={70}
-          startAngle={180}
-          endAngle={0}
-          barSize={20}
-          data={gaugeData}
+      <div style={{ position: 'relative', width: '160px', height: '100px' }}>
+        <svg 
+          viewBox="0 0 200 100" 
+          style={{ width: '100%', height: '100%', filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15))' }}
         >
-          {/* Gradient definitions for metallic look */}
+          {/* Gradient definitions */}
           <defs>
-            <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={`redGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#ff6b6b" />
               <stop offset="100%" stopColor="#ff4d4d" />
             </linearGradient>
-            <linearGradient id="yellowGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={`yellowGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#ffd166" />
               <stop offset="100%" stopColor="#ffc700" />
             </linearGradient>
-            <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={`greenGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#06d6a0" />
               <stop offset="100%" stopColor="#04aa6d" />
             </linearGradient>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <filter id={`shadow-${uniqueId}`} x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
             </filter>
-            <linearGradient id="metalNeedle" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id={`metalNeedle-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#888" />
               <stop offset="50%" stopColor="#eee" />
               <stop offset="100%" stopColor="#888" />
             </linearGradient>
           </defs>
-
-          <RadialBar 
-            dataKey="value" 
-            cornerRadius={5} 
-            clockWise 
-            stackId="gauge" 
-            filter="url(#shadow)"
-          />
-
-          {/* Gauge rim - metallic effect */}
-          <circle 
-            cx={centerX} 
-            cy={centerY} 
-            r={72} 
-            fill="none" 
-            stroke="#ddd" 
-            strokeWidth={1} 
-            filter="url(#shadow)" 
-          />
-
-          {/* Needle with metallic effect */}
+          
+          {/* Gauge background - Create the three color zones */}
+          {/* Red Zone (Below Average) */}
           <path 
-            d={`M${centerX} ${centerY} L${centerX} ${centerY-10} L${needleX} ${needleY} Z`}
-            fill="url(#metalNeedle)"
-            stroke="#666"
-            strokeWidth={1}
-            filter="url(#shadow)"
+            d={isDefense ? 
+              `M 100 100 A 60 60 0 0 1 160 100` : 
+              `M 100 100 A 60 60 0 0 1 40 100`} 
+            fill={`url(#redGradient-${uniqueId})`} 
+            stroke="#ddd" 
+            strokeWidth="0.5"
           />
           
-          {/* Needle cap */}
-          <circle 
-            cx={centerX} 
-            cy={centerY} 
-            r={8} 
-            fill="url(#metalNeedle)" 
-            stroke="#666" 
-            strokeWidth={1}
-            filter="url(#shadow)"
+          {/* Yellow Zone (Average) */}
+          <path 
+            d="M 100 100 A 60 60 0 0 1 100 40" 
+            fill={`url(#yellowGradient-${uniqueId})`} 
+            stroke="#ddd" 
+            strokeWidth="0.5"
           />
-
-          {/* Colored needle tip */}
-          <circle 
-            cx={needleX} 
-            cy={needleY} 
-            r={4} 
-            fill={getNeedleColor()} 
-            stroke="#fff" 
-            strokeWidth={1}
+          
+          {/* Green Zone (Above Average) */}
+          <path 
+            d={isDefense ? 
+              `M 100 100 A 60 60 0 0 1 40 100` : 
+              `M 100 100 A 60 60 0 0 1 160 100`} 
+            fill={`url(#greenGradient-${uniqueId})`} 
+            stroke="#ddd" 
+            strokeWidth="0.5"
           />
-
-          {/* Tick marks & labels */}
-          {ticks.map((tick, i) => (
-            <React.Fragment key={i}>
-              <circle cx={tick.x} cy={tick.y} r={3} fill="#888" />
-              <text
-                x={tick.x}
-                y={tick.y + 12}
-                textAnchor="middle"
-                fontSize="10"
-                fill="#666"
-                fontWeight="bold"
-              >
-                {tick.label}
-              </text>
-            </React.Fragment>
-          ))}
-
-          {/* Value display */}
-          <text
-            x={centerX}
-            y={centerY + 24}
-            textAnchor="middle"
-            fontSize="16"
-            fontWeight="bold"
-            fill={getNeedleColor()}
-          >
-            {Math.round(clampedValue)}
+          
+          {/* Gauge border */}
+          <path 
+            d="M 40 100 A 60 60 0 1 1 160 100" 
+            fill="none" 
+            stroke="#aaa" 
+            strokeWidth="1"
+          />
+          
+          {/* Tick marks and labels */}
+          {/* Min value */}
+          <text x="40" y="110" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+            {Math.round(min)}
           </text>
-        </RadialBarChart>
-      </ResponsiveContainer>
-      <div className="gauge-title">{label}</div>
+          <line x1="40" y1="100" x2="40" y2="95" stroke="#666" strokeWidth="1" />
+          
+          {/* Average value */}
+          <text x="100" y="130" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+            {Math.round(avg)} (Avg)
+          </text>
+          <line x1="100" y1="100" x2="100" y2="90" stroke="#666" strokeWidth="1" />
+          
+          {/* Max value */}
+          <text x="160" y="110" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
+            {Math.round(max)}
+          </text>
+          <line x1="160" y1="100" x2="160" y2="95" stroke="#666" strokeWidth="1" />
+          
+          {/* Needle */}
+          <g transform={`rotate(${needleRotation}, 100, 100)`}>
+            <line 
+              x1="100" 
+              y1="100" 
+              x2="100" 
+              y2="50" 
+              stroke={`url(#metalNeedle-${uniqueId})`}
+              strokeWidth="2"
+              filter={`url(#shadow-${uniqueId})`}
+            />
+            <circle cx="100" cy="100" r="5" fill="#666" stroke="#fff" strokeWidth="1" />
+            <circle cx="100" cy="50" r="3" fill={needleColor} stroke="#fff" strokeWidth="1" />
+          </g>
+        </svg>
+        
+        {/* Value display */}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            bottom: '-25px', 
+            left: '0', 
+            right: '0', 
+            textAlign: 'center',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: needleColor
+          }}
+        >
+          {displayValue}
+        </div>
+      </div>
+      
+      <div className="gauge-title">
+        {label}
+      </div>
     </div>
   );
 };
@@ -486,9 +475,9 @@ const TeamDetail = () => {
           </div>
           <div className="card-body">
             <div className="gauges-container">
-              <Gauge label="Overall" rawValue={ratings.overall || 1} />
-              <Gauge label="Offense" rawValue={ratings.offense || 1} />
-              <Gauge label="Defense" rawValue={ratings.defense || 1} />
+              <GaugeNew label="Overall" rawValue={ratings.overall || 1} metricType="overall" />
+              <GaugeNew label="Offense" rawValue={ratings.offense || 1} metricType="offense" />
+              <GaugeNew label="Defense" rawValue={ratings.defense || 1} metricType="defense" />
             </div>
             <div className="ratings-explanation">
               <h3>How SP+ Ratings Work</h3>
@@ -497,14 +486,19 @@ const TeamDetail = () => {
                 <br />
                 <strong>Overall:</strong> Combines offense, defense, and special teams.
                 <br />
-                <strong>Offense:</strong> Measures scoring efficiency and ball movement.
+                <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
                 <br />
-                <strong>Defense:</strong> Lower values indicate a stronger defense.
+                <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
               </p>
               <p>
-                Here, each gauge is scaled from 1 to 45:
-                <br />
-                <strong>Red:</strong> 1–15, <strong>Yellow:</strong> 15–30, <strong>Green:</strong> 30–45
+                <strong>Color zones indicate performance relative to national average:</strong><br />
+                <span style={{ color: "#ff4d4d" }}><strong>Red:</strong> Below Average</span> | 
+                <span style={{ color: "#ffc700" }}><strong>Yellow:</strong> Average</span> | 
+                <span style={{ color: "#04aa6d" }}><strong>Green:</strong> Above Average</span>
+              </p>
+              <p>
+                <strong>National Averages (2024):</strong><br />
+                Offense: 27.1 | Defense: 26.6
               </p>
             </div>
           </div>
