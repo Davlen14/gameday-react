@@ -49,20 +49,83 @@
   z-index: 1;
 }
 
+/* Enhanced Metallic Logo with Divider */
 .top-bar-logo {
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
   font-weight: 900;
   font-size: 22px;
   font-style: italic;
   color: #ffffff;
-  position: relative; /* Changed from absolute for better mobile layout */
-  padding-right: 20px;
+  position: relative;
+  padding-right: 30px; /* Increased for divider */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.5px;
   white-space: nowrap;
   text-decoration: none;
   display: flex;
   align-items: center;
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f0f0f0 50%,
+    #e0e0e0 51%,
+    #ffffff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 
+    0 1px 1px rgba(0, 0, 0, 0.3),
+    0 -1px 1px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+/* Logo Shine Effect */
+.top-bar-logo::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  animation: logoDividerShine 3s infinite ease-in-out;
+  pointer-events: none;
+}
+
+/* White Divider After Logo */
+.top-bar-logo::after {
+  content: "";
+  position: absolute;
+  top: 20%;
+  right: 0;
+  width: 1px;
+  height: 60%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  box-shadow: 
+    0 0 5px rgba(255, 255, 255, 0.5),
+    0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Animation for the shine effect */
+@keyframes logoDividerShine {
+  0% {
+    transform: rotate(30deg) translateX(-100%);
+  }
+  30%, 100% {
+    transform: rotate(30deg) translateX(100%);
+  }
 }
 
 .top-bar-nav {
@@ -401,6 +464,20 @@
   color: #fff;
   margin: 0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  /* Apply same metallic effect to mobile logo */
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f0f0f0 50%,
+    #e0e0e0 51%,
+    #ffffff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 
+    0 1px 1px rgba(0, 0, 0, 0.3),
+    0 -1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .mobile-nav-section {
@@ -507,6 +584,11 @@
     border-right: none;
   }
   
+  /* Hide divider on mobile */
+  .top-bar-logo::after {
+    display: none;
+  }
+  
   .hamburger-menu {
     display: flex;
   }
@@ -515,6 +597,11 @@
   .top-bar-nav, 
   .top-bar-actions,
   .dropdown {
+    display: none;
+  }
+  
+  /* Hide secondary navigation bar on mobile */
+  .secondary-bar {
     display: none;
   }
 }
@@ -547,6 +634,5 @@
 }
 
 .has-hamburger-js {
-  /* This class will be added to body when JS is loaded */
   pointer-events: auto;
 }
