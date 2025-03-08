@@ -68,3 +68,20 @@
 .nav-item:hover::after {
   width: 100%;
 }
+
+/* Hide secondary-bar on mobile */
+@media (max-width: 768px) {
+  .secondary-bar {
+    display: none; /* Hide completely on mobile */
+  }
+  
+  /* Adjust top bar position when secondary bar is hidden */
+  .mobile-nav {
+    top: 45px; /* Match the top-bar height on mobile */
+  }
+}
+
+/* Adjust for mobile nav active state */
+.mobile-nav-active .secondary-bar {
+  display: none; /* Ensure it's hidden when mobile nav is active */
+}
