@@ -37,27 +37,6 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   return aggregated.slice(0, 10);
 };
 
-// New function for team stats
-const aggregateTeamStats = (data, desiredStatType) => {
-  const rawData = Array.isArray(data) ? data : data?.data || [];
-  const aggregated = rawData
-    .filter(
-      (item) =>
-        item.statType &&
-        item.statType.trim().toUpperCase() === desiredStatType.toUpperCase() &&
-        item.conference &&
-        allowedConferences.includes(item.conference.trim().toUpperCase())
-    )
-    .map((item) => ({
-      team: item.team,
-      conference: item.conference,
-      statValue: parseFloat(item.stat),
-    }));
-
-  aggregated.sort((a, b) => b.statValue - a.statValue);
-  return aggregated.slice(0, 10);
-};
-
 const Stats = () => {
   const [playerStats, setPlayerStats] = useState({
     passing: [],
@@ -65,30 +44,15 @@ const Stats = () => {
     receiving: [],
     interceptions: [],
   });
-  
-  // New state for team stats
-  const [teamStats, setTeamStats] = useState({
-    totalOffense: [],
-    totalDefense: [],
-    scoring: [],
-    scoringDefense: [],
-  });
 
   // For fetching team logos and abbreviations
   const [teams, setTeams] = useState([]);
 
-  // Loading states combined into a single object
-  const [loading, setLoading] = useState({
-    passing: true,
-    rushing: true,
-    receiving: true,
-    interceptions: true,
-    totalOffense: true, 
-    totalDefense: true,
-    scoring: true,
-    scoringDefense: true,
-    teams: true
-  });
+  // Loading states
+  const [loadingPassing, setLoadingPassing] = useState(true);
+  const [loadingRushing, setLoadingRushing] = useState(true);
+  const [loadingReceiving, setLoadingReceiving] = useState(true);
+  const [loadingInterceptions, setLoadingInterceptions] = useState(true);
 
   // Error
   const [error, setError] = useState(null);
@@ -96,44 +60,29 @@ const Stats = () => {
   // Tabs
   const [activeTab, setActiveTab] = useState("playerLeaders");
 
-  // Fetch teams for logos and abbreviations - optimized with AbortController
+  // Fetch teams for logos and abbreviations
   useEffect(() => {
-    const controller = new AbortController();
-    
     const fetchTeams = async () => {
       try {
-        setLoading(prev => ({ ...prev, teams: true }));
-        const teamsData = await teamsService.getTeams(controller.signal);
+        const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
       } catch (err) {
-        if (!controller.signal.aborted) {
-          console.error("Error fetching teams:", err);
-          setError("Failed to load team data.");
-        }
-      } finally {
-        setLoading(prev => ({ ...prev, teams: false }));
+        console.error("Error fetching teams:", err);
       }
     };
-    
     fetchTeams();
-    
-    return () => controller.abort();
   }, []);
 
-  // Helper for logos with error handling and default
+  // Helper for logos
   const getTeamLogo = (teamName) => {
-    if (!teamName) return "/photos/default_team.png";
-    
     const foundTeam = teams.find(
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return foundTeam?.logos?.[0] || "/photos/default_team.png";
   };
 
-  // Helper for team abbreviation with error handling
+  // Helper for team abbreviation
   const getTeamAbbreviation = (teamName) => {
-    if (!teamName) return "";
-    
     const foundTeam = teams.find(
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
@@ -142,11 +91,11 @@ const Stats = () => {
       : teamName?.toUpperCase() || "";
   };
 
-  // Consolidated helper for fetching player stats
-  const fetchPlayerCategory = async (year, category, statType, key) => {
+  // Helper for fetch
+  const fetchCategory = async (year, category, statType, setLoading, key) => {
     const controller = new AbortController();
     try {
-      setLoading(prev => ({ ...prev, [key]: true }));
+      setLoading(true);
       const rawData = await teamsService.getPlayerSeasonStats(
         year,
         category,
@@ -159,69 +108,31 @@ const Stats = () => {
     } catch (error) {
       if (!controller.signal.aborted) {
         console.error(`Error fetching ${category} stats:`, error);
-        setError(`Failed to load ${category} stats.`);
+        setError("Failed to load player season stats.");
       }
     } finally {
-      setLoading(prev => ({ ...prev, [key]: false }));
+      setLoading(false);
     }
     return () => controller.abort();
   };
 
-  // New helper for fetching team stats
-  const fetchTeamCategory = async (year, category, statType, key) => {
-    const controller = new AbortController();
-    try {
-      setLoading(prev => ({ ...prev, [key]: true }));
-      const rawData = await teamsService.getTeamSeasonStats(
-        year,
-        category,
-        "regular", 
-        100,
-        controller.signal
-      );
-      const aggregated = aggregateTeamStats(rawData, statType);
-      setTeamStats((prev) => ({ ...prev, [key]: aggregated }));
-    } catch (error) {
-      if (!controller.signal.aborted) {
-        console.error(`Error fetching team ${category} stats:`, error);
-        setError(`Failed to load team ${category} stats.`);
-      }
-    } finally {
-      setLoading(prev => ({ ...prev, [key]: false }));
-    }
-    return () => controller.abort();
-  };
-
-  // Consolidated fetch data with individual cleanup functions
+  // Fetch data
   useEffect(() => {
-    // For player stats
-    const cleanup1 = fetchPlayerCategory(2024, "passing", "YDS", "passing");
-    const cleanup2 = fetchPlayerCategory(2024, "rushing", "YDS", "rushing");
-    const cleanup3 = fetchPlayerCategory(2024, "receiving", "YDS", "receiving");
-    const cleanup4 = fetchPlayerCategory(2024, "interceptions", "INT", "interceptions");
-    
-    // For team stats
-    const cleanup5 = fetchTeamCategory(2024, "total", "YDS", "totalOffense");
-    const cleanup6 = fetchTeamCategory(2024, "totalDefense", "YDS", "totalDefense");
-    const cleanup7 = fetchTeamCategory(2024, "scoring", "PTS", "scoring");
-    const cleanup8 = fetchTeamCategory(2024, "scoringDefense", "PTS", "scoringDefense");
-    
-    // Cleanup function
-    return () => {
-      cleanup1();
-      cleanup2();
-      cleanup3();
-      cleanup4();
-      cleanup5();
-      cleanup6();
-      cleanup7();
-      cleanup8();
-    };
+    fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing");
+  }, []);
+  useEffect(() => {
+    fetchCategory(2024, "rushing", "YDS", setLoadingRushing, "rushing");
+  }, []);
+  useEffect(() => {
+    fetchCategory(2024, "receiving", "YDS", setLoadingReceiving, "receiving");
+  }, []);
+  useEffect(() => {
+    fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
 
-  // Render player stat card
-  const renderPlayerStatCard = (title, data, isLoading, unit = "YDS") => {
-    if (isLoading) {
+  // Render card
+  const renderStatCard = (title, data, loading) => {
+    if (loading) {
       return (
         <div className="stat-card">
           <h3 className="card-title">{title}</h3>
@@ -266,7 +177,7 @@ const Stats = () => {
           <span className="col-rank">RANK</span>
           <span className="col-team">TEAM</span>
           <span className="col-player">PLAYER</span>
-          <span className="col-yds">{unit}</span>
+          <span className="col-yds">YDS</span>
         </div>
         <div className="table-body">
           {rest.map((p, idx) => {
@@ -296,113 +207,33 @@ const Stats = () => {
     );
   };
 
-  // New render team stat card
-  const renderTeamStatCard = (title, data, isLoading, unit = "YDS") => {
-    if (isLoading) {
-      return (
-        <div className="stat-card">
-          <h3 className="card-title">{title}</h3>
-          <div className="loading-text">Loading...</div>
-        </div>
-      );
-    }
-    if (!data.length) {
-      return (
-        <div className="stat-card">
-          <h3 className="card-title">{title}</h3>
-          <div className="loading-text">No data found.</div>
-        </div>
-      );
-    }
-    const top = data[0];
-    const rest = data.slice(1);
-
-    return (
-      <div className="stat-card">
-        <h3 className="card-title">{title}</h3>
-
-        {/* Top team row */}
-        <div className="top-row-section">
-          <span className="top-rank">1</span>
-          <img
-            src={getTeamLogo(top.team)}
-            alt={getTeamAbbreviation(top.team)}
-            className="top-logo"
-          />
-          <div className="top-info">
-            <div className="top-player-name">{top.team}</div>
-            <div className="top-sub">
-              {top.conference}
-            </div>
-          </div>
-          <div className="top-yds">{top.statValue}</div>
-        </div>
-
-        {/* Next 9 in table format */}
-        <div className="table-header">
-          <span className="col-rank">RANK</span>
-          <span className="col-team">TEAM</span>
-          <span className="col-conf">CONFERENCE</span>
-          <span className="col-yds">{unit}</span>
-        </div>
-        <div className="table-body">
-          {rest.map((t, idx) => {
-            const rank = idx + 2; // since top is #1
-            return (
-              <div className="table-row" key={idx}>
-                <span className="col-rank">{rank}</span>
-                <span className="col-team">
-                  <img
-                    src={getTeamLogo(t.team)}
-                    alt={getTeamAbbreviation(t.team)}
-                    className="table-logo"
-                  />
-                  {getTeamAbbreviation(t.team)}
-                </span>
-                <span className="col-conf">{t.conference}</span>
-                <span className="col-yds">{t.statValue}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="complete-link">
-          Complete {title} Leaders
-        </div>
-      </div>
-    );
-  };
-
-  // Render player leaders
+  // Render 3 on top row, 1 on bottom row
   const renderPlayerLeaders = () => {
     return (
       <div className="cards-container">
         <div className="row top-row">
-          {renderPlayerStatCard("Passing Yards", playerStats.passing, loading.passing)}
-          {renderPlayerStatCard("Rushing Yards", playerStats.rushing, loading.rushing)}
-          {renderPlayerStatCard("Receiving Yards", playerStats.receiving, loading.receiving)}
+          {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
+          {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
+          {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
         </div>
         <div className="row bottom-row">
-          {renderPlayerStatCard("Interceptions", playerStats.interceptions, loading.interceptions, "INT")}
+          {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
         </div>
       </div>
     );
   };
 
-  // New render team leaders
-  const renderTeamLeaders = () => {
-    return (
-      <div className="cards-container">
-        <div className="row top-row">
-          {renderTeamStatCard("Total Offense", teamStats.totalOffense, loading.totalOffense, "YDS/G")}
-          {renderTeamStatCard("Scoring Offense", teamStats.scoring, loading.scoring, "PTS/G")}
-          {renderTeamStatCard("Total Defense", teamStats.totalDefense, loading.totalDefense, "YDS/G")}
+  // Content
+  const renderContent = () => {
+    if (activeTab === "playerLeaders") {
+      return renderPlayerLeaders();
+    } else {
+      return (
+        <div className="coming-soon">
+          <h2>Coming Soon...</h2>
         </div>
-        <div className="row bottom-row">
-          {renderTeamStatCard("Scoring Defense", teamStats.scoringDefense, loading.scoringDefense, "PTS/G")}
-        </div>
-      </div>
-    );
+      );
+    }
   };
 
   return (
@@ -617,7 +448,7 @@ const Stats = () => {
           gap: 4px;
           font-weight: 500;
         }
-        .col-player, .col-conf {
+        .col-player {
           font-weight: 400;
         }
         .col-yds {
@@ -634,22 +465,6 @@ const Stats = () => {
         }
         .complete-link:hover {
           text-decoration: underline;
-        }
-        
-        /* Added for responsive design */
-        @media (max-width: 1024px) {
-          .top-row {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .top-row {
-            grid-template-columns: 1fr;
-          }
-          .tabs {
-            flex-wrap: wrap;
-          }
         }
       `}</style>
 
@@ -690,9 +505,18 @@ const Stats = () => {
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
       {/* Content */}
-      {activeTab === "playerLeaders" && renderPlayerLeaders()}
-      {activeTab === "teamLeaders" && renderTeamLeaders()}
-      {activeTab !== "playerLeaders" && activeTab !== "teamLeaders" && (
+      {activeTab === "playerLeaders" ? (
+        <div className="cards-container">
+          <div className="row top-row">
+            {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
+            {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
+            {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
+          </div>
+          <div className="row bottom-row">
+            {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
+          </div>
+        </div>
+      ) : (
         <div className="coming-soon">
           <h2>Coming Soon...</h2>
         </div>
