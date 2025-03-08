@@ -295,26 +295,26 @@ const TeamDetail = () => {
             SP+ Ratings
           </div>
           <div className="card-body">
-          <div className="gauges-container">
-            <GaugeComponent 
-              label="Overall" 
-              rawValue={ratings.overall || ratings.rating || 1}  // Accept either format
-              metricType="overall" 
-              teamData={ratings}
-            />
-            <GaugeComponent 
-              label="Offense" 
-              rawValue={ratings.offense?.rating || 1} 
-              metricType="offense" 
-              teamData={ratings}
-            />
-            <GaugeComponent 
-              label="Defense" 
-              rawValue={ratings.defense?.rating || 1} 
-              metricType="defense" 
-              teamData={ratings}
-            />
-          </div>
+            <div className="gauges-container">
+              <GaugeComponent 
+                label="Overall" 
+                rawValue={ratings.rating} 
+                metricType="overall" 
+                teamData={ratings}
+              />
+              <GaugeComponent 
+                label="Offense" 
+                rawValue={ratings.offense?.rating} 
+                metricType="offense" 
+                teamData={ratings}
+              />
+              <GaugeComponent 
+                label="Defense" 
+                rawValue={ratings.defense?.rating} 
+                metricType="defense" 
+                teamData={ratings}
+              />
+            </div>
             <div className="ratings-explanation">
               <h3>How SP+ Ratings Work</h3>
               <p>
@@ -334,7 +334,7 @@ const TeamDetail = () => {
               </p>
               <p>
                 <strong>National Averages (2024):</strong><br />
-                Offense: 27.1 | Defense: 26.6
+                Overall: 0.55 | Offense: 27.14 | Defense: 26.61
               </p>
             </div>
           </div>

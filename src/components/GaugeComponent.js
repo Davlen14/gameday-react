@@ -1,10 +1,10 @@
 import React from "react";
 
-// National Averages
+// National Averages based on your data
 const NATIONAL_AVERAGES = {
-  overall: 16, // Updated based on your gauge image
-  offense: 27, // Updated based on your gauge image
-  defense: 27  // Updated based on your gauge image
+  overall: 0.55, // Overall national average
+  offense: 27.14, // Offense national average
+  defense: 26.61  // Defense national average
 };
 
 /**
@@ -19,46 +19,80 @@ const NATIONAL_AVERAGES = {
  */
 const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
   // Get the correct value from teamData if available
-  let valueToUse = rawValue;
+  let valueToUse = rawValue || 0;
   
   if (teamData) {
-    if (metricType === "overall" && teamData.rating) {
-      valueToUse = teamData.rating;
-    } else if (metricType === "offense" && teamData.offense && teamData.offense.rating) {
-      valueToUse = teamData.offense.rating;
-    } else if (metricType === "defense" && teamData.defense && teamData.defense.rating) {
-      valueToUse = teamData.defense.rating;
+    if (metricType === "overall") {
+      valueToUse = teamData.rating || teamData.overall || valueToUse;
+    } else if (metricType === "offense" && teamData.offense) {
+      valueToUse = teamData.offense.rating || valueToUse;
+    } else if (metricType === "defense" && teamData.defense) {
+      valueToUse = teamData.defense.rating || valueToUse;
     }
   }
   
-  // Get ranges based on metric type (offense, defense, overall)
+  // Determine if it's the defense metric (for inverse scaling)
   const isDefense = metricType === "defense";
   
-  // Set min and max values based on the gauge ranges shown in your image
-  let min = 1;
-  let max = 45;
-  const avg = NATIONAL_AVERAGES[metricType || "overall"];
+  // Set min and max values based on the data ranges
+  let min, max;
+  
+  if (metricType === "overall") {
+    min = 0;
+    max = 35; // Based on top teams having ~31 rating
+  } else {
+    min = 0;
+    max = 45; // Based on top offense/defense ratings
+  }
+  
+  // Get national average for the metric
+  const avg = NATIONAL_AVERAGES[metricType] || 0;
   
   // Calculate needle angle (0-180 degrees)
   let needleRotation;
   if (isDefense) {
-    // For defense - lower is better, so invert
+    // For defense, we need to handle it differently:
+    // Higher defense rating values are worse (more points allowed)
+    // So we invert the scale for visual representation
     needleRotation = 180 - ((valueToUse - min) / (max - min) * 180);
   } else {
+    // For offense and overall, higher is better
     needleRotation = (valueToUse - min) / (max - min) * 180;
   }
   
   // Ensure the needle stays within the gauge bounds
   needleRotation = Math.max(0, Math.min(180, needleRotation));
   
-  // Determine zone color based on value
+  // Determine zone color based on value and metric type
   let zone;
+  
   if (isDefense) {
-    zone = valueToUse <= 15 ? "green" :
-           valueToUse >= 30 ? "red" : "yellow";
+    // For defense lower is better
+    if (valueToUse <= 20) {
+      zone = "green"; // Elite defense (low rating)
+    } else if (valueToUse >= 30) {
+      zone = "red"; // Poor defense (high rating)
+    } else {
+      zone = "yellow"; // Average defense
+    }
+  } else if (metricType === "offense") {
+    // For offense higher is better
+    if (valueToUse >= 35) {
+      zone = "green"; // Elite offense
+    } else if (valueToUse <= 20) {
+      zone = "red"; // Poor offense
+    } else {
+      zone = "yellow"; // Average offense
+    }
   } else {
-    zone = valueToUse >= 30 ? "green" :
-           valueToUse <= 15 ? "red" : "yellow";
+    // For overall higher is better
+    if (valueToUse >= 25) {
+      zone = "green"; // Elite overall
+    } else if (valueToUse <= 15) {
+      zone = "red"; // Poor overall
+    } else {
+      zone = "yellow"; // Average overall
+    }
   }
   
   // Get needle color based on zone
@@ -66,11 +100,23 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
                       zone === "yellow" ? "#ffc700" : 
                       "#04aa6d";
                       
-  // Format value for display
-  const displayValue = Math.round(valueToUse);
+  // Format value for display - show one decimal place for precision
+  const displayValue = metricType === "overall" ? 
+                      valueToUse.toFixed(1) : 
+                      Math.round(valueToUse * 10) / 10;
   
   // Create a unique ID for this gauge's gradients
   const uniqueId = `${label.toLowerCase().replace(/\s/g, '')}`;
+  
+  // Calculate tick values based on metric type
+  const leftTick = isDefense ? max : min;
+  const rightTick = isDefense ? min : max;
+  
+  // Determine average position for tick mark - should be in the middle of yellow zone
+  const midTick = metricType === "offense" ? NATIONAL_AVERAGES.offense :
+                 metricType === "defense" ? NATIONAL_AVERAGES.defense :
+                 metricType === "overall" ? 15 : // Adjusted for overall scale
+                 (max + min) / 2;
 
   return (
     <div className="gauge">
@@ -112,20 +158,20 @@ const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
           strokeWidth="1" 
         />
         
-        {/* Tick marks - showing 1, 45 at ends and custom value for the middle */}
+        {/* Tick marks */}
         <line x1="10" y1="60" x2="10" y2="55" stroke="#666" strokeWidth="1" />
         <text x="10" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {isDefense ? "45" : "1"}
+          {leftTick}
         </text>
         
         <line x1="60" y1="60" x2="60" y2="55" stroke="#666" strokeWidth="1" />
         <text x="60" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {avg}
+          {midTick.toFixed(1)}
         </text>
         
         <line x1="110" y1="60" x2="110" y2="55" stroke="#666" strokeWidth="1" />
         <text x="110" y="70" textAnchor="middle" fontSize="8" fill="#666" fontWeight="bold">
-          {isDefense ? "1" : "45"}
+          {rightTick}
         </text>
         
         {/* Needle with properly sized ticker at the end */}
