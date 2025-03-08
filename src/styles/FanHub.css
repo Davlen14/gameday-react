@@ -7,11 +7,12 @@
   --accent-color: #4A90E2;
   --border-radius: 8px;
   --transition: all 0.3s ease;
+  --navbar-gradient: linear-gradient(90deg, #D4001C 0%, #8B0000 100%);
 }
 
 .fanhub-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 20px;
   background-color: white;
   font-family: 'Inter', 'Titillium Web', sans-serif;
@@ -22,9 +23,8 @@
   text-align: center;
   margin-bottom: 2rem;
   padding: 20px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8B0000 100%);
+  background: var(--navbar-gradient);
   color: white;
-  border-radius: var(--border-radius);
 }
 
 .header-icon {
@@ -37,6 +37,7 @@
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: white;
 }
 
 .fanhub-header p {
