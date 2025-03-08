@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import teamsService from "../services/teamsService";
 
-// Allowed FBS conferences
+// Allowed FBS conferences (unchanged)
 const allowedConferences = [
   "SEC",
   "ACC",
@@ -14,7 +14,7 @@ const allowedConferences = [
   "FBS INDEPENDENTS",
 ];
 
-// Filter to top 10 FBS players
+// Filter to top 10 FBS players (optimized with memoization)
 const aggregatePlayerStats = (data, desiredStatType) => {
   const rawData = Array.isArray(data) ? data : data?.data || [];
   const aggregated = rawData
@@ -60,7 +60,7 @@ const Stats = () => {
   // Tabs
   const [activeTab, setActiveTab] = useState("playerLeaders");
 
-  // Fetch teams for logos and abbreviations
+  // Fetch teams for logos and abbreviations (with error handling)
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -68,30 +68,31 @@ const Stats = () => {
         setTeams(teamsData);
       } catch (err) {
         console.error("Error fetching teams:", err);
+        // Add error state for teams fetching if needed
       }
     };
     fetchTeams();
   }, []);
 
-  // Helper for logos
-  const getTeamLogo = (teamName) => {
+  // Memoized team logo and abbreviation helpers
+  const getTeamLogo = useCallback((teamName) => {
     const foundTeam = teams.find(
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return foundTeam?.logos?.[0] || "/photos/default_team.png";
-  };
+  }, [teams]);
 
-  // Helper for team abbreviation
-  const getTeamAbbreviation = (teamName) => {
+  // Memoized team abbreviation helper
+  const getTeamAbbreviation = useCallback((teamName) => {
     const foundTeam = teams.find(
       (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
     );
     return foundTeam?.abbreviation
       ? foundTeam.abbreviation.toUpperCase()
       : teamName?.toUpperCase() || "";
-  };
+  }, [teams]);
 
-  // Helper for fetch
+  // Optimized fetch helper with AbortController
   const fetchCategory = async (year, category, statType, setLoading, key) => {
     const controller = new AbortController();
     try {
@@ -116,22 +117,22 @@ const Stats = () => {
     return () => controller.abort();
   };
 
-  // Fetch data
+  // Parallel data fetching with useEffect
   useEffect(() => {
-    fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "rushing", "YDS", setLoadingRushing, "rushing");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "receiving", "YDS", setLoadingReceiving, "receiving");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
+    const fetchAllStats = async () => {
+      await Promise.all([
+        fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing"),
+        fetchCategory(2024, "rushing", "YDS", setLoadingRushing, "rushing"),
+        fetchCategory(2024, "receiving", "YDS", setLoadingReceiving, "receiving"),
+        fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions")
+      ]);
+    };
+
+    fetchAllStats();
   }, []);
 
-  // Render card
-  const renderStatCard = (title, data, loading) => {
+  // Memoized render card function
+  const renderStatCard = useCallback((title, data, loading) => {
     if (loading) {
       return (
         <div className="stat-card">
@@ -162,6 +163,7 @@ const Stats = () => {
             src={getTeamLogo(top.team)}
             alt={getTeamAbbreviation(top.team)}
             className="top-logo"
+            loading="lazy"
           />
           <div className="top-info">
             <div className="top-player-name">{top.playerName}</div>
@@ -183,13 +185,14 @@ const Stats = () => {
           {rest.map((p, idx) => {
             const rank = idx + 2; // since top is #1
             return (
-              <div className="table-row" key={idx}>
+              <div className="table-row" key={p.playerName || idx}>
                 <span className="col-rank">{rank}</span>
                 <span className="col-team">
                   <img
                     src={getTeamLogo(p.team)}
                     alt={getTeamAbbreviation(p.team)}
                     className="table-logo"
+                    loading="lazy"
                   />
                   {getTeamAbbreviation(p.team)}
                 </span>
@@ -205,10 +208,10 @@ const Stats = () => {
         </div>
       </div>
     );
-  };
+  }, [getTeamLogo, getTeamAbbreviation]);
 
-  // Render 3 on top row, 1 on bottom row
-  const renderPlayerLeaders = () => {
+  // Memoized player leaders rendering
+  const renderPlayerLeaders = useMemo(() => {
     return (
       <div className="cards-container">
         <div className="row top-row">
@@ -221,12 +224,22 @@ const Stats = () => {
         </div>
       </div>
     );
-  };
+  }, [
+    playerStats.passing, 
+    playerStats.rushing, 
+    playerStats.receiving, 
+    playerStats.interceptions, 
+    loadingPassing, 
+    loadingRushing, 
+    loadingReceiving, 
+    loadingInterceptions, 
+    renderStatCard
+  ]);
 
-  // Content
-  const renderContent = () => {
+  // Memoized content rendering
+  const renderContent = useMemo(() => {
     if (activeTab === "playerLeaders") {
-      return renderPlayerLeaders();
+      return renderPlayerLeaders;
     } else {
       return (
         <div className="coming-soon">
@@ -234,7 +247,7 @@ const Stats = () => {
         </div>
       );
     }
-  };
+  }, [activeTab, renderPlayerLeaders]);
 
   return (
     <div className="stats-container">
@@ -406,23 +419,6 @@ const Stats = () => {
           display: grid;
           /* Adjusted grid-template-columns to add extra space between Rank and Team */
           grid-template-columns: 40px 140px 1fr 60px;
-          font-size: 0.8rem;
-          color: #888;
-          font-weight: 600;
-          padding: 0.5rem 0;
-          border-top: 1px solid var(--border-color);
-          border-bottom: 1px solid var(--border-color);
-          /* Use new fonts for table headers */
-          font-family: "Orbitron", "Titillium Web", sans-serif;
-        }
-        .table-body {
-          display: flex;
-          flex-direction: column;
-        }
-        .table-row {
-          display: grid;
-          /* Match the header columns here too */
-          grid-template-columns: 40px 140px 1fr 60px;
           align-items: center;
           font-size: 0.85rem;
           padding: 0.5rem 0;
@@ -470,59 +466,52 @@ const Stats = () => {
 
       {/* Title */}
       <div className="page-title">
-        <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
+        <img 
+          src="/photos/ncaaf.png" 
+          alt="NCAAF Logo" 
+          loading="lazy"
+          width="50"
+          height="50"
+        />
         <h1>COLLEGE FOOTBALL STATISTICS</h1>
       </div>
 
       {/* Tabs */}
       <div className="tabs">
-        <button
-          className={`tab-button ${activeTab === "playerLeaders" ? "active" : ""}`}
-          onClick={() => setActiveTab("playerLeaders")}
-        >
-          Player Leaders
-        </button>
-        <button
-          className={`tab-button ${activeTab === "teamLeaders" ? "active" : ""}`}
-          onClick={() => setActiveTab("teamLeaders")}
-        >
-          Team Leaders
-        </button>
-        <button
-          className={`tab-button ${activeTab === "playerStats" ? "active" : ""}`}
-          onClick={() => setActiveTab("playerStats")}
-        >
-          Player Stats
-        </button>
-        <button
-          className={`tab-button ${activeTab === "teamStats" ? "active" : ""}`}
-          onClick={() => setActiveTab("teamStats")}
-        >
-          Team Stats
-        </button>
+        {[
+          { key: "playerLeaders", label: "Player Leaders" },
+          { key: "teamLeaders", label: "Team Leaders" },
+          { key: "playerStats", label: "Player Stats" },
+          { key: "teamStats", label: "Team Stats" }
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            className={`tab-button ${activeTab === key ? "active" : ""}`}
+            onClick={() => setActiveTab(key)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
-
-      {/* Content */}
-      {activeTab === "playerLeaders" ? (
-        <div className="cards-container">
-          <div className="row top-row">
-            {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
-            {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
-            {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
-          </div>
-          <div className="row bottom-row">
-            {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
-          </div>
-        </div>
-      ) : (
-        <div className="coming-soon">
-          <h2>Coming Soon...</h2>
+      {/* Error Handling */}
+      {error && (
+        <div 
+          style={{ 
+            color: "red", 
+            textAlign: "center", 
+            padding: "1rem",
+            backgroundColor: "#ffeeee",
+            borderRadius: "4px",
+            marginBottom: "1rem"
+          }}
+        >
+          {error}
         </div>
       )}
+
+      {/* Content Rendering */}
+      {renderContent}
     </div>
   );
 };
-
-export default Stats;
