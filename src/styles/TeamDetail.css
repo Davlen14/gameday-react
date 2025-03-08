@@ -56,8 +56,8 @@
 
 /* Top Navigation Bar */
 .team-top-bar {
-  background: #004731; /* Green background for navbar like in the screenshot */
-  color: white;
+  /* Background will be set dynamically in JS based on team color */
+  color: white; /* Default color, will be overridden in JS */
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -66,7 +66,7 @@
 }
 
 .back-button {
-  color: white;
+  /* Color will be set dynamically in JS based on team color */
   text-decoration: none;
   font-weight: 600;
   display: flex;
@@ -94,6 +94,7 @@
   border: 1px solid var(--border-color);
   background: white;
   min-width: 200px;
+  color: #333; /* Ensuring text is visible on white background */
 }
 
 /* Team Header */
@@ -174,6 +175,7 @@
   border-bottom: 1px solid var(--border-color);
   font-weight: 600;
   font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .card-body {
@@ -237,7 +239,7 @@
 .circle-value {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--accent-primary);
+  color: var(--text-primary);
 }
 
 .circle-label {
@@ -245,46 +247,20 @@
   color: var(--text-secondary);
 }
 
-/* Gauge styles */
-.gauge {
-  text-align: center;
-}
-
-.gauges-container {
-  display: flex;
-  justify-content: space-around;
-  margin: 1rem 0;
-}
-
-/* Schedule Table */
-.schedule-table {
+/* Info Table */
+.info-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.schedule-table th {
-  text-align: left;
-  padding: 0.75rem;
-  border-bottom: 2px solid var(--border-color);
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.schedule-table td {
-  padding: 0.75rem;
+.info-table td {
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
-.schedule-game {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.schedule-team-logo {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+.info-table td:first-child {
+  color: var(--text-secondary);
+  width: 35%;
 }
 
 /* Roster Table */
@@ -306,6 +282,25 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Loading and error states */
+.loading-screen,
+.error-screen,
+.not-found-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-screen {
+  color: var(--accent-primary);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .dashboard-content {
@@ -325,11 +320,21 @@
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+    padding: 1rem;
+  }
+  
+  .team-selector {
+    width: 100%;
+  }
+  
+  .team-select {
+    width: 100%;
   }
   
   .team-header {
     flex-direction: column;
     text-align: center;
+    padding: 1.5rem 1rem;
   }
   
   .team-logo-container {
@@ -343,15 +348,48 @@
     align-items: center;
   }
   
+  .dashboard-content {
+    padding: 1rem;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  
+  .team-info-card, 
+  .team-ratings-card, 
+  .team-schedule-card, 
+  .team-roster-card {
+    grid-column: span 1;
+  }
+  
   .rating-circles {
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.5rem;
+    padding: 1rem 0.5rem;
+  }
+  
+  .roster-table {
+    font-size: 0.9rem;
+  }
+  
+  .roster-table th,
+  .roster-table td {
+    padding: 0.5rem;
+  }
+}
+
+/* Make table responsive on mobile */
+@media (max-width: 580px) {
+  .roster-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {

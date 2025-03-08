@@ -112,11 +112,36 @@ const TeamDetail = () => {
     return parseFloat((value / 10).toFixed(1));
   };
 
+  // Get contrast color for text based on background color
+  const getContrastColor = (hexColor) => {
+    // Default to white if no color is provided
+    if (!hexColor) return "#ffffff";
+    
+    // Remove the hash if it exists
+    hexColor = hexColor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(hexColor.substr(0, 2), 16);
+    const g = parseInt(hexColor.substr(2, 2), 16);
+    const b = parseInt(hexColor.substr(4, 2), 16);
+    
+    // Calculate contrast (YIQ formula)
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+  };
+
+  // Top bar style using team color
+  const topBarStyle = {
+    backgroundColor: team.color || "#1a1a1a",
+    color: getContrastColor(team.color || "#1a1a1a"),
+  };
+
   return (
     <div className="team-dashboard">
       {/* Top Bar */}
-      <div className="team-top-bar">
-        <Link to="/teams" className="back-button">
+      <div className="team-top-bar" style={topBarStyle}>
+        <Link to="/teams" className="back-button" style={{ color: getContrastColor(team.color || "#1a1a1a") }}>
           ← Back
         </Link>
         <div className="team-selector">
@@ -175,7 +200,7 @@ const TeamDetail = () => {
           <div className="card-body">
             <div className="rating-circles">
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.overall || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.overall || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.overall || 0)}</span>
                   </div>
@@ -184,7 +209,7 @@ const TeamDetail = () => {
               </div>
 
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.offense || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.offense || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.offense || 0)}</span>
                   </div>
@@ -193,7 +218,7 @@ const TeamDetail = () => {
               </div>
 
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.defense || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.defense || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.defense || 0)}</span>
                   </div>
@@ -235,7 +260,7 @@ const TeamDetail = () => {
 
         {/* Team Info Card */}
         <div className="dashboard-card team-info-card">
-          <div className="card-header">About {team.school} Hurricanes</div>
+          <div className="card-header">About {team.school} {team.mascot}</div>
           <div className="card-body">
             <table className="info-table">
               <tbody>
@@ -262,7 +287,7 @@ const TeamDetail = () => {
           <div className="card-body">
             <div className="rating-circles">
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.overall || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.overall || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.overall || 0)}</span>
                   </div>
@@ -271,7 +296,7 @@ const TeamDetail = () => {
               </div>
 
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.offense || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.offense || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.offense || 0)}</span>
                   </div>
@@ -280,7 +305,7 @@ const TeamDetail = () => {
               </div>
 
               <div className="rating-circle">
-                <div className="circle-outer" style={{ background: `conic-gradient(#d4001c ${normalizeRating(ratings.defense || 0) * 20}%, #f0f0f0 0)` }}>
+                <div className="circle-outer" style={{ background: `conic-gradient(${team.color || "#d4001c"} ${normalizeRating(ratings.defense || 0) * 20}%, #f0f0f0 0)` }}>
                   <div className="circle-inner">
                     <span className="circle-value">{normalizeRating(ratings.defense || 0)}</span>
                   </div>
