@@ -1,0 +1,611 @@
+/* Import Google Fonts: Orbitron and Titillium Web */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+
+/* ===============================
+   COLOR SCHEME & GLOBALS
+=============================== */
+:root {
+  --primary-color: #ffffff;
+  --accent-color: #D4001C;
+  --text-color: #333333;
+  --secondary-text-color: #666666;
+  --background-color: #f5f5f5;
+  --border-color: #dddddd;
+  --analytics-color: #4A90E2;
+  --edge-color: #50C878;
+  --pro-color: #D4001C;
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --transition-speed: 0.3s;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #333333;
+    --accent-color: #D4001C;
+    --text-color: #ffffff;
+    --secondary-text-color: #aaaaaa;
+    --background-color: #1e1e1e;
+    --border-color: #444444;
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ===============================
+   CONTAINER & MAIN STYLES
+=============================== */
+.get-started-container {
+  font-family: "Titillium Web", sans-serif;
+  padding: 2rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1, h2, h3 {
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  margin: 0;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, var(--accent-color), #FF6B6B);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+/* ===============================
+   HERO SECTION
+=============================== */
+.hero-section {
+  text-align: center;
+  padding: 4rem 1rem;
+  margin-bottom: 3rem;
+  background: radial-gradient(circle at center, rgba(212, 0, 28, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.hero-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--secondary-text-color);
+}
+
+.trial-badge {
+  display: inline-block;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ===============================
+   PLAN SELECTOR
+=============================== */
+.plan-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.plan-toggle {
+  display: flex;
+  background-color: var(--primary-color);
+  border-radius: 50px;
+  padding: 0.3rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.plan-toggle button {
+  font-family: "Titillium Web", sans-serif;
+  background: none;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  position: relative;
+  color: var(--text-color);
+  transition: all var(--transition-speed) ease;
+}
+
+.plan-toggle button.active {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.save-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #FFD700;
+  color: black;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+/* ===============================
+   PRICING CARDS
+=============================== */
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.pricing-card {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.pricing-card.selected {
+  border-width: 3px;
+  transform: scale(1.02);
+}
+
+.pricing-card.expanded {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.card-header {
+  padding: 1.5rem;
+  color: white;
+  text-align: center;
+}
+
+.card-header h3 {
+  margin-bottom: 0.5rem;
+}
+
+.card-header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.card-price {
+  padding: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.price-currency {
+  vertical-align: super;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.price-value {
+  font-size: 3.5rem;
+  font-weight: 800;
+  font-family: "Orbitron", sans-serif;
+}
+
+.price-period {
+  font-size: 1rem;
+  color: var(--secondary-text-color);
+}
+
+.price-regular {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  text-decoration: line-through;
+  color: var(--secondary-text-color);
+  font-size: 0.9rem;
+}
+
+.card-features {
+  padding: 0 1.5rem 1.5rem;
+  flex-grow: 1;
+}
+
+.card-features ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card-features li {
+  padding: 0.5rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.card-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--accent-color);
+}
+
+.card-action {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.select-plan-btn {
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  background-color: var(--accent-color);
+}
+
+.select-plan-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ===============================
+   CTA SECTION
+=============================== */
+.cta-section {
+  text-align: center;
+  padding: 4rem 1rem;
+  margin: 3rem 0;
+  background: linear-gradient(to right, rgba(212, 0, 28, 0.1), rgba(74, 144, 226, 0.1));
+  border-radius: 20px;
+}
+
+.cta-button {
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  margin: 1.5rem 0;
+  transition: all var(--transition-speed) ease;
+  box-shadow: 0 5px 20px rgba(212, 0, 28, 0.4);
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(212, 0, 28, 0.5);
+}
+
+.cta-disclaimer {
+  font-size: 0.9rem;
+  color: var(--secondary-text-color);
+}
+
+/* ===============================
+   FEATURES SECTION
+=============================== */
+.features-section {
+  padding: 4rem 1rem;
+  margin-bottom: 3rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: var(--primary-color);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  transition: transform var(--transition-speed) ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-card, .pricing-card, .testimonial-card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.analytics-icon {
+  background-color: rgba(74, 144, 226, 0.1);
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234A90E2"><path d="M3 3v18h18v-2H5V3H3zm4 14h2v-4H7v4zm4 0h2V9h-2v8zm4 0h2v-6h-2v6z"/></svg>');
+}
+
+.recruiting-icon {
+  background-color: rgba(80, 200, 120, 0.1);
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2350C878"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+}
+
+.betting-icon {
+  background-color: rgba(212, 0, 28, 0.1);
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23D4001C"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>');
+}
+
+.coaching-icon {
+  background-color: rgba(255, 153, 0, 0.1);
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF9900"><path d="M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z"/></svg>');
+}
+
+/* ===============================
+   TESTIMONIALS SECTION
+=============================== */
+.testimonials-section {
+  padding: 4rem 1rem;
+  margin-bottom: 3rem;
+}
+
+.testimonial-carousel {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  padding: 1rem 0.5rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.testimonial-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+
+.testimonial-carousel::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: 10px;
+}
+
+.testimonial-carousel::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.testimonial-card {
+  flex: 0 0 350px;
+  background-color: var(--primary-color);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-content {
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+}
+
+.testimonial-content p {
+  font-style: italic;
+  position: relative;
+}
+
+.testimonial-content p::before,
+.testimonial-content p::after {
+  content: '"';
+  font-size: 2rem;
+  color: var(--accent-color);
+  position: absolute;
+  opacity: 0.3;
+}
+
+.testimonial-content p::before {
+  left: -1rem;
+  top: -0.5rem;
+}
+
+.testimonial-content p::after {
+  right: -1rem;
+  bottom: -0.5rem;
+}
+
+.testimonial-author {
+  text-align: right;
+}
+
+/* ===============================
+   FAQ SECTION
+=============================== */
+.faq-section {
+  padding: 4rem 1rem;
+}
+
+.accordion {
+  margin-top: 2rem;
+}
+
+.accordion-item {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.accordion-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+}
+
+.accordion-header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.accordion-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.accordion-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  transition: transform var(--transition-speed) ease;
+}
+
+.accordion-content {
+  padding: 0 1.5rem 1.5rem;
+  display: none;
+}
+
+.accordion-item.active .accordion-content {
+  display: block;
+}
+
+.accordion-item.active .accordion-icon {
+  transform: rotate(45deg);
+}
+
+/* ===============================
+   RESPONSIVE STYLES
+=============================== */
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+  }
+  
+  .pricing-cards {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .get-started-container {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .hero-section {
+    padding: 3rem 1rem;
+  }
+  
+  .pricing-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .testimonial-carousel {
+    gap: 1rem;
+  }
+  
+  .testimonial-card {
+    flex: 0 0 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .plan-toggle button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .price-value {
+    font-size: 2.8rem;
+  }
+  
+  .cta-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}

@@ -25,6 +25,9 @@ import CoachOverview from "./components/CoachOverview";
 // NEW: Import VisualizeTrends Component (for Visualize Trends route)
 import VisualizeTrends from "./components/VisualizeTrends";
 
+// NEW: Import GetStarted Component for the Get Started page
+import GetStarted from "./components/GetStarted";
+
 // Conference Components
 import SEC from "./conferences/SEC";
 import BigTen from "./conferences/BigTen";
@@ -312,9 +315,9 @@ function App() {
 
               {/* Right Side Buttons */}
               <div className="top-bar-actions">
-                <a href="/get-started" className="top-bar-button get-started">
+                <Link to="/get-started" className="top-bar-button get-started">
                   Get Started
-                </a>
+                </Link>
                 <a href="/upgrade" className="top-bar-button upgrade">
                   Upgrade
                 </a>
@@ -445,7 +448,7 @@ function App() {
             
             {/* Action Buttons Section */}
             <div className="mobile-nav-actions">
-              <a href="/get-started" className="mobile-nav-button" onClick={closeMobileNav}>Get Started</a>
+              <Link to="/get-started" className="mobile-nav-button" onClick={closeMobileNav}>Get Started</Link>
               <a href="/upgrade" className="mobile-nav-button" onClick={closeMobileNav}>Upgrade</a>
               <a href="/signin" className="mobile-nav-button" onClick={closeMobileNav}>Login</a>
             </div>
@@ -510,6 +513,9 @@ function App() {
 
               {/* New Route for Arbitrage + EV */}
               <Route path="/arbitrage-ev" element={<ArbitrageEV />} />
+
+              {/* NEW: Get Started Route */}
+              <Route path="/get-started" element={<GetStarted />} />
 
               {/* Conference Routes */}
               <Route path="/sec" element={<SEC />} />
