@@ -1,552 +1,223 @@
+/* FanHub.css - Modern, Responsive Styling */
 :root {
-  --primary-color: #ffffff;
-  --accent-color: #D4001C;
-  --text-color: #333333;
-  --background-color: #f5f5f5;
-  --border-color: #dddddd;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --hover-color: #f9f9f9;
-
-  /* Heights for the three bars - FIXED positioning values */
-  --top-navbar-height: 50px;
-  --secondary-navbar-height: 50px;
-  --scoreboard-height: 50px; /* Dynamically overridden to 0px if scoreboard is hidden */
-
-  --transition-speed: 0.3s;
-  --sidebar-width: 60px;
-  --sidebar-expanded-width: 200px;
-  --right-sidebar-width: 300px;
+  --primary-color: #D4001C;  /* Gameday+ Scarlet */
+  --secondary-color: #333;
+  --background-color: #f4f4f4;
+  --text-color: #222;
+  --accent-color: #4A90E2;
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
 }
 
-/* Global Box Sizing */
-* {
-  box-sizing: border-box;
+.fanhub-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  font-family: 'Inter', 'Titillium Web', sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: var(--text-color);
-  background-color: var(--background-color);
-}
-
-/* --- FAN HUB LAYOUT --- */
-.fan-hub-layout {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.fan-hub-container {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr var(--right-sidebar-width);
-  grid-template-areas: "sidebar main chat";
-  width: 100%;
-  transition: grid-template-columns var(--transition-speed) ease;
-}
-
-/* --- LEFT SIDEBAR --- */
-.left-sidebar {
-  grid-area: sidebar;
-  position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-  left: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
-  background-color: var(--primary-color);
-  border-right: 1px solid var(--border-color);
-  transition: width var(--transition-speed) ease, top var(--transition-speed) ease;
-  overflow: hidden;
-  z-index: 1050; /* Above main content, below nav */
-  box-shadow: 2px 0 5px var(--shadow-color);
-  padding-top: 5px; /* optional top padding */
-}
-
-.left-sidebar.expanded {
-  width: var(--sidebar-expanded-width);
-}
-
-.left-sidebar.expanded ~ .main-content {
-  grid-template-columns: var(--sidebar-expanded-width) 1fr var(--right-sidebar-width);
-}
-
-.left-sidebar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.left-sidebar li {
-  display: flex;
-  align-items: center;
-  padding: 15px;
-  cursor: pointer;
-  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-  border-left: 3px solid transparent;
-}
-
-.left-sidebar li:hover {
-  background-color: var(--hover-color);
-  border-left: 3px solid var(--accent-color);
-  color: var(--accent-color);
-}
-
-.left-sidebar li .icon {
-  font-size: 1.5em;
-  width: 30px;
+/* Header Styling */
+.fanhub-header {
   text-align: center;
-}
-
-.left-sidebar li .label {
-  margin-left: 10px;
-  opacity: 0;
-  transition: opacity var(--transition-speed) ease;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.left-sidebar.expanded li .label {
-  opacity: 1;
-}
-
-/* When scoreboard is hidden => top + secondary only */
-.scoreboard-hidden .left-sidebar {
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
-}
-
-/* --- MAIN CONTENT --- */
-.main-content {
-  grid-area: main;
-  background-color: var(--background-color);
-  transition: grid-template-columns var(--transition-speed) ease;
-  z-index: 900; /* Below sidebars but above base content */
-  padding-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-}
-
-/* If scoreboard is hidden => reduce the padding-top accordingly */
-.scoreboard-hidden .main-content {
-  padding-top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
-}
-
-/* --- STICKY HEADER --- */
-.sticky-header {
-  position: sticky;
-  top: 0;
-  background-color: var(--primary-color);
-  box-shadow: 0 2px 5px var(--shadow-color);
-  z-index: 980;
-}
-
-.header-content {
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sticky-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
+  margin-bottom: 2rem;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #8B0000 100%);
+  color: white;
+  border-radius: var(--border-radius);
 }
 
 .header-icon {
-  margin-right: 10px;
-  color: var(--accent-color);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: white;
 }
 
-.team-selector {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: var(--primary-color);
-  box-shadow: 0 1px 3px var(--shadow-color);
-  cursor: pointer;
-  transition: border-color var(--transition-speed) ease;
+.fanhub-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
-.team-selector:hover,
-.team-selector:focus {
-  border-color: var(--accent-color);
-  outline: none;
+.fanhub-header p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1rem;
 }
 
-/* --- SECTION STYLES --- */
-.section {
-  margin: 20px;
-  padding: 20px;
-  background-color: var(--primary-color);
-  border-radius: 8px;
-  box-shadow: 0 2px 10px var(--shadow-color);
-  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+/* Navigation Tabs */
+.fanhub-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
 }
 
-.section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--shadow-color);
-}
-
-.section-header {
+.tab-button {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  cursor: pointer;
 }
 
-.section-icon {
-  color: var(--accent-color);
-  margin-right: 10px;
+.tab-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.tab-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.tab-button svg {
   font-size: 1.2rem;
 }
 
-.section h3 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-.content-placeholder {
-  height: 150px;
-  background-color: var(--background-color);
-  border-radius: 6px;
-  margin-top: 10px;
-  transition: background-color var(--transition-speed) ease;
-}
-
-.section:hover .content-placeholder {
-  background-color: var(--hover-color);
-}
-
-/* --- RIGHT SIDEBAR --- */
-.right-sidebar {
-  grid-area: chat;
-  position: fixed;
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-  right: 0;
-  bottom: 0;
-  width: var(--right-sidebar-width);
-  background-color: var(--primary-color);
-  border-left: 1px solid var(--border-color);
+/* Content Filters */
+.content-filters {
   display: flex;
-  flex-direction: column;
-  z-index: 1050; /* Match left sidebar z-index */
-  box-shadow: -2px 0 5px var(--shadow-color);
-  transition: top var(--transition-speed) ease;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
-.chat-header {
-  padding: 15px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-
-.chat-icon {
-  margin-right: 10px;
-  color: var(--accent-color);
-}
-
-.chat-messages {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-  background-color: var(--background-color);
-}
-
-.chat-input {
-  border-top: 1px solid var(--border-color);
-  padding: 10px;
-  background-color: var(--primary-color);
-}
-
-.chat-input input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-}
-
-.chat-input input:focus {
-  border-color: var(--accent-color);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.1);
-}
-
-.mini-feed {
-  padding: 12px 15px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--background-color);
-  font-size: 0.9em;
-}
-
-.no-messages {
-  color: #888;
-  font-style: italic;
-}
-
-/* When scoreboard is hidden => top + secondary only */
-.scoreboard-hidden .right-sidebar {
-  top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
-}
-
-/* --- CHAT TABS --- */
-.chat-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 15px;
-  overflow-x: auto;
-}
-
-.chat-tabs button {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9em;
-  border-bottom: 3px solid transparent;
-  transition: all var(--transition-speed) ease;
-  white-space: nowrap;
-}
-
-.chat-tabs button span {
-  margin-left: 8px;
-}
-
-.chat-tabs button:hover {
-  background-color: var(--hover-color);
-}
-
-.chat-tabs button.active {
-  border-bottom: 3px solid var(--accent-color);
-  color: var(--accent-color);
-  font-weight: 600;
-}
-
-/* --- ACTION BUTTONS --- */
-.action-button {
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(212, 0, 28, 0.2);
-  transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
-}
-
-.action-button svg {
-  margin-right: 8px;
-}
-
-.action-button:hover {
-  background-color: #b30017;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(212, 0, 28, 0.3);
-}
-
-/* --- TEAM LOGO STYLES --- */
-.coach-team-logo {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1rem;
-  flex-shrink: 0;
+.search-container {
+  flex-grow: 1;
   position: relative;
-  
-  /* 3D Effect Base */
-  perspective: 800px;
-  border-radius: 12px; /* Rounded square instead of circle */
-  overflow: hidden;
-  
-  /* Create depth with box shadow */
-  box-shadow:
-    0 6px 10px rgba(0, 0, 0, 0.3),
-    0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
-.coach-team-logo img {
-  max-width: 100%;
-  max-height: 100%;
-  transform-style: preserve-3d;
-  transform: rotateY(5deg) rotateX(5deg);
-  transition: all 0.3s ease;
-  
-  /* This works with any image source */
-  filter:
-    contrast(1.1)
-    saturate(1.1)
-    drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
-}
-
-/* Metallic overlay that works with any logo */
-.coach-team-logo::after {
-  content: "";
+.search-icon {
   position: absolute;
-  top: 0;
-  left: 0;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+}
+
+.search-container input {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(130, 130, 130, 0.2) 51%,
-    rgba(200, 200, 200, 0.2) 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
 }
 
-/* Shining effect overlay */
-.coach-team-logo::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0.4) 48%,
-    rgba(255, 255, 255, 0.7) 50%,
-    rgba(255, 255, 255, 0) 70%,
-    transparent 100%
-  );
-  transform: rotate(25deg);
-  pointer-events: none;
-  z-index: 1;
-  animation: shine 4s infinite ease-in-out;
+.filter-container {
+  display: flex;
+  gap: 1rem;
 }
 
-/* Interactive hover effect */
-.coach-team-logo:hover img {
-  transform: rotateY(-5deg) rotateX(-5deg) scale(1.05);
+.filter-container select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
 }
 
-/* Shine animation */
-@keyframes shine {
-  0%, 100% {
-    top: -150%;
-    left: -50%;
-  }
-  50% {
-    top: 100%;
-    left: 100%;
-  }
+/* Discussions Container */
+.discussions-container,
+.polls-container {
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
 }
 
-/* --- RESPONSIVE STYLES --- */
-@media (max-width: 1200px) {
-  .fan-hub-container {
-    grid-template-columns: var(--sidebar-width) 1fr 250px;
-  }
-  .right-sidebar {
-    width: 250px;
-  }
-  .main-content {
-    margin-right: 250px;
-  }
+.discussion-topic {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: var(--transition);
 }
 
-@media (max-width: 992px) {
-  .fan-hub-container {
-    grid-template-columns: 50px 1fr var(--right-sidebar-width);
-  }
-  .left-sidebar {
-    width: 50px;
-  }
-  .left-sidebar.expanded {
-    width: 180px;
-  }
-  .main-content {
-    margin-left: 50px;
-  }
-  .left-sidebar.expanded ~ .main-content {
-    grid-template-columns: 180px 1fr var(--right-sidebar-width);
-  }
+.discussion-topic:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.topic-category {
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.topic-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+}
+
+/* Live Polls */
+.live-poll {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.poll-option {
+  margin-bottom: 0.5rem;
+  background-color: #f0f0f0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.poll-bar {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px;
+  text-align: right;
+  transition: var(--transition);
+}
+
+/* Coming Soon Section */
+.coming-soon {
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.coming-soon h2 {
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+
+.coming-soon p {
+  color: #666;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .fan-hub-container {
-    grid-template-columns: 1fr;
-    grid-template-areas: 
-      "main"
-      "chat";
-  }
-
-  .left-sidebar {
-    position: fixed;
-    width: 100%;
-    height: 50px;
-    bottom: auto;
-    display: flex;
-    overflow-x: auto;
-    top: calc(var(--top-navbar-height) + var(--secondary-navbar-height) + var(--scoreboard-height));
-    z-index: 1100;
-  }
-
-  .scoreboard-hidden .left-sidebar {
-    top: calc(var(--top-navbar-height) + var(--secondary-navbar-height));
-  }
-
-  .left-sidebar ul {
-    display: flex;
-    width: 100%;
-  }
-
-  .left-sidebar li {
+  .content-filters {
     flex-direction: column;
+  }
+
+  .fanhub-tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-button {
+    flex-grow: 1;
     justify-content: center;
-    padding: 5px 10px;
-  }
-
-  .left-sidebar li .label {
-    font-size: 0.7rem;
-    margin-left: 0;
-    margin-top: 2px;
-    opacity: 1;
-  }
-
-  .main-content {
-    padding-top: 50px;
-    margin-left: 0;
-    margin-right: 0;
-    padding-bottom: 50px;
-  }
-
-  .right-sidebar {
-    position: fixed;
-    width: 100%;
-    height: 300px;
-    top: auto;
-    bottom: 0;
-    display: none;
-  }
-
-  .sticky-header .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .team-selector {
-    margin-top: 10px;
-    width: 100%;
   }
 }
