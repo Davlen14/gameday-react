@@ -380,7 +380,67 @@ function App() {
                 </>
               )}
               
-              {/* Add more mobile sections for other dropdown menus */}
+              {/* GamedayGPT */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-gamedaygpt")}>
+                GamedayGPT <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-gamedaygpt" && (
+                <>
+                  <Link to="/predict-outcomes" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Predict Outcomes</Link>
+                  <Link to="/ask-questions" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Ask Questions</Link>
+                  <Link to="/betting-suggestions" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Betting Suggestions</Link>
+                </>
+              )}
+              
+              {/* News */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-news")}>
+                News <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-news" && (
+                <>
+                  <Link to="/latest-news" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Latest Updates</Link>
+                  <Link to="/injury-reports" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Injury Report</Link>
+                  <Link to="/rankings" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Rankings</Link>
+                  <Link to="/coaching-changes" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Coaching Changes</Link>
+                </>
+              )}
+              
+              {/* Metrics */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-metrics")}>
+                Metrics <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-metrics" && (
+                <>
+                  <Link to="/team-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Team Analytics</Link>
+                  <Link to="/player-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Player Stats</Link>
+                  <Link to="/betting-models" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Visualize Trends</Link>
+                </>
+              )}
+              
+              {/* Videos */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-videos")}>
+                Videos <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-videos" && (
+                <>
+                  <Link to="/highlights" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Game Highlights</Link>
+                  <Link to="/analysis" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Game Analysis</Link>
+                  <Link to="/press-conferences" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Press Conferences</Link>
+                </>
+              )}
+              
+              {/* Recruiting */}
+              <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-recruiting")}>
+                Recruiting <span style={{ marginLeft: 'auto' }}>▼</span>
+              </div>
+              {dropdownOpen === "mobile-recruiting" && (
+                <>
+                  <Link to="/top-prospects" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Top Prospects</Link>
+                  <Link to="/commitments" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Commitments</Link>
+                  <Link to="/transfer-portal" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Transfer Portal</Link>
+                  <Link to="/coach-overview" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Coach Overview</Link>
+                </>
+              )}
             </div>
             
             {/* Action Buttons Section */}
