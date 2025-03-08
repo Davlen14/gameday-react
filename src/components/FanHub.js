@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaFootballBall, 
@@ -13,25 +13,6 @@ import {
   FaPoll
 } from 'react-icons/fa';
 import "../styles/FanHub.css";
-
-// Mock data (in a real app, these would come from services)
-const mockDiscussionTopics = [
-  { 
-    id: 1, 
-    title: "Transfer Portal Megathread", 
-    category: "Recruiting", 
-    activeUsers: 342, 
-    lastActivity: "2 hours ago" 
-  },
-  { 
-    id: 2, 
-    title: "Week 8 Betting Strategies", 
-    category: "Betting", 
-    activeUsers: 215, 
-    lastActivity: "45 mins ago" 
-  },
-  // More mock topics...
-];
 
 const mockLivePolls = [
   {
@@ -51,6 +32,16 @@ const mockLivePolls = [
       { text: "Caleb Williams", votes: 38, percentage: 38 },
       { text: "Drake Maye", votes: 10, percentage: 10 }
     ]
+  }
+];
+
+const mockDiscussionTopics = [
+  { 
+    id: 1, 
+    title: "Week 1 Transfer Portal Megathread", 
+    category: "Recruiting", 
+    activeUsers: 342, 
+    lastActivity: "2 hours ago" 
   }
 ];
 
@@ -175,22 +166,28 @@ const FanHub = () => {
               ref={discussionContainerRef}
             >
               <h2>Community Discussions</h2>
-              {filteredTopics.map(topic => (
-                <motion.div 
-                  key={topic.id} 
-                  className="discussion-topic"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className="topic-header">
-                    <span className="topic-category">{topic.category}</span>
-                    <span className="topic-activity">{topic.lastActivity}</span>
-                  </div>
-                  <h3>{topic.title}</h3>
-                  <div className="topic-stats">
-                    <FaUserFriends /> {topic.activeUsers} Active Users
-                  </div>
-                </motion.div>
-              ))}
+              {filteredTopics.length > 0 ? (
+                filteredTopics.map(topic => (
+                  <motion.div 
+                    key={topic.id} 
+                    className="discussion-topic"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="topic-header">
+                      <span className="topic-category">{topic.category}</span>
+                      <span className="topic-activity">{topic.lastActivity}</span>
+                    </div>
+                    <h3>{topic.title}</h3>
+                    <div className="topic-stats">
+                      <FaUserFriends /> {topic.activeUsers} Active Users
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="no-discussions">
+                  <p>No discussions available at the moment.</p>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -232,7 +229,7 @@ const FanHub = () => {
             >
               <FaTrophy className="coming-soon-icon" />
               <h2>Coming Soon!</h2>
-              <p>We're working on bringing you amazing {activeTab} features.</p>
+              <p>We're working on bringing you amazing {activeTab.replace('bets', 'betting').replace('predictions', 'prediction')} features.</p>
             </motion.div>
           )}
         </AnimatePresence>
