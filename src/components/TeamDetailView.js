@@ -295,10 +295,27 @@ const TeamDetail = () => {
             SP+ Ratings
           </div>
           <div className="card-body">
+          // Inside your TeamDetail.js file, update the gauge usage to pass the team data:
+
             <div className="gauges-container">
-              <GaugeComponent label="Overall" rawValue={ratings.overall || 1} metricType="overall" />
-              <GaugeComponent label="Offense" rawValue={ratings.offense || 1} metricType="offense" />
-              <GaugeComponent label="Defense" rawValue={ratings.defense || 1} metricType="defense" />
+              <GaugeComponent 
+                label="Overall" 
+                rawValue={ratings.overall || 1} 
+                metricType="overall" 
+                teamData={ratings}
+              />
+              <GaugeComponent 
+                label="Offense" 
+                rawValue={ratings.offense || 1} 
+                metricType="offense" 
+                teamData={ratings}
+              />
+              <GaugeComponent 
+                label="Defense" 
+                rawValue={ratings.defense || 1} 
+                metricType="defense" 
+                teamData={ratings}
+              />
             </div>
             <div className="ratings-explanation">
               <h3>How SP+ Ratings Work</h3>

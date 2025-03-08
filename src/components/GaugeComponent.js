@@ -14,9 +14,23 @@ const NATIONAL_AVERAGES = {
  * @param {string} props.label - The label for the gauge (e.g., "Overall", "Offense", "Defense")
  * @param {number} props.rawValue - The value to display on the gauge
  * @param {string} props.metricType - The type of metric ("overall", "offense", or "defense")
+ * @param {Object} props.teamData - Complete team data from API/JSON
  * @returns {JSX.Element} A gauge component
  */
-const GaugeComponent = ({ label, rawValue, metricType }) => {
+const GaugeComponent = ({ label, rawValue, metricType, teamData }) => {
+  // Get the correct value from teamData if available
+  let valueToUse = rawValue;
+  
+  if (teamData) {
+    if (metricType === "overall" && teamData.rating) {
+      valueToUse = teamData.rating;
+    } else if (metricType === "offense" && teamData.offense && teamData.offense.rating) {
+      valueToUse = teamData.offense.rating;
+    } else if (metricType === "defense" && teamData.defense && teamData.defense.rating) {
+      valueToUse = teamData.defense.rating;
+    }
+  }
+  
   // Get ranges based on metric type (offense, defense, overall)
   const isDefense = metricType === "defense";
   
@@ -31,10 +45,11 @@ const GaugeComponent = ({ label, rawValue, metricType }) => {
   const totalRange = max - min;
   
   // Calculate normalized value between min and max
-  const clampedValue = Math.max(min, Math.min(rawValue, max));
+  const clampedValue = Math.max(min, Math.min(valueToUse, max));
   const valuePercentage = (clampedValue - min) / totalRange;
   
-  // For defense, invert the needle position (lower is better)
+  // Calculate needle angle (0-180 degrees)
+  // For defense, we need to invert the rotation since lower is better
   const needleRotation = isDefense ? 
     180 - (valuePercentage * 180) : 
     valuePercentage * 180;
@@ -62,7 +77,7 @@ const GaugeComponent = ({ label, rawValue, metricType }) => {
 
   return (
     <div className="gauge">
-      <svg width="120" height="70" viewBox="0 0 120 70">
+      <svg width="120" height="80" viewBox="0 0 120 80">
         {/* Background colors */}
         {/* Red sector - Left for offense/overall, Right for defense */}
         <path 
@@ -116,19 +131,34 @@ const GaugeComponent = ({ label, rawValue, metricType }) => {
           {Math.round(isDefense ? min : max)}
         </text>
         
-        {/* Needle */}
+        {/* Needle with black ticker pointing at correct angle */}
         <g transform={`rotate(${needleRotation}, 60, 60)`}>
-          <line x1="60" y1="60" x2="60" y2="15" stroke="#000" strokeWidth="2" />
-          <circle cx="60" cy="60" r="4" fill="#000" />
+          <line 
+            x1="60" 
+            y1="60" 
+            x2="60" 
+            y2="10" 
+            stroke="#000" 
+            strokeWidth="2"
+          />
+          <circle 
+            cx="60" 
+            cy="60" 
+            r="4" 
+            fill="#000" 
+          />
+          <path 
+            d="M 57 12 L 63 12 L 60 5 Z" 
+            fill="#000" 
+          />
         </g>
       </svg>
       
       <div style={{
         fontSize: '18px',
         fontWeight: 'bold',
-        color: needleColor,
         textAlign: 'center',
-        marginTop: '5px'
+        marginTop: '8px'
       }}>
         {displayValue}
       </div>
