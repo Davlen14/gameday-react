@@ -124,7 +124,7 @@ const Teams = () => {
   const [selectedTeams, setSelectedTeams] = useState([]);
 
   // We'll store each selected team's ratings here.
-  // Shape: { [team.school]: { offense, defense, overall } }
+  // Shape: { [team.id]: { offense, defense, overall } }
   const [teamRatings, setTeamRatings] = useState({});
 
   // Chart state
@@ -168,7 +168,7 @@ const Teams = () => {
         );
       }
     });
-    
+
     // Add any remaining conferences that were not in the predefined order
     Object.keys(grouped).forEach((conference) => {
       if (!sortedConferences[conference]) {
@@ -177,7 +177,7 @@ const Teams = () => {
         );
       }
     });
-    
+
     return sortedConferences;
   };
 
@@ -203,7 +203,7 @@ const Teams = () => {
         setIsLoading(true);
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
-        
+
         // Check if there are teams in localStorage to compare
         const savedTeams = localStorage.getItem("compareTeams");
         if (savedTeams) {
@@ -227,34 +227,33 @@ const Teams = () => {
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
-      
+
       // Save the selected teams to localStorage
       if (selectedTeams.length > 0) {
         localStorage.setItem("compareTeams", JSON.stringify(selectedTeams));
       } else {
         localStorage.removeItem("compareTeams");
       }
-      
+
       for (const team of selectedTeams) {
         try {
-          if (newRatings[team.school]) continue; // Skip already fetched ratings
-          
-          // Fetch ratings using team.school and 2024 as parameters
+          if (newRatings[team.id]) continue; // Use team.id as key
+          // Fetch ratings using team.school (as required by the API) and 2024 as parameters
           const data = await teamsService.getTeamRatings(team.school, 2024);
-          newRatings[team.school] = data;
+          newRatings[team.id] = data;
         } catch (err) {
           console.error(`Error fetching ratings for team ${team.school}:`, err);
-          newRatings[team.school] = { 
-            offense: { rating: 25 }, 
-            defense: { rating: 25 }, 
-            rating: 25 
+          newRatings[team.id] = {
+            offense: { rating: 25 },
+            defense: { rating: 25 },
+            rating: 25
           };
         }
       }
       setTeamRatings(newRatings);
       setChartsLoaded(true);
     };
-    
+
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
     }
@@ -265,7 +264,7 @@ const Teams = () => {
     if (comparisonRef.current && selectedTeams.length > 0) {
       comparisonRef.current.style.opacity = "0";
       comparisonRef.current.style.transform = "translateY(20px)";
-      
+
       setTimeout(() => {
         comparisonRef.current.style.opacity = "1";
         comparisonRef.current.style.transform = "translateY(0)";
@@ -360,12 +359,12 @@ const Teams = () => {
   const chartData = METRICS.map((metric) => {
     const row = { metric };
     selectedTeams.forEach((team) => {
-      const r = teamRatings[team.school];
+      const r = teamRatings[team.id]; // Use team.id as key
       // Handle the nested structure for offense and defense ratings
       if (metric === "Offense" || metric === "Defense") {
-        row[team.school] = r ? r[metric.toLowerCase()]?.rating || 0 : 0;
+        row[team.id] = r ? r[metric.toLowerCase()]?.rating || 0 : 0;
       } else {
-        row[team.school] = r ? r.rating || 0 : 0;
+        row[team.id] = r ? r.rating || 0 : 0;
       }
     });
     return row;
@@ -377,11 +376,11 @@ const Teams = () => {
     return (
       <div className="tcd-custom-legend">
         {payload.map((entry) => {
-          const teamSchool = entry.dataKey;
-          const team = selectedTeams.find((t) => t.school === teamSchool);
+          const teamId = entry.dataKey;
+          const team = selectedTeams.find((t) => t.id === teamId);
           if (!team) return null;
           return (
-            <div key={teamSchool} className="tcd-legend-item">
+            <div key={teamId} className="tcd-legend-item">
               <div
                 className="tcd-legend-color"
                 style={{ backgroundColor: entry.color }}
@@ -413,7 +412,7 @@ const Teams = () => {
           </p>
           <div className="tcd-tooltip-items">
             {payload.map((entry, index) => {
-              const team = selectedTeams.find((t) => t.school === entry.dataKey);
+              const team = selectedTeams.find((t) => t.id === entry.dataKey);
               if (!team) return null;
               return (
                 <div key={index} className="tcd-tooltip-item">
@@ -444,7 +443,7 @@ const Teams = () => {
       <div className="tcd-teams-list-section">
         <div className="tcd-teams-container">
           <div className="tcd-conferences-list">
-            {Object.entries(groupedTeams).map(([conference, teams]) => (
+            {Object.entries(groupByConference(teams)).map(([conference, confTeams]) => (
               <div key={conference} className="tcd-conference-section">
                 <div className="tcd-conference-header">
                   <div className="tcd-conference-logo-container">
@@ -461,7 +460,7 @@ const Teams = () => {
                   <h3 className="tcd-conference-title">{conference}</h3>
                 </div>
                 <div className="tcd-teams-table">
-                  {teams.map((team) => (
+                  {confTeams.map((team) => (
                     <div key={team.id} className="tcd-team-card-container">
                       <div className="tcd-team-card">
                         <div className="tcd-team-content">
@@ -535,24 +534,13 @@ const Teams = () => {
             <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
             
             {/* Define gradients for chart elements */}
-            <svg
-              style={{ width: 0, height: 0, position: "absolute" }}
-              aria-hidden="true"
-              focusable="false"
-            >
+            <svg style={{ width: 0, height: 0, position: "absolute" }} aria-hidden="true" focusable="false">
               <defs>
                 {selectedTeams.map((team) => {
                   const baseColor = team.color || "#666";
                   const lightColor = lightenColor(baseColor, 30);
                   return (
-                    <linearGradient
-                      key={team.id}
-                      id={getGradientId(team.color || "#666")}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient key={team.id} id={getGradientId(team.color || "#666")} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={lightColor} stopOpacity="0.8" />
                       <stop offset="95%" stopColor={baseColor} stopOpacity="0.8" />
                     </linearGradient>
@@ -583,9 +571,9 @@ const Teams = () => {
                           <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
                           {selectedTeams.map((team) => (
                             <Line
-                              key={team.school}
+                              key={team.id}
                               type="monotone"
-                              dataKey={team.school}
+                              dataKey={team.id}
                               stroke={team.color || "#666"}
                               strokeWidth={3}
                               dot={{ stroke: team.color || "#666", strokeWidth: 2, r: 6, fill: "#fff" }}
@@ -607,9 +595,9 @@ const Teams = () => {
                           <PolarRadiusAxis angle={30} domain={[0, 50]} axisLine={false} tick={{ fill: "#666", fontSize: 12 }} />
                           {selectedTeams.map((team) => (
                             <Radar
-                              key={team.school}
+                              key={team.id}
                               name={team.school}
-                              dataKey={team.school}
+                              dataKey={team.id}
                               stroke={team.color || "#666"}
                               fill={`url(#${getGradientId(team.color || "#666")})`}
                               fillOpacity={0.6}
@@ -635,8 +623,8 @@ const Teams = () => {
                           <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" label="Avg" />
                           {selectedTeams.map((team) => (
                             <Bar
-                              key={team.school}
-                              dataKey={team.school}
+                              key={team.id}
+                              dataKey={team.id}
                               fill={`url(#${getGradientId(team.color || "#666")})`}
                               stroke={team.color || "#666"}
                               strokeWidth={1}
@@ -683,11 +671,11 @@ const Teams = () => {
                               </td>
                               {selectedTeams.map((team) => {
                                 let value = "N/A";
-                                if (teamRatings[team.school]) {
+                                if (teamRatings[team.id]) {
                                   if (metric === "Offense" || metric === "Defense") {
-                                    value = teamRatings[team.school][metric.toLowerCase()]?.rating || "N/A";
+                                    value = teamRatings[team.id][metric.toLowerCase()]?.rating || "N/A";
                                   } else {
-                                    value = teamRatings[team.school].rating || "N/A";
+                                    value = teamRatings[team.id].rating || "N/A";
                                   }
                                 }
                                 let valueColor = "#666";
