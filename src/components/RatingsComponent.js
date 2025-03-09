@@ -11,31 +11,44 @@ const RatingsComponent = ({ teamName, year }) => {
       try {
         setLoading(true);
         
-        // Using the fetchData function from graphqlTeamsService
-        const query = `
-          query GetTeamDetailedRatings($year: Int!, $team: String!) {
-            ratings(where: { year: { _eq: $year }, team: { _eq: $team } }) {
-              team
-              conference
-              elo
-              fpi
-              fpiAvgWinProbabilityRank
-              fpiOverallEfficiency
-              spOverall
-              srs
-              year
+        // Make the direct fetch call to the proxy since fetchData isn't exposed
+        const response = await fetch('/api/proxy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              query GetTeamDetailedRatings($year: Int!, $where: ratingsBoolExp) {
+                ratings(where: $where, limit: 1) {
+                  team
+                  conference
+                  elo
+                  fpi
+                  fpiAvgWinProbabilityRank
+                  fpiOverallEfficiency
+                  spOverall
+                  srs
+                  year
+                }
+              }
+            `,
+            variables: { 
+              year: year,
+              where: { 
+                team: { _eq: teamName },
+                year: { _eq: year }
+              }
             }
-          }
-        `;
+          })
+        });
         
-        const variables = { year, team: teamName };
-        
-        // Use the internal fetchData function from graphqlTeamsService
-        // This accesses the fetchData function we see in your service file
-        const data = await graphqlTeamsService.fetchData(query, variables);
+        const data = await response.json();
         console.log("Ratings data response:", data);
         
-        const ratingData = data?.ratings?.[0];
+        if (data.errors) {
+          throw new Error(data.errors.map(e => e.message).join(', '));
+        }
+        
+        const ratingData = data.data?.ratings?.[0];
         if (!ratingData) {
           console.warn(`No ratings data found for ${teamName} in ${year}`);
         }
