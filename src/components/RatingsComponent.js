@@ -9,25 +9,29 @@ const RatingsComponent = ({ teamName, year }) => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
+        // Ensure the service is correctly calling the GraphQL endpoint
         const data = await graphqlTeamsService.getTeamRatings(teamName, year);
+        console.log("Fetched ratings data:", data); // Debug log
         setRatings(data);
       } catch (err) {
+        console.error("Error fetching ratings:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRatings();
+    if (teamName && year) {
+      fetchRatings();
+    }
   }, [teamName, year]);
 
-  if (loading) return <div>Loading ratings data...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!ratings) return <div>No ratings data available.</div>;
+  if (loading) return <div className="ratings-loading">Loading ratings data...</div>;
+  if (error) return <div className="ratings-error">Error: {error}</div>;
+  if (!ratings) return <div className="ratings-no-data">No ratings data available.</div>;
 
   return (
     <div className="ratings-component">
-      <h3>Ratings Data</h3>
       <table className="ratings-table">
         <thead>
           <tr>
@@ -44,7 +48,7 @@ const RatingsComponent = ({ teamName, year }) => {
         </thead>
         <tbody>
           <tr>
-            <td>{ratings.team}</td>
+            <td>{ratings.team || teamName}</td>
             <td>{ratings.conference}</td>
             <td>{ratings.elo}</td>
             <td>{ratings.fpi}</td>
@@ -52,10 +56,15 @@ const RatingsComponent = ({ teamName, year }) => {
             <td>{ratings.fpiOverallEfficiency}</td>
             <td>{ratings.spOverall}</td>
             <td>{ratings.srs}</td>
-            <td>{ratings.year}</td>
+            <td>{ratings.year || year}</td>
           </tr>
         </tbody>
       </table>
+      
+      {/* Add some debug info that will help during development */}
+      <div className="debug-info" style={{ display: 'none' }}>
+        <pre>{JSON.stringify(ratings, null, 2)}</pre>
+      </div>
     </div>
   );
 };
