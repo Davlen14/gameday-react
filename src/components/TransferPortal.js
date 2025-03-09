@@ -292,21 +292,29 @@ const TransferPortal = () => {
     });
   };
   
-  // Render star rating
-  const renderStars = (count) => {
-    return (
-      <div className="star-rating">
-        {[...Array(5)].map((_, i) => (
-          <FaStar 
-            key={i} 
-            className={i < count ? "star filled" : "star empty"} 
-          />
-        ))}
-      </div>
-    );
+  // Modified renderStars with staggered animations for the 5 stars
+  const starVariants = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { opacity: 1, scale: 1 }
   };
 
-  // Animation variants
+  const renderStars = (count) => (
+    <div className="star-rating">
+      {[...Array(5)].map((_, i) => (
+        <motion.span
+          key={i}
+          variants={starVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: i * 0.1, duration: 0.2 }}
+        >
+          <FaStar className={i < count ? "star filled" : "star empty"} />
+        </motion.span>
+      ))}
+    </div>
+  );
+
+  // Animation variants for container and items
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
