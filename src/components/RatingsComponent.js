@@ -9,51 +9,18 @@ const RatingsComponent = ({ teamName, year }) => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        setLoading(true);
+        // Using the getRatings method from the service
+        const ratingData = await graphqlTeamsService.getRatingsElo(year);
+        console.log("Ratings data response:", ratingData);
         
-        // Make the direct fetch call to the proxy since fetchData isn't exposed
-        const response = await fetch('/api/proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: `
-              query GetTeamDetailedRatings($year: Int!, $where: ratingsBoolExp) {
-                ratings(where: $where, limit: 1) {
-                  team
-                  conference
-                  elo
-                  fpi
-                  fpiAvgWinProbabilityRank
-                  fpiOverallEfficiency
-                  spOverall
-                  srs
-                  year
-                }
-              }
-            `,
-            variables: { 
-              year: year,
-              where: { 
-                team: { _eq: teamName },
-                year: { _eq: year }
-              }
-            }
-          })
-        });
+        // Find the rating for the specific team
+        const teamRating = ratingData.find(rating => rating.team === teamName);
         
-        const data = await response.json();
-        console.log("Ratings data response:", data);
-        
-        if (data.errors) {
-          throw new Error(data.errors.map(e => e.message).join(', '));
-        }
-        
-        const ratingData = data.data?.ratings?.[0];
-        if (!ratingData) {
+        if (!teamRating) {
           console.warn(`No ratings data found for ${teamName} in ${year}`);
         }
         
-        setRatings(ratingData || {});
+        setRatings(teamRating || {});
       } catch (err) {
         console.error("Error fetching ratings:", err);
         setError(err.message);

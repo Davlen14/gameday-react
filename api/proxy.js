@@ -138,7 +138,7 @@ export default async function handler(req, res) {
 
     // New College Football API block (GraphQL)
     else if (endpoint === "/graphql") {
-      const GRAPHQL_API_URL = `https://api.collegefootballdata.com/graphql`;  // Replace with your actual GraphQL endpoint
+      const GRAPHQL_API_URL = `https://graphql.collegefootballdata.com/v1/graphql`;  // Replace with your actual GraphQL endpoint
       const COLLEGE_FOOTBALL_API_KEY = process.env.COLLEGE_FOOTBALL_API_KEY;
 
       if (!COLLEGE_FOOTBALL_API_KEY) {
