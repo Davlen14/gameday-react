@@ -384,6 +384,19 @@ const TeamDetail = () => {
                 </tr>
               </tbody>
             </table>
+            
+            {/* Detailed Ratings Section - Added inside the Team Info Card */}
+            <div className="detailed-ratings-section">
+              <h3>Detailed Ratings</h3>
+              {isLoading.ratings ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner />
+                  <p>Loading detailed ratings...</p>
+                </div>
+              ) : (
+                <RatingsComponent teamName={team.school} year={2024} />
+              )}
+            </div>
           </div>
         </div>
 
@@ -440,24 +453,6 @@ const TeamDetail = () => {
                   </div>
                 )}
               </>
-            )}
-          </div>
-        </div>
-
-        {/* Detailed Ratings Card - Added as requested */}
-        <div className="dashboard-card team-detailed-ratings-card">
-          <div className="card-header">
-            <FaChartLine style={{ marginRight: "12px" }} />
-            Detailed Ratings
-          </div>
-          <div className="card-body">
-            {isLoading.ratings ? (
-              <div className="loading-indicator">
-                <LoadingSpinner />
-                <p>Loading detailed ratings...</p>
-              </div>
-            ) : (
-              <RatingsComponent teamName={team.school} year={2024} />
             )}
           </div>
         </div>
