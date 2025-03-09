@@ -1126,6 +1126,47 @@ export const getTeams = async () => {
     const data = await fetchData(query, variables);
     return data?.wepaPlayersKicking || [];
   };
+
+  export const getTeamDetailedRatings = async (team, year = 2024) => {
+    const query = `
+      query Ratings($where: ratingsBoolExp) {
+        ratings(where: $where) {
+          conference
+          conferenceId
+          elo
+          fpi
+          fpiAvgWinProbabilityRank
+          fpiDefensiveEfficiency
+          fpiGameControlRank
+          fpiOffensiveEfficiency
+          fpiOverallEfficiency
+          fpiRemainingSosRank
+          fpiResumeRank
+          fpiSosRank
+          fpiSpecialTeamsEfficiency
+          fpiStrengthOfRecordRank
+          spDefense
+          spOffense
+          spOverall
+          spSpecialTeams
+          srs
+          team
+          teamId
+          year
+        }
+      }
+    `;
+    
+    const variables = {
+      where: {
+        team: { _eq: team },
+        year: { _eq: year }
+      }
+    };
+    
+    const data = await fetchData(query, variables);
+    return data?.ratings?.[0] || null;
+  };
   
   // Export all functions in teamsService
   const graphqlTeamsService = {
@@ -1140,6 +1181,7 @@ export const getTeams = async () => {
     getPolls,
     getTeamRatings,
     getPlayByPlay,
+    getTeamDetailedRatings,
     getTeamById,
     getTeamSchedule,
     getTeamRoster,
