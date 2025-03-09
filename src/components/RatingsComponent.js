@@ -11,7 +11,7 @@ const RatingsComponent = ({ teamName, year }) => {
     elo: 1500, // Standard baseline for ELO
     fpi: 0, // FPI is normalized around 0
     fpiAvgWinProbabilityRank: 65, // Middle rank (out of 130 teams)
-    fpiOverallEfficiency: 0, // Normalized around 0
+    fpiOverallEfficiency: 50, // Baseline for efficiency metrics
     winProbability: 50, // Average win probability is ~50%
     spDefense: 27,
     spOffense: 28,
@@ -37,7 +37,17 @@ const RatingsComponent = ({ teamName, year }) => {
           console.warn(`No ratings data found for ${teamName} in ${year}`);
         }
         
-        setRatings(ratingData || {});
+        // Process the data to ensure winProbability exists
+        const processedData = {
+          ...ratingData,
+          // If there's an avgWinProbability field but no winProbability, use that value
+          winProbability: ratingData?.winProbability || 
+                          ratingData?.avgWinProbability || 
+                          ratingData?.averageWinProbability || 
+                          null
+        };
+        
+        setRatings(processedData || {});
         setError(null);
       } catch (err) {
         console.error("Error fetching ratings:", err);
@@ -59,12 +69,13 @@ const RatingsComponent = ({ teamName, year }) => {
       case "elo":
         if (value >= 1800) return "excellent";
         if (value <= 1200) return "poor";
-        if (value >= 1500) return "good";
+        if (value >= 1600) return "good"; // Adjusted to match output
         return "average";
 
       case "fpi":
         if (value >= 15) return "excellent";
         if (value <= -15) return "poor";
+        if (value >= 5) return "good"; // Added good threshold to match output
         return "average";
 
       case "fpiAvgWinProbabilityRank":
@@ -76,6 +87,7 @@ const RatingsComponent = ({ teamName, year }) => {
 
       case "winProbability":
         if (value >= 60) return "excellent";
+        if (value >= 55) return "good";
         if (value < 40) return "poor";
         return "average";
 
@@ -87,39 +99,45 @@ const RatingsComponent = ({ teamName, year }) => {
 
       case "spOffense":
         if (value > 34) return "excellent";
+        if (value >= 32) return "good";
         if (value < 22) return "poor";
         return "average";
 
       case "spOverall":
-        if (value >= 11) return "excellent";
+        if (value >= 15) return "excellent";
+        if (value >= 10) return "good";
         if (value <= -5) return "poor";
         return "average";
 
       case "srs":
         if (value >= 10) return "excellent";
-        if (value <= -10) return "poor";
+        if (value >= 8) return "good";
+        if (value <= -5) return "poor";
         return "average";
 
       case "fpiDefensiveEfficiency":
         if (value >= 60) return "excellent";
+        if (value >= 55) return "good";
         if (value < 40) return "poor";
         return "average";
 
       case "fpiOffensiveEfficiency":
         if (value >= 60) return "excellent";
+        if (value >= 55) return "good";
         if (value < 40) return "poor";
         return "average";
 
       case "fpiSpecialTeamsEfficiency":
         if (value >= 60) return "excellent";
+        if (value >= 55) return "good";
         if (value < 40) return "poor";
         return "average";
 
       case "fpiOverallEfficiency":
-        if (value > 15) return "excellent";
-        if (value > 5) return "good";
-        if (value > -5) return "average";
-        return "poor";
+        if (value >= 60) return "excellent";
+        if (value >= 55) return "good";
+        if (value < 40) return "poor";
+        return "average";
 
       default:
         return "unknown";
@@ -156,8 +174,8 @@ const RatingsComponent = ({ teamName, year }) => {
         return Math.min(Math.max(((value - 22) / (34 - 22)) * 100, 0), 100);
 
       case "spOverall":
-        // Range: -5 to +11
-        return Math.min(Math.max(((value + 5) / (11 - (-5))) * 100, 0), 100);
+        // Range: -5 to +15
+        return Math.min(Math.max(((value + 5) / 20) * 100, 0), 100);
 
       case "srs":
         // Range: -10 to +10
@@ -166,12 +184,9 @@ const RatingsComponent = ({ teamName, year }) => {
       case "fpiDefensiveEfficiency":
       case "fpiOffensiveEfficiency":
       case "fpiSpecialTeamsEfficiency":
-        // Range: 40 to 60
-        return Math.min(Math.max(((value - 40) / (60 - 40)) * 100, 0), 100);
-
       case "fpiOverallEfficiency":
-        // These metrics typically range from -30 to +30
-        return Math.min(Math.max(((value + 30) / 60) * 100, 0), 100);
+        // Range: 0 to 100
+        return Math.min(Math.max(value, 0), 100);
 
       default:
         return 50;
@@ -238,6 +253,9 @@ const RatingsComponent = ({ teamName, year }) => {
     "fpiSpecialTeamsEfficiency"
   ];
 
+  // Debug: Log all available metrics in the ratings object
+  console.log("Available metrics in ratings:", Object.keys(ratings));
+
   return (
     <div className="ratings-component">
       <h3>Detailed Ratings Analysis</h3>
@@ -257,7 +275,18 @@ const RatingsComponent = ({ teamName, year }) => {
       
       <div className="metrics-grid">
         {metricsToDisplay.map(metric => {
-          const value = ratings[metric] ?? "N/A";
+          // Try to find the value in different possible property names
+          let value = ratings[metric];
+          
+          // Special handling for win probability - check multiple possible field names
+          if (metric === "winProbability" && value === undefined) {
+            value = ratings.avgWinProbability || 
+                   ratings.averageWinProbability || 
+                   ratings.winProb || 
+                   ratings.avgWinProb || 
+                   "N/A";
+          }
+          
           const status = getRatingStatus(value, metric);
           const percentage = getPercentage(value, metric);
           
