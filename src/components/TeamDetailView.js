@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
+
 import { 
   FaMapMarkerAlt, 
   FaTrophy, 
@@ -12,6 +13,7 @@ import {
   FaUserFriends
 } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
+import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
 import "../styles/TeamDetail.css";
 
 // Loading animation component
@@ -438,6 +440,24 @@ const TeamDetail = () => {
                   </div>
                 )}
               </>
+            )}
+          </div>
+        </div>
+
+        {/* Detailed Ratings Card - Added as requested */}
+        <div className="dashboard-card team-detailed-ratings-card">
+          <div className="card-header">
+            <FaChartLine style={{ marginRight: "12px" }} />
+            Detailed Ratings
+          </div>
+          <div className="card-body">
+            {isLoading.ratings ? (
+              <div className="loading-indicator">
+                <LoadingSpinner />
+                <p>Loading detailed ratings...</p>
+              </div>
+            ) : (
+              <RatingsComponent teamName={team.school} year={2024} />
             )}
           </div>
         </div>
