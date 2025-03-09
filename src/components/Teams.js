@@ -21,7 +21,9 @@ import {
   FaShieldAlt,
   FaFootballBall,
   FaRunning,
-  FaEye
+  FaEye,
+  FaTimes
+
 } from 'react-icons/fa';
 
 // Import Recharts components
