@@ -168,7 +168,7 @@ const Teams = () => {
         );
       }
     });
-
+    
     // Add any remaining conferences that were not in the predefined order
     Object.keys(grouped).forEach((conference) => {
       if (!sortedConferences[conference]) {
@@ -177,7 +177,7 @@ const Teams = () => {
         );
       }
     });
-
+    
     return sortedConferences;
   };
 
@@ -203,7 +203,7 @@ const Teams = () => {
         setIsLoading(true);
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
-
+        
         // Check if there are teams in localStorage to compare
         const savedTeams = localStorage.getItem("compareTeams");
         if (savedTeams) {
@@ -227,34 +227,34 @@ const Teams = () => {
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
-
+      
       // Save the selected teams to localStorage
       if (selectedTeams.length > 0) {
         localStorage.setItem("compareTeams", JSON.stringify(selectedTeams));
       } else {
         localStorage.removeItem("compareTeams");
       }
-
+      
       for (const team of selectedTeams) {
         try {
           if (newRatings[team.school]) continue; // Skip already fetched ratings
-
+          
           // Fetch ratings using team.school and 2024 as parameters
           const data = await teamsService.getTeamRatings(team.school, 2024);
           newRatings[team.school] = data;
         } catch (err) {
           console.error(`Error fetching ratings for team ${team.school}:`, err);
-          newRatings[team.school] = {
-            offense: { rating: 25 },
-            defense: { rating: 25 },
-            rating: 25
+          newRatings[team.school] = { 
+            offense: { rating: 25 }, 
+            defense: { rating: 25 }, 
+            rating: 25 
           };
         }
       }
       setTeamRatings(newRatings);
       setChartsLoaded(true);
     };
-
+    
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
     }
@@ -265,12 +265,11 @@ const Teams = () => {
     if (comparisonRef.current && selectedTeams.length > 0) {
       comparisonRef.current.style.opacity = "0";
       comparisonRef.current.style.transform = "translateY(20px)";
-
+      
       setTimeout(() => {
         comparisonRef.current.style.opacity = "1";
         comparisonRef.current.style.transform = "translateY(0)";
-        comparisonRef.current.style.transition =
-          "opacity 0.6s ease-out, transform 0.6s ease-out";
+        comparisonRef.current.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out";
       }, 100);
     }
   }, [selectedTeams, chartsLoaded]);
@@ -335,7 +334,7 @@ const Teams = () => {
       R = (num >> 16) + amt,
       G = ((num >> 8) & 0x00ff) + amt,
       B = (num & 0x0000ff) + amt;
-
+          
     return (
       "#" +
       (
@@ -362,7 +361,6 @@ const Teams = () => {
     const row = { metric };
     selectedTeams.forEach((team) => {
       const r = teamRatings[team.school];
-
       // Handle the nested structure for offense and defense ratings
       if (metric === "Offense" || metric === "Defense") {
         row[team.school] = r ? r[metric.toLowerCase()]?.rating || 0 : 0;
@@ -405,7 +403,7 @@ const Teams = () => {
     );
   };
 
-  // Custom Tooltip for charts
+  // Custom Tooltip for the charts
   const renderCustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -516,7 +514,7 @@ const Teams = () => {
           <FaExchangeAlt style={{ marginRight: "10px" }} />
           Team Comparison
         </h2>
-
+        
         {selectedTeams.length === 0 ? (
           <div className="tcd-no-teams-selected">
             <div className="tcd-empty-state-icon">
@@ -535,7 +533,7 @@ const Teams = () => {
 
             {/* Chart Selection Tabs */}
             <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
-
+            
             {/* Define gradients for chart elements */}
             <svg
               style={{ width: 0, height: 0, position: "absolute" }}
@@ -562,7 +560,7 @@ const Teams = () => {
                 })}
               </defs>
             </svg>
-
+            
             {/* Charts Content - Conditional Rendering */}
             <div className="tcd-charts-container">
               {!chartsLoaded ? (
