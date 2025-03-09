@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import graphqlTeamsService from "../services/graphqlTeamsService";
 
 const RatingsComponent = ({ teamName, year }) => {
   const [ratings, setRatings] = useState(null);
@@ -10,7 +11,7 @@ const RatingsComponent = ({ teamName, year }) => {
       try {
         setLoading(true);
         
-        // Using the correct query format for the CFBD API
+        // Using the fetchData function from graphqlTeamsService
         const query = `
           query GetTeamDetailedRatings($year: Int!, $team: String!) {
             ratings(where: { year: { _eq: $year }, team: { _eq: $team } }) {
@@ -29,27 +30,12 @@ const RatingsComponent = ({ teamName, year }) => {
         
         const variables = { year, team: teamName };
         
-        // Make a direct API call to avoid conflicts with your teamsService implementation
-        const response = await fetch('/api/proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          // This must match what your proxy handler is expecting
-          body: JSON.stringify({ 
-            endpoint: '/graphql',
-            query, 
-            variables 
-          })
-        });
-        
-        const data = await response.json();
+        // Use the internal fetchData function from graphqlTeamsService
+        // This accesses the fetchData function we see in your service file
+        const data = await graphqlTeamsService.fetchData(query, variables);
         console.log("Ratings data response:", data);
         
-        if (data.errors) {
-          throw new Error(data.errors.map(e => e.message).join(', '));
-        }
-        
-        // Extract the ratings data correctly based on your API response structure
-        const ratingData = data.data?.ratings?.[0];
+        const ratingData = data?.ratings?.[0];
         if (!ratingData) {
           console.warn(`No ratings data found for ${teamName} in ${year}`);
         }
