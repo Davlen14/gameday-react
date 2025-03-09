@@ -280,12 +280,20 @@ body {
   grid-column: span 8;
 }
 
+/* 
+   Schedule + Detailed Ratings each take half width (6 columns + 6 columns)
+   Roster then takes full width (12 columns) below.
+*/
 .team-schedule-card {
   grid-column: span 6;
 }
 
-.team-roster-card {
+.team-detailed-ratings-card {
   grid-column: span 6;
+}
+
+.team-roster-card {
+  grid-column: span 12;
 }
 
 /* Rating Circles */
@@ -608,7 +616,8 @@ body {
   .team-info-card, 
   .team-ratings-card, 
   .team-schedule-card, 
-  .team-roster-card {
+  .team-roster-card,
+  .team-detailed-ratings-card {
     grid-column: span 6;
   }
 }
@@ -659,7 +668,8 @@ body {
   .team-info-card, 
   .team-ratings-card, 
   .team-schedule-card, 
-  .team-roster-card {
+  .team-roster-card,
+  .team-detailed-ratings-card {
     grid-column: span 1;
   }
   
