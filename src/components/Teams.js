@@ -269,7 +269,8 @@ const Teams = () => {
       setTimeout(() => {
         comparisonRef.current.style.opacity = "1";
         comparisonRef.current.style.transform = "translateY(0)";
-        comparisonRef.current.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out";
+        comparisonRef.current.style.transition =
+          "opacity 0.6s ease-out, transform 0.6s ease-out";
       }, 100);
     }
   }, [selectedTeams, chartsLoaded]);
@@ -484,11 +485,7 @@ const Teams = () => {
                           </h4>
                         </div>
                         <button
-                          className={`tcd-compare-button ${
-                            selectedTeams.find((t) => t.id === team.id)
-                              ? "selected"
-                              : ""
-                          }`}
+                          className={`tcd-compare-button ${selectedTeams.find((t) => t.id === team.id) ? "selected" : ""}`}
                           onClick={() => handleTeamSelect(team)}
                         >
                           {selectedTeams.find((t) => t.id === team.id) ? (
@@ -526,8 +523,7 @@ const Teams = () => {
               <FaExchangeAlt size={40} />
             </div>
             <p>
-              No teams selected. Click "Compare" on teams to add them for
-              comparison.
+              No teams selected. Click "Compare" on teams to add them for comparison.
             </p>
             <p className="tcd-help-text">You can compare up to 4 teams at once.</p>
           </div>
@@ -538,7 +534,7 @@ const Teams = () => {
             </button>
 
             {/* Chart Selection Tabs */}
-            <ChartTabs activeTab={activeChart} setActiveTab={setActiveTab} />
+            <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
 
             {/* Define gradients for chart elements */}
             <svg
@@ -580,31 +576,13 @@ const Teams = () => {
                   {activeChart === "line" && (
                     <div className="tcd-chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
-                        <LineChart
-                          data={chartData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                        >
+                        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                          <XAxis
-                            dataKey="metric"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666", fontSize: 14 }}
-                          />
-                          <YAxis
-                            domain={[0, 50]}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666", fontSize: 12 }}
-                          />
+                          <XAxis dataKey="metric" axisLine={false} tickLine={false} tick={{ fill: "#666", fontSize: 14 }} />
+                          <YAxis domain={[0, 50]} axisLine={false} tickLine={false} tick={{ fill: "#666", fontSize: 12 }} />
                           <Tooltip content={renderCustomTooltip} />
                           <Legend content={renderCustomLegend} />
-                          <ReferenceLine
-                            y={25}
-                            stroke="#666"
-                            strokeDasharray="3 3"
-                            strokeOpacity={0.5}
-                          />
+                          <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
                           {selectedTeams.map((team) => (
                             <Line
                               key={team.school}
@@ -612,18 +590,8 @@ const Teams = () => {
                               dataKey={team.school}
                               stroke={team.color || "#666"}
                               strokeWidth={3}
-                              dot={{
-                                stroke: team.color || "#666",
-                                strokeWidth: 2,
-                                r: 6,
-                                fill: "#fff"
-                              }}
-                              activeDot={{
-                                r: 8,
-                                stroke: team.color || "#666",
-                                strokeWidth: 2,
-                                fill: "#fff"
-                              }}
+                              dot={{ stroke: team.color || "#666", strokeWidth: 2, r: 6, fill: "#fff" }}
+                              activeDot={{ r: 8, stroke: team.color || "#666", strokeWidth: 2, fill: "#fff" }}
                             />
                           ))}
                         </LineChart>
@@ -637,17 +605,8 @@ const Teams = () => {
                       <ResponsiveContainer width="100%" height={400}>
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
                           <PolarGrid gridType="polygon" stroke="#ddd" />
-                          <PolarAngleAxis
-                            dataKey="metric"
-                            tick={{ fill: "#666", fontSize: 14 }}
-                            axisLine={{ stroke: "#ddd" }}
-                          />
-                          <PolarRadiusAxis
-                            angle={30}
-                            domain={[0, 50]}
-                            axisLine={false}
-                            tick={{ fill: "#666", fontSize: 12 }}
-                          />
+                          <PolarAngleAxis dataKey="metric" tick={{ fill: "#666", fontSize: 14 }} axisLine={{ stroke: "#ddd" }} />
+                          <PolarRadiusAxis angle={30} domain={[0, 50]} axisLine={false} tick={{ fill: "#666", fontSize: 12 }} />
                           {selectedTeams.map((team) => (
                             <Radar
                               key={team.school}
@@ -669,32 +628,14 @@ const Teams = () => {
                   {activeChart === "bar" && (
                     <div className="tcd-chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
-                        <BarChart
-                          data={chartData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                        >
+                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                          <XAxis
-                            dataKey="metric"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666", fontSize: 14 }}
-                          />
-                          <YAxis
-                            domain={[0, 50]}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666", fontSize: 12 }}
-                          />
+                          <XAxis dataKey="metric" axisLine={false} tickLine={false} tick={{ fill: "#666", fontSize: 14 }} />
+                          <YAxis domain={[0, 50]} axisLine={false} tickLine={false} tick={{ fill: "#666", fontSize: 12 }} />
                           <Tooltip content={renderCustomTooltip} />
                           <Legend content={renderCustomLegend} />
-                          <ReferenceLine
-                            y={25}
-                            stroke="#666"
-                            strokeDasharray="3 3"
-                            label="Avg"
-                          />
-                          {selectedTeams.map((team, index) => (
+                          <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" label="Avg" />
+                          {selectedTeams.map((team) => (
                             <Bar
                               key={team.school}
                               dataKey={team.school}
@@ -751,15 +692,12 @@ const Teams = () => {
                                     value = teamRatings[team.school].rating || "N/A";
                                   }
                                 }
-
-                                // Determine color based on value
                                 let valueColor = "#666";
                                 if (typeof value === "number") {
                                   if (value > 30) valueColor = "#04aa6d";
                                   else if (value < 20) valueColor = "#ff4d4d";
                                   else valueColor = "#ffc700";
                                 }
-
                                 return (
                                   <td key={team.id} className="tcd-value-cell">
                                     {typeof value === "number" ? (
@@ -793,7 +731,6 @@ const Teams = () => {
                   >
                     <FaTimes size={14} />
                   </button>
-
                   <div className="tcd-comparison-team-logo-container">
                     <img
                       src={team.logos?.[0] || "/photos/default_team.png"}
@@ -805,11 +742,9 @@ const Teams = () => {
                       }}
                     />
                   </div>
-
                   <div className="tcd-comparison-info">
                     <h3>{team.school}</h3>
                     <p>{team.conference || "Independent"}</p>
-
                     <div className="tcd-comparison-metrics">
                       <div className="tcd-metric-item">
                         <span className="tcd-metric-label">
@@ -820,7 +755,6 @@ const Teams = () => {
                           {team.location?.city}, {team.location?.state}
                         </span>
                       </div>
-
                       <div className="tcd-metric-item">
                         <span className="tcd-metric-label">
                           <FaTrophy size={12} style={{ marginRight: "4px" }} />
@@ -828,7 +762,6 @@ const Teams = () => {
                         </span>
                         <span className="tcd-metric-value">Division I</span>
                       </div>
-
                       <div className="tcd-metric-item">
                         <span className="tcd-metric-label">
                           <FaFootballBall size={12} style={{ marginRight: "4px" }} />
@@ -838,7 +771,6 @@ const Teams = () => {
                           {team.mascot || "N/A"}
                         </span>
                       </div>
-
                       <div className="tcd-metric-item">
                         <span className="tcd-metric-label">
                           <FaEye size={12} style={{ marginRight: "4px" }} />
