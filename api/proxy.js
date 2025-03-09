@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { endpoint, params, prompt } = req.body;
+  const { endpoint, params, prompt, query, variables } = req.body;
 
   try {
     // News API block (general news)
@@ -136,9 +136,9 @@ export default async function handler(req, res) {
       return res.status(200).json(newsData);
     }
 
-    // New College Football API block (GraphQL)
-    else if (endpoint === "/graphql") {
-      const GRAPHQL_API_URL = `https://graphql.collegefootballdata.com/v1/graphql`;  // Replace with your actual GraphQL endpoint
+    // GraphQL API handling - accepts custom queries from the client
+    else if (endpoint === "/graphql" || !endpoint) {
+      const GRAPHQL_API_URL = `https://graphql.collegefootballdata.com/v1/graphql`;
       const COLLEGE_FOOTBALL_API_KEY = process.env.COLLEGE_FOOTBALL_API_KEY;
 
       if (!COLLEGE_FOOTBALL_API_KEY) {
@@ -146,36 +146,65 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Server misconfiguration: missing COLLEGE_FOOTBALL_API_KEY" });
       }
 
-      const graphQLQuery = `
-        query {
-          collegeFootballData {
-            id
-            name
-            rank
-            points
-            // Other fields you need from GraphQL
-          }
-        }
-      `;
+      // Use the query and variables from the request body
+      const clientQuery = query;
+      const clientVariables = variables || {};
 
-      const graphqlResponse = await fetch(GRAPHQL_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${COLLEGE_FOOTBALL_API_KEY}`,
-        },
-        body: JSON.stringify({ query: graphQLQuery }),
-      });
-
-      if (!graphqlResponse.ok) {
-        const error = await graphqlResponse.json();
-        console.error(`❌ GraphQL API Error (${graphqlResponse.status}):`, error);
-        return res.status(graphqlResponse.status).json({ error });
+      if (!clientQuery) {
+        console.error("❌ Missing GraphQL query in request");
+        return res.status(400).json({ error: "Missing GraphQL query" });
       }
 
-      const graphqlData = await graphqlResponse.json();
-      console.log("✅ GraphQL API Response:", graphqlData);
-      return res.status(200).json(graphqlData);
+      console.log(`🔍 Executing GraphQL query: ${clientQuery.substring(0, 200)}...`);
+      console.log(`🔍 With variables:`, clientVariables);
+
+      try {
+        const graphqlResponse = await fetch(GRAPHQL_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${COLLEGE_FOOTBALL_API_KEY}`,
+          },
+          body: JSON.stringify({
+            query: clientQuery,
+            variables: clientVariables
+          }),
+        });
+
+        const responseText = await graphqlResponse.text();
+        
+        if (!graphqlResponse.ok) {
+          console.error(`❌ GraphQL API Error (${graphqlResponse.status}):`, responseText);
+          return res.status(graphqlResponse.status).json({ 
+            error: `GraphQL API error with status ${graphqlResponse.status}`,
+            details: responseText
+          });
+        }
+
+        try {
+          const graphqlData = JSON.parse(responseText);
+          
+          if (graphqlData.errors) {
+            console.error("❌ GraphQL Query Errors:", graphqlData.errors);
+          } else {
+            console.log("✅ GraphQL API Response received successfully");
+          }
+          
+          return res.status(200).json(graphqlData);
+        } catch (jsonError) {
+          console.error("❌ Error parsing GraphQL response:", jsonError);
+          return res.status(500).json({ 
+            error: "Failed to parse GraphQL response",
+            details: responseText.substring(0, 500) // Include part of the response for debugging
+          });
+        }
+      } catch (fetchError) {
+        console.error("❌ Error fetching from GraphQL API:", fetchError);
+        return res.status(500).json({ 
+          error: "Failed to communicate with GraphQL API",
+          details: fetchError.message
+        });
+      }
     }
 
     // Default fallback for other endpoints

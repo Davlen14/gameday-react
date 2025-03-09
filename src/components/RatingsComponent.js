@@ -8,6 +8,11 @@ const RatingsComponent = ({ teamName, year }) => {
 
   useEffect(() => {
     const fetchRatings = async () => {
+      if (!teamName || !year) {
+        setLoading(false);
+        return;
+      }
+
       try {
         // Call the getTeamDetailedRatings function from graphqlTeamsService
         const ratingData = await graphqlTeamsService.getTeamDetailedRatings(teamName, year);
@@ -18,6 +23,7 @@ const RatingsComponent = ({ teamName, year }) => {
         }
         
         setRatings(ratingData || {});
+        setError(null); // Clear any previous errors
       } catch (err) {
         console.error("Error fetching ratings:", err);
         setError(err.message);
@@ -26,14 +32,15 @@ const RatingsComponent = ({ teamName, year }) => {
       }
     };
 
-    if (teamName && year) {
-      fetchRatings();
-    }
+    setLoading(true);
+    fetchRatings();
   }, [teamName, year]);
 
   if (loading) return <div className="ratings-loading">Loading ratings data...</div>;
   if (error) return <div className="ratings-error">Error: {error}</div>;
-  if (!ratings) return <div className="ratings-no-data">No ratings data available for {teamName}.</div>;
+  if (!ratings || Object.keys(ratings).length === 0) {
+    return <div className="ratings-no-data">No ratings data available for {teamName}.</div>;
+  }
 
   return (
     <div className="ratings-component">
@@ -116,9 +123,33 @@ const RatingsComponent = ({ teamName, year }) => {
           font-size: 14px;
         }
         
+        .ratings-loading, .ratings-error, .ratings-no-data {
+          padding: 15px;
+          margin: 10px 0;
+          border-radius: 5px;
+          text-align: center;
+        }
+        
+        .ratings-loading {
+          background-color: #f8f9fa;
+          color: #6c757d;
+        }
+        
+        .ratings-error {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+        
+        .ratings-no-data {
+          background-color: #fff3cd;
+          color: #856404;
+        }
+        
         .ratings-table-container {
           width: 100%;
           overflow-x: auto;
+          border-radius: 5px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .ratings-table {
@@ -139,6 +170,10 @@ const RatingsComponent = ({ teamName, year }) => {
           font-weight: 600;
         }
         
+        .ratings-table tr:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+        
         /* Mobile view styles */
         .ratings-mobile-view {
           display: none;
@@ -148,6 +183,7 @@ const RatingsComponent = ({ teamName, year }) => {
           border: 1px solid #ddd;
           border-radius: 8px;
           margin-top: 15px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .ratings-metric {
