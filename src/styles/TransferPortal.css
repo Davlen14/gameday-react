@@ -20,9 +20,12 @@
   --tp-border-radius: 8px;
   --tp-card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --tp-transition-speed: 0.3s;
+
+  /* Not used anymore but kept for reference */
   --tp-hero-gradient-start: #1a2a6c;
   --tp-hero-gradient-middle: #b21f1f;
   --tp-hero-gradient-end: #fdbb2d;
+
   --tp-primary-color-rgba: rgba(212, 0, 28, 0.2);
   --tp-primary-color-rgba-light: rgba(212, 0, 28, 0.1);
   --tp-expanded-bg: #f9f9f9;
@@ -31,9 +34,8 @@
 
 .transfer-portal-container {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px 40px;
+  margin: 0;
+  padding: 0; /* Remove extra horizontal padding so content spans the full width */
   font-family: 'Orbitron', 'Titillium Web', sans-serif;
 }
 
@@ -93,17 +95,21 @@
 /* Hero Section */
 .transfer-portal-container .transfer-hero {
   position: relative;
-  background: linear-gradient(to right, var(--tp-hero-gradient-start), var(--tp-hero-gradient-middle), var(--tp-hero-gradient-end));
+  /* Replace original gradient with the navbar gradient */
+  background: linear-gradient(to right, #d4001c, #333333);
   height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--tp-white);
   margin-bottom: 30px;
-  border-radius: var(--tp-border-radius);
+  /* Remove border radius to go edge-to-edge */
+  /* border-radius: var(--tp-border-radius); */
   overflow: hidden;
 }
 
+/* Remove the dark overlay to show the gradient fully */
+/*
 .transfer-portal-container .transfer-hero::before {
   content: '';
   position: absolute;
@@ -113,6 +119,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.4);
 }
+*/
 
 .transfer-portal-container .hero-content {
   position: relative;
@@ -127,12 +134,14 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
+  color: var(--tp-white);
 }
 
 .transfer-portal-container .hero-content p {
   font-size: 1.2rem;
   max-width: 600px;
   opacity: 0.9;
+  color: var(--tp-white);
 }
 
 /* Stats Cards */
@@ -145,7 +154,8 @@
 
 .transfer-portal-container .stat-card {
   background-color: var(--tp-white);
-  border-radius: var(--tp-border-radius);
+  /* Remove border radius to go edge-to-edge */
+  /* border-radius: var(--tp-border-radius); */
   padding: 20px;
   box-shadow: var(--tp-card-shadow);
   text-align: center;
@@ -171,7 +181,8 @@
 /* Filters Section */
 .transfer-portal-container .filters-section {
   background-color: var(--tp-white);
-  border-radius: var(--tp-border-radius);
+  /* Remove border radius */
+  /* border-radius: var(--tp-border-radius); */
   padding: 20px;
   margin-bottom: 30px;
   box-shadow: var(--tp-card-shadow);
@@ -270,7 +281,8 @@
 /* Main Content */
 .transfer-portal-container .transfer-main-content {
   background-color: var(--tp-white);
-  border-radius: var(--tp-border-radius);
+  /* Remove border radius */
+  /* border-radius: var(--tp-border-radius); */
   box-shadow: var(--tp-card-shadow);
   padding: 20px;
 }
@@ -291,7 +303,8 @@
 .transfer-portal-container .transfer-card {
   background-color: var(--tp-white);
   border: 1px solid var(--tp-medium-gray);
-  border-radius: var(--tp-border-radius);
+  /* Remove border radius */
+  /* border-radius: var(--tp-border-radius); */
   padding: 15px;
   transition: all var(--tp-transition-speed);
   cursor: pointer;
@@ -546,7 +559,7 @@
   gap: 12px;
   padding: 12px;
   background-color: var(--tp-white);
-  border-radius: var(--tp-border-radius);
+  /* border-radius: var(--tp-border-radius); */
   box-shadow: var(--tp-card-shadow);
   text-decoration: none;
   color: inherit;
@@ -602,7 +615,7 @@
 /* Conference Activity */
 .transfer-portal-container .conference-activity {
   background-color: var(--tp-white);
-  border-radius: var(--tp-border-radius);
+  /* border-radius: var(--tp-border-radius); */
   padding: 20px;
   box-shadow: var(--tp-card-shadow);
 }
