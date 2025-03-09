@@ -9,18 +9,70 @@ const RatingsComponent = ({ teamName, year }) => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        // Using the getRatings method from the service
-        const ratingData = await graphqlTeamsService.getRatingsElo(year);
-        console.log("Ratings data response:", ratingData);
+        // Using direct fetch with the complete query from Python script
+        const query = `
+          query Ratings($where: ratingsBoolExp) {
+            ratings(where: $where) {
+              conference
+              conferenceId
+              elo
+              fpi
+              fpiAvgWinProbabilityRank
+              fpiDefensiveEfficiency
+              fpiGameControlRank
+              fpiOffensiveEfficiency
+              fpiOverallEfficiency
+              fpiRemainingSosRank
+              fpiResumeRank
+              fpiSosRank
+              fpiSpecialTeamsEfficiency
+              fpiStrengthOfRecordRank
+              spDefense
+              spOffense
+              spOverall
+              spSpecialTeams
+              srs
+              team
+              teamId
+              year
+            }
+          }
+        `;
         
-        // Find the rating for the specific team
-        const teamRating = ratingData.find(rating => rating.team === teamName);
+        const variables = {
+          where: {
+            team: { _eq: teamName },
+            year: { _eq: year }
+          }
+        };
         
-        if (!teamRating) {
+        // Use the same fetch approach as other functions in the service
+        const response = await fetch('/api/proxy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query, variables }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log("Ratings API response:", result);
+        
+        if (result.errors) {
+          throw new Error(result.errors.map((e) => e.message).join(", "));
+        }
+        
+        const ratingData = result.data?.ratings?.[0];
+        
+        if (!ratingData) {
           console.warn(`No ratings data found for ${teamName} in ${year}`);
         }
         
-        setRatings(teamRating || {});
+        setRatings(ratingData || {});
       } catch (err) {
         console.error("Error fetching ratings:", err);
         setError(err.message);
