@@ -47,7 +47,7 @@ import {
 
 // Enhanced Loading Spinner Component
 const LoadingSpinner = () => (
-  <div className="loading-spinner">
+  <div className="tcd-loading-spinner">
     <svg width="60" height="60" viewBox="0 0 60 60">
       <circle 
         cx="30" 
@@ -100,11 +100,11 @@ const ChartTabs = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <div className="chart-tabs">
+    <div className="tcd-chart-tabs">
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          className={`chart-tab ${activeTab === tab.id ? "active" : ""}`}
+          className={`tcd-chart-tab ${activeTab === tab.id ? "active" : ""}`}
           onClick={() => setActiveTab(tab.id)}
         >
           {tab.icon}
@@ -276,7 +276,7 @@ const Teams = () => {
 
   if (isLoading)
     return (
-      <div className="loading-screen">
+      <div className="tcd-loading-screen">
         <LoadingSpinner />
         <div>Loading teams information...</div>
       </div>
@@ -284,7 +284,7 @@ const Teams = () => {
 
   if (error)
     return (
-      <div className="error-screen">
+      <div className="tcd-error-screen">
         <FaInfoCircle size={40} />
         <div>{error}</div>
       </div>
@@ -376,27 +376,27 @@ const Teams = () => {
   const renderCustomLegend = (props) => {
     const { payload } = props;
     return (
-      <div className="custom-legend">
+      <div className="tcd-custom-legend">
         {payload.map((entry) => {
           const teamSchool = entry.dataKey;
           const team = selectedTeams.find((t) => t.school === teamSchool);
           if (!team) return null;
           return (
-            <div key={teamSchool} className="legend-item">
+            <div key={teamSchool} className="tcd-legend-item">
               <div
-                className="legend-color"
+                className="tcd-legend-color"
                 style={{ backgroundColor: entry.color }}
               />
               <img
                 src={team.logos?.[0] || "/photos/default_team.png"}
                 alt={team.school}
-                className="legend-logo"
+                className="tcd-legend-logo"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "/photos/default_team.png";
                 }}
               />
-              <span className="legend-name">{getTeamAbbreviation(team.school)}</span>
+              <span className="tcd-legend-name">{getTeamAbbreviation(team.school)}</span>
             </div>
           );
         })}
@@ -408,27 +408,27 @@ const Teams = () => {
   const renderCustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="custom-tooltip">
-          <p className="tooltip-metric">
+        <div className="tcd-custom-tooltip">
+          <p className="tcd-tooltip-metric">
             {METRIC_ICONS[label]} {label}
           </p>
-          <div className="tooltip-items">
+          <div className="tcd-tooltip-items">
             {payload.map((entry, index) => {
               const team = selectedTeams.find((t) => t.school === entry.dataKey);
               if (!team) return null;
               return (
-                <div key={index} className="tooltip-item">
+                <div key={index} className="tcd-tooltip-item">
                   <img
                     src={team.logos?.[0] || "/photos/default_team.png"}
                     alt={team.school}
-                    className="tooltip-logo"
+                    className="tcd-tooltip-logo"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = "/photos/default_team.png";
                     }}
                   />
                   <span style={{ color: entry.color }}>{team.school}:</span>
-                  <span className="tooltip-value">{entry.value.toFixed(2)}</span>
+                  <span className="tcd-tooltip-value">{entry.value.toFixed(2)}</span>
                 </div>
               );
             })}
@@ -440,38 +440,38 @@ const Teams = () => {
   };
 
   return (
-    <div className="teams-comparison-container">
+    <div className="tcd-teams-comparison-container">
       {/* Teams Section: Displaying all teams (now centered at the top) */}
-      <div className="teams-list-section">
-        <div className="teams-container">
-          <div className="conferences-list">
+      <div className="tcd-teams-list-section">
+        <div className="tcd-teams-container">
+          <div className="tcd-conferences-list">
             {Object.entries(groupedTeams).map(([conference, teams]) => (
-              <div key={conference} className="conference-section">
-                <div className="conference-header">
-                  <div className="conference-logo-container">
+              <div key={conference} className="tcd-conference-section">
+                <div className="tcd-conference-header">
+                  <div className="tcd-conference-logo-container">
                     <img
                       src={conferenceLogos[conference]}
                       alt={conference}
-                      className="conference-logo"
+                      className="tcd-conference-logo"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "/photos/default_conference.png";
                       }}
                     />
                   </div>
-                  <h3 className="conference-title">{conference}</h3>
+                  <h3 className="tcd-conference-title">{conference}</h3>
                 </div>
-                <div className="teams-table">
+                <div className="tcd-teams-table">
                   {teams.map((team) => (
-                    <div key={team.id} className="team-card-container">
-                      <div className="team-card">
-                        <div className="team-content">
-                          <div className="team-logo-container">
+                    <div key={team.id} className="tcd-team-card-container">
+                      <div className="tcd-team-card">
+                        <div className="tcd-team-content">
+                          <div className="tcd-team-logo-container">
                             <Link to={`/teams/${team.id}`}>
                               <img
                                 src={team.logos?.[0] || "/photos/default_team.png"}
                                 alt={team.school}
-                                className="team-logo"
+                                className="tcd-team-logo"
                                 onError={(e) => {
                                   e.target.onerror = null;
                                   e.target.src = "/photos/default_team.png";
@@ -479,12 +479,12 @@ const Teams = () => {
                               />
                             </Link>
                           </div>
-                          <h4 className="team-name">
+                          <h4 className="tcd-team-name">
                             {getTeamAbbreviation(team.school)}
                           </h4>
                         </div>
                         <button
-                          className={`compare-button ${
+                          className={`tcd-compare-button ${
                             selectedTeams.find((t) => t.id === team.id)
                               ? "selected"
                               : ""
@@ -514,31 +514,31 @@ const Teams = () => {
       </div>
 
       {/* Comparison Section: Displaying selected teams for comparison */}
-      <div className="comparison-section" ref={comparisonRef}>
+      <div className="tcd-comparison-section" ref={comparisonRef}>
         <h2>
           <FaExchangeAlt style={{ marginRight: "10px" }} />
           Team Comparison
         </h2>
 
         {selectedTeams.length === 0 ? (
-          <div className="no-teams-selected">
-            <div className="empty-state-icon">
+          <div className="tcd-no-teams-selected">
+            <div className="tcd-empty-state-icon">
               <FaExchangeAlt size={40} />
             </div>
             <p>
               No teams selected. Click "Compare" on teams to add them for
               comparison.
             </p>
-            <p className="help-text">You can compare up to 4 teams at once.</p>
+            <p className="tcd-help-text">You can compare up to 4 teams at once.</p>
           </div>
         ) : (
           <>
-            <button onClick={clearComparison} className="clear-button">
+            <button onClick={clearComparison} className="tcd-clear-button">
               <FaTrashAlt /> Clear All
             </button>
 
             {/* Chart Selection Tabs */}
-            <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
+            <ChartTabs activeTab={activeChart} setActiveTab={setActiveTab} />
 
             {/* Define gradients for chart elements */}
             <svg
@@ -568,9 +568,9 @@ const Teams = () => {
             </svg>
 
             {/* Charts Content - Conditional Rendering */}
-            <div className="charts-container">
+            <div className="tcd-charts-container">
               {!chartsLoaded ? (
-                <div className="loading-indicator">
+                <div className="tcd-loading-indicator">
                   <LoadingSpinner />
                   <p>Loading team ratings...</p>
                 </div>
@@ -578,7 +578,7 @@ const Teams = () => {
                 <>
                   {/* Line Chart */}
                   {activeChart === "line" && (
-                    <div className="chart-wrapper">
+                    <div className="tcd-chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
                         <LineChart
                           data={chartData}
@@ -633,7 +633,7 @@ const Teams = () => {
 
                   {/* Radar Chart */}
                   {activeChart === "radar" && (
-                    <div className="chart-wrapper">
+                    <div className="tcd-chart-wrapper">
                       <ResponsiveContainer width="100%" height={400}>
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
                           <PolarGrid gridType="polygon" stroke="#ddd" />
@@ -667,7 +667,7 @@ const Teams = () => {
 
                   {/* Bar Chart */}
                   {activeChart === "bar" && (
-                    <div className="chart-wrapper">
+                    <div className="tcd-chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
                         <BarChart
                           data={chartData}
@@ -712,18 +712,18 @@ const Teams = () => {
 
                   {/* Table View */}
                   {activeChart === "table" && (
-                    <div className="ratings-table-container">
-                      <table className="ratings-table">
+                    <div className="tcd-ratings-table-container">
+                      <table className="tcd-ratings-table">
                         <thead>
                           <tr>
                             <th>Metric</th>
                             {selectedTeams.map((team) => (
                               <th key={team.id}>
-                                <div className="table-team-header">
+                                <div className="tcd-table-team-header">
                                   <img
                                     src={team.logos?.[0] || "/photos/default_team.png"}
                                     alt={team.school}
-                                    className="table-team-logo"
+                                    className="tcd-table-team-logo"
                                     onError={(e) => {
                                       e.target.onerror = null;
                                       e.target.src = "/photos/default_team.png";
@@ -738,8 +738,8 @@ const Teams = () => {
                         <tbody>
                           {METRICS.map((metric) => (
                             <tr key={metric}>
-                              <td className="metric-cell">
-                                <span className="metric-icon">{METRIC_ICONS[metric]}</span>
+                              <td className="tcd-metric-cell">
+                                <span className="tcd-metric-icon">{METRIC_ICONS[metric]}</span>
                                 {metric}
                               </td>
                               {selectedTeams.map((team) => {
@@ -761,9 +761,9 @@ const Teams = () => {
                                 }
 
                                 return (
-                                  <td key={team.id} className="value-cell">
+                                  <td key={team.id} className="tcd-value-cell">
                                     {typeof value === "number" ? (
-                                      <span className="rating-value" style={{ color: valueColor }}>
+                                      <span className="tcd-rating-value" style={{ color: valueColor }}>
                                         {value.toFixed(2)}
                                       </span>
                                     ) : (
@@ -783,22 +783,22 @@ const Teams = () => {
             </div>
 
             {/* Comparison Cards */}
-            <div className="comparison-cards">
+            <div className="tcd-comparison-cards">
               {selectedTeams.map((team) => (
-                <div key={team.id} className="comparison-card">
+                <div key={team.id} className="tcd-comparison-card">
                   <button
-                    className="remove-button"
+                    className="tcd-remove-button"
                     onClick={() => handleTeamSelect(team)}
                     aria-label="Remove team"
                   >
                     <FaTimes size={14} />
                   </button>
 
-                  <div className="comparison-team-logo-container">
+                  <div className="tcd-comparison-team-logo-container">
                     <img
                       src={team.logos?.[0] || "/photos/default_team.png"}
                       alt={team.school}
-                      className="comparison-team-logo"
+                      className="tcd-comparison-team-logo"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "/photos/default_team.png";
@@ -806,45 +806,45 @@ const Teams = () => {
                     />
                   </div>
 
-                  <div className="comparison-info">
+                  <div className="tcd-comparison-info">
                     <h3>{team.school}</h3>
                     <p>{team.conference || "Independent"}</p>
 
-                    <div className="comparison-metrics">
-                      <div className="metric-item">
-                        <span className="metric-label">
+                    <div className="tcd-comparison-metrics">
+                      <div className="tcd-metric-item">
+                        <span className="tcd-metric-label">
                           <FaMapMarkerAlt size={12} style={{ marginRight: "4px" }} />
                           Location
                         </span>
-                        <span className="metric-value">
+                        <span className="tcd-metric-value">
                           {team.location?.city}, {team.location?.state}
                         </span>
                       </div>
 
-                      <div className="metric-item">
-                        <span className="metric-label">
+                      <div className="tcd-metric-item">
+                        <span className="tcd-metric-label">
                           <FaTrophy size={12} style={{ marginRight: "4px" }} />
                           Division
                         </span>
-                        <span className="metric-value">Division I</span>
+                        <span className="tcd-metric-value">Division I</span>
                       </div>
 
-                      <div className="metric-item">
-                        <span className="metric-label">
+                      <div className="tcd-metric-item">
+                        <span className="tcd-metric-label">
                           <FaFootballBall size={12} style={{ marginRight: "4px" }} />
                           Mascot
                         </span>
-                        <span className="metric-value">
+                        <span className="tcd-metric-value">
                           {team.mascot || "N/A"}
                         </span>
                       </div>
 
-                      <div className="metric-item">
-                        <span className="metric-label">
+                      <div className="tcd-metric-item">
+                        <span className="tcd-metric-label">
                           <FaEye size={12} style={{ marginRight: "4px" }} />
                           Details
                         </span>
-                        <Link to={`/teams/${team.id}`} className="view-details-link">
+                        <Link to={`/teams/${team.id}`} className="tcd-view-details-link">
                           View Team
                         </Link>
                       </div>
