@@ -1,10 +1,10 @@
 /* 
- * Teams Comparison Dashboard - Modern UI
- * Matches the style of the team detail page
+ * Teams Comparison Dashboard - Modern UI (Revised Layout)
+ * Redesigned teams container: now at the top, centered and more appealing.
  */
 
 /* Import the same fonts for consistency */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Orbitron:wght@400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Orbitron:wght@400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Color Variables - Matching TeamDetail.css */
 :root {
@@ -72,10 +72,13 @@ body {
   padding: 0;
 }
 
-/* Modern Dashboard Layout */
+/* Redesigned Dashboard Layout */
+/* Using a vertical grid: first the teams area, then the comparison section */
 .teams-comparison-container {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-areas:
+    "teams"
+    "comparison";
   gap: 2rem;
   max-width: 1600px;
   margin: 2rem auto;
@@ -83,34 +86,9 @@ body {
   min-height: calc(100vh - 4rem);
 }
 
-/* Teams List Section - Sidebar */
+/* Teams List Section - Now placed on top and centered */
 .teams-list-section {
-  position: sticky;
-  top: 2rem;
-  height: calc(100vh - 4rem);
-  overflow-y: auto;
-  padding-right: 1rem;
-  animation: fadeInLeft 0.6s ease-out;
-}
-
-/* Custom Scrollbar for Sidebar */
-.teams-list-section::-webkit-scrollbar {
-  width: 8px;
-}
-  
-.teams-list-section::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 8px;
-}
-  
-.teams-list-section::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
-  border-radius: 8px;
-  border: 2px solid var(--bg-secondary);
-}
-
-/* Comparison Section - Main Content */
-.comparison-section {
+  grid-area: teams;
   background: var(--glass-primary);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -118,7 +96,32 @@ body {
   padding: 2rem;
   box-shadow: var(--depth-shadow);
   border: var(--glass-border);
-  height: fit-content;
+  /* Removed sticky positioning and centered the container */
+  margin: 0 auto;
+  width: 90%;
+  max-width: 800px;
+}
+
+/* Improve teams container inside the teams section */
+.teams-container {
+  padding: 1rem 0;
+  /* New flex layout to center team cards */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Comparison Section - Main Content remains below the teams area */
+.comparison-section {
+  grid-area: comparison;
+  background: var(--glass-primary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--depth-shadow);
+  border: var(--glass-border);
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out;
@@ -158,6 +161,10 @@ body {
   background: var(--accent-primary);
   border-radius: 3px;
 }
+
+/* -------------------------- */
+/* The remaining styles below remain unchanged */
+/* -------------------------- */
 
 /* Enhanced Clear Button */
 .clear-button {
@@ -708,12 +715,6 @@ body {
   background: var(--accent-primary);
   color: white;
   transform: scale(1.1);
-}
-
-/* Teams Container */
-.teams-container {
-  padding: 1rem 0;
-  height: 100%;
 }
 
 /* Conferences List */

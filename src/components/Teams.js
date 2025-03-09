@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import "../styles/Teams.css"; // Use our modernized CSS
+import "../styles/Teams.css"; // Using our modernized CSS
 
 // Import icons
 import {
@@ -23,8 +23,7 @@ import {
   FaRunning,
   FaEye,
   FaTimes
-
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Import Recharts components
 import {
@@ -94,18 +93,18 @@ const LoadingSpinner = () => (
 // Tab Component for Chart Selection
 const ChartTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
-    { id: 'line', label: 'Line', icon: <FaChartLine /> },
-    { id: 'radar', label: 'Radar', icon: <FaChartPie /> },
-    { id: 'bar', label: 'Bar', icon: <FaChartBar /> },
-    { id: 'table', label: 'Table', icon: <FaTable /> }
+    { id: "line", label: "Line", icon: <FaChartLine /> },
+    { id: "radar", label: "Radar", icon: <FaChartPie /> },
+    { id: "bar", label: "Bar", icon: <FaChartBar /> },
+    { id: "table", label: "Table", icon: <FaTable /> }
   ];
-  
+
   return (
     <div className="chart-tabs">
-      {tabs.map(tab => (
-        <button 
+      {tabs.map((tab) => (
+        <button
           key={tab.id}
-          className={`chart-tab ${activeTab === tab.id ? 'active' : ''}`}
+          className={`chart-tab ${activeTab === tab.id ? "active" : ""}`}
           onClick={() => setActiveTab(tab.id)}
         >
           {tab.icon}
@@ -127,13 +126,13 @@ const Teams = () => {
   // We'll store each selected team's ratings here.
   // Shape: { [team.school]: { offense, defense, overall } }
   const [teamRatings, setTeamRatings] = useState({});
-  
+
   // Chart state
-  const [activeChart, setActiveChart] = useState('line');
-  
-  // Animation refs
+  const [activeChart, setActiveChart] = useState("line");
+
+  // Animation ref for comparison panel
   const comparisonRef = useRef(null);
-  
+
   // Track if charts are loaded
   const [chartsLoaded, setChartsLoaded] = useState(false);
 
@@ -164,27 +163,27 @@ const Teams = () => {
     const sortedConferences = {};
     conferenceOrder.forEach((conference) => {
       if (grouped[conference]) {
-        sortedConferences[conference] = grouped[conference].sort((a, b) => 
+        sortedConferences[conference] = grouped[conference].sort((a, b) =>
           a.school.localeCompare(b.school)
         );
       }
     });
-    
+
     // Add any remaining conferences that were not in the predefined order
     Object.keys(grouped).forEach((conference) => {
       if (!sortedConferences[conference]) {
-        sortedConferences[conference] = grouped[conference].sort((a, b) => 
+        sortedConferences[conference] = grouped[conference].sort((a, b) =>
           a.school.localeCompare(b.school)
         );
       }
     });
-    
+
     return sortedConferences;
   };
 
   // Conference logo mapping
   const conferenceLogos = {
-    "ACC": "/photos/ACC.png",
+    ACC: "/photos/ACC.png",
     "American Athletic": "/photos/American Athletic.png",
     "Big 12": "/photos/Big 12.png",
     "Big Ten": "/photos/Big Ten.png",
@@ -193,8 +192,8 @@ const Teams = () => {
     "Mid-American": "/photos/Mid-American.png",
     "Mountain West": "/photos/Mountain West.png",
     "Pac-12": "/photos/Pac-12.png",
-    "SEC": "/photos/SEC.png",
-    "Independent": "/photos/FBS Independents.png"
+    SEC: "/photos/SEC.png",
+    Independent: "/photos/FBS Independents.png"
   };
 
   // Fetch all teams on mount
@@ -204,16 +203,15 @@ const Teams = () => {
         setIsLoading(true);
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
-        
+
         // Check if there are teams in localStorage to compare
-        const savedTeams = localStorage.getItem('compareTeams');
+        const savedTeams = localStorage.getItem("compareTeams");
         if (savedTeams) {
           const parsedTeams = JSON.parse(savedTeams);
           // Find the actual team objects from the fetched data
           const teamsToCompare = parsedTeams
-            .map(savedTeam => teamsData.find(team => team.id === savedTeam.id))
-            .filter(Boolean); // Remove any undefined values
-          
+            .map((savedTeam) => teamsData.find((team) => team.id === savedTeam.id))
+            .filter(Boolean);
           setSelectedTeams(teamsToCompare);
         }
       } catch (err) {
@@ -229,45 +227,45 @@ const Teams = () => {
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
-      
+
       // Save the selected teams to localStorage
       if (selectedTeams.length > 0) {
-        localStorage.setItem('compareTeams', JSON.stringify(selectedTeams));
+        localStorage.setItem("compareTeams", JSON.stringify(selectedTeams));
       } else {
-        localStorage.removeItem('compareTeams');
+        localStorage.removeItem("compareTeams");
       }
-      
+
       for (const team of selectedTeams) {
         try {
           if (newRatings[team.school]) continue; // Skip already fetched ratings
-          
+
           // Fetch ratings using team.school and 2024 as parameters
           const data = await teamsService.getTeamRatings(team.school, 2024);
           newRatings[team.school] = data;
         } catch (err) {
           console.error(`Error fetching ratings for team ${team.school}:`, err);
-          newRatings[team.school] = { 
-            offense: { rating: 25 }, 
-            defense: { rating: 25 }, 
-            rating: 25 
+          newRatings[team.school] = {
+            offense: { rating: 25 },
+            defense: { rating: 25 },
+            rating: 25
           };
         }
       }
       setTeamRatings(newRatings);
       setChartsLoaded(true);
     };
-    
+
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
     }
   }, [selectedTeams]);
-  
+
   // Animation effect when teams are selected
   useEffect(() => {
     if (comparisonRef.current && selectedTeams.length > 0) {
       comparisonRef.current.style.opacity = "0";
       comparisonRef.current.style.transform = "translateY(20px)";
-      
+
       setTimeout(() => {
         comparisonRef.current.style.opacity = "1";
         comparisonRef.current.style.transform = "translateY(0)";
@@ -276,19 +274,21 @@ const Teams = () => {
     }
   }, [selectedTeams, chartsLoaded]);
 
-  if (isLoading) return (
-    <div className="loading-screen">
-      <LoadingSpinner />
-      <div>Loading teams information...</div>
-    </div>
-  );
-  
-  if (error) return (
-    <div className="error-screen">
-      <FaInfoCircle size={40} />
-      <div>{error}</div>
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="loading-screen">
+        <LoadingSpinner />
+        <div>Loading teams information...</div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="error-screen">
+        <FaInfoCircle size={40} />
+        <div>{error}</div>
+      </div>
+    );
 
   const groupedTeams = groupByConference(teams);
 
@@ -324,41 +324,49 @@ const Teams = () => {
 
   // Helper to create gradient id from team color
   const getGradientId = (teamColor) => {
-    return `gradient-${teamColor.replace('#', '')}`;
+    return `gradient-${teamColor.replace("#", "")}`;
   };
 
   // Helper to lighten a color for gradient effect
   const lightenColor = (color, percent) => {
-    const num = parseInt(color.replace('#', ''), 16),
-          amt = Math.round(2.55 * percent),
-          R = (num >> 16) + amt,
-          G = (num >> 8 & 0x00FF) + amt,
-          B = (num & 0x0000FF) + amt;
-          
-    return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
-                  (G < 255 ? G : 255) * 0x100 +
-                  (B < 255 ? B : 255)).toString(16).slice(1);
+    const num = parseInt(color.replace("#", ""), 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = ((num >> 8) & 0x00ff) + amt,
+      B = (num & 0x0000ff) + amt;
+
+    return (
+      "#" +
+      (
+        0x1000000 +
+        (R < 255 ? R : 255) * 0x10000 +
+        (G < 255 ? G : 255) * 0x100 +
+        (B < 255 ? B : 255)
+      )
+        .toString(16)
+        .slice(1)
+    );
   };
 
-  // Build data for chart comparison
+  // Build data for chart comparison.
   // We'll compare 3 metrics: Offense, Defense, Overall.
   const METRICS = ["Offense", "Defense", "Overall"];
   const METRIC_ICONS = {
-    "Overall": <FaFootballBall />,
-    "Offense": <FaRunning />,
-    "Defense": <FaShieldAlt />
+    Overall: <FaFootballBall />,
+    Offense: <FaRunning />,
+    Defense: <FaShieldAlt />
   };
-  
+
   const chartData = METRICS.map((metric) => {
     const row = { metric };
     selectedTeams.forEach((team) => {
       const r = teamRatings[team.school];
-      
+
       // Handle the nested structure for offense and defense ratings
       if (metric === "Offense" || metric === "Defense") {
-        row[team.school] = r ? (r[metric.toLowerCase()]?.rating || 0) : 0;
+        row[team.school] = r ? r[metric.toLowerCase()]?.rating || 0 : 0;
       } else {
-        row[team.school] = r ? (r.rating || 0) : 0;
+        row[team.school] = r ? r.rating || 0 : 0;
       }
     });
     return row;
@@ -395,7 +403,7 @@ const Teams = () => {
       </div>
     );
   };
-  
+
   // Custom Tooltip for charts
   const renderCustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -406,12 +414,12 @@ const Teams = () => {
           </p>
           <div className="tooltip-items">
             {payload.map((entry, index) => {
-              const team = selectedTeams.find(t => t.school === entry.dataKey);
+              const team = selectedTeams.find((t) => t.school === entry.dataKey);
               if (!team) return null;
               return (
                 <div key={index} className="tooltip-item">
-                  <img 
-                    src={team.logos?.[0] || "/photos/default_team.png"} 
+                  <img
+                    src={team.logos?.[0] || "/photos/default_team.png"}
                     alt={team.school}
                     className="tooltip-logo"
                     onError={(e) => {
@@ -428,13 +436,12 @@ const Teams = () => {
         </div>
       );
     }
-  
     return null;
   };
 
   return (
     <div className="teams-comparison-container">
-      {/* Left Column: Teams List */}
+      {/* Teams Section: Displaying all teams (now centered at the top) */}
       <div className="teams-list-section">
         <div className="teams-container">
           <div className="conferences-list">
@@ -472,10 +479,16 @@ const Teams = () => {
                               />
                             </Link>
                           </div>
-                          <h4 className="team-name">{getTeamAbbreviation(team.school)}</h4>
+                          <h4 className="team-name">
+                            {getTeamAbbreviation(team.school)}
+                          </h4>
                         </div>
                         <button
-                          className={`compare-button ${selectedTeams.find((t) => t.id === team.id) ? 'selected' : ''}`}
+                          className={`compare-button ${
+                            selectedTeams.find((t) => t.id === team.id)
+                              ? "selected"
+                              : ""
+                          }`}
                           onClick={() => handleTeamSelect(team)}
                         >
                           {selectedTeams.find((t) => t.id === team.id) ? (
@@ -500,19 +513,22 @@ const Teams = () => {
         </div>
       </div>
 
-      {/* Right Column: Comparison Panel */}
+      {/* Comparison Section: Displaying selected teams for comparison */}
       <div className="comparison-section" ref={comparisonRef}>
         <h2>
           <FaExchangeAlt style={{ marginRight: "10px" }} />
           Team Comparison
         </h2>
-        
+
         {selectedTeams.length === 0 ? (
           <div className="no-teams-selected">
             <div className="empty-state-icon">
               <FaExchangeAlt size={40} />
             </div>
-            <p>No teams selected. Click "Compare" on teams to add them for comparison.</p>
+            <p>
+              No teams selected. Click "Compare" on teams to add them for
+              comparison.
+            </p>
             <p className="help-text">You can compare up to 4 teams at once.</p>
           </div>
         ) : (
@@ -523,23 +539,34 @@ const Teams = () => {
 
             {/* Chart Selection Tabs */}
             <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
-            
+
             {/* Define gradients for chart elements */}
-            <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true" focusable="false">
+            <svg
+              style={{ width: 0, height: 0, position: "absolute" }}
+              aria-hidden="true"
+              focusable="false"
+            >
               <defs>
                 {selectedTeams.map((team) => {
                   const baseColor = team.color || "#666";
                   const lightColor = lightenColor(baseColor, 30);
                   return (
-                    <linearGradient key={team.id} id={getGradientId(team.color || "#666")} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={lightColor} stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor={baseColor} stopOpacity={0.8}/>
+                    <linearGradient
+                      key={team.id}
+                      id={getGradientId(team.color || "#666")}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor={lightColor} stopOpacity="0.8" />
+                      <stop offset="95%" stopColor={baseColor} stopOpacity="0.8" />
                     </linearGradient>
                   );
                 })}
               </defs>
             </svg>
-            
+
             {/* Charts Content - Conditional Rendering */}
             <div className="charts-container">
               {!chartsLoaded ? (
@@ -550,26 +577,34 @@ const Teams = () => {
               ) : (
                 <>
                   {/* Line Chart */}
-                  {activeChart === 'line' && (
+                  {activeChart === "line" && (
                     <div className="chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
-                        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+                        <LineChart
+                          data={chartData}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                        >
                           <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                          <XAxis 
-                            dataKey="metric" 
+                          <XAxis
+                            dataKey="metric"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#666', fontSize: 14 }}
+                            tick={{ fill: "#666", fontSize: 14 }}
                           />
-                          <YAxis 
-                            domain={[0, 50]} 
+                          <YAxis
+                            domain={[0, 50]}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#666', fontSize: 12 }}
+                            tick={{ fill: "#666", fontSize: 12 }}
                           />
                           <Tooltip content={renderCustomTooltip} />
                           <Legend content={renderCustomLegend} />
-                          <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
+                          <ReferenceLine
+                            y={25}
+                            stroke="#666"
+                            strokeDasharray="3 3"
+                            strokeOpacity={0.5}
+                          />
                           {selectedTeams.map((team) => (
                             <Line
                               key={team.school}
@@ -577,14 +612,14 @@ const Teams = () => {
                               dataKey={team.school}
                               stroke={team.color || "#666"}
                               strokeWidth={3}
-                              dot={{ 
-                                stroke: team.color || "#666", 
-                                strokeWidth: 2, 
+                              dot={{
+                                stroke: team.color || "#666",
+                                strokeWidth: 2,
                                 r: 6,
                                 fill: "#fff"
                               }}
-                              activeDot={{ 
-                                r: 8, 
+                              activeDot={{
+                                r: 8,
                                 stroke: team.color || "#666",
                                 strokeWidth: 2,
                                 fill: "#fff"
@@ -595,23 +630,23 @@ const Teams = () => {
                       </ResponsiveContainer>
                     </div>
                   )}
-                  
+
                   {/* Radar Chart */}
-                  {activeChart === 'radar' && (
+                  {activeChart === "radar" && (
                     <div className="chart-wrapper">
                       <ResponsiveContainer width="100%" height={400}>
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
                           <PolarGrid gridType="polygon" stroke="#ddd" />
-                          <PolarAngleAxis 
-                            dataKey="metric" 
-                            tick={{ fill: '#666', fontSize: 14 }}
-                            axisLine={{ stroke: '#ddd' }}
+                          <PolarAngleAxis
+                            dataKey="metric"
+                            tick={{ fill: "#666", fontSize: 14 }}
+                            axisLine={{ stroke: "#ddd" }}
                           />
-                          <PolarRadiusAxis 
-                            angle={30} 
-                            domain={[0, 50]} 
+                          <PolarRadiusAxis
+                            angle={30}
+                            domain={[0, 50]}
                             axisLine={false}
-                            tick={{ fill: '#666', fontSize: 12 }}
+                            tick={{ fill: "#666", fontSize: 12 }}
                           />
                           {selectedTeams.map((team) => (
                             <Radar
@@ -629,28 +664,36 @@ const Teams = () => {
                       </ResponsiveContainer>
                     </div>
                   )}
-                  
+
                   {/* Bar Chart */}
-                  {activeChart === 'bar' && (
+                  {activeChart === "bar" && (
                     <div className="chart-wrapper">
                       <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+                        <BarChart
+                          data={chartData}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                        >
                           <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                          <XAxis 
-                            dataKey="metric" 
+                          <XAxis
+                            dataKey="metric"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#666', fontSize: 14 }}
+                            tick={{ fill: "#666", fontSize: 14 }}
                           />
-                          <YAxis 
-                            domain={[0, 50]} 
+                          <YAxis
+                            domain={[0, 50]}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#666', fontSize: 12 }}
+                            tick={{ fill: "#666", fontSize: 12 }}
                           />
                           <Tooltip content={renderCustomTooltip} />
                           <Legend content={renderCustomLegend} />
-                          <ReferenceLine y={25} stroke="#666" strokeDasharray="3 3" label="Avg" />
+                          <ReferenceLine
+                            y={25}
+                            stroke="#666"
+                            strokeDasharray="3 3"
+                            label="Avg"
+                          />
                           {selectedTeams.map((team, index) => (
                             <Bar
                               key={team.school}
@@ -666,9 +709,9 @@ const Teams = () => {
                       </ResponsiveContainer>
                     </div>
                   )}
-                  
+
                   {/* Table View */}
-                  {activeChart === 'table' && (
+                  {activeChart === "table" && (
                     <div className="ratings-table-container">
                       <table className="ratings-table">
                         <thead>
@@ -677,8 +720,8 @@ const Teams = () => {
                             {selectedTeams.map((team) => (
                               <th key={team.id}>
                                 <div className="table-team-header">
-                                  <img 
-                                    src={team.logos?.[0] || "/photos/default_team.png"} 
+                                  <img
+                                    src={team.logos?.[0] || "/photos/default_team.png"}
                                     alt={team.school}
                                     className="table-team-logo"
                                     onError={(e) => {
@@ -708,22 +751,24 @@ const Teams = () => {
                                     value = teamRatings[team.school].rating || "N/A";
                                   }
                                 }
-                                
+
                                 // Determine color based on value
                                 let valueColor = "#666";
-                                if (typeof value === 'number') {
+                                if (typeof value === "number") {
                                   if (value > 30) valueColor = "#04aa6d";
                                   else if (value < 20) valueColor = "#ff4d4d";
                                   else valueColor = "#ffc700";
                                 }
-                                
+
                                 return (
                                   <td key={team.id} className="value-cell">
-                                    {typeof value === 'number' ? (
+                                    {typeof value === "number" ? (
                                       <span className="rating-value" style={{ color: valueColor }}>
                                         {value.toFixed(2)}
                                       </span>
-                                    ) : value}
+                                    ) : (
+                                      value
+                                    )}
                                   </td>
                                 );
                               })}
@@ -741,14 +786,14 @@ const Teams = () => {
             <div className="comparison-cards">
               {selectedTeams.map((team) => (
                 <div key={team.id} className="comparison-card">
-                  <button 
-                    className="remove-button" 
+                  <button
+                    className="remove-button"
                     onClick={() => handleTeamSelect(team)}
                     aria-label="Remove team"
                   >
                     <FaTimes size={14} />
                   </button>
-                  
+
                   <div className="comparison-team-logo-container">
                     <img
                       src={team.logos?.[0] || "/photos/default_team.png"}
@@ -760,11 +805,11 @@ const Teams = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div className="comparison-info">
                     <h3>{team.school}</h3>
                     <p>{team.conference || "Independent"}</p>
-                    
+
                     <div className="comparison-metrics">
                       <div className="metric-item">
                         <span className="metric-label">
@@ -775,17 +820,15 @@ const Teams = () => {
                           {team.location?.city}, {team.location?.state}
                         </span>
                       </div>
-                      
+
                       <div className="metric-item">
                         <span className="metric-label">
                           <FaTrophy size={12} style={{ marginRight: "4px" }} />
                           Division
                         </span>
-                        <span className="metric-value">
-                          Division I
-                        </span>
+                        <span className="metric-value">Division I</span>
                       </div>
-                      
+
                       <div className="metric-item">
                         <span className="metric-label">
                           <FaFootballBall size={12} style={{ marginRight: "4px" }} />
@@ -795,7 +838,7 @@ const Teams = () => {
                           {team.mascot || "N/A"}
                         </span>
                       </div>
-                      
+
                       <div className="metric-item">
                         <span className="metric-label">
                           <FaEye size={12} style={{ marginRight: "4px" }} />
