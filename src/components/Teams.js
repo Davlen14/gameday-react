@@ -340,11 +340,9 @@ const Teams = () => {
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
 
-  // ------------------------------
-  // Build the comparison chart data
-  // ------------------------------
+  // Build data for chart comparison
   // We'll compare 3 metrics: Offense, Defense, Overall.
-  const METRICS = ["Overall", "Offense", "Defense"];
+  const METRICS = ["Offense", "Defense", "Overall"];
   const METRIC_ICONS = {
     "Overall": <FaFootballBall />,
     "Offense": <FaRunning />,
@@ -390,7 +388,7 @@ const Teams = () => {
                   e.target.src = "/photos/default_team.png";
                 }}
               />
-              <span className="legend-name">{team.school}</span>
+              <span className="legend-name">{getTeamAbbreviation(team.school)}</span>
             </div>
           );
         })}
@@ -474,7 +472,7 @@ const Teams = () => {
                               />
                             </Link>
                           </div>
-                          <h4 className="team-name">{team.school}</h4>
+                          <h4 className="team-name">{getTeamAbbreviation(team.school)}</h4>
                         </div>
                         <button
                           className={`compare-button ${selectedTeams.find((t) => t.id === team.id) ? 'selected' : ''}`}
@@ -688,7 +686,7 @@ const Teams = () => {
                                       e.target.src = "/photos/default_team.png";
                                     }}
                                   />
-                                  <span>{team.school}</span>
+                                  <span>{getTeamAbbreviation(team.school)}</span>
                                 </div>
                               </th>
                             ))}
