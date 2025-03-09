@@ -6,14 +6,18 @@ const RatingsComponent = ({ teamName, year }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // National averages for comparison
+  // Updated national averages for reference
   const nationalAverages = {
-    elo: 1500, // Standard baseline for ELO
-    fpi: 0, // FPI is normalized around 0
-    fpiAvgWinProbabilityRank: 65, // Middle rank (out of 130 teams)
-    fpiOverallEfficiency: 0, // Normalized around 0
-    spOverall: 0, // SP+ is normalized around 0
-    srs: 0 // SRS is typically normalized around 0
+    elo: 1500,
+    fpi: 0,
+    winProbability: 50, // Average win probability is ~50%
+    spDefense: 27,
+    spOffense: 28,
+    spOverall: 3,
+    srs: 0,
+    fpiDefensiveEfficiency: 50,
+    fpiOffensiveEfficiency: 50,
+    fpiSpecialTeamsEfficiency: 50
   };
 
   useEffect(() => {
@@ -24,7 +28,6 @@ const RatingsComponent = ({ teamName, year }) => {
       }
 
       try {
-        // Call the getTeamDetailedRatings function from graphqlTeamsService
         const ratingData = await graphqlTeamsService.getTeamDetailedRatings(teamName, year);
         console.log("Ratings data response:", ratingData);
         
@@ -33,7 +36,7 @@ const RatingsComponent = ({ teamName, year }) => {
         }
         
         setRatings(ratingData || {});
-        setError(null); // Clear any previous errors
+        setError(null);
       } catch (err) {
         console.error("Error fetching ratings:", err);
         setError(err.message);
@@ -46,86 +49,142 @@ const RatingsComponent = ({ teamName, year }) => {
     fetchRatings();
   }, [teamName, year]);
 
-  // Helper function to determine if a rating is good, average, or poor
+  // Determine rating status based on thresholds
   const getRatingStatus = (value, metricName) => {
     if (value === null || value === undefined || value === "N/A") return "unknown";
-    
-    // Different metrics have different interpretations of good/bad
+
     switch (metricName) {
       case "elo":
-        if (value > 1600) return "excellent";
-        if (value > 1500) return "good";
-        if (value > 1400) return "average";
-        return "poor";
-      
+        if (value >= 1800) return "excellent";
+        if (value <= 1200) return "poor";
+        if (value >= 1500) return "good";
+        return "average";
+
       case "fpi":
-      case "fpiOverallEfficiency":
-      case "spOverall":
-      case "srs":
-        if (value > 15) return "excellent";
-        if (value > 5) return "good";
-        if (value > -5) return "average";
-        return "poor";
-      
-      case "fpiAvgWinProbabilityRank":
-        // For ranks, lower is better
+        if (value >= 15) return "excellent";
+        if (value <= -15) return "poor";
+        return "average";
+
+      case "winProbability":
+        if (value >= 60) return "excellent";
+        if (value < 40) return "poor";
+        return "average";
+
+      case "spDefense":
+        // For defense: lower is better
         if (value < 20) return "excellent";
-        if (value < 40) return "good";
-        if (value < 80) return "average";
-        return "poor";
-      
+        if (value > 34) return "poor";
+        return "average";
+
+      case "spOffense":
+        if (value > 34) return "excellent";
+        if (value < 22) return "poor";
+        return "average";
+
+      case "spOverall":
+        if (value >= 11) return "excellent";
+        if (value <= -5) return "poor";
+        return "average";
+
+      case "srs":
+        if (value >= 10) return "excellent";
+        if (value <= -10) return "poor";
+        return "average";
+
+      case "fpiDefensiveEfficiency":
+        if (value >= 60) return "excellent";
+        if (value < 40) return "poor";
+        return "average";
+
+      case "fpiOffensiveEfficiency":
+        if (value >= 60) return "excellent";
+        if (value < 40) return "poor";
+        return "average";
+
+      case "fpiSpecialTeamsEfficiency":
+        if (value >= 60) return "excellent";
+        if (value < 40) return "poor";
+        return "average";
+
       default:
         return "unknown";
     }
   };
 
-  // Get percentage for bar chart based on metric
+  // Calculate percentage for the bar chart based on the metric's range
   const getPercentage = (value, metricName) => {
     if (value === null || value === undefined || value === "N/A") return 0;
-    
+
     switch (metricName) {
       case "elo":
-        // ELO typically ranges from ~1300 to ~1700 for FBS teams
-        return Math.min(Math.max(((value - 1300) / 400) * 100, 0), 100);
-      
-      case "fpiAvgWinProbabilityRank":
-        // For ranks (1-130), invert so lower is better
-        return Math.min(Math.max(100 - ((value / 130) * 100), 0), 100);
-      
+        // Range: 1200 (0%) to 1800 (100%)
+        return Math.min(Math.max(((value - 1200) / (1800 - 1200)) * 100, 0), 100);
+
       case "fpi":
-      case "fpiOverallEfficiency":
+        // Range: -15 to +15
+        return Math.min(Math.max(((value + 15) / 30) * 100, 0), 100);
+
+      case "winProbability":
+        // Value is already in percentage
+        return Math.min(Math.max(value, 0), 100);
+
+      case "spDefense":
+        // Inverted range: excellent if below 20 (100%), poor if above 34 (0%)
+        return Math.min(Math.max(((34 - value) / (34 - 20)) * 100, 0), 100);
+
+      case "spOffense":
+        // Range: 22 (0%) to 34 (100%)
+        return Math.min(Math.max(((value - 22) / (34 - 22)) * 100, 0), 100);
+
       case "spOverall":
+        // Range: -5 to +11
+        return Math.min(Math.max(((value + 5) / (11 - (-5))) * 100, 0), 100);
+
       case "srs":
-        // These metrics typically range from -30 to +30
-        return Math.min(Math.max(((value + 30) / 60) * 100, 0), 100);
-      
+        // Range: -10 to +10
+        return Math.min(Math.max(((value + 10) / 20) * 100, 0), 100);
+
+      case "fpiDefensiveEfficiency":
+      case "fpiOffensiveEfficiency":
+      case "fpiSpecialTeamsEfficiency":
+        // Range: 40 to 60
+        return Math.min(Math.max(((value - 40) / (60 - 40)) * 100, 0), 100);
+
       default:
-        return 50; // Default to 50% if unknown
+        return 50;
     }
   };
 
-  // Helper to get a readable label for each metric
+  // Labels for each metric
   const getMetricLabel = (metricName) => {
     const labels = {
       elo: "ELO Rating",
       fpi: "FPI Score",
-      fpiAvgWinProbabilityRank: "FPI Win Probability Rank",
-      fpiOverallEfficiency: "FPI Overall Efficiency",
-      spOverall: "SP+ Overall",
-      srs: "SRS (Simple Rating System)"
+      winProbability: "Win Probability (%)",
+      spDefense: "SP Defense",
+      spOffense: "SP Offense",
+      spOverall: "SP Overall",
+      srs: "SRS (Simple Rating System)",
+      fpiDefensiveEfficiency: "FPI Defensive Efficiency",
+      fpiOffensiveEfficiency: "FPI Offensive Efficiency",
+      fpiSpecialTeamsEfficiency: "FPI Special Teams Efficiency"
     };
     return labels[metricName] || metricName;
   };
 
-  // Helper to get a description for each metric
+  // Descriptions for each metric
   const getMetricDescription = (metricName) => {
     const descriptions = {
       elo: "ELO is a rating system that measures team strength. Higher values indicate stronger teams.",
       fpi: "Football Power Index is an overall team rating. Positive values are above average.",
-      fpiAvgWinProbabilityRank: "Ranking of teams by average win probability. Lower ranks are better.",
-      fpiOverallEfficiency: "Measures a team's overall efficiency. Higher values are better.",
-      spOverall: "SP+ measures team strength using play-by-play data. Higher values are better.",
-      srs: "Simple Rating System accounts for strength of schedule. Higher values are better."
+      winProbability: "Win probability reflects the chance of winning a game. Around 50% is average, above 60% is excellent, and below 40% is below average.",
+      spDefense: "Special teams defense rating. Lower values indicate elite defensive performance.",
+      spOffense: "Special teams offense rating. Higher values indicate strong offensive performance on special teams.",
+      spOverall: "Combines aspects of special teams play. Higher values reflect superior performance.",
+      srs: "Simple Rating System accounts for strength of schedule. Higher values are better.",
+      fpiDefensiveEfficiency: "Measures the efficiency of a team's defense. Higher values indicate better performance.",
+      fpiOffensiveEfficiency: "Measures the efficiency of a team's offense. Higher values indicate better performance.",
+      fpiSpecialTeamsEfficiency: "Measures the efficiency of a team's special teams. Higher values indicate better performance."
     };
     return descriptions[metricName] || "";
   };
@@ -136,14 +195,18 @@ const RatingsComponent = ({ teamName, year }) => {
     return <div className="ratings-no-data">No ratings data available for {teamName}.</div>;
   }
 
-  // The metrics we want to display as visualization cards
+  // Updated metrics to display, now including winProbability
   const metricsToDisplay = [
     "elo",
     "fpi",
-    "fpiAvgWinProbabilityRank",
-    "fpiOverallEfficiency",
+    "winProbability",
+    "spDefense",
+    "spOffense",
     "spOverall",
-    "srs"
+    "srs",
+    "fpiDefensiveEfficiency",
+    "fpiOffensiveEfficiency",
+    "fpiSpecialTeamsEfficiency"
   ];
 
   return (
@@ -165,7 +228,7 @@ const RatingsComponent = ({ teamName, year }) => {
       
       <div className="metrics-grid">
         {metricsToDisplay.map(metric => {
-          const value = ratings[metric] || "N/A";
+          const value = ratings[metric] ?? "N/A";
           const status = getRatingStatus(value, metric);
           const percentage = getPercentage(value, metric);
           
@@ -173,7 +236,9 @@ const RatingsComponent = ({ teamName, year }) => {
             <div key={metric} className={`metric-card status-${status}`}>
               <div className="metric-header">
                 <div className="metric-name">{getMetricLabel(metric)}</div>
-                <div className="metric-value">{value !== "N/A" ? Number(value).toFixed(1) : "N/A"}</div>
+                <div className="metric-value">
+                  {value !== "N/A" ? Number(value).toFixed(1) : "N/A"}
+                </div>
               </div>
               <div className="metric-bar-container">
                 <div 
@@ -429,7 +494,6 @@ const RatingsComponent = ({ teamName, year }) => {
           color: #6c757d;
         }
         
-        /* Mobile-friendly adjustments */
         @media (max-width: 768px) {
           .ratings-summary {
             flex-direction: column;
