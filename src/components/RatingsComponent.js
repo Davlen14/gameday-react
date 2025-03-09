@@ -8,13 +8,15 @@ const RatingsComponent = ({ teamName, year }) => {
 
   // Updated national averages for reference
   const nationalAverages = {
-    elo: 1500,
-    fpi: 0,
+    elo: 1500, // Standard baseline for ELO
+    fpi: 0, // FPI is normalized around 0
+    fpiAvgWinProbabilityRank: 65, // Middle rank (out of 130 teams)
+    fpiOverallEfficiency: 0, // Normalized around 0
     winProbability: 50, // Average win probability is ~50%
     spDefense: 27,
     spOffense: 28,
-    spOverall: 3,
-    srs: 0,
+    spOverall: 0, // SP+ is normalized around 0
+    srs: 0, // SRS is typically normalized around 0
     fpiDefensiveEfficiency: 50,
     fpiOffensiveEfficiency: 50,
     fpiSpecialTeamsEfficiency: 50
@@ -65,6 +67,13 @@ const RatingsComponent = ({ teamName, year }) => {
         if (value <= -15) return "poor";
         return "average";
 
+      case "fpiAvgWinProbabilityRank":
+        // For ranks, lower is better
+        if (value < 20) return "excellent";
+        if (value < 40) return "good";
+        if (value < 80) return "average";
+        return "poor";
+
       case "winProbability":
         if (value >= 60) return "excellent";
         if (value < 40) return "poor";
@@ -106,6 +115,12 @@ const RatingsComponent = ({ teamName, year }) => {
         if (value < 40) return "poor";
         return "average";
 
+      case "fpiOverallEfficiency":
+        if (value > 15) return "excellent";
+        if (value > 5) return "good";
+        if (value > -5) return "average";
+        return "poor";
+
       default:
         return "unknown";
     }
@@ -123,6 +138,10 @@ const RatingsComponent = ({ teamName, year }) => {
       case "fpi":
         // Range: -15 to +15
         return Math.min(Math.max(((value + 15) / 30) * 100, 0), 100);
+
+      case "fpiAvgWinProbabilityRank":
+        // For ranks (1-130), invert so lower is better
+        return Math.min(Math.max(100 - ((value / 130) * 100), 0), 100);
 
       case "winProbability":
         // Value is already in percentage
@@ -150,6 +169,10 @@ const RatingsComponent = ({ teamName, year }) => {
         // Range: 40 to 60
         return Math.min(Math.max(((value - 40) / (60 - 40)) * 100, 0), 100);
 
+      case "fpiOverallEfficiency":
+        // These metrics typically range from -30 to +30
+        return Math.min(Math.max(((value + 30) / 60) * 100, 0), 100);
+
       default:
         return 50;
     }
@@ -160,6 +183,8 @@ const RatingsComponent = ({ teamName, year }) => {
     const labels = {
       elo: "ELO Rating",
       fpi: "FPI Score",
+      fpiAvgWinProbabilityRank: "FPI Win Probability Rank",
+      fpiOverallEfficiency: "FPI Overall Efficiency",
       winProbability: "Win Probability (%)",
       spDefense: "SP Defense",
       spOffense: "SP Offense",
@@ -177,10 +202,12 @@ const RatingsComponent = ({ teamName, year }) => {
     const descriptions = {
       elo: "ELO is a rating system that measures team strength. Higher values indicate stronger teams.",
       fpi: "Football Power Index is an overall team rating. Positive values are above average.",
+      fpiAvgWinProbabilityRank: "Ranking of teams by average win probability. Lower ranks are better.",
+      fpiOverallEfficiency: "Measures a team's overall efficiency. Higher values are better.",
       winProbability: "Win probability reflects the chance of winning a game. Around 50% is average, above 60% is excellent, and below 40% is below average.",
       spDefense: "Special teams defense rating. Lower values indicate elite defensive performance.",
       spOffense: "Special teams offense rating. Higher values indicate strong offensive performance on special teams.",
-      spOverall: "Combines aspects of special teams play. Higher values reflect superior performance.",
+      spOverall: "SP+ measures team strength using play-by-play data. Higher values are better.",
       srs: "Simple Rating System accounts for strength of schedule. Higher values are better.",
       fpiDefensiveEfficiency: "Measures the efficiency of a team's defense. Higher values indicate better performance.",
       fpiOffensiveEfficiency: "Measures the efficiency of a team's offense. Higher values indicate better performance.",
@@ -195,10 +222,12 @@ const RatingsComponent = ({ teamName, year }) => {
     return <div className="ratings-no-data">No ratings data available for {teamName}.</div>;
   }
 
-  // Updated metrics to display, now including winProbability
+  // Updated metrics to display, now including fpiAvgWinProbabilityRank and fpiOverallEfficiency
   const metricsToDisplay = [
     "elo",
     "fpi",
+    "fpiAvgWinProbabilityRank",
+    "fpiOverallEfficiency",
     "winProbability",
     "spDefense",
     "spOffense",
