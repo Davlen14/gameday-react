@@ -14,22 +14,24 @@ const TransferPortal = () => {
   const [newsLoading, setNewsLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // State for filters (DEFAULT STARS SET TO 5)
+  // Filters:
+  //  - Default conference: "Big Ten"
+  //  - Default stars: 0 (means "All Stars")
   const [filters, setFilters] = useState({
     position: "All",
     destinationStatus: "all", // "committed", "uncommitted", "all"
-    stars: 5,                 // <-- CHANGED HERE
-    conference: "All",
+    stars: 0,                 // 0 => show all stars
+    conference: "Big Ten",    // default to Big Ten
     searchTerm: ""
   });
   
-  // State for sorting
+  // Sorting
   const [sortConfig, setSortConfig] = useState({
     key: "transferDate",
     direction: "desc"
   });
   
-  // State for detail view
+  // Detail view
   const [selectedTransfer, setSelectedTransfer] = useState(null);
   
   // Stats counters
@@ -41,7 +43,7 @@ const TransferPortal = () => {
     positionStats: {}
   });
 
-  // Fetch transfer portal data and teams
+  // Fetch data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,7 +88,7 @@ const TransferPortal = () => {
     fetchNewsData();
   }, []);
   
-  // Calculate statistics from transfer data
+  // Calculate stats from fetched data
   const calculateStats = (data) => {
     const committedCount = data.filter(t => t.destination).length;
     const uncommittedCount = data.length - committedCount;
@@ -98,10 +100,7 @@ const TransferPortal = () => {
       const conference = team.conference;
       
       if (conference && !conferenceStats[conference]) {
-        conferenceStats[conference] = {
-          gained: 0,
-          lost: 0
-        };
+        conferenceStats[conference] = { gained: 0, lost: 0 };
       }
       
       data.forEach(transfer => {
@@ -133,18 +132,17 @@ const TransferPortal = () => {
     });
   };
 
-  // Get logo for a school
+  // Helpers to get team data
   const getTeamLogo = (schoolName) => {
-    if (!schoolName) return "/photos/default_team.png";
+    if (!schoolName) return "/photos/football.avif";
     
     const team = teams.find(t => 
       t.school?.toLowerCase() === schoolName.toLowerCase()
     );
     
-    return team?.logos?.[0] || "/photos/default_team.png";
+    return team?.logos?.[0] || "/photos/football.avif";
   };
   
-  // Get conference for a school
   const getTeamConference = (schoolName) => {
     if (!schoolName) return "";
     
@@ -170,6 +168,8 @@ const TransferPortal = () => {
     }));
   };
   
+  // Clear filters => everything set to "All" or "0"
+  // If you prefer to always remain in Big Ten, remove or modify the lines for "conference" below
   const clearFilters = () => {
     setFilters({
       position: "All",
@@ -180,7 +180,7 @@ const TransferPortal = () => {
     });
   };
   
-  // Sort handler
+  // Sorting
   const handleSort = (key) => {
     setSortConfig(prev => ({
       key,
@@ -192,11 +192,12 @@ const TransferPortal = () => {
   const filteredTransfers = useMemo(() => {
     let result = [...transfers];
     
-    // Apply filters
+    // Filter by position
     if (filters.position !== "All") {
       result = result.filter(t => t.position === filters.position);
     }
     
+    // Filter by committed/uncommitted
     if (filters.destinationStatus !== "all") {
       if (filters.destinationStatus === "committed") {
         result = result.filter(t => t.destination);
@@ -205,10 +206,12 @@ const TransferPortal = () => {
       }
     }
     
+    // Filter by exact stars if > 0
     if (filters.stars > 0) {
-      result = result.filter(t => t.stars >= filters.stars);
+      result = result.filter(t => t.stars === filters.stars);
     }
     
+    // Filter by conference if not "All"
     if (filters.conference !== "All") {
       result = result.filter(t => 
         getTeamConference(t.origin) === filters.conference || 
@@ -216,6 +219,7 @@ const TransferPortal = () => {
       );
     }
     
+    // Filter by search term
     if (filters.searchTerm) {
       const term = filters.searchTerm.toLowerCase();
       result = result.filter(t => 
@@ -227,20 +231,22 @@ const TransferPortal = () => {
       );
     }
     
-    // Apply sorting
+    // Sorting
     result.sort((a, b) => {
       let aValue = a[sortConfig.key];
       let bValue = b[sortConfig.key];
       
-      // Handle special cases
+      // Special case: "name"
       if (sortConfig.key === "name") {
         aValue = `${a.firstName} ${a.lastName}`;
         bValue = `${b.firstName} ${b.lastName}`;
       }
       
+      // Null checks
       if (!aValue) return 1;
       if (!bValue) return -1;
       
+      // Sort by date if "transferDate"
       if (sortConfig.key === "transferDate") {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
@@ -258,7 +264,7 @@ const TransferPortal = () => {
     return result;
   }, [transfers, filters, sortConfig, teams]);
   
-  // Available positions for filter
+  // Available positions
   const availablePositions = useMemo(() => {
     const positions = new Set();
     transfers.forEach(t => {
@@ -267,7 +273,7 @@ const TransferPortal = () => {
     return [...positions].sort();
   }, [transfers]);
   
-  // Available conferences for filter
+  // Available conferences
   const availableConferences = useMemo(() => {
     const conferences = new Set();
     teams.forEach(t => {
@@ -276,13 +282,16 @@ const TransferPortal = () => {
     return [...conferences].sort();
   }, [teams]);
   
-  // Handle player card click
+  // Card click => expand/collapse
   const handlePlayerClick = (transfer) => {
-    setSelectedTransfer(prev => prev?.firstName === transfer.firstName && 
-                               prev?.lastName === transfer.lastName ? null : transfer);
+    setSelectedTransfer(prev => 
+      prev?.firstName === transfer.firstName && prev?.lastName === transfer.lastName
+        ? null
+        : transfer
+    );
   };
   
-  // Format date nicely
+  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -292,7 +301,7 @@ const TransferPortal = () => {
     });
   };
   
-  // Modified renderStars with staggered animations for the 5 stars
+  // Star rendering (exact 5 stars) with animations
   const starVariants = {
     hidden: { opacity: 0, scale: 0.5 },
     visible: { opacity: 1, scale: 1 }
@@ -334,7 +343,7 @@ const TransferPortal = () => {
     }
   };
   
-  // Render loading state
+  // Loading state
   if (loading) {
     return (
       <div className="transfer-portal-container tp-theme">
@@ -346,7 +355,7 @@ const TransferPortal = () => {
     );
   }
   
-  // Render error state
+  // Error state
   if (error) {
     return (
       <div className="transfer-portal-container tp-theme">
@@ -427,6 +436,7 @@ const TransferPortal = () => {
         </div>
         
         <div className="filter-controls">
+          {/* Position */}
           <div className="filter-group">
             <label>Position</label>
             <select 
@@ -440,6 +450,7 @@ const TransferPortal = () => {
             </select>
           </div>
           
+          {/* Committed/Uncommitted */}
           <div className="filter-group">
             <label>Status</label>
             <select 
@@ -452,19 +463,23 @@ const TransferPortal = () => {
             </select>
           </div>
           
+          {/* Exact Star Filter: 0=All, 1=1 Star, etc. */}
           <div className="filter-group">
-            <label>Min Stars</label>
+            <label>Stars</label>
             <select 
               value={filters.stars}
               onChange={(e) => handleFilterChange("stars", parseInt(e.target.value))}
             >
-              <option value={0}>Any Rating</option>
-              <option value={3}>3+ Stars</option>
-              <option value={4}>4+ Stars</option>
+              <option value={0}>All Stars</option>
+              <option value={1}>1 Star</option>
+              <option value={2}>2 Stars</option>
+              <option value={3}>3 Stars</option>
+              <option value={4}>4 Stars</option>
               <option value={5}>5 Stars</option>
             </select>
           </div>
           
+          {/* Conference */}
           <div className="filter-group">
             <label>Conference</label>
             <select 
@@ -478,10 +493,11 @@ const TransferPortal = () => {
             </select>
           </div>
           
+          {/* Show the "Clear Filters" button only if something differs from default */}
           {(filters.position !== "All" || 
             filters.destinationStatus !== "all" || 
-            filters.stars > 0 || 
-            filters.conference !== "All" || 
+            filters.stars !== 0 || 
+            filters.conference !== "Big Ten" || 
             filters.searchTerm) && (
             <button className="clear-filters" onClick={clearFilters}>
               Clear Filters
@@ -510,8 +526,12 @@ const TransferPortal = () => {
                 {filteredTransfers.map((transfer, index) => (
                   <motion.div 
                     key={`${transfer.firstName}-${transfer.lastName}-${index}`}
-                    className={`transfer-card ${selectedTransfer?.firstName === transfer.firstName && 
-                               selectedTransfer?.lastName === transfer.lastName ? 'expanded' : ''}`}
+                    className={`transfer-card ${
+                      selectedTransfer?.firstName === transfer.firstName &&
+                      selectedTransfer?.lastName === transfer.lastName
+                        ? 'expanded'
+                        : ''
+                    }`}
                     variants={itemVariants}
                     layoutId={`${transfer.firstName}-${transfer.lastName}-${index}`}
                     onClick={() => handlePlayerClick(transfer)}
@@ -522,8 +542,12 @@ const TransferPortal = () => {
                           <FaUserGraduate className="avatar-icon" />
                         </div>
                         <div>
-                          <h3>{transfer.firstName} {transfer.lastName}</h3>
-                          <div className="position-badge">{transfer.position || "N/A"}</div>
+                          <h3>
+                            {transfer.firstName} {transfer.lastName}
+                          </h3>
+                          <div className="position-badge">
+                            {transfer.position || "N/A"}
+                          </div>
                         </div>
                       </div>
                       <div className="player-rating">
@@ -543,7 +567,9 @@ const TransferPortal = () => {
                           alt={transfer.origin || "Origin"} 
                           className="school-logo"
                         />
-                        <span className="school-name">{transfer.origin || "Unknown"}</span>
+                        <span className="school-name">
+                          {transfer.origin || "Unknown"}
+                        </span>
                       </div>
                       
                       <div className="journey-arrow">
@@ -558,12 +584,12 @@ const TransferPortal = () => {
                               alt={transfer.destination} 
                               className="school-logo"
                             />
-                            <span className="school-name">{transfer.destination}</span>
+                            <span className="school-name">
+                              {transfer.destination}
+                            </span>
                           </>
                         ) : (
-                          <div className="undecided">
-                            Undecided
-                          </div>
+                          <div className="undecided">Undecided</div>
                         )}
                       </div>
                     </div>
@@ -581,7 +607,7 @@ const TransferPortal = () => {
                     </div>
                     
                     {/* Expanded Content */}
-                    {selectedTransfer?.firstName === transfer.firstName && 
+                    {selectedTransfer?.firstName === transfer.firstName &&
                      selectedTransfer?.lastName === transfer.lastName && (
                       <motion.div 
                         className="transfer-details"
@@ -677,32 +703,36 @@ const TransferPortal = () => {
             <h3>Conference Transfer Activity</h3>
             <div className="conference-bars">
               {Object.entries(stats.conferenceStats)
-                .filter(([_, stats]) => stats.gained > 0 || stats.lost > 0)
-                .sort((a, b) => (b[1].gained - b[1].lost) - (a[1].gained - a[1].lost))
+                .filter(([_, cStats]) => cStats.gained > 0 || cStats.lost > 0)
+                .sort((a, b) => 
+                  (b[1].gained - b[1].lost) - 
+                  (a[1].gained - a[1].lost)
+                )
                 .slice(0, 5)
-                .map(([conference, stats]) => (
+                .map(([conference, cStats]) => (
                   <div key={conference} className="conference-bar">
                     <div className="conference-name">{conference}</div>
                     <div className="activity-bar">
                       <div 
                         className="gained-bar"
                         style={{ 
-                          width: `${(stats.gained / (stats.gained + stats.lost)) * 100}%`,
+                          width: `${(cStats.gained / (cStats.gained + cStats.lost)) * 100}%`,
                         }}
                       >
-                        {stats.gained > 0 && `+${stats.gained}`}
+                        {cStats.gained > 0 && `+${cStats.gained}`}
                       </div>
                       <div 
                         className="lost-bar"
                         style={{ 
-                          width: `${(stats.lost / (stats.gained + stats.lost)) * 100}%`,
+                          width: `${(cStats.lost / (cStats.gained + cStats.lost)) * 100}%`,
                         }}
                       >
-                        {stats.lost > 0 && `-${stats.lost}`}
+                        {cStats.lost > 0 && `-${cStats.lost}`}
                       </div>
                     </div>
                     <div className="net-change">
-                      Net: {stats.gained - stats.lost > 0 ? '+' : ''}{stats.gained - stats.lost}
+                      Net: {cStats.gained - cStats.lost > 0 ? '+' : ''}
+                      {cStats.gained - cStats.lost}
                     </div>
                   </div>
                 ))}
@@ -715,4 +745,3 @@ const TransferPortal = () => {
 };
 
 export default TransferPortal;
-
