@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent using graphqlTeamsService
 import { 
   FaMapMarkerAlt, 
   FaTrophy, 
@@ -185,19 +184,30 @@ const TeamDetail = () => {
 
   // Get contrast color for text based on background color
   const getContrastColor = (hexColor) => {
+    // Default to white if no color is provided
     if (!hexColor) return "#ffffff";
+    
+    // Remove the hash if it exists
     hexColor = hexColor.replace('#', '');
+    
+    // Convert to RGB
     const r = parseInt(hexColor.substr(0, 2), 16);
     const g = parseInt(hexColor.substr(2, 2), 16);
     const b = parseInt(hexColor.substr(4, 2), 16);
+    
+    // Calculate contrast (YIQ formula)
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    
     return (yiq >= 128) ? '#000000' : '#ffffff';
   };
   
   // Generate team color gradient for metallic effect
   const getTeamColorGradient = (hexColor) => {
     if (!hexColor) return "linear-gradient(145deg, #1a1a1a, #333333)";
+    
+    // Create a slightly lighter version for gradient
     const lighterColor = lightenColor(hexColor, 20);
+    
     return `linear-gradient(145deg, ${hexColor}, ${lighterColor})`;
   };
   
@@ -208,11 +218,13 @@ const TeamDetail = () => {
           R = (num >> 16) + amt,
           G = (num >> 8 & 0x00FF) + amt,
           B = (num & 0x0000FF) + amt;
+          
     return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
                   (G < 255 ? G : 255) * 0x100 +
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
 
+  // Top bar style using team color with glass effect
   const topBarStyle = {
     background: getTeamColorGradient(team.color || "#1a1a1a"),
     color: getContrastColor(team.color || "#1a1a1a"),
@@ -328,6 +340,51 @@ const TeamDetail = () => {
           </div>
         </div>
 
+        {/* Team Info Card */}
+        <div className="dashboard-card team-info-card">
+          <div className="card-header">
+            <FaInfoCircle style={{ marginRight: "12px" }} />
+            About {team.school} {team.mascot}
+          </div>
+          <div className="card-body">
+            <table className="info-table">
+              <tbody>
+                <tr>
+                  <td>Location:</td>
+                  <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
+                </tr>
+                <tr>
+                  <td>Conference:</td>
+                  <td><strong>{teamConference}</strong></td>
+                </tr>
+                <tr>
+                  <td>Division:</td>
+                  <td><strong>Division I ({team.classification})</strong></td>
+                </tr>
+                <tr>
+                  <td>Team Colors:</td>
+                  <td>
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      alignItems: 'center'
+                    }}>
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: team.color || "#1a1a1a",
+                        border: '1px solid rgba(0,0,0,0.1)'
+                      }}></div>
+                      <strong>{team.color || "Not available"}</strong>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {/* Schedule Card */}
         <div className="dashboard-card team-schedule-card">
           <div className="card-header">
@@ -382,16 +439,6 @@ const TeamDetail = () => {
                 )}
               </>
             )}
-          </div>
-        </div>
-
-        {/* Ratings Data Card - Inserted Below Schedule */}
-        <div className="dashboard-card ratings-data-card">
-          <div className="card-header">
-            <FaChartLine style={{ marginRight: "12px" }} /> Ratings Data
-          </div>
-          <div className="card-body">
-            <RatingsComponent teamName={team.school} year={2024} />
           </div>
         </div>
 
