@@ -49,7 +49,7 @@ const TransferPortal = () => {
         
         // Fetch both transfers and teams in parallel
         const [transferData, teamsData] = await Promise.all([
-          teamsService.getPlayerPortal(2024),
+          teamsService.getPlayerPortal(2025),
           teamsService.getTeams()
         ]);
 
@@ -329,7 +329,7 @@ const TransferPortal = () => {
   // Render loading state
   if (loading) {
     return (
-      <div className="transfer-portal-container">
+      <div className="transfer-portal-container tp-theme">
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading transfer portal data...</p>
@@ -341,7 +341,7 @@ const TransferPortal = () => {
   // Render error state
   if (error) {
     return (
-      <div className="transfer-portal-container">
+      <div className="transfer-portal-container tp-theme">
         <div className="error-container">
           <FaExclamationTriangle className="error-icon" />
           <h2>Error Loading Data</h2>
@@ -353,7 +353,7 @@ const TransferPortal = () => {
   }
 
   return (
-    <div className="transfer-portal-container">
+    <div className="transfer-portal-container tp-theme">
       {/* Hero Section */}
       <div className="transfer-hero">
         <motion.div 
