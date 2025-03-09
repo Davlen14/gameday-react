@@ -10,36 +10,124 @@ import {
   FaCalendarAlt, 
   FaInfoCircle,
   FaChartLine,
-  FaUserFriends
+  FaUserFriends,
+  FaBuilding,
+  FaGraduationCap,
+  FaRulerVertical,
+  FaClock,
+  FaLocationArrow,
+  FaCalendar,
+  FaTicketAlt,
+  FaMedal,
+  FaStar,
+  FaPalette
 } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
 import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
 import "../styles/TeamDetail.css";
 
-// Loading animation component
+// Enhanced Loading animation component
 const LoadingSpinner = () => (
   <div className="loading-spinner">
-    <svg width="50" height="50" viewBox="0 0 50 50">
+    <svg width="60" height="60" viewBox="0 0 60 60">
       <circle 
-        cx="25" 
-        cy="25" 
-        r="20" 
+        cx="30" 
+        cy="30" 
+        r="25" 
         fill="none" 
         stroke="currentColor" 
         strokeWidth="5"
-        strokeDasharray="31.4 31.4"
+        strokeDasharray="157 157"
+        strokeLinecap="round"
       >
         <animateTransform 
           attributeName="transform" 
           type="rotate"
-          from="0 25 25"
-          to="360 25 25"
+          from="0 30 30"
+          to="360 30 30"
+          dur="1.5s"
+          repeatCount="indefinite" />
+      </circle>
+      <circle 
+        cx="30" 
+        cy="30" 
+        r="15" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="4"
+        strokeDasharray="94.2 94.2"
+        strokeLinecap="round"
+        opacity="0.6"
+      >
+        <animateTransform 
+          attributeName="transform" 
+          type="rotate"
+          from="360 30 30"
+          to="0 30 30"
           dur="1s"
           repeatCount="indefinite" />
       </circle>
     </svg>
   </div>
 );
+
+// Helper component for player avatar
+const PlayerAvatar = ({ name }) => {
+  // Get initials from name
+  const initials = name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+  
+  // Generate a deterministic color based on the name
+  const generateColor = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF)
+      .toString(16)
+      .toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
+  };
+  
+  const bgColor = generateColor(name);
+  
+  return (
+    <div className="player-avatar" style={{ backgroundColor: bgColor }}>
+      {initials}
+    </div>
+  );
+};
+
+// Position Badge Component
+const PositionBadge = ({ position }) => {
+  const positions = {
+    'QB': { bg: '#ff5c5c', icon: <FaStar size={12} /> },
+    'RB': { bg: '#ffc700', icon: <FaStar size={12} /> },
+    'WR': { bg: '#04aa6d', icon: <FaStar size={12} /> },
+    'TE': { bg: '#6772e5', icon: <FaStar size={12} /> },
+    'OL': { bg: '#36b9cc', icon: <FaStar size={12} /> },
+    'DL': { bg: '#e74a3b', icon: <FaStar size={12} /> },
+    'LB': { bg: '#f6c23e', icon: <FaStar size={12} /> },
+    'DB': { bg: '#1cc88a', icon: <FaStar size={12} /> },
+    'K': { bg: '#858796', icon: <FaStar size={12} /> },
+    'P': { bg: '#5a5c69', icon: <FaStar size={12} /> },
+    'LS': { bg: '#4e73df', icon: <FaStar size={12} /> },
+  };
+
+  // Default style if position is not in our map
+  const style = positions[position] || { bg: '#666', icon: <FaStar size={12} /> };
+
+  return (
+    <div className="position-badge" style={{ backgroundColor: style.bg }}>
+      {style.icon}
+      <span>{position || 'N/A'}</span>
+    </div>
+  );
+};
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -60,22 +148,45 @@ const TeamDetail = () => {
   // Refs for animation
   const headerRef = useRef(null);
   const contentRef = useRef(null);
+  const logoRef = useRef(null);
   
-  // Animation timing
+  // Enhanced 3D effect for logo when moving mouse
+  const handleLogoMouseMove = (e) => {
+    if (!logoRef.current) return;
+    
+    const { left, top, width, height } = logoRef.current.getBoundingClientRect();
+    const x = (e.clientX - left) / width - 0.5;
+    const y = (e.clientY - top) / height - 0.5;
+    
+    // Apply the rotation based on mouse position
+    logoRef.current.style.transform = `rotateY(${x * 20}deg) rotateX(${-y * 20}deg)`;
+  };
+  
+  // Reset logo position when mouse leaves
+  const handleLogoMouseLeave = () => {
+    if (!logoRef.current) return;
+    logoRef.current.style.transform = 'rotateY(0deg) rotateX(0deg)';
+  };
+  
+  // Animation timing with enhanced effects
   useEffect(() => {
     if (headerRef.current && contentRef.current) {
       headerRef.current.style.opacity = "0";
+      headerRef.current.style.transform = "translateY(-20px)";
       contentRef.current.style.opacity = "0";
+      contentRef.current.style.transform = "translateY(20px)";
       
       setTimeout(() => {
         headerRef.current.style.opacity = "1";
-        headerRef.current.style.transition = "opacity 0.5s ease-in-out";
+        headerRef.current.style.transform = "translateY(0)";
+        headerRef.current.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out";
       }, 100);
       
       setTimeout(() => {
         contentRef.current.style.opacity = "1";
-        contentRef.current.style.transition = "opacity 0.5s ease-in-out";
-      }, 300);
+        contentRef.current.style.transform = "translateY(0)";
+        contentRef.current.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out";
+      }, 400);
     }
   }, [team]);
 
@@ -209,8 +320,11 @@ const TeamDetail = () => {
     
     // Create a slightly lighter version for gradient
     const lighterColor = lightenColor(hexColor, 20);
+    // Create a darker version for depth
+    const darkerColor = darkenColor(hexColor, 20);
     
-    return `linear-gradient(145deg, ${hexColor}, ${lighterColor})`;
+    // Enhanced gradient with 3 colors for more metallic look
+    return `linear-gradient(145deg, ${lighterColor}, ${hexColor}, ${darkerColor})`;
   };
   
   // Helper function to lighten a color
@@ -225,20 +339,45 @@ const TeamDetail = () => {
                   (G < 255 ? G : 255) * 0x100 +
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
+  
+  // Helper function to darken a color
+  const darkenColor = (color, percent) => {
+    const num = parseInt(color.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) - amt,
+          G = (num >> 8 & 0x00FF) - amt,
+          B = (num & 0x0000FF) - amt;
+          
+    return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+                  (G > 0 ? G : 0) * 0x100 +
+                  (B > 0 ? B : 0)).toString(16).slice(1);
+  };
 
-  // Top bar style using team color with glass effect
+  // Get formatted date for schedule items
+  const formatGameDate = (dateStr) => {
+    if (!dateStr) return "TBD";
+    
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+
+  // Top bar style using team color with enhanced glass effect
   const topBarStyle = {
     background: getTeamColorGradient(team.color || "#1a1a1a"),
     color: getContrastColor(team.color || "#1a1a1a"),
-    boxShadow: `0 4px 20px ${team.color ? team.color + '50' : 'rgba(0, 0, 0, 0.2)'}`
+    boxShadow: `0 8px 32px ${team.color ? team.color + '70' : 'rgba(0, 0, 0, 0.3)'}`
   };
 
   return (
     <div className="team-dashboard">
-      {/* Top Bar */}
+      {/* Top Bar - Enhanced */}
       <div className="team-top-bar" style={topBarStyle}>
         <Link to="/teams" className="back-button" style={{ color: getContrastColor(team.color || "#1a1a1a") }}>
-          <FaArrowLeft style={{ marginRight: "8px" }} /> Back
+          <FaArrowLeft style={{ marginRight: "8px" }} /> Back to Teams
         </Link>
         <div className="team-selector">
           <div className="team-selector-label">Team Select:</div>
@@ -256,9 +395,14 @@ const TeamDetail = () => {
         </div>
       </div>
 
-      {/* Team Header with animation */}
+      {/* Team Header with 3D Metallic Effects */}
       <div className="team-header" ref={headerRef}>
-        <div className="team-logo-container">
+        <div 
+          className="team-logo-container" 
+          ref={logoRef}
+          onMouseMove={handleLogoMouseMove}
+          onMouseLeave={handleLogoMouseLeave}
+        >
           <img
             src={getTeamLogo(team.school)}
             alt={team.school}
@@ -281,14 +425,14 @@ const TeamDetail = () => {
               <span>{teamConference}</span>
             </div>
             <div className="meta-item">
-              <FaUsers size={18} />
+              <FaGraduationCap size={18} />
               <span>Division I ({team.classification})</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Dashboard Content with animation */}
+      {/* Dashboard Content with Staggered Animations */}
       <div className="dashboard-content" ref={contentRef}>
         {/* SP+ Ratings Card */}
         <div className="dashboard-card team-ratings-card">
@@ -330,9 +474,9 @@ const TeamDetail = () => {
               </p>
               <p>
                 <strong>Color zones indicate performance relative to national average:</strong><br />
-                <span style={{ color: "#ff4d4d" }}><strong>Red:</strong> Below Average</span> | 
-                <span style={{ color: "#ffc700" }}><strong>Yellow:</strong> Average</span> | 
-                <span style={{ color: "#04aa6d" }}><strong>Green:</strong> Above Average</span>
+                <span className="red-text">Red: Below Average</span> | 
+                <span className="yellow-text"> Yellow: Average</span> | 
+                <span className="green-text"> Green: Above Average</span>
               </p>
               <p>
                 <strong>National Averages (2024):</strong><br />
@@ -342,7 +486,7 @@ const TeamDetail = () => {
           </div>
         </div>
 
-        {/* Team Info Card */}
+        {/* Team Info Card - Enhanced */}
         <div className="dashboard-card team-info-card">
           <div className="card-header">
             <FaInfoCircle style={{ marginRight: "12px" }} />
@@ -352,42 +496,47 @@ const TeamDetail = () => {
             <table className="info-table">
               <tbody>
                 <tr>
-                  <td>Location:</td>
+                  <td><FaMapMarkerAlt style={{ marginRight: "8px" }} /> Location</td>
                   <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
                 </tr>
                 <tr>
-                  <td>Conference:</td>
+                  <td><FaTrophy style={{ marginRight: "8px" }} /> Conference</td>
                   <td><strong>{teamConference}</strong></td>
                 </tr>
                 <tr>
-                  <td>Division:</td>
+                  <td><FaGraduationCap style={{ marginRight: "8px" }} /> Division</td>
                   <td><strong>Division I ({team.classification})</strong></td>
                 </tr>
                 <tr>
-                  <td>Team Colors:</td>
+                  <td><FaPalette style={{ marginRight: "8px" }} /> Team Colors</td>
                   <td>
                     <div style={{
                       display: 'flex',
-                      gap: '8px',
+                      gap: '12px',
                       alignItems: 'center'
                     }}>
                       <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '24px',
+                        height: '24px',
                         borderRadius: '50%',
                         background: team.color || "#1a1a1a",
-                        border: '1px solid rgba(0,0,0,0.1)'
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        boxShadow: '0 3px 6px rgba(0,0,0,0.1)'
                       }}></div>
                       <strong>{team.color || "Not available"}</strong>
                     </div>
                   </td>
+                </tr>
+                <tr>
+                  <td><FaBuilding style={{ marginRight: "8px" }} /> Mascot</td>
+                  <td><strong>{team.mascot || "Not available"}</strong></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Schedule Card */}
+        {/* Modernized Schedule Card */}
         <div className="dashboard-card team-schedule-card">
           <div className="card-header">
             <FaCalendarAlt style={{ marginRight: "12px" }} />
@@ -401,42 +550,82 @@ const TeamDetail = () => {
               </div>
             ) : (
               <>
-                {schedule.map((game, index) => (
-                  <div key={index} className="schedule-item">
-                    <div className="schedule-game">
-                      <img
-                        src={game.homeLogo || getTeamLogo(game.homeTeam)}
-                        alt={game.homeTeam}
-                        className="schedule-team-logo"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
-                      <span>
-                        {game.homeTeam} vs. {game.awayTeam}
-                      </span>
-                      <img
-                        src={game.awayLogo || getTeamLogo(game.awayTeam)}
-                        alt={game.awayTeam}
-                        className="schedule-team-logo"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
+                <div className="schedule-wrapper">
+                  {schedule.map((game, index) => (
+                    <div key={index} className="schedule-item">
+                      <div className="schedule-item-header">
+                        <div className="team-logo-wrapper">
+                          <img
+                            src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                            alt={game.homeTeam}
+                            className="schedule-team-logo"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/photos/default_team.png";
+                            }}
+                          />
+                        </div>
+                        <div className="vs-indicator">VS</div>
+                        <div className="team-logo-wrapper">
+                          <img
+                            src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                            alt={game.awayTeam}
+                            className="schedule-team-logo"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/photos/default_team.png";
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Score Display */}
+                      {(game.homePoints || game.awayPoints) && (
+                        <div className="schedule-score">
+                          {game.homePoints || "0"} - {game.awayPoints || "0"}
+                        </div>
+                      )}
+                      
+                      <div className="schedule-details">
+                        <div className="schedule-detail-item">
+                          <FaCalendar className="schedule-detail-icon" />
+                          <div className="schedule-detail-content">
+                            {formatGameDate(game.date) || "Date TBD"}
+                          </div>
+                        </div>
+                        
+                        <div className="schedule-detail-item">
+                          <FaLocationArrow className="schedule-detail-icon" />
+                          <div className="schedule-detail-content">
+                            {game.homeTeam} vs. {game.awayTeam}
+                          </div>
+                        </div>
+                        
+                        <div className="schedule-detail-item">
+                          <FaBuilding className="schedule-detail-icon" />
+                          <div className="schedule-detail-content">
+                            {game.venue || "Venue TBD"}
+                          </div>
+                        </div>
+                        
+                        {game.ticketUrl && (
+                          <div className="schedule-detail-item">
+                            <FaTicketAlt className="schedule-detail-icon" />
+                            <div className="schedule-detail-content">
+                              <a href={game.ticketUrl} target="_blank" rel="noopener noreferrer">
+                                Get Tickets
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="schedule-details">
-                      <p>
-                        Score: {game.homePoints || "-"} - {game.awayPoints || "-"}
-                      </p>
-                      <p>Venue: {game.venue || "TBD"}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
                 {schedule.length === 0 && !isLoading.schedule && (
                   <div className="no-data-message">
-                    No schedule information available
+                    <FaCalendarAlt size={24} style={{ marginBottom: "12px", opacity: 0.5 }} />
+                    <p>No schedule information available</p>
                   </div>
                 )}
               </>
@@ -444,7 +633,7 @@ const TeamDetail = () => {
           </div>
         </div>
 
-        {/* Detailed Ratings Card - Moved below Schedule */}
+        {/* Detailed Ratings Card */}
         <div className="dashboard-card team-detailed-ratings-card">
           <div className="card-header">
             <FaChartLine style={{ marginRight: "12px" }} />
@@ -462,7 +651,7 @@ const TeamDetail = () => {
           </div>
         </div>
 
-        {/* Team Roster Card */}
+        {/* Modernized Team Roster Card */}
         <div className="dashboard-card team-roster-card">
           <div className="card-header">
             <FaUserFriends style={{ marginRight: "12px" }} />
@@ -475,33 +664,50 @@ const TeamDetail = () => {
                 <p>Loading roster...</p>
               </div>
             ) : (
-              <table className="roster-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Height</th>
-                    <th>Year</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roster.map((player, index) => (
-                    <tr key={index}>
-                      <td>{player.fullName}</td>
-                      <td>{player.position || "N/A"}</td>
-                      <td>{player.height || "N/A"}</td>
-                      <td>{player.year || "N/A"}</td>
-                    </tr>
-                  ))}
-                  {roster.length === 0 && !isLoading.roster && (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: "center" }}>
-                        No roster information available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <>
+                {roster.length > 0 ? (
+                  <table className="roster-table">
+                    <thead>
+                      <tr>
+                        <th>Player</th>
+                        <th>Position</th>
+                        <th>Height</th>
+                        <th>Year</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roster.map((player, index) => (
+                        <tr key={index}>
+                          <td className="player-name-cell">
+                            <PlayerAvatar name={player.fullName} />
+                            {player.fullName}
+                          </td>
+                          <td>
+                            <PositionBadge position={player.position} />
+                          </td>
+                          <td>
+                            <div className="player-detail">
+                              <FaRulerVertical size={14} style={{ marginRight: "6px", opacity: 0.7 }} />
+                              {player.height || "N/A"}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="player-detail">
+                              <FaClock size={14} style={{ marginRight: "6px", opacity: 0.7 }} />
+                              {player.year || "N/A"}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="no-data-message">
+                    <FaUserFriends size={24} style={{ marginBottom: "12px", opacity: 0.5 }} />
+                    <p>No roster information available</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
