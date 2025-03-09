@@ -41,34 +41,146 @@ const RatingsComponent = ({ teamName, year }) => {
   return (
     <div className="ratings-component">
       <h3>Detailed Ratings Data</h3>
-      <table className="ratings-table">
-        <thead>
-          <tr>
-            <th>Team</th>
-            <th>Conference</th>
-            <th>ELO</th>
-            <th>FPI</th>
-            <th>FPI Avg Win Prob Rank</th>
-            <th>FPI Overall Efficiency</th>
-            <th>SP+ Overall</th>
-            <th>SRS</th>
-            <th>Year</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{ratings.team || teamName}</td>
-            <td>{ratings.conference || "N/A"}</td>
-            <td>{ratings.elo || "N/A"}</td>
-            <td>{ratings.fpi || "N/A"}</td>
-            <td>{ratings.fpiAvgWinProbabilityRank || "N/A"}</td>
-            <td>{ratings.fpiOverallEfficiency || "N/A"}</td>
-            <td>{ratings.spOverall || "N/A"}</td>
-            <td>{ratings.srs || "N/A"}</td>
-            <td>{ratings.year || year}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="ratings-table-container">
+        <table className="ratings-table">
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Conference</th>
+              <th>ELO</th>
+              <th>FPI</th>
+              <th>Win Prob Rank</th>
+              <th>Efficiency</th>
+              <th>SP+</th>
+              <th>SRS</th>
+              <th>Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{ratings.team || teamName}</td>
+              <td>{ratings.conference || "N/A"}</td>
+              <td>{ratings.elo || "N/A"}</td>
+              <td>{ratings.fpi || "N/A"}</td>
+              <td>{ratings.fpiAvgWinProbabilityRank || "N/A"}</td>
+              <td>{ratings.fpiOverallEfficiency || "N/A"}</td>
+              <td>{ratings.spOverall || "N/A"}</td>
+              <td>{ratings.srs || "N/A"}</td>
+              <td>{ratings.year || year}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Mobile-friendly view that only shows on smaller screens */}
+      <div className="ratings-mobile-view">
+        <div className="ratings-metric">
+          <span className="metric-label">Team:</span>
+          <span className="metric-value">{ratings.team || teamName}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">Conference:</span>
+          <span className="metric-value">{ratings.conference || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">ELO:</span>
+          <span className="metric-value">{ratings.elo || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">FPI:</span>
+          <span className="metric-value">{ratings.fpi || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">Win Prob Rank:</span>
+          <span className="metric-value">{ratings.fpiAvgWinProbabilityRank || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">FPI Efficiency:</span>
+          <span className="metric-value">{ratings.fpiOverallEfficiency || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">SP+ Overall:</span>
+          <span className="metric-value">{ratings.spOverall || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">SRS:</span>
+          <span className="metric-value">{ratings.srs || "N/A"}</span>
+        </div>
+        <div className="ratings-metric">
+          <span className="metric-label">Year:</span>
+          <span className="metric-value">{ratings.year || year}</span>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .ratings-component {
+          width: 100%;
+          margin-top: 20px;
+          font-size: 14px;
+        }
+        
+        .ratings-table-container {
+          width: 100%;
+          overflow-x: auto;
+        }
+        
+        .ratings-table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 600px;
+        }
+        
+        .ratings-table th, .ratings-table td {
+          padding: 8px 12px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+          white-space: nowrap;
+        }
+        
+        .ratings-table th {
+          background-color: rgba(0, 0, 0, 0.05);
+          font-weight: 600;
+        }
+        
+        /* Mobile view styles */
+        .ratings-mobile-view {
+          display: none;
+          flex-direction: column;
+          gap: 8px;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-top: 15px;
+        }
+        
+        .ratings-metric {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .metric-label {
+          font-weight: 600;
+          color: #555;
+        }
+        
+        .metric-value {
+          text-align: right;
+          font-weight: 500;
+        }
+        
+        /* Mobile breakpoint */
+        @media (max-width: 768px) {
+          .ratings-table-container {
+            display: none;
+          }
+          
+          .ratings-mobile-view {
+            display: flex;
+          }
+        }
+      `}</style>
     </div>
   );
 };
