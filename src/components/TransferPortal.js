@@ -14,11 +14,11 @@ const TransferPortal = () => {
   const [newsLoading, setNewsLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // State for filters
+  // State for filters (DEFAULT STARS SET TO 5)
   const [filters, setFilters] = useState({
     position: "All",
     destinationStatus: "all", // "committed", "uncommitted", "all"
-    stars: 0,
+    stars: 5,                 // <-- CHANGED HERE
     conference: "All",
     searchTerm: ""
   });
@@ -528,7 +528,11 @@ const TransferPortal = () => {
                       </div>
                       <div className="player-rating">
                         {renderStars(transfer.stars)}
-                        {transfer.rating && <div className="rating-value">{parseFloat(transfer.rating).toFixed(2)}</div>}
+                        {transfer.rating && (
+                          <div className="rating-value">
+                            {parseFloat(transfer.rating).toFixed(2)}
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -588,24 +592,32 @@ const TransferPortal = () => {
                         <div className="detail-grid">
                           <div className="detail-item">
                             <span className="detail-label">Transfer Date</span>
-                            <span className="detail-value">{formatDate(transfer.transferDate)}</span>
+                            <span className="detail-value">
+                              {formatDate(transfer.transferDate)}
+                            </span>
                           </div>
                           
                           <div className="detail-item">
                             <span className="detail-label">Origin Conference</span>
-                            <span className="detail-value">{getTeamConference(transfer.origin) || "N/A"}</span>
+                            <span className="detail-value">
+                              {getTeamConference(transfer.origin) || "N/A"}
+                            </span>
                           </div>
                           
                           {transfer.destination && (
                             <div className="detail-item">
                               <span className="detail-label">Destination Conference</span>
-                              <span className="detail-value">{getTeamConference(transfer.destination) || "N/A"}</span>
+                              <span className="detail-value">
+                                {getTeamConference(transfer.destination) || "N/A"}
+                              </span>
                             </div>
                           )}
                           
                           <div className="detail-item">
                             <span className="detail-label">Eligibility</span>
-                            <span className="detail-value">{transfer.eligibility}</span>
+                            <span className="detail-value">
+                              {transfer.eligibility}
+                            </span>
                           </div>
                         </div>
                       </motion.div>
@@ -703,3 +715,4 @@ const TransferPortal = () => {
 };
 
 export default TransferPortal;
+
