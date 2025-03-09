@@ -143,6 +143,9 @@ body {
   position: relative;
   padding-bottom: 0.5rem;
   letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .comparison-section h2::after {
@@ -189,11 +192,370 @@ body {
   font-size: 1rem;
 }
 
-/* Comparison Table Styles */
-.comparison-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+/* Enhanced Chart Tabs - Modern Design */
+.chart-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--glass-secondary);
+  padding: 0.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  position: relative;
+  z-index: 5;
+}
+
+.chart-tab {
+  flex: 1;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-tab svg {
+  font-size: 1.2rem;
+  transition: transform var(--transition-medium);
+}
+
+.chart-tab:hover {
+  color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.chart-tab:hover svg {
+  transform: translateY(-3px);
+}
+
+.chart-tab.active {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+.chart-tab.active::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
+.chart-tab.active svg {
+  color: var(--accent-primary);
+}
+
+/* Charts Container */
+.charts-container {
+  position: relative;
+  margin-bottom: 2rem;
+  min-height: 400px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.charts-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.chart-wrapper {
+  position: relative;
+  border-radius: 12px;
+  transition: transform var(--transition-medium);
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Enhanced chart styling */
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(5px) !important;
+  border: var(--glass-border) !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke-opacity: 0.15 !important;
+}
+
+.recharts-reference-line line {
+  stroke-opacity: 0.3 !important;
+}
+
+.recharts-legend-wrapper {
+  padding: 0.5rem !important;
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+  background: var(--glass-primary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border: var(--glass-border);
+  min-width: 200px;
+}
+
+.tooltip-metric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.tooltip-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.tooltip-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.tooltip-value {
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Custom Legend */
+.custom-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+  padding: 0.8rem;
+  background: var(--glass-secondary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.4rem 0.8rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast);
+}
+
+.legend-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.legend-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Ratings Table */
+.ratings-table-container {
+  padding: 0.5rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.ratings-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.ratings-table thead th {
+  background: var(--glass-secondary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-primary);
+  position: relative;
+}
+
+.ratings-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.ratings-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.ratings-table tbody tr {
+  background: var(--bg-secondary);
+  transition: all var(--transition-fast);
+}
+
+.ratings-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+}
+
+.ratings-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.ratings-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.ratings-table td {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.table-team-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-team-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.metric-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.metric-icon {
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(212, 0, 28, 0.1);
+  border-radius: 6px;
+}
+
+.value-cell {
+  text-align: center;
+  font-weight: 600;
+}
+
+.rating-value {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.03);
+  display: inline-block;
+  min-width: 60px;
+}
+
+/* Empty State */
+.no-teams-selected {
+  text-align: center;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(212, 0, 28, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+}
+
+.help-text {
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  color: var(--accent-primary);
+}
+
+/* Comparison Cards */
+.comparison-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
 /* 3D Card Effect for Comparison */
@@ -243,6 +605,7 @@ body {
   overflow: hidden;
   transform-style: preserve-3d;
   transition: transform 0.3s ease;
+  z-index: 2;
 }
 
 .comparison-team-logo-container:hover {
@@ -292,12 +655,29 @@ body {
   color: var(--text-secondary);
   margin-bottom: 0.3rem;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .metric-value {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.view-details-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--transition-fast);
+}
+
+.view-details-link:hover {
+  transform: translateX(3px);
 }
 
 /* Remove Button */
@@ -542,115 +922,46 @@ body {
   transform: translateY(0);
 }
 
+.compare-button.selected {
+  background: linear-gradient(145deg, #666, #444);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.compare-button.selected:hover {
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
 .compare-button svg {
   font-size: 0.8rem;
 }
 
-/* Animation Keyframes */
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Enhanced Loading Screen */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 4rem);
+  gap: 2rem;
+  padding: 2rem;
+  text-align: center;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.loading-screen div {
+  font-weight: 500;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  animation: pulse 1.5s infinite alternate;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .teams-comparison-container {
-    grid-template-columns: 250px 1fr;
-    gap: 1.5rem;
-  }
-  
-  .comparison-table {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-}
-
-@media (max-width: 992px) {
-  .teams-comparison-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
-  .teams-list-section {
-    position: relative;
-    height: auto;
-    max-height: 600px;
-    top: 0;
-  }
-  
-  .comparison-section {
-    margin-top: 0;
-  }
-  
-  .teams-table {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .teams-comparison-container {
-    padding: 1rem;
-    margin: 1rem auto;
-  }
-  
-  .conference-title {
-    font-size: 1.2rem;
-  }
-  
-  .comparison-section {
-    padding: 1.5rem;
-  }
-  
-  .comparison-table {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .teams-table {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .comparison-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.5rem 1rem;
-  }
-  
-  .comparison-team-logo-container {
-    margin-bottom: 0.5rem;
-  }
-  
-  .comparison-metrics {
-    grid-template-columns: 1fr;
-  }
-  
-  .comparison-section h2 {
-    font-size: 1.5rem;
-  }
+.error-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 4rem);
+  gap: 2rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--accent-primary);
 }
