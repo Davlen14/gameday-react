@@ -81,6 +81,9 @@ body {
   top: 0;
   z-index: 100;
   backdrop-filter: var(--glass-blur);
+  /* Slight rounding at the bottom to blend with content */
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .back-button {
@@ -141,6 +144,8 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .team-logo-container {
@@ -222,22 +227,30 @@ body {
 
 /* Main Content Area */
 .dashboard-content {
+  position: relative;
+  margin-top: -1rem; /* Overlap the header slightly */
+  padding: 2rem;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1.8rem;
-  padding: 2rem;
-  background: var(--bg-primary);
+
+  /* Rounded corners & subtle shadow to look like a cohesive "dashboard" */
+  background: var(--bg-secondary);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* Section Styles - Glass Cards */
 .dashboard-card {
   background: var(--glass-primary);
   backdrop-filter: var(--glass-blur);
-  border-radius: 16px;
+  border-radius: 20px; /* More rounded for a modern look */
   border: var(--glass-border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .dashboard-card:hover {
@@ -250,7 +263,8 @@ body {
   border-bottom: 1px solid var(--border-color);
   font-weight: 600;
   font-size: 1.2rem;
-  color: var(--text-primary);
+  /* Make this text gray instead of white */
+  color: var(--text-secondary);
   background: var(--glass-secondary);
   backdrop-filter: var(--glass-blur);
   display: flex;
@@ -552,23 +566,20 @@ body {
   font-weight: 600;
 }
 
-/* Schedule styling */
+/* Schedule styling - modernized */
 .schedule-item {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
   transition: all 0.2s ease;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-}
-
-.schedule-item:last-child {
-  border-bottom: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .schedule-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-game {
@@ -576,6 +587,8 @@ body {
   align-items: center;
   gap: 0.8rem;
   margin-bottom: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .schedule-team-logo {
@@ -589,13 +602,11 @@ body {
 }
 
 .schedule-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  font-size: 0.9rem;
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 1rem;
   color: var(--text-secondary);
-  padding-left: 0.5rem;
-  border-left: 2px solid var(--border-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .no-data-message {
@@ -625,6 +636,8 @@ body {
 @media (max-width: 768px) {
   .team-header {
     padding: 1.5rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   .team-top-bar {
@@ -632,6 +645,8 @@ body {
     gap: 1rem;
     align-items: flex-start;
     padding: 1rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
   
   .team-selector {
@@ -663,6 +678,8 @@ body {
     padding: 1rem;
     gap: 1rem;
     grid-template-columns: 1fr;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
   
   .team-info-card, 
@@ -688,7 +705,6 @@ body {
   }
 }
 
-/* Make table responsive on mobile */
 @media (max-width: 580px) {
   .roster-table {
     display: block;
@@ -737,8 +753,4 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-.dashboard-card {
-  animation: fadeIn 0.6s ease-out;
 }
