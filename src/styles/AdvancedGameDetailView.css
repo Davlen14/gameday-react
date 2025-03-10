@@ -124,14 +124,30 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 24px;
+    padding: 20px;
     background-color: #eee;
   }
   
+  /* Fixed logo sizes */
   .team-logo-large {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
+    max-width: 100%;
+  }
+  
+  .team-logo-small {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+  
+  .team-logo-tiny {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 50%;
   }
   
   .team-info {
@@ -178,13 +194,139 @@
   /* Weather Components */
   .weather-icon-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .temp-label {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .temp-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #212529;
+  }
+  
+  /* Modernized Quarter by Quarter Table */
+  .line-scores-container {
+    margin-bottom: 28px;
+  }
+  
+  .line-scores-container h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #343a40;
+  }
+  
+  .line-scores-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .line-scores-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .line-scores-table th {
+    background-color: #f8f9fa;
+    padding: 12px 8px;
+    font-size: 0.9rem;
+    color: #495057;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .line-scores-table th.team-cell {
+    text-align: left;
+    width: 160px;
+  }
+  
+  .line-scores-table th.period-header {
+    width: 50px;
+  }
+  
+  .line-scores-table th.total-header {
+    background-color: #e9ecef;
+  }
+  
+  .line-scores-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .line-scores-table td.team-cell {
+    text-align: left;
+  }
+  
+  .team-info-cell {
+    display: flex;
     align-items: center;
     gap: 8px;
   }
   
-  .temp-label {
+  .team-abbr {
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .line-scores-table td.score-cell {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .line-scores-table td.total-cell {
+    font-weight: 700;
+    font-size: 1.2rem;
+    background-color: #f8f9fa;
+  }
+  
+  .current-game-state {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+  
+  .clock-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #212529;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+  }
+  
+  .clock-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.8;
+  }
+  
+  .clock-value {
     font-size: 1rem;
-    color: #333;
+    font-weight: 700;
+    font-family: monospace;
+  }
+  
+  .period-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 4px;
   }
   
   /* Weather Card */
@@ -257,6 +399,176 @@
     font-size: 1rem;
     font-weight: 600;
     color: #212529;
+  }
+  
+  /* Win Probability Component */
+  .win-probability-section {
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  
+  .win-probability-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #343a40;
+  }
+  
+  .win-prob-container {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+  
+  .win-probability-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+  }
+  
+  .win-probability-container:hover {
+    transform: translateY(-3px);
+  }
+  
+  .win-probability-circle {
+    margin-bottom: 8px;
+    max-width: 100px;
+    max-height: 100px;
+  }
+  
+  .win-probability-label {
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  .win-probability-label span {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #495057;
+  }
+  
+  .win-prob-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #212529;
+    margin-top: 4px;
+  }
+  
+  /* Excitement Rating */
+  .excitement-container {
+    width: 100%;
+  }
+  
+  .excitement-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .star-icon {
+    transition: transform 0.2s ease;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .star-icon:hover {
+    transform: scale(1.2);
+  }
+  
+  .excitement-value {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+  }
+  
+  /* Game Meta Info */
+  .game-meta-info {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .meta-icon {
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .meta-content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .meta-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 2px;
+  }
+  
+  .meta-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #212529;
+  }
+  
+  /* Last Play Container */
+  .last-play-container {
+    background-color: #D4001C;
+    color: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    animation: highlightPulse 3s infinite;
+  }
+  
+  @keyframes highlightPulse {
+    0% { background-color: #D4001C; }
+    50% { background-color: #E03040; }
+    100% { background-color: #D4001C; }
+  }
+  
+  .last-play-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.9;
+  }
+  
+  .last-play-text {
+    font-size: 1rem;
+    line-height: 1.5;
   }
   
   /* Betting Cards */
@@ -618,6 +930,46 @@
     .tab-button {
       flex: 1 0 calc(33.333% - 8px);
     }
+    
+    .line-scores-table {
+      font-size: 0.9rem;
+    }
+    
+    .line-scores-table th,
+    .line-scores-table td {
+      padding: 8px 4px;
+    }
+    
+    .line-scores-table th.team-cell {
+      width: 120px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .line-scores-table th.team-cell {
+      width: 80px;
+    }
+    
+    .team-info-cell {
+      gap: 4px;
+    }
+    
+    .team-abbr {
+      font-size: 0.8rem;
+      max-width: 60px;
+    }
+    
+    .line-scores-table th {
+      font-size: 0.8rem;
+    }
+    
+    .line-scores-table td.score-cell {
+      font-size: 0.9rem;
+    }
+    
+    .line-scores-table td.total-cell {
+      font-size: 1rem;
+    }
   }
   
   @media (max-width: 480px) {
@@ -635,8 +987,8 @@
     }
     
     .team-logo-large {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
     }
     
     .team-name {
@@ -647,4 +999,3 @@
       font-size: 2.5rem;
     }
   }
-  
