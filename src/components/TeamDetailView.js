@@ -14,7 +14,10 @@ import {
   FaFootballBall,
   FaClipboardList,
   FaChartBar,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaUser,
+  FaMapMarkerAlt as FaVenue,
+  FaClock
 } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
 import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
@@ -54,6 +57,36 @@ const ComingSoon = ({ title }) => (
     <div className="coming-soon-label">Coming Soon</div>
   </div>
 );
+
+// Format height from inches to feet and inches
+const formatHeight = (heightInInches) => {
+  if (!heightInInches) return "N/A";
+  
+  // Try to handle cases where height might be given as "6'2" or similar
+  if (typeof heightInInches === 'string' && heightInInches.includes("'")) {
+    return heightInInches;
+  }
+  
+  const inches = parseInt(heightInInches, 10);
+  if (isNaN(inches)) return "N/A";
+  
+  const feet = Math.floor(inches / 12);
+  const remainingInches = inches % 12;
+  
+  return `${feet}'${remainingInches}"`;
+};
+
+// Get initials from player name
+const getInitials = (name) => {
+  if (!name) return "?";
+  
+  const names = name.split(' ');
+  if (names.length >= 2) {
+    return `${names[0][0]}${names[names.length - 1][0]}`;
+  }
+  
+  return name.substring(0, 2);
+};
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -373,46 +406,97 @@ const TeamDetail = () => {
                   <p>Loading schedule...</p>
                 </div>
               ) : (
-                <>
-                  {schedule.map((game, index) => (
-                    <div key={index} className="schedule-item">
-                      <div className="schedule-game">
-                        <img
-                          src={game.homeLogo || getTeamLogo(game.homeTeam)}
-                          alt={game.homeTeam}
-                          className="schedule-team-logo"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/photos/default_team.png";
-                          }}
-                        />
-                        <span>
-                          {game.homeTeam} vs. {game.awayTeam}
-                        </span>
-                        <img
-                          src={game.awayLogo || getTeamLogo(game.awayTeam)}
-                          alt={game.awayTeam}
-                          className="schedule-team-logo"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/photos/default_team.png";
-                          }}
-                        />
+                <div className="schedule-container">
+                  {schedule.map((game, index) => {
+                    // Determine if game is completed, has score
+                    const isCompleted = game.homePoints !== null && game.homePoints !== undefined && 
+                                      game.awayPoints !== null && game.awayPoints !== undefined;
+                    
+                    // Determine winner if game is completed
+                    let homeWinner = false;
+                    let awayWinner = false;
+                    let isTie = false;
+                    
+                    if (isCompleted) {
+                      homeWinner = game.homePoints > game.awayPoints;
+                      awayWinner = game.homePoints < game.awayPoints;
+                      isTie = game.homePoints === game.awayPoints;
+                    }
+                    
+                    // Format date if available
+                    const gameDate = game.date ? new Date(game.date).toLocaleDateString() : "TBD";
+                    
+                    return (
+                      <div key={index} className="schedule-item">
+                        {!isCompleted && <div className="upcoming-game-badge">Upcoming</div>}
+                        
+                        <div className="schedule-header">
+                          Game {index + 1} - {gameDate}
+                        </div>
+                        
+                        <div className="schedule-teams">
+                          <div className="schedule-team">
+                            <div className="schedule-team-logo-container">
+                              <img
+                                src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                                alt={game.homeTeam}
+                                className="schedule-team-logo"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "/photos/default_team.png";
+                                }}
+                              />
+                            </div>
+                            <div className="schedule-team-name">{game.homeTeam}</div>
+                          </div>
+                          
+                          <div className="schedule-team">
+                            <div className="schedule-team-logo-container">
+                              <img
+                                src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                                alt={game.awayTeam}
+                                className="schedule-team-logo"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "/photos/default_team.png";
+                                }}
+                              />
+                            </div>
+                            <div className="schedule-team-name">{game.awayTeam}</div>
+                          </div>
+                        </div>
+                        
+                        {isCompleted && (
+                          <div className="schedule-score">
+                            <div className={`schedule-score-home ${homeWinner ? 'schedule-winner' : ''}`}>
+                              {game.homePoints}
+                            </div>
+                            -
+                            <div className={`schedule-score-away ${awayWinner ? 'schedule-winner' : ''}`}>
+                              {game.awayPoints}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="schedule-details">
+                          <div className="schedule-venue">
+                            <FaVenue size={14} style={{ opacity: 0.7 }} />
+                            {game.venue || "TBD"}
+                          </div>
+                          <div className="schedule-date">
+                            <FaClock size={14} style={{ opacity: 0.7 }} />
+                            {game.time || "TBD"}
+                          </div>
+                        </div>
                       </div>
-                      <div className="schedule-details">
-                        <p>
-                          Score: {game.homePoints || "-"} - {game.awayPoints || "-"}
-                        </p>
-                        <p>Venue: {game.venue || "TBD"}</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {schedule.length === 0 && !isLoading.schedule && (
                     <div className="no-data-message">
                       No schedule information available
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -435,7 +519,7 @@ const TeamDetail = () => {
                 <table className="roster-table">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th>Player</th>
                       <th>Position</th>
                       <th>Height</th>
                       <th>Year</th>
@@ -444,10 +528,23 @@ const TeamDetail = () => {
                   <tbody>
                     {roster.map((player, index) => (
                       <tr key={index}>
-                        <td>{player.fullName}</td>
-                        <td>{player.position || "N/A"}</td>
-                        <td>{player.height || "N/A"}</td>
-                        <td>{player.year || "N/A"}</td>
+                        <td>
+                          <div className="player-info">
+                            <div className="player-icon">
+                              <FaUser />
+                            </div>
+                            <div className="player-name">{player.fullName}</div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="player-position">{player.position || "N/A"}</span>
+                        </td>
+                        <td>
+                          <span className="player-height">{formatHeight(player.height) || "N/A"}</span>
+                        </td>
+                        <td>
+                          <span className="player-year">{player.year || "N/A"}</span>
+                        </td>
                       </tr>
                     ))}
                     {roster.length === 0 && !isLoading.roster && (
