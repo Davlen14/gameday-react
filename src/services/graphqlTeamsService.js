@@ -1,4 +1,4 @@
-// Simplified graphqlTeamsService.js – Only includes ratings functionality
+// Simplified graphqlTeamsService.js – Now includes ratings, team info, and scoreboard data
 
 // Proxy-based API interaction using GraphQL
 const fetchData = async (query, variables = {}) => {
@@ -130,11 +130,62 @@ export const getTeams = async () => {
   return data?.currentTeams || [];
 };
 
-// Export only ratings-related functions
+// New function: Get detailed game scoreboard data
+export const getGameScoreboard = async (gameId) => {
+  const query = `
+    query GetGameScoreboard($gameId: Int!) {
+      scoreboard(where: { id: { _eq: $gameId } }) {
+        id
+        awayClassification
+        awayConference
+        awayConferenceAbbreviation
+        awayId
+        awayLineScores
+        awayPoints
+        awayTeam
+        city
+        conferenceGame
+        currentClock
+        currentPeriod
+        currentPossession
+        currentSituation
+        homeClassification
+        homeConference
+        homeConferenceAbbreviation
+        homeId
+        homeLineScores
+        homePoints
+        homeTeam
+        lastPlay
+        moneylineAway
+        moneylineHome
+        neutralSite
+        overUnder
+        spread
+        startDate
+        startTimeTbd
+        state
+        status
+        temperature
+        tv
+        venue
+        weatherDescription
+        windDirection
+        windSpeed
+      }
+    }
+  `;
+  const variables = { gameId: parseInt(gameId) };
+  const data = await fetchData(query, variables);
+  return data?.scoreboard?.[0] || null;
+};
+
+// Export only ratings and team info functions along with the new scoreboard data function
 const graphqlTeamsService = {
-  getTeams,          // Kept for basic team info needed by TeamDetail
-  getTeamRatings,    // Used by gauge components
-  getTeamDetailedRatings, // Used by ratings component
+  getTeams,                     // For basic team info needed by TeamDetail
+  getTeamRatings,               // For gauge components
+  getTeamDetailedRatings,       // For detailed ratings table
+  getGameScoreboard,            // New export for detailed game scoreboard data
 };
 
 export default graphqlTeamsService;
