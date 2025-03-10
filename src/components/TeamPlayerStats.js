@@ -45,6 +45,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   const sortedPlayers = [...players].sort(
     (a, b) => b.totalPPA.all - a.totalPPA.all
   );
+  // Identify the top 5 impact players
   const impactPlayers = sortedPlayers.slice(0, 5);
 
   return (
@@ -53,72 +54,65 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
         {teamName} Player Stats ({year})
       </h1>
 
-      <section className="impact-players">
-        <h2>Impact Players</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Position</th>
-              <th>Season</th>
-              <th>Team</th>
-              <th>Conference</th>
-              <th>Avg PPA</th>
-              <th>Total PPA</th>
+      <table>
+        <thead>
+          <tr>
+            <th rowSpan="2">Name</th>
+            <th rowSpan="2">Position</th>
+            <th colSpan="8">Average PPA</th>
+            <th colSpan="8">Total PPA</th>
+          </tr>
+          <tr>
+            <th>All</th>
+            <th>Pass</th>
+            <th>Rush</th>
+            <th>FirstDown</th>
+            <th>SecondDown</th>
+            <th>ThirdDown</th>
+            <th>StandardDowns</th>
+            <th>PassingDowns</th>
+            <th>All</th>
+            <th>Pass</th>
+            <th>Rush</th>
+            <th>FirstDown</th>
+            <th>SecondDown</th>
+            <th>ThirdDown</th>
+            <th>StandardDowns</th>
+            <th>PassingDowns</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedPlayers.map((player) => (
+            <tr
+              key={player.id}
+              className={
+                impactPlayers.find((p) => p.id === player.id)
+                  ? "impact-row"
+                  : ""
+              }
+            >
+              <td>{player.name}</td>
+              <td>{player.position}</td>
+              <td>{player.averagePPA.all}</td>
+              <td>{player.averagePPA.pass}</td>
+              <td>{player.averagePPA.rush}</td>
+              <td>{player.averagePPA.firstDown}</td>
+              <td>{player.averagePPA.secondDown}</td>
+              <td>{player.averagePPA.thirdDown}</td>
+              <td>{player.averagePPA.standardDowns}</td>
+              <td>{player.averagePPA.passingDowns}</td>
+              <td>{player.totalPPA.all}</td>
+              <td>{player.totalPPA.pass}</td>
+              <td>{player.totalPPA.rush}</td>
+              <td>{player.totalPPA.firstDown}</td>
+              <td>{player.totalPPA.secondDown}</td>
+              <td>{player.totalPPA.thirdDown}</td>
+              <td>{player.totalPPA.standardDowns}</td>
+              <td>{player.totalPPA.passingDowns}</td>
             </tr>
-          </thead>
-          <tbody>
-            {impactPlayers.map((player) => (
-              <tr key={player.id} className="impact-row">
-                <td>{player.name}</td>
-                <td>{player.position}</td>
-                <td>{player.season}</td>
-                <td>{player.team}</td>
-                <td>{player.conference}</td>
-                <td>{player.averagePPA.all}</td>
-                <td>{player.totalPPA.all}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      <section className="all-players">
-        <h2>All Players</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Position</th>
-              <th>Season</th>
-              <th>Team</th>
-              <th>Conference</th>
-              <th>Avg PPA</th>
-              <th>Total PPA</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedPlayers.map((player) => (
-              <tr
-                key={player.id}
-                className={
-                  impactPlayers.find((p) => p.id === player.id)
-                    ? "impact-row"
-                    : ""
-                }
-              >
-                <td>{player.name}</td>
-                <td>{player.position}</td>
-                <td>{player.season}</td>
-                <td>{player.team}</td>
-                <td>{player.conference}</td>
-                <td>{player.averagePPA.all}</td>
-                <td>{player.totalPPA.all}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+          ))}
+        </tbody>
+      </table>
 
       {/* Embedded CSS for modern styling */}
       <style>{`
@@ -133,13 +127,6 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
           text-align: center;
           margin-bottom: 30px;
         }
-        h2 {
-          margin-top: 40px;
-          margin-bottom: 10px;
-          color: #444;
-          border-bottom: 2px solid #ddd;
-          padding-bottom: 5px;
-        }
         table {
           width: 100%;
           border-collapse: collapse;
@@ -148,9 +135,10 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         th, td {
-          padding: 12px 15px;
+          padding: 8px 10px;
           border: 1px solid #eee;
-          text-align: left;
+          text-align: center;
+          font-size: 0.9em;
         }
         th {
           background-color: #f4f4f4;
@@ -171,13 +159,11 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
         }
         @media (max-width: 768px) {
           th, td {
-            padding: 10px;
+            padding: 6px 8px;
+            font-size: 0.8em;
           }
           h1 {
-            font-size: 1.8em;
-          }
-          h2 {
-            font-size: 1.4em;
+            font-size: 1.6em;
           }
         }
       `}</style>
@@ -186,3 +172,5 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 };
 
 export default TeamPlayerStats;
+
+
