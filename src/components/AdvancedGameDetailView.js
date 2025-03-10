@@ -3,11 +3,10 @@ import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
-// A simple WeatherIcon component based on the condition description.
+// Simple WeatherIcon component.
 const WeatherIcon = ({ condition, temperature }) => {
   let icon;
   if (!condition || condition.toLowerCase().includes("clear")) {
-    // Sun icon
     icon = (
       <svg width="32" height="32" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
@@ -22,14 +21,12 @@ const WeatherIcon = ({ condition, temperature }) => {
       </svg>
     );
   } else if (condition.toLowerCase().includes("cloud")) {
-    // Cloud icon
     icon = (
       <svg width="32" height="32" viewBox="0 0 24 24">
         <ellipse cx="12" cy="12" rx="8" ry="5" fill="#B0C4DE" />
       </svg>
     );
   } else if (condition.toLowerCase().includes("rain")) {
-    // Rain icon
     icon = (
       <svg width="32" height="32" viewBox="0 0 24 24">
         <path d="M7 10h10a4 4 0 010 8H7a4 4 0 010-8z" fill="#4A90E2" />
@@ -38,7 +35,7 @@ const WeatherIcon = ({ condition, temperature }) => {
       </svg>
     );
   } else {
-    // Default (sun)
+    // Default icon
     icon = (
       <svg width="32" height="32" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
@@ -53,7 +50,7 @@ const WeatherIcon = ({ condition, temperature }) => {
   );
 };
 
-// A simple TV Icon for broadcast info.
+// Simple TvIcon component.
 const TvIcon = () => (
   <svg width="32" height="32" viewBox="0 0 24 24">
     <rect x="2" y="3" width="20" height="14" rx="2" fill="#666" />
@@ -75,6 +72,7 @@ const AdvancedGameDetailView = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+
         // Get teams from REST (for logos and extra team info)
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
@@ -102,6 +100,7 @@ const AdvancedGameDetailView = () => {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, [id]);
 
@@ -128,6 +127,7 @@ const AdvancedGameDetailView = () => {
   if (!gameData) return <div>Game not found</div>;
 
   // Destructure all fields from merged gameData.
+  // Note: Remove top-level weatherDescription; use weather.condition.description instead.
   const {
     id: gameId,
     attendance,
@@ -172,11 +172,10 @@ const AdvancedGameDetailView = () => {
     overUnder,
     spread,
     temperature,
-    // Remove weatherDescription field since it's nested in weather.condition.description
     windDirection,
     windSpeed,
     tv,
-    weather,    // Nested object from game_info.weather
+    weather,    // Object containing: condition, dewpoint, humidity, etc.
     mediaInfo,  // Array from game_info.mediaInfo
     lines       // Array from game_info.lines
   } = gameData;
@@ -184,7 +183,7 @@ const AdvancedGameDetailView = () => {
   const homeTeamDetails = getTeamDetails(homeTeam);
   const awayTeamDetails = getTeamDetails(awayTeam);
 
-  // Modernized line scores table for the Statistics tab.
+  // Render a modern line scores table.
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
     if (!periods) return <p>No line score data available.</p>;
@@ -226,7 +225,7 @@ const AdvancedGameDetailView = () => {
           <div className="team-name">{homeTeam}</div>
           <div className="team-record">
             {homeTeamDetails.record ? `Record: ${homeTeamDetails.record}` : ""}{" "}
-            {homeTeamDetails.rank ? ` • Rank: #${homeTeamDetails.rank}` : ""}
+            {homeTeamDetails.rank ? `• Rank: #${homeTeamDetails.rank}` : ""}
           </div>
           <div className="score">{homePoints || "0"}</div>
         </div>
@@ -236,7 +235,7 @@ const AdvancedGameDetailView = () => {
           <div className="team-name">{awayTeam}</div>
           <div className="team-record">
             {awayTeamDetails.record ? `Record: ${awayTeamDetails.record}` : ""}{" "}
-            {awayTeamDetails.rank ? ` • Rank: #${awayTeamDetails.rank}` : ""}
+            {awayTeamDetails.rank ? `• Rank: #${awayTeamDetails.rank}` : ""}
           </div>
           <div className="score">{awayPoints || "0"}</div>
         </div>
@@ -267,8 +266,7 @@ const AdvancedGameDetailView = () => {
       {renderLineScores()}
       {currentClock && (
         <p>
-          <strong>Current Clock:</strong> {currentClock} (Period:{" "}
-          {currentPeriod || "N/A"})
+          <strong>Current Clock:</strong> {currentClock} (Period: {currentPeriod || "N/A"})
         </p>
       )}
       {lastPlay && <p><strong>Last Play:</strong> {lastPlay}</p>}
@@ -302,17 +300,12 @@ const AdvancedGameDetailView = () => {
       <h2>Weather Conditions</h2>
       <div className="weather-details">
         <WeatherIcon
-          condition={
-            weather && weather.condition && weather.condition.description
-              ? weather.condition.description
-              : ""
-          }
+          condition={weather && weather.condition && weather.condition.description ? weather.condition.description : ""}
           temperature={temperature || (weather && weather.temperature)}
         />
         <p>
           <strong>Description:</strong>{" "}
-          {(weather && weather.condition && weather.condition.description) ||
-            "N/A"}
+          {weather && weather.condition && weather.condition.description ? weather.condition.description : "N/A"}
         </p>
         <p>
           <strong>Wind:</strong>{" "}
@@ -350,67 +343,43 @@ const AdvancedGameDetailView = () => {
     <div className="tab-content details">
       <h2>Additional Game Details</h2>
       <div className="details-grid">
+        <p><strong>Attendance:</strong> {attendance || "N/A"}</p>
         <p>
-          <strong>Attendance:</strong> {attendance || "N/A"}
+          <strong>Season:</strong> {season || "N/A"} {seasonType ? `(Type: ${seasonType})` : ""}
         </p>
         <p>
-          <strong>Season:</strong> {season || "N/A"}{" "}
-          {seasonType ? `(Type: ${seasonType})` : ""}
+          <strong>Conference Game:</strong> {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
+        </p>
+        <p><strong>Excitement:</strong> {excitement || "N/A"}</p>
+        <p><strong>Away Classification:</strong> {awayClassification || "N/A"}</p>
+        <p>
+          <strong>Away Conference:</strong> {awayConference || "N/A"} (ID: {awayConferenceId || "N/A"})
         </p>
         <p>
-          <strong>Conference Game:</strong>{" "}
-          {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
+          <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End: {awayEndElo || "N/A"}, Postgame Win Prob: {awayPostgameWinProb || "N/A"}
+        </p>
+        <p><strong>Away Team ID:</strong> {awayTeamId || "N/A"}</p>
+        <p><strong>Home Classification:</strong> {homeClassification || "N/A"}</p>
+        <p>
+          <strong>Home Conference:</strong> {homeConference || "N/A"} (ID: {homeConferenceId || "N/A"})
         </p>
         <p>
-          <strong>Excitement:</strong> {excitement || "N/A"}
+          <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End: {homeEndElo || "N/A"}, Postgame Win Prob: {homePostgameWinProb || "N/A"}
         </p>
+        <p><strong>Home Team ID:</strong> {homeTeamId || "N/A"}</p>
         <p>
-          <strong>Away Classification:</strong> {awayClassification || "N/A"}
+          <strong>Neutral Site:</strong> {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
         </p>
-        <p>
-          <strong>Away Conference:</strong> {awayConference || "N/A"} (ID:{" "}
-          {awayConferenceId || "N/A"})
-        </p>
-        <p>
-          <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End:{" "}
-          {awayEndElo || "N/A"}, Postgame Win Prob:{" "}
-          {awayPostgameWinProb || "N/A"}
-        </p>
-        <p>
-          <strong>Away Team ID:</strong> {awayTeamId || "N/A"}
-        </p>
-        <p>
-          <strong>Home Classification:</strong> {homeClassification || "N/A"}
-        </p>
-        <p>
-          <strong>Home Conference:</strong> {homeConference || "N/A"} (ID:{" "}
-          {homeConferenceId || "N/A"})
-        </p>
-        <p>
-          <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End:{" "}
-          {homeEndElo || "N/A"}, Postgame Win Prob:{" "}
-          {homePostgameWinProb || "N/A"}
-        </p>
-        <p>
-          <strong>Home Team ID:</strong> {homeTeamId || "N/A"}
-        </p>
-        <p>
-          <strong>Neutral Site:</strong>{" "}
-          {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
-        </p>
+        <p><strong>Week:</strong> {week || "N/A"}</p>
         {notes && <p><strong>Notes:</strong> {notes}</p>}
-        <p>
-          <strong>Week:</strong> {week || "N/A"}
-        </p>
       </div>
       {mediaInfo && mediaInfo.length > 0 && (
         <div className="media-info">
           <h3>Media Information</h3>
           <ul>
             {mediaInfo.map((media) => (
-              <li key={media.id}>
-                <strong>Network:</strong> {media.network}{" "}
-                {media.outlet && `- Outlet: ${media.outlet}`}
+              <li key={media.network + media.outlet}>
+                <strong>Network:</strong> {media.network} {media.outlet && `- Outlet: ${media.outlet}`}
               </li>
             ))}
           </ul>
@@ -422,9 +391,7 @@ const AdvancedGameDetailView = () => {
           <ul>
             {lines.map((line, idx) => (
               <li key={idx}>
-                <strong>Provider:</strong> {line.provider} –{" "}
-                <strong>Spread:</strong> {line.spread || "N/A"} –{" "}
-                <strong>O/U:</strong> {line.overUnder || "N/A"}
+                <strong>Provider:</strong> {line.provider} – <strong>Spread:</strong> {line.spread || "N/A"} – <strong>O/U:</strong> {line.overUnder || "N/A"}
               </li>
             ))}
           </ul>
@@ -436,40 +403,22 @@ const AdvancedGameDetailView = () => {
   // Render tab buttons.
   const renderTabs = () => (
     <div className="tabs">
-      <button
-        className={activeTab === "overview" ? "active" : ""}
-        onClick={() => setActiveTab("overview")}
-      >
+      <button className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>
         Overview
       </button>
-      <button
-        className={activeTab === "statistics" ? "active" : ""}
-        onClick={() => setActiveTab("statistics")}
-      >
+      <button className={activeTab === "statistics" ? "active" : ""} onClick={() => setActiveTab("statistics")}>
         Statistics
       </button>
-      <button
-        className={activeTab === "betting" ? "active" : ""}
-        onClick={() => setActiveTab("betting")}
-      >
+      <button className={activeTab === "betting" ? "active" : ""} onClick={() => setActiveTab("betting")}>
         Betting
       </button>
-      <button
-        className={activeTab === "weather" ? "active" : ""}
-        onClick={() => setActiveTab("weather")}
-      >
+      <button className={activeTab === "weather" ? "active" : ""} onClick={() => setActiveTab("weather")}>
         Weather
       </button>
-      <button
-        className={activeTab === "venue" ? "active" : ""}
-        onClick={() => setActiveTab("venue")}
-      >
+      <button className={activeTab === "venue" ? "active" : ""} onClick={() => setActiveTab("venue")}>
         Venue
       </button>
-      <button
-        className={activeTab === "details" ? "active" : ""}
-        onClick={() => setActiveTab("details")}
-      >
+      <button className={activeTab === "details" ? "active" : ""} onClick={() => setActiveTab("details")}>
         Details
       </button>
     </div>
@@ -539,7 +488,7 @@ const AdvancedGameDetailView = () => {
         .team-logo {
           width: 100px;
           height: 100px;
-          object-fit: contain;
+          object-fit: cover;
           border-radius: 50%;
           margin: 0 auto 10px;
         }
