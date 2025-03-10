@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
+import graphqlTeamsService from "../services/graphqlTeamsService";
 import "../styles/Teams.css"; // Using our modernized CSS
 
 // Import icons
@@ -223,10 +224,54 @@ const Teams = () => {
     fetchTeams();
   }, []);
 
+  // Extract and transform ratings data from GraphQL response
+  const extractRatingsFromGraphQL = (data) => {
+    if (!data) return null;
+    
+    // Define default values
+    const defaultRating = 25;
+    
+    // Process offense rating - using fpiOffensiveEfficiency or spOffense
+    const offenseRating = data.fpiOffensiveEfficiency || 
+                         (data.spOffense ? parseFloat(data.spOffense) : null) || 
+                         defaultRating;
+    
+    // Process defense rating - using fpiDefensiveEfficiency or spDefense
+    // For defense, lower values are better in spDefense, so we'll normalize this
+    let defenseRating = data.fpiDefensiveEfficiency || defaultRating;
+    if (data.spDefense && !data.fpiDefensiveEfficiency) {
+      // Convert spDefense (where lower is better) to a rating where higher is better
+      // Assuming spDefense ranges from 15 (excellent) to 35 (poor)
+      const spDefense = parseFloat(data.spDefense);
+      defenseRating = Math.max(50 - spDefense, 0); // Inverse relationship
+    }
+    
+    // Process overall rating - using fpiOverallEfficiency, spOverall, or elo
+    let overallRating = data.fpiOverallEfficiency || defaultRating;
+    if (data.spOverall && !data.fpiOverallEfficiency) {
+      // Convert spOverall (centered around 0) to a scale similar to efficiency (0-100)
+      // Assuming spOverall ranges from -10 to +20
+      const spOverall = parseFloat(data.spOverall);
+      overallRating = Math.min(Math.max(((spOverall + 10) / 30) * 50 + 25, 0), 50);
+    } else if (data.elo && !data.fpiOverallEfficiency && !data.spOverall) {
+      // Convert ELO (typically 1200-1800) to a scale similar to efficiency
+      const elo = parseFloat(data.elo);
+      overallRating = Math.min(Math.max(((elo - 1200) / 600) * 50, 0), 50);
+    }
+    
+    // Return formatted ratings object
+    return {
+      offense: { rating: offenseRating },
+      defense: { rating: defenseRating },
+      rating: overallRating
+    };
+  };
+
   // Whenever the user selects (or deselects) teams, fetch their ratings.
   useEffect(() => {
     const fetchSelectedTeamsRatings = async () => {
       const newRatings = { ...teamRatings };
+      const currentYear = 2024;
 
       // Save the selected teams to localStorage
       if (selectedTeams.length > 0) {
@@ -239,17 +284,28 @@ const Teams = () => {
         try {
           if (newRatings[team.id]) continue; // Use team.id as key
           
-          // Fetch ratings using team.school (as required by the API) and 2024 as parameters
-          const data = await teamsService.getTeamRatings(team.school, 2024);
+          // First try to get detailed ratings from GraphQL
+          console.log(`Fetching detailed ratings for ${team.school} via GraphQL...`);
+          const graphqlData = await graphqlTeamsService.getTeamDetailedRatings(team.school, currentYear);
           
-          // Create a properly structured rating object for consistency
-          newRatings[team.id] = {
-            offense: { rating: data?.offense?.rating || 25 },
-            defense: { rating: data?.defense?.rating || 25 },
-            rating: data?.rating || 25
-          };
-          
-          console.log(`Fetched ratings for ${team.school}:`, newRatings[team.id]);
+          if (graphqlData) {
+            console.log(`GraphQL data for ${team.school}:`, graphqlData);
+            const processedRatings = extractRatingsFromGraphQL(graphqlData);
+            newRatings[team.id] = processedRatings;
+            console.log(`Processed ratings for ${team.school}:`, processedRatings);
+          } else {
+            // Fallback to regular API if GraphQL fails or returns empty
+            console.log(`Fallback to regular API for ${team.school}...`);
+            const apiData = await teamsService.getTeamRatings(team.school, currentYear);
+            
+            // Create a properly structured rating object for consistency
+            newRatings[team.id] = {
+              offense: { rating: apiData?.offense?.rating || 25 },
+              defense: { rating: apiData?.defense?.rating || 25 },
+              rating: apiData?.rating || 25
+            };
+            console.log(`API fallback ratings for ${team.school}:`, newRatings[team.id]);
+          }
         } catch (err) {
           console.error(`Error fetching ratings for team ${team.school}:`, err);
           // Provide default values when fetch fails
