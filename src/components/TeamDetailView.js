@@ -301,23 +301,24 @@ const TeamDetail = () => {
               </div>
               <div className="card-body">
                 <div className="gauges-container">
+                  {/* Modified to use teamName and year like RatingsComponent */}
                   <GaugeComponent 
                     label="Overall" 
-                    rawValue={ratings.rating} 
                     metricType="overall" 
-                    teamData={ratings}
+                    teamName={team.school}
+                    year={2024}
                   />
                   <GaugeComponent 
                     label="Offense" 
-                    rawValue={ratings.offense?.rating} 
                     metricType="offense" 
-                    teamData={ratings}
+                    teamName={team.school}
+                    year={2024}
                   />
                   <GaugeComponent 
                     label="Defense" 
-                    rawValue={ratings.defense?.rating} 
                     metricType="defense" 
-                    teamData={ratings}
+                    teamName={team.school}
+                    year={2024}
                   />
                 </div>
                 <div className="ratings-explanation">
