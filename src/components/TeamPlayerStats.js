@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
+// Import react-icons
+import { FaTrophy, FaFootballBall, FaInfoCircle, FaArrowUp, FaArrowDown, FaChartBar } from "react-icons/fa";
+import { BiRun, BiFootball } from "react-icons/bi";
+import { GiAmericanFootballHelmet, GiAmericanFootballPlayer } from "react-icons/gi";
+import { MdSportsFootball, MdQueryStats, MdCategory, MdLeaderboard } from "react-icons/md";
+import { IoMdStats, IoMdInformationCircleOutline } from "react-icons/io";
+import { BsArrowRepeat, BsSearch, BsChevronRight } from "react-icons/bs";
+import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
 
 const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   const [players, setPlayers] = useState([]);
@@ -45,6 +53,23 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     return "high-value";
   };
 
+  // Get appropriate icon for position
+  const getPositionIcon = (position) => {
+    const positionMap = {
+      'QB': <MdSportsFootball className="position-icon" />,
+      'RB': <BiRun className="position-icon" />,
+      'WR': <BiFootball className="position-icon" />,
+      'TE': <GiAmericanFootballPlayer className="position-icon" />,
+      'OL': <GiAmericanFootballPlayer className="position-icon" />,
+      'DL': <GiAmericanFootballPlayer className="position-icon" />,
+      'LB': <GiAmericanFootballPlayer className="position-icon" />,
+      'DB': <GiAmericanFootballPlayer className="position-icon" />,
+      'K': <FaFootballBall className="position-icon" />
+    };
+    
+    return positionMap[position] || <GiAmericanFootballHelmet className="position-icon" />;
+  };
+
   // Helper function to get info for stats
   const getStatInfo = (stat) => {
     const statInfoMap = {
@@ -68,7 +93,9 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     return (
       <div className="team-player-stats">
         <div className="loading-container">
-          <div className="loading-spinner"></div>
+          <div className="loading-spinner">
+            <AiOutlineLoading3Quarters className="spinner-icon" />
+          </div>
           <div className="loading-text">Loading player statistics...</div>
         </div>
       </div>
@@ -79,10 +106,12 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     return (
       <div className="team-player-stats">
         <div className="error-container">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon">
+            <AiOutlineWarning />
+          </div>
           <div className="error-message">Error: {error}</div>
           <button className="retry-button" onClick={() => window.location.reload()}>
-            Retry
+            <BsArrowRepeat className="button-icon" /> Retry
           </button>
         </div>
       </div>
@@ -100,14 +129,25 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   // Remaining players for the table
   const remainingPlayers = sortedPlayers.slice(5);
 
+  // Helper function to get stat trend icon
+  const getStatTrendIcon = (value) => {
+    if (value > 0.5) return <FaArrowUp className="trend-icon positive" />;
+    if (value < 0) return <FaArrowDown className="trend-icon negative" />;
+    return null;
+  };
+
   return (
     <div className="team-player-stats">
       <div className="stats-header">
-        <h1>{teamName} Player Stats <span className="year-badge">{year}</span></h1>
+        <h1>
+          <GiAmericanFootballHelmet className="team-icon" />
+          {teamName} Player Stats <span className="year-badge">{year}</span>
+        </h1>
         <button 
           className="info-button" 
           onClick={() => setShowInfoCard(!showInfoCard)}
         >
+          <FaInfoCircle className="button-icon" />
           {showInfoCard ? "Hide Stat Definitions" : "What Do These Stats Mean?"}
         </button>
       </div>
@@ -115,7 +155,10 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
       {showInfoCard && (
         <div className="info-card">
           <div className="info-card-header">
-            <h3>Understanding PPA (Predicted Points Added) Statistics</h3>
+            <h3>
+              <IoMdInformationCircleOutline className="card-header-icon" />
+              Understanding PPA (Predicted Points Added) Statistics
+            </h3>
             <button className="close-button" onClick={() => setShowInfoCard(false)}>×</button>
           </div>
           <div className="info-card-content">
@@ -123,11 +166,15 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
             
             <div className="stat-definitions">
               <div className="stat-definition">
-                <h4>Average PPA</h4>
+                <h4>
+                  <IoMdStats className="stat-icon" /> Average PPA
+                </h4>
                 <p>The average points contribution per play type. Higher is better.</p>
               </div>
               <div className="stat-definition">
-                <h4>Total PPA</h4>
+                <h4>
+                  <MdLeaderboard className="stat-icon" /> Total PPA
+                </h4>
                 <p>The cumulative sum of all PPA values. Represents overall season impact.</p>
               </div>
               <div className="legend">
@@ -148,7 +195,9 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
             
             {selectedStat && (
               <div className="selected-stat-info">
-                <h4>{selectedStat}</h4>
+                <h4>
+                  <MdQueryStats className="stat-icon" /> {selectedStat}
+                </h4>
                 <p>{getStatInfo(selectedStat)}</p>
               </div>
             )}
@@ -157,7 +206,9 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
       )}
 
       <div className="impact-players-section">
-        <h2 className="section-title">Top Impact Players</h2>
+        <h2 className="section-title">
+          <FaTrophy className="section-icon" /> Top Impact Players
+        </h2>
         <div className="impact-players-container">
           {impactPlayers.map((player, index) => (
             <div className="impact-player-card" key={player.id}>
@@ -166,23 +217,46 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
                   <div className="player-avatar">
                     {player.name.split(" ").map(name => name[0]).join("")}
                   </div>
-                  <div className="player-position">{player.position}</div>
+                  <div className="player-position">
+                    {getPositionIcon(player.position)} {player.position}
+                  </div>
                 </div>
                 <div className="player-info">
                   <h3 className="player-name">{player.name}</h3>
-                  <div className="player-rank">#{index + 1} Impact Player</div>
+                  <div className="player-rank">
+                    <span className="rank-number">#{index + 1}</span> Impact Player
+                  </div>
                   <div className="player-stats">
                     <div className="stat-box">
-                      <div className="stat-value">{player.totalPPA.all.toFixed(2)}</div>
-                      <div className="stat-label">Total PPA</div>
+                      <div className="stat-value">
+                        {player.totalPPA.all.toFixed(2)}
+                        {getStatTrendIcon(player.totalPPA.all)}
+                      </div>
+                      <div className="stat-label">
+                        <MdLeaderboard className="stat-label-icon" /> Total PPA
+                      </div>
                     </div>
                     <div className="stat-box">
-                      <div className="stat-value">{player.averagePPA.all.toFixed(2)}</div>
-                      <div className="stat-label">Avg PPA</div>
+                      <div className="stat-value">
+                        {player.averagePPA.all.toFixed(2)}
+                        {getStatTrendIcon(player.averagePPA.all)}
+                      </div>
+                      <div className="stat-label">
+                        <IoMdStats className="stat-label-icon" /> Avg PPA
+                      </div>
                     </div>
                     <div className="stat-box">
-                      <div className="stat-value">{Math.max(player.averagePPA.pass, player.averagePPA.rush).toFixed(2)}</div>
-                      <div className="stat-label">{player.averagePPA.pass > player.averagePPA.rush ? "Pass" : "Rush"}</div>
+                      <div className="stat-value">
+                        {Math.max(player.averagePPA.pass, player.averagePPA.rush).toFixed(2)}
+                        {getStatTrendIcon(Math.max(player.averagePPA.pass, player.averagePPA.rush))}
+                      </div>
+                      <div className="stat-label">
+                        {player.averagePPA.pass > player.averagePPA.rush ? (
+                          <><MdSportsFootball className="stat-label-icon" /> Pass</>
+                        ) : (
+                          <><BiRun className="stat-label-icon" /> Rush</>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -193,14 +267,20 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
       </div>
 
       <div className="regular-players-section">
-        <h2 className="section-title">All Players Statistics</h2>
+        <h2 className="section-title">
+          <MdCategory className="section-icon" /> All Players Statistics
+        </h2>
         <div className="table-container">
           <table className="stats-table">
             <thead>
               <tr>
                 <th rowSpan="2" className="sticky-col">Player</th>
-                <th colSpan="4">Average PPA</th>
-                <th colSpan="4">Total PPA</th>
+                <th colSpan="4">
+                  <IoMdStats className="header-icon" /> Average PPA
+                </th>
+                <th colSpan="4">
+                  <MdLeaderboard className="header-icon" /> Total PPA
+                </th>
               </tr>
               <tr>
                 <th 
@@ -210,11 +290,15 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
                 <th 
                   onClick={() => setSelectedStat("pass")}
                   className={selectedStat === "pass" ? "selected-header" : ""}
-                >Pass</th>
+                >
+                  <MdSportsFootball className="stat-type-icon" /> Pass
+                </th>
                 <th 
                   onClick={() => setSelectedStat("rush")}
                   className={selectedStat === "rush" ? "selected-header" : ""}
-                >Rush</th>
+                >
+                  <BiRun className="stat-type-icon" /> Rush
+                </th>
                 <th 
                   onClick={() => setSelectedStat("thirdDown")}
                   className={selectedStat === "thirdDown" ? "selected-header" : ""}
@@ -226,11 +310,15 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
                 <th 
                   onClick={() => setSelectedStat("totalPass")}
                   className={selectedStat === "totalPass" ? "selected-header" : ""}
-                >Pass</th>
+                >
+                  <MdSportsFootball className="stat-type-icon" /> Pass
+                </th>
                 <th 
                   onClick={() => setSelectedStat("totalRush")}
                   className={selectedStat === "totalRush" ? "selected-header" : ""}
-                >Rush</th>
+                >
+                  <BiRun className="stat-type-icon" /> Rush
+                </th>
                 <th>Details</th>
               </tr>
             </thead>
@@ -244,33 +332,44 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
                       </div>
                       <div className="table-player-details">
                         <div className="table-player-name">{player.name}</div>
-                        <div className="table-player-position">{player.position}</div>
+                        <div className="table-player-position">
+                          {getPositionIcon(player.position)} {player.position}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className={getValueColor(player.averagePPA.all, "all")}>
                     {player.averagePPA.all.toFixed(2)}
+                    {getStatTrendIcon(player.averagePPA.all)}
                   </td>
                   <td className={getValueColor(player.averagePPA.pass, "pass")}>
                     {player.averagePPA.pass.toFixed(2)}
+                    {getStatTrendIcon(player.averagePPA.pass)}
                   </td>
                   <td className={getValueColor(player.averagePPA.rush, "rush")}>
                     {player.averagePPA.rush.toFixed(2)}
+                    {getStatTrendIcon(player.averagePPA.rush)}
                   </td>
                   <td className={getValueColor(player.averagePPA.thirdDown, "thirdDown")}>
                     {player.averagePPA.thirdDown.toFixed(2)}
+                    {getStatTrendIcon(player.averagePPA.thirdDown)}
                   </td>
                   <td className={getValueColor(player.totalPPA.all, "all")}>
                     {player.totalPPA.all.toFixed(2)}
+                    {getStatTrendIcon(player.totalPPA.all)}
                   </td>
                   <td className={getValueColor(player.totalPPA.pass, "pass")}>
                     {player.totalPPA.pass.toFixed(2)}
+                    {getStatTrendIcon(player.totalPPA.pass)}
                   </td>
                   <td className={getValueColor(player.totalPPA.rush, "rush")}>
                     {player.totalPPA.rush.toFixed(2)}
+                    {getStatTrendIcon(player.totalPPA.rush)}
                   </td>
                   <td>
-                    <button className="view-details-button">View</button>
+                    <button className="view-details-button">
+                      <BsSearch className="button-icon" /> View
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -279,567 +378,1076 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
         </div>
       </div>
 
-      {/* Embedded CSS for modern styling */}
-      <style>{`
-        .team-player-stats {
-          font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          padding: 30px;
-          background: #f8fafc;
-          color: #1e293b;
-          line-height: 1.6;
-          max-width: 1200px;
-          margin: 0 auto;
-          border-radius: 12px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        /* Header Styles */
-        .stats-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-          padding-bottom: 15px;
-          border-bottom: 2px solid #e2e8f0;
-        }
-
-        h1 {
-          font-size: 2rem;
-          font-weight: 700;
-          margin: 0;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .year-badge {
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: white;
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 0.9rem;
-          font-weight: 600;
-        }
-
-        .section-title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin: 40px 0 20px;
-          position: relative;
-          display: inline-block;
-        }
-
-        .section-title:after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 0;
-          width: 60px;
-          height: 4px;
-          background: linear-gradient(90deg, #3b82f6, #60a5fa);
-          border-radius: 2px;
-        }
-
-        /* Impact Players Cards */
-        .impact-players-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 20px;
-          margin-bottom: 40px;
-        }
-
-        .impact-player-card {
-          background: white;
-          border-radius: 12px;
-          overflow: hidden;
-          transition: transform 0.3s, box-shadow 0.3s;
-          perspective: 1000px;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .impact-player-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .player-card-inner {
-          background: linear-gradient(180deg, #f7f7f7 0%, #ffffff 100%);
-          border-radius: 12px;
-          overflow: hidden;
-          height: 100%;
-        }
-
-        .player-image-container {
-          background: linear-gradient(135deg, #3b82f6, #1e40af);
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-        }
-
-        .player-avatar {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.8rem;
-          font-weight: 700;
-          color: #1e40af;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-          z-index: 2;
-          position: relative;
-        }
-
-        .player-position {
-          background: rgba(255, 255, 255, 0.9);
-          color: #1e40af;
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-weight: 600;
-          font-size: 0.8rem;
-          position: absolute;
-          bottom: -10px;
-          z-index: 3;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        .player-info {
-          padding: 25px 20px 20px;
-          text-align: center;
-        }
-
-        .player-name {
-          margin: 0 0 5px;
-          font-size: 1.2rem;
-          font-weight: 700;
-          color: #1e293b;
-        }
-
-        .player-rank {
-          color: #64748b;
-          font-size: 0.9rem;
-          margin-bottom: 15px;
-          font-weight: 500;
-        }
-
-        .player-stats {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px solid #e2e8f0;
-        }
-
-        .stat-box {
-          flex: 1;
-          text-align: center;
-        }
-
-        .stat-value {
-          font-size: 1.2rem;
-          font-weight: 700;
-          color: #1e40af;
-        }
-
-        .stat-label {
-          font-size: 0.75rem;
-          color: #64748b;
-          margin-top: 5px;
-        }
-
-        /* Regular Players Table */
-        .table-container {
-          overflow-x: auto;
-          border-radius: 10px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-          background: white;
-        }
-
-        .stats-table {
-          width: 100%;
-          border-collapse: collapse;
-          white-space: nowrap;
-        }
-
-        .stats-table th, .stats-table td {
-          padding: 12px 15px;
-          text-align: center;
-          border-bottom: 1px solid #e2e8f0;
-          font-size: 0.9rem;
-        }
-
-        .stats-table th {
-          background-color: #f1f5f9;
-          font-weight: 600;
-          color: #475569;
-          position: sticky;
-          top: 0;
-          z-index: 10;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .stats-table th:hover {
-          background-color: #e2e8f0;
-        }
-
-        .stats-table th.selected-header {
-          background-color: #dbeafe;
-          color: #1e40af;
-          box-shadow: inset 0 -2px 0 #3b82f6;
-        }
-
-        .sticky-col {
-          position: sticky;
-          left: 0;
-          background-color: #f8fafc;
-          z-index: 9;
-          border-right: 1px solid #e2e8f0;
-        }
-
-        .stats-table tr:hover td {
-          background-color: #f8fafc;
-        }
-
-        .table-player-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          min-width: 180px;
-          padding: 5px 0;
-        }
-
-        .table-player-avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #3b82f6, #1e40af);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          font-size: 0.8rem;
-          flex-shrink: 0;
-        }
-
-        .table-player-details {
-          text-align: left;
-        }
-
-        .table-player-name {
-          font-weight: 600;
-          font-size: 0.9rem;
-          color: #1e293b;
-        }
-
-        .table-player-position {
-          font-size: 0.75rem;
-          color: #64748b;
-          margin-top: 3px;
-        }
-
-        .low-value {
-          background-color: rgba(239, 68, 68, 0.1);
-          color: #b91c1c;
-          font-weight: 600;
-        }
-
-        .medium-value {
-          background-color: rgba(245, 158, 11, 0.1);
-          color: #b45309;
-          font-weight: 600;
-        }
-
-        .high-value {
-          background-color: rgba(34, 197, 94, 0.1);
-          color: #15803d;
-          font-weight: 600;
-        }
-
-        .view-details-button {
-          background: transparent;
-          color: #3b82f6;
-          border: 1px solid #3b82f6;
-          border-radius: 4px;
-          padding: 4px 10px;
-          font-size: 0.8rem;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .view-details-button:hover {
-          background: #3b82f6;
-          color: white;
-        }
-
-        /* Info Button & Card */
-        .info-button {
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: white;
-          border: none;
-          border-radius: 6px;
-          padding: 8px 16px;
-          font-size: 0.9rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
-        }
-
-        .info-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
-        }
-
-        .info-card {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-          margin-bottom: 30px;
-          overflow: hidden;
-          animation: slideDown 0.3s ease-out;
-        }
-
-        .info-card-header {
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: white;
-          padding: 15px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .info-card-header h3 {
-          margin: 0;
-          font-size: 1.2rem;
-          font-weight: 600;
-        }
-
-        .close-button {
-          background: none;
-          border: none;
-          color: white;
-          font-size: 1.5rem;
-          cursor: pointer;
-          opacity: 0.8;
-          transition: opacity 0.2s;
-        }
-
-        .close-button:hover {
-          opacity: 1;
-        }
-
-        .info-card-content {
-          padding: 20px;
-        }
-
-        .stat-definitions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-top: 15px;
-        }
-
-        .stat-definition {
-          flex: 1;
-          min-width: 250px;
-          background: #f8fafc;
-          padding: 15px;
-          border-radius: 8px;
-          border-left: 4px solid #3b82f6;
-        }
-
-        .stat-definition h4 {
-          margin: 0 0 10px;
-          color: #1e40af;
-        }
-
-        .stat-definition p {
-          margin: 0;
-          font-size: 0.9rem;
-          color: #475569;
-        }
-
-        .selected-stat-info {
-          margin-top: 20px;
-          padding: 15px;
-          background: #dbeafe;
-          border-radius: 8px;
-          animation: fadeIn 0.3s;
-        }
-
-        .selected-stat-info h4 {
-          margin: 0 0 10px;
-          color: #1e40af;
-        }
-
-        .selected-stat-info p {
-          margin: 0;
-          color: #1e293b;
-        }
-
-        .legend {
-          display: flex;
-          gap: 15px;
-          margin-top: 20px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .legend-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 0.85rem;
-          color: #475569;
-        }
-
-        .legend-color {
-          width: 20px;
-          height: 12px;
-          border-radius: 3px;
-        }
-
-        .high-legend {
-          background-color: rgba(34, 197, 94, 0.2);
-          border: 1px solid #15803d;
-        }
-
-        .medium-legend {
-          background-color: rgba(245, 158, 11, 0.2);
-          border: 1px solid #b45309;
-        }
-
-        .low-legend {
-          background-color: rgba(239, 68, 68, 0.2);
-          border: 1px solid #b91c1c;
-        }
-
-        /* Loading and Error States */
-        .loading-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 0;
-          gap: 20px;
-        }
-
-        .loading-spinner {
-          width: 50px;
-          height: 50px;
-          border: 4px solid rgba(59, 130, 246, 0.2);
-          border-left-color: #3b82f6;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-          font-size: 1rem;
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .error-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 40px 20px;
-          gap: 15px;
-          text-align: center;
-        }
-
-        .error-icon {
-          font-size: 3rem;
-          margin-bottom: 10px;
-        }
-
-        .error-message {
-          font-size: 1.1rem;
-          color: #ef4444;
-          margin-bottom: 20px;
-        }
-
-        .retry-button {
-          background: #ef4444;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          padding: 10px 20px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .retry-button:hover {
-          background: #dc2626;
-        }
-
-        /* Animations */
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        /* Media Queries */
-        @media (max-width: 768px) {
-          .team-player-stats {
-            padding: 20px 15px;
-          }
-
-          .stats-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-          }
-
-          h1 {
-            font-size: 1.6rem;
-          }
-
-          .info-button {
-            width: 100%;
-          }
-
-          .impact-players-container {
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 15px;
-          }
-
-          .player-stats {
-            flex-direction: column;
-            gap: 10px;
-          }
-
-          .stat-box {
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-          }
-
-          .stat-box:last-child {
-            border-bottom: none;
-          }
-
-          .stat-definitions {
-            flex-direction: column;
-          }
-        }
-      `}</style>
+{/* Embedded CSS for modern styling */}
+<style>{`
+  .team-player-stats {
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    padding: 30px;
+    background: var(--background-color, #f5f5f5);
+    color: var(--text-color, #333333);
+    line-height: 1.6;
+    max-width: 95%;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  /* Header Styles */
+  .stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color, #ffffff);
+  }
+
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .team-icon {
+    font-size: 2.2rem;
+    color: var(--accent-color, #D4001C);
+  }
+
+  .year-badge {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 3px 6px rgba(212, 0, 28, 0.3);
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 40px 0 25px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    color: var(--accent-color, #D4001C);
+    font-size: 1.5rem;
+  }
+
+  .section-title:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-color, #D4001C), #ff3344);
+    border-radius: 2px;
+  }
+
+  /* Button Icons */
+  .button-icon {
+    margin-right: 6px;
+    vertical-align: -0.125em;
+  }
+
+  /* Impact Players Cards */
+  .impact-players-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+  }
+
+  .impact-player-card {
+    background: var(--primary-color, #ffffff);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.4s, box-shadow 0.4s;
+    perspective: 1000px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    position: relative;
+  }
+
+  .impact-player-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 35px rgba(212, 0, 28, 0.2);
+  }
+
+  .impact-player-card:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), transparent 60%);
+    z-index: -1;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .impact-player-card:hover:before {
+    opacity: 0.8;
+  }
+
+  .player-card-inner {
+    background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: all 0.5s ease;
+  }
+
+  .player-image-container {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .player-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--primary-color, #ffffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-color, #D4001C);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    z-index: 2;
+    position: relative;
+    transform: translateZ(20px);
+    letter-spacing: -1px;
+  }
+
+  .player-position {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--accent-color, #D4001C);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    position: absolute;
+    bottom: -12px;
+    z-index: 3;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .position-icon {
+    font-size: 1.1em;
+  }
+
+  .player-info {
+    padding: 35px 20px 25px;
+    text-align: center;
+  }
+
+  .player-name {
+    margin: 0 0 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-color, #333333);
+    letter-spacing: 0.5px;
+  }
+
+  .player-rank {
+    color: var(--secondary-text-color, #666666);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .rank-number {
+    display: inline-block;
+    background: var(--accent-color, #D4001C);
+    color: var(--primary-color, #ffffff);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .player-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    padding: 0 5px;
+  }
+
+  .stat-box:not(:last-child):after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 10%;
+    height: 80%;
+    width: 1px;
+    background: rgba(0,0,0,0.08);
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    color: var(--accent-color, #D4001C);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .trend-icon {
+    font-size: 0.8em;
+  }
+
+  .trend-icon.positive {
+    color: #16a34a;
+  }
+
+  .trend-icon.negative {
+    color: #dc2626;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--secondary-text-color, #666666);
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .stat-label-icon {
+    font-size: 1.1em;
+  }
+
+  /* Regular Players Table */
+  .table-container {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    background: var(--primary-color, #ffffff);
+  }
+
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+
+  .stats-table th, .stats-table td {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 0.9rem;
+  }
+
+  .stats-table th {
+    background-color: rgba(0,0,0,0.03);
+    font-weight: 600;
+    color: var(--text-color, #333333);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .header-icon {
+    margin-right: 6px;
+    vertical-align: -0.125em;
+    font-size: 1.1em;
+    color: var(--accent-color, #D4001C);
+  }
+
+  .stat-type-icon {
+    vertical-align: -0.125em;
+    margin-right: 3px;
+    font-size: 1em;
+    color: var(--accent-color, #D4001C);
+  }
+
+  .stats-table th:hover {
+    background-color: rgba(212, 0, 28, 0.05);
+  }
+
+  .stats-table th.selected-header {
+    background-color: rgba(212, 0, 28, 0.1);
+    color: var(--accent-color, #D4001C);
+    box-shadow: inset 0 -2px 0 var(--accent-color, #D4001C);
+  }
+
+  .sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: var(--background-color, #f5f5f5);
+    z-index: 9;
+    border-right: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .stats-table tr:hover td {
+    background-color: rgba(212, 0, 28, 0.03);
+  }
+
+  .table-player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 180px;
+    padding: 5px 0;
+  }
+
+  .table-player-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  }
+
+  .table-player-details {
+    text-align: left;
+  }
+
+  .table-player-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-color, #333333);
+  }
+
+  .table-player-position {
+    font-size: 0.75rem;
+    color: var(--secondary-text-color, #666666);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .low-value {
+    background-color: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .medium-value {
+    background-color: rgba(245, 158, 11, 0.08);
+    color: #d97706;
+    font-weight: 600;
+  }
+
+  .high-value {
+    background-color: rgba(34, 197, 94, 0.08);
+    color: #16a34a;
+    font-weight: 600;
+  }
+
+  .view-details-button {
+    background: transparent;
+    color: var(--accent-color, #D4001C);
+    border: 1px solid var(--accent-color, #D4001C);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    gap: 4px;
+  }
+
+  .view-details-button:hover {
+    background: var(--accent-color, #D4001C);
+    color: var(--primary-color, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 0, 28, 0.25);
+  }
+
+  /* Info Button & Card */
+  .info-button {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+    display: flex;
+    align-items: center;
+  }
+
+  .info-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(212, 0, 28, 0.4);
+  }
+
+  .info-card {
+    background: var(--primary-color, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 35px;
+    overflow: hidden;
+    animation: slideDown 0.4s ease-out;
+    border: 1px solid rgba(212, 0, 28, 0.1);
+  }
+
+  .info-card-header {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-header-icon {
+    margin-right: 10px;
+    font-size: 1.5em;
+    vertical-align: -0.2em;
+  }
+
+  .info-card-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    color: var(--primary-color, #ffffff);
+    font-size: 1.8rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .close-button:hover {
+    opacity: 1;
+  }
+
+  .info-card-content {
+    padding: 25px;
+  }
+
+  .stat-definitions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-top: 20px;
+  }
+
+  .stat-definition {
+    flex: 1;
+    min-width: 250px;
+    background: rgba(0,0,0,0.02);
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-color, #D4001C);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+
+  .stat-definition h4 {
+    margin: 0 0 12px;
+    color: var(--accent-color, #D4001C);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-icon {
+    font-size: 1.2em;
+  }
+
+  .stat-definition p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--secondary-text-color, #666666);
+    line-height: 1.5;
+  }
+
+  .selected-stat-info {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(212, 0, 28, 0.05);
+    border-radius: 10px;
+    animation: fadeIn 0.4s;
+  }
+
+  .selected-stat-info h4 {
+    margin: 0 0 12px;
+    color: var(--accent-color, #D4001C);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+  }
+
+  .selected-stat-info p {
+    margin: 0;
+    color: var(--text-color, #333333);
+    line-height: 1.6;
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 15px;
+    background: rgba(0,0,0,0.02);
+    border-radius: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--secondary-text-color, #666666);
+  }
+
+  .legend-color {
+    width: 24px;
+    height: 14px;
+    border-radius: 4px;
+  }
+
+  .high-legend {
+    background-color: rgba(34, 197, 94, 0.2);
+    border: 1px solid #16a34a;
+  }
+
+  .medium-legend {
+    background-color: rgba(245, 158, 11, 0.2);
+    border: 1px solid #d97706;
+  }
+
+  .low-legend {
+    background-color: rgba(239, 68, 68, 0.2);
+    border: 1px solid #dc2626;
+  }
+
+  /* Loading and Error States */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 25px;
+  }
+
+  .loading-spinner {
+    position: relative;
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-icon {
+    font-size: 3rem;
+    color: var(--accent-color, #D4001C);
+    animation: spin 1.2s linear infinite;
+  }
+
+  .loading-text {
+    font-size: 1.1rem;
+    color: var(--secondary-text-color, #666666);
+    font-weight: 500;
+  }
+
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 30px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .error-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    color: var(--accent-color, #D4001C);
+  }
+
+  .error-message {
+    font-size: 1.2rem;
+    color: var(--accent-color, #D4001C);
+    margin-bottom: 25px;
+  }
+
+  .retry-button {
+    background: var(--accent-color, #D4001C);
+    color: var(--primary-color, #ffffff);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+  }
+
+  .retry-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(212, 0, 28, 0.4);
+    background: #ff2235;
+  }
+
+  /* Animations */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Add Orbitron font for impact players */
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .team-player-stats {
+      padding: 25px 15px;
+      max-width: 98%;
+    }
+
+    .stats-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .team-icon {
+      font-size: 1.8rem;
+    }
+
+    .info-button {
+      width: 100%;
+    }
+
+    .impact-players-container {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .player-stats {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .stat-box {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .stat-box:after {
+      display: none;
+    }
+
+    .stat-box:last-child {
+      border-bottom: none;
+    }
+
+    .stat-definitions {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    gap: 4px;
+  }
+
+  .view-details-button:hover {
+    background: var(--accent-color, #D4001C);
+    color: var(--primary-color, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 0, 28, 0.25);
+  }
+
+  /* Info Button & Card */
+  .info-button {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+    display: flex;
+    align-items: center;
+  }
+
+  .info-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(212, 0, 28, 0.4);
+  }
+
+  .info-card {
+    background: var(--primary-color, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 35px;
+    overflow: hidden;
+    animation: slideDown 0.4s ease-out;
+    border: 1px solid rgba(212, 0, 28, 0.1);
+  }
+
+  .info-card-header {
+    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    color: var(--primary-color, #ffffff);
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-header-icon {
+    margin-right: 10px;
+    font-size: 1.5em;
+    vertical-align: -0.2em;
+  }
+
+  .info-card-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    color: var(--primary-color, #ffffff);
+    font-size: 1.8rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .close-button:hover {
+    opacity: 1;
+  }
+
+  .info-card-content {
+    padding: 25px;
+  }
+
+  .stat-definitions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-top: 20px;
+  }
+
+  .stat-definition {
+    flex: 1;
+    min-width: 250px;
+    background: rgba(0,0,0,0.02);
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-color, #D4001C);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+
+  .stat-definition h4 {
+    margin: 0 0 12px;
+    color: var(--accent-color, #D4001C);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-icon {
+    font-size: 1.2em;
+  }
+
+  .stat-definition p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--secondary-text-color, #666666);
+    line-height: 1.5;
+  }
+
+  .selected-stat-info {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(212, 0, 28, 0.05);
+    border-radius: 10px;
+    animation: fadeIn 0.4s;
+  }
+
+  .selected-stat-info h4 {
+    margin: 0 0 12px;
+    color: var(--accent-color, #D4001C);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+  }
+
+  .selected-stat-info p {
+    margin: 0;
+    color: var(--text-color, #333333);
+    line-height: 1.6;
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 15px;
+    background: rgba(0,0,0,0.02);
+    border-radius: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--secondary-text-color, #666666);
+  }
+
+  .legend-color {
+    width: 24px;
+    height: 14px;
+    border-radius: 4px;
+  }
+
+  .high-legend {
+    background-color: rgba(34, 197, 94, 0.2);
+    border: 1px solid #16a34a;
+  }
+
+  .medium-legend {
+    background-color: rgba(245, 158, 11, 0.2);
+    border: 1px solid #d97706;
+  }
+
+  .low-legend {
+    background-color: rgba(239, 68, 68, 0.2);
+    border: 1px solid #dc2626;
+  }
+
+  /* Loading and Error States */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 25px;
+  }
+
+  .loading-spinner {
+    position: relative;
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-icon {
+    font-size: 3rem;
+    color: var(--accent-color, #D4001C);
+    animation: spin 1.2s linear infinite;
+  }
+
+  .loading-text {
+    font-size: 1.1rem;
+    color: var(--secondary-text-color, #666666);
+    font-weight: 500;
+  }
+
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 30px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .error-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    color: var(--accent-color, #D4001C);
+  }
+
+  .error-message {
+    font-size: 1.2rem;
+    color: var(--accent-color, #D4001C);
+    margin-bottom: 25px;
+  }
+
+  .retry-button {
+    background: var(--accent-color, #D4001C);
+    color: var(--primary-color, #ffffff);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+  }
+
+  .retry-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(212, 0, 28, 0.4);
+    background: #ff2235;
+  }
+
+  /* Animations */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Add Orbitron font for impact players */
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .team-player-stats {
+      padding: 25px 15px;
+      max-width: 98%;
+    }
+
+    .stats-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .team-icon {
+      font-size: 1.8rem;
+    }
+
+    .info-button {
+      width: 100%;
+    }
+
+    .impact-players-container {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .player-stats {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .stat-box {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .stat-box:after {
+      display: none;
+    }
+
+    .stat-box:last-child {
+      border-bottom: none;
+    }
+
+    .stat-definitions {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+`}</style>
     </div>
   );
 };
