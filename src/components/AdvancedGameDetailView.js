@@ -245,7 +245,7 @@ const TvIcon = () => (
 
 // New ExcitementRating component with stars
 const ExcitementRating = ({ value }) => {
-  const normalizedValue = value ? Math.min(5, Math.max(0, (value / 100) * 5)) : 0;
+  const normalizedValue = value ? Math.min(5, Math.max(0, (value / 10) * 5)) : 0;
   const fullStars = Math.floor(normalizedValue);
   const partialStar = normalizedValue % 1;
   const emptyStars = 5 - fullStars - (partialStar > 0 ? 1 : 0);
