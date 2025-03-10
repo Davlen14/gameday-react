@@ -704,7 +704,7 @@ const AdvancedGameDetailView = () => {
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
-                  d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                  d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z"
                 />
               </svg>
             </div>
@@ -1085,6 +1085,14 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  // New Win Metrics tab (placeholder content)
+  const renderWinMetrics = () => (
+    <div className="tab-content win-metrics">
+      <h2>Win Metrics</h2>
+      <p>Metrics</p>
+    </div>
+  );
+
   // Render tab buttons.
   const renderTabs = () => (
     <div className="tabs">
@@ -1142,6 +1150,15 @@ const AdvancedGameDetailView = () => {
         </svg>
         <span>Details</span>
       </button>
+      <button className={`tab-button ${activeTab === "winMetrics" ? "active" : ""}`} onClick={() => setActiveTab("winMetrics")}>
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M12,2A10,10 0 1,0 22,12A10,10 0 0,0 12,2ZM11,17H13V15H11Zm0-4H13V7H11Z"
+          />
+        </svg>
+        <span>Win Metrics</span>
+      </button>
     </div>
   );
 
@@ -1166,9 +1183,11 @@ const AdvancedGameDetailView = () => {
       {activeTab === "weather" && renderWeatherTab()}
       {activeTab === "venue" && renderVenue()}
       {activeTab === "details" && renderDetails()}
+      {activeTab === "winMetrics" && renderWinMetrics()}
     </div>
   );
 };
 
 export default AdvancedGameDetailView;
+
 
