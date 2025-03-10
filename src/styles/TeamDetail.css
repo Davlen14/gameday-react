@@ -359,10 +359,10 @@ body {
   color: var(--text-primary);
 }
 
-/* Top Navigation Bar - Glass effect */
+/* Top Navigation Bar - Solid color */
 .team-top-bar {
-  /* Background will be set dynamically in JS based on team color */
-  color: white; /* Default color, will be overridden in JS */
+  background: var(--accent-color); /* Solid team color */
+  color: var(--contrast-text); /* Text color that contrasts with team color */
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -371,8 +371,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: var(--glass-blur);
-  /* Slight rounding at the bottom to blend with content */
+  /* Remove backdrop-filter for glass effect */
+  /* backdrop-filter: var(--glass-blur); */
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
 }
