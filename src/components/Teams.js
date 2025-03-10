@@ -231,33 +231,21 @@ const Teams = () => {
     // Define default values
     const defaultRating = 25;
     
-    // Process offense rating - using fpiOffensiveEfficiency or spOffense
-    const offenseRating = data.fpiOffensiveEfficiency || 
-                         (data.spOffense ? parseFloat(data.spOffense) : null) || 
-                         defaultRating;
+    // Process offense rating - using specifically spOffense
+    const offenseRating = data.spOffense !== undefined && data.spOffense !== null
+        ? parseFloat(data.spOffense)
+        : defaultRating;
     
-    // Process defense rating - using fpiDefensiveEfficiency or spDefense
-    // For defense, lower values are better in spDefense, so we'll normalize this
-    let defenseRating = data.fpiDefensiveEfficiency || defaultRating;
-    if (data.spDefense && !data.fpiDefensiveEfficiency) {
-      // Convert spDefense (where lower is better) to a rating where higher is better
-      // Assuming spDefense ranges from 15 (excellent) to 35 (poor)
-      const spDefense = parseFloat(data.spDefense);
-      defenseRating = Math.max(50 - spDefense, 0); // Inverse relationship
-    }
+    // Process defense rating - using specifically spDefense
+    // For spDefense, lower values are better, so we may need to adjust the scale
+    const defenseRating = data.spDefense !== undefined && data.spDefense !== null
+        ? parseFloat(data.spDefense)
+        : defaultRating;
     
-    // Process overall rating - using fpiOverallEfficiency, spOverall, or elo
-    let overallRating = data.fpiOverallEfficiency || defaultRating;
-    if (data.spOverall && !data.fpiOverallEfficiency) {
-      // Convert spOverall (centered around 0) to a scale similar to efficiency (0-100)
-      // Assuming spOverall ranges from -10 to +20
-      const spOverall = parseFloat(data.spOverall);
-      overallRating = Math.min(Math.max(((spOverall + 10) / 30) * 50 + 25, 0), 50);
-    } else if (data.elo && !data.fpiOverallEfficiency && !data.spOverall) {
-      // Convert ELO (typically 1200-1800) to a scale similar to efficiency
-      const elo = parseFloat(data.elo);
-      overallRating = Math.min(Math.max(((elo - 1200) / 600) * 50, 0), 50);
-    }
+    // Process overall rating - using specifically spOverall
+    const overallRating = data.spOverall !== undefined && data.spOverall !== null
+        ? parseFloat(data.spOverall)
+        : defaultRating;
     
     // Return formatted ratings object
     return {
