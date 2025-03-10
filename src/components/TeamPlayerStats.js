@@ -9,12 +9,56 @@ import { IoMdStats, IoMdInformationCircleOutline } from "react-icons/io";
 import { BsArrowRepeat, BsSearch, BsChevronRight } from "react-icons/bs";
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
 
-const TeamPlayerStats = ({ teamName, year = 2024 }) => {
+const TeamPlayerStats = ({ teamName, year = 2024, teamColor }) => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showInfoCard, setShowInfoCard] = useState(false);
   const [selectedStat, setSelectedStat] = useState(null);
+
+  // Default to red if no team color is provided
+  const accentColor = teamColor || "#D4001C";
+  
+  // Generate a lighter variation of the team color for gradients
+  const lightenColor = (color, percent) => {
+    const num = parseInt(color.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) + amt,
+          G = (num >> 8 & 0x00FF) + amt,
+          B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
+                  (G < 255 ? G : 255) * 0x100 +
+                  (B < 255 ? B : 255)).toString(16).slice(1);
+  };
+  
+  // Generate a darker variation of the team color
+  const darkenColor = (color, percent) => {
+    const num = parseInt(color.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) - amt,
+          G = (num >> 8 & 0x00FF) - amt,
+          B = (num & 0x0000FF) - amt;
+    return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+                  (G > 0 ? G : 0) * 0x100 +
+                  (B > 0 ? B : 0)).toString(16).slice(1);
+  };
+  
+  // Color for gradient effects
+  const accentColorLight = lightenColor(accentColor, 20);
+  const accentColorDark = darkenColor(accentColor, 20);
+  
+  // Get contrast color for text
+  const getContrastColor = (hexColor) => {
+    hexColor = hexColor.replace('#', '');
+    const r = parseInt(hexColor.substr(0, 2), 16);
+    const g = parseInt(hexColor.substr(2, 2), 16);
+    const b = parseInt(hexColor.substr(4, 2), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+  };
+  
+  // Determine text color to use against team color background
+  const contrastColor = getContrastColor(accentColor);
 
   useEffect(() => {
     const fetchPlayerStats = async () => {
@@ -380,11 +424,24 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
 {/* Embedded CSS for modern styling */}
 <style>{`
+  /* CSS Variable setup using team color */
+  :root {
+    --accent-color: ${accentColor};
+    --accent-color-light: ${accentColorLight};
+    --accent-color-dark: ${accentColorDark};
+    --contrast-text: ${contrastColor};
+    --primary-color: #ffffff;
+    --text-color: #333333;
+    --secondary-text-color: #666666;
+    --background-color: #f5f5f5;
+    --border-color: #ffffff;
+  }
+
   .team-player-stats {
     font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     padding: 30px;
-    background: var(--background-color, #f5f5f5);
-    color: var(--text-color, #333333);
+    background: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
     max-width: 95%;
     margin: 0 auto;
@@ -399,7 +456,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid var(--border-color, #ffffff);
+    border-bottom: 2px solid var(--border-color);
   }
 
   h1 {
@@ -413,17 +470,17 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .team-icon {
     font-size: 2.2rem;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
   }
 
   .year-badge {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-light));
+    color: var(--contrast-text);
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 3px 6px rgba(212, 0, 28, 0.3);
+    box-shadow: 0 3px 6px ${accentColor}50;
   }
 
   .section-title {
@@ -437,7 +494,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   }
 
   .section-icon {
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     font-size: 1.5rem;
   }
 
@@ -448,7 +505,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     left: 0;
     width: 80px;
     height: 4px;
-    background: linear-gradient(90deg, var(--accent-color, #D4001C), #ff3344);
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-color-light));
     border-radius: 2px;
   }
 
@@ -467,7 +524,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   }
 
   .impact-player-card {
-    background: var(--primary-color, #ffffff);
+    background: var(--primary-color);
     border-radius: 16px;
     overflow: hidden;
     transition: transform 0.4s, box-shadow 0.4s;
@@ -478,7 +535,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .impact-player-card:hover {
     transform: translateY(-15px) scale(1.02);
-    box-shadow: 0 20px 35px rgba(212, 0, 28, 0.2);
+    box-shadow: 0 20px 35px ${accentColor}30;
   }
 
   .impact-player-card:before {
@@ -488,7 +545,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     left: -5px;
     right: -5px;
     bottom: -5px;
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), transparent 60%);
+    background: linear-gradient(135deg, var(--accent-color), transparent 60%);
     z-index: -1;
     border-radius: 20px;
     opacity: 0;
@@ -509,7 +566,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   }
 
   .player-image-container {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-light));
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
@@ -521,14 +578,14 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    background: var(--primary-color, #ffffff);
+    background: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Orbitron', sans-serif;
     font-size: 2rem;
     font-weight: 700;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     box-shadow: 0 8px 15px rgba(0,0,0,0.2);
     z-index: 2;
     position: relative;
@@ -538,7 +595,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .player-position {
     background: rgba(255, 255, 255, 0.95);
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     padding: 6px 14px;
     border-radius: 20px;
     font-family: 'Orbitron', sans-serif;
@@ -567,12 +624,12 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     font-family: 'Orbitron', sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--text-color, #333333);
+    color: var(--text-color);
     letter-spacing: 0.5px;
   }
 
   .player-rank {
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
     font-family: 'Orbitron', sans-serif;
     font-size: 0.9rem;
     margin-bottom: 20px;
@@ -581,8 +638,8 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .rank-number {
     display: inline-block;
-    background: var(--accent-color, #D4001C);
-    color: var(--primary-color, #ffffff);
+    background: var(--accent-color);
+    color: var(--contrast-text);
     padding: 3px 8px;
     border-radius: 6px;
     font-family: 'Orbitron', sans-serif;
@@ -619,7 +676,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     font-size: 1.3rem;
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -641,7 +698,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .stat-label {
     font-size: 0.75rem;
     font-family: 'Orbitron', sans-serif;
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
     margin-top: 5px;
     display: flex;
     align-items: center;
@@ -658,7 +715,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     overflow-x: auto;
     border-radius: 10px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    background: var(--primary-color, #ffffff);
+    background: var(--primary-color);
   }
 
   .stats-table {
@@ -677,7 +734,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .stats-table th {
     background-color: rgba(0,0,0,0.03);
     font-weight: 600;
-    color: var(--text-color, #333333);
+    color: var(--text-color);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -689,36 +746,36 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     margin-right: 6px;
     vertical-align: -0.125em;
     font-size: 1.1em;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
   }
 
   .stat-type-icon {
     vertical-align: -0.125em;
     margin-right: 3px;
     font-size: 1em;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
   }
 
   .stats-table th:hover {
-    background-color: rgba(212, 0, 28, 0.05);
+    background-color: ${accentColor}10;
   }
 
   .stats-table th.selected-header {
-    background-color: rgba(212, 0, 28, 0.1);
-    color: var(--accent-color, #D4001C);
-    box-shadow: inset 0 -2px 0 var(--accent-color, #D4001C);
+    background-color: ${accentColor}20;
+    color: var(--accent-color);
+    box-shadow: inset 0 -2px 0 var(--accent-color);
   }
 
   .sticky-col {
     position: sticky;
     left: 0;
-    background-color: var(--background-color, #f5f5f5);
+    background-color: var(--background-color);
     z-index: 9;
     border-right: 1px solid rgba(0,0,0,0.06);
   }
 
   .stats-table tr:hover td {
-    background-color: rgba(212, 0, 28, 0.03);
+    background-color: ${accentColor}05;
   }
 
   .table-player-info {
@@ -733,8 +790,8 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-light));
+    color: var(--contrast-text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -751,12 +808,12 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .table-player-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--text-color, #333333);
+    color: var(--text-color);
   }
 
   .table-player-position {
     font-size: 0.75rem;
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
     margin-top: 3px;
     display: flex;
     align-items: center;
@@ -783,8 +840,8 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .view-details-button {
     background: transparent;
-    color: var(--accent-color, #D4001C);
-    border: 1px solid var(--accent-color, #D4001C);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 0.8rem;
@@ -799,16 +856,16 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   }
 
   .view-details-button:hover {
-    background: var(--accent-color, #D4001C);
-    color: var(--primary-color, #ffffff);
+    background: var(--accent-color);
+    color: var(--contrast-text);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(212, 0, 28, 0.25);
+    box-shadow: 0 4px 8px ${accentColor}40;
   }
 
   /* Info Button & Card */
   .info-button {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-light));
+    color: var(--contrast-text);
     border: none;
     border-radius: 8px;
     padding: 10px 18px;
@@ -816,29 +873,29 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+    box-shadow: 0 4px 10px ${accentColor}40;
     display: flex;
     align-items: center;
   }
 
   .info-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(212, 0, 28, 0.4);
+    box-shadow: 0 6px 15px ${accentColor}50;
   }
 
   .info-card {
-    background: var(--primary-color, #ffffff);
+    background: var(--primary-color);
     border-radius: 16px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     margin-bottom: 35px;
     overflow: hidden;
     animation: slideDown 0.4s ease-out;
-    border: 1px solid rgba(212, 0, 28, 0.1);
+    border: 1px solid ${accentColor}20;
   }
 
   .info-card-header {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-light));
+    color: var(--contrast-text);
     padding: 18px 22px;
     display: flex;
     justify-content: space-between;
@@ -862,7 +919,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .close-button {
     background: none;
     border: none;
-    color: var(--primary-color, #ffffff);
+    color: var(--contrast-text);
     font-size: 1.8rem;
     cursor: pointer;
     opacity: 0.8;
@@ -890,13 +947,13 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     background: rgba(0,0,0,0.02);
     padding: 20px;
     border-radius: 10px;
-    border-left: 4px solid var(--accent-color, #D4001C);
+    border-left: 4px solid var(--accent-color);
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
 
   .stat-definition h4 {
     margin: 0 0 12px;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -909,21 +966,21 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .stat-definition p {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
     line-height: 1.5;
   }
 
   .selected-stat-info {
     margin-top: 25px;
     padding: 20px;
-    background: rgba(212, 0, 28, 0.05);
+    background: ${accentColor}08;
     border-radius: 10px;
     animation: fadeIn 0.4s;
   }
 
   .selected-stat-info h4 {
     margin: 0 0 12px;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -932,7 +989,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .selected-stat-info p {
     margin: 0;
-    color: var(--text-color, #333333);
+    color: var(--text-color);
     line-height: 1.6;
   }
 
@@ -952,7 +1009,7 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
   }
 
   .legend-color {
@@ -994,13 +1051,13 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
 
   .spinner-icon {
     font-size: 3rem;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     animation: spin 1.2s linear infinite;
   }
 
   .loading-text {
     font-size: 1.1rem;
-    color: var(--secondary-text-color, #666666);
+    color: var(--secondary-text-color);
     font-weight: 500;
   }
 
@@ -1016,18 +1073,18 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
   .error-icon {
     font-size: 4rem;
     margin-bottom: 15px;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
   }
 
   .error-message {
     font-size: 1.2rem;
-    color: var(--accent-color, #D4001C);
+    color: var(--accent-color);
     margin-bottom: 25px;
   }
 
   .retry-button {
-    background: var(--accent-color, #D4001C);
-    color: var(--primary-color, #ffffff);
+    background: var(--accent-color);
+    color: var(--contrast-text);
     border: none;
     border-radius: 8px;
     padding: 12px 25px;
@@ -1037,342 +1094,13 @@ const TeamPlayerStats = ({ teamName, year = 2024 }) => {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+    box-shadow: 0 4px 10px ${accentColor}40;
   }
 
   .retry-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(212, 0, 28, 0.4);
-    background: #ff2235;
-  }
-
-  /* Animations */
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* Add Orbitron font for impact players */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
-
-  /* Media Queries */
-  @media (max-width: 768px) {
-    .team-player-stats {
-      padding: 25px 15px;
-      max-width: 98%;
-    }
-
-    .stats-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-    }
-
-    .team-icon {
-      font-size: 1.8rem;
-    }
-
-    .info-button {
-      width: 100%;
-    }
-
-    .impact-players-container {
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-    }
-
-    .player-stats {
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .stat-box {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .stat-box:after {
-      display: none;
-    }
-
-    .stat-box:last-child {
-      border-bottom: none;
-    }
-
-    .stat-definitions {
-      flex-direction: column;
-      gap: 15px;
-    }
-  }
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    gap: 4px;
-  }
-
-  .view-details-button:hover {
-    background: var(--accent-color, #D4001C);
-    color: var(--primary-color, #ffffff);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(212, 0, 28, 0.25);
-  }
-
-  /* Info Button & Card */
-  .info-button {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
-    display: flex;
-    align-items: center;
-  }
-
-  .info-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(212, 0, 28, 0.4);
-  }
-
-  .info-card {
-    background: var(--primary-color, #ffffff);
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    margin-bottom: 35px;
-    overflow: hidden;
-    animation: slideDown 0.4s ease-out;
-    border: 1px solid rgba(212, 0, 28, 0.1);
-  }
-
-  .info-card-header {
-    background: linear-gradient(135deg, var(--accent-color, #D4001C), #ff3344);
-    color: var(--primary-color, #ffffff);
-    padding: 18px 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .card-header-icon {
-    margin-right: 10px;
-    font-size: 1.5em;
-    vertical-align: -0.2em;
-  }
-
-  .info-card-header h3 {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-  }
-
-  .close-button {
-    background: none;
-    border: none;
-    color: var(--primary-color, #ffffff);
-    font-size: 1.8rem;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-  }
-
-  .close-button:hover {
-    opacity: 1;
-  }
-
-  .info-card-content {
-    padding: 25px;
-  }
-
-  .stat-definitions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 25px;
-    margin-top: 20px;
-  }
-
-  .stat-definition {
-    flex: 1;
-    min-width: 250px;
-    background: rgba(0,0,0,0.02);
-    padding: 20px;
-    border-radius: 10px;
-    border-left: 4px solid var(--accent-color, #D4001C);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-
-  .stat-definition h4 {
-    margin: 0 0 12px;
-    color: var(--accent-color, #D4001C);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .stat-icon {
-    font-size: 1.2em;
-  }
-
-  .stat-definition p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--secondary-text-color, #666666);
-    line-height: 1.5;
-  }
-
-  .selected-stat-info {
-    margin-top: 25px;
-    padding: 20px;
-    background: rgba(212, 0, 28, 0.05);
-    border-radius: 10px;
-    animation: fadeIn 0.4s;
-  }
-
-  .selected-stat-info h4 {
-    margin: 0 0 12px;
-    color: var(--accent-color, #D4001C);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.1rem;
-  }
-
-  .selected-stat-info p {
-    margin: 0;
-    color: var(--text-color, #333333);
-    line-height: 1.6;
-  }
-
-  .legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 25px;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 15px;
-    background: rgba(0,0,0,0.02);
-    border-radius: 10px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: var(--secondary-text-color, #666666);
-  }
-
-  .legend-color {
-    width: 24px;
-    height: 14px;
-    border-radius: 4px;
-  }
-
-  .high-legend {
-    background-color: rgba(34, 197, 94, 0.2);
-    border: 1px solid #16a34a;
-  }
-
-  .medium-legend {
-    background-color: rgba(245, 158, 11, 0.2);
-    border: 1px solid #d97706;
-  }
-
-  .low-legend {
-    background-color: rgba(239, 68, 68, 0.2);
-    border: 1px solid #dc2626;
-  }
-
-  /* Loading and Error States */
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 0;
-    gap: 25px;
-  }
-
-  .loading-spinner {
-    position: relative;
-    width: 60px;
-    height: 60px;
-  }
-
-  .spinner-icon {
-    font-size: 3rem;
-    color: var(--accent-color, #D4001C);
-    animation: spin 1.2s linear infinite;
-  }
-
-  .loading-text {
-    font-size: 1.1rem;
-    color: var(--secondary-text-color, #666666);
-    font-weight: 500;
-  }
-
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 60px 30px;
-    gap: 20px;
-    text-align: center;
-  }
-
-  .error-icon {
-    font-size: 4rem;
-    margin-bottom: 15px;
-    color: var(--accent-color, #D4001C);
-  }
-
-  .error-message {
-    font-size: 1.2rem;
-    color: var(--accent-color, #D4001C);
-    margin-bottom: 25px;
-  }
-
-  .retry-button {
-    background: var(--accent-color, #D4001C);
-    color: var(--primary-color, #ffffff);
-    border: none;
-    border-radius: 8px;
-    padding: 12px 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
-  }
-
-  .retry-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(212, 0, 28, 0.4);
-    background: #ff2235;
+    box-shadow: 0 8px 15px ${accentColor}50;
+    background: var(--accent-color-light);
   }
 
   /* Animations */

@@ -580,19 +580,23 @@ const TeamDetail = () => {
           </div>
         );
         
-      case 'playerStats':
-        return (
-          <div className="dashboard-card full-width-card">
-            <div className="card-header">
-              <FaFootballBall style={{ marginRight: "12px" }} />
-              Player Statistics
+        case 'playerStats':
+          return (
+            <div className="dashboard-card full-width-card">
+              <div className="card-header">
+                <FaFootballBall style={{ marginRight: "12px" }} />
+                Player Statistics
+              </div>
+              <div className="card-body">
+                {/* Render the TeamPlayerStats component with team color */}
+                <TeamPlayerStats 
+                  teamName={team.school} 
+                  year={2024} 
+                  teamColor={team.color} 
+                />
+              </div>
             </div>
-            <div className="card-body">
-              {/* Render the TeamPlayerStats component here */}
-              <TeamPlayerStats teamName={team.school} year={2024} />
-            </div>
-          </div>
-        );
+          );
         
       default:
         return <div>Select a tab to view content</div>;
