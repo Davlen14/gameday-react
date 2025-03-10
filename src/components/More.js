@@ -1298,3 +1298,5 @@ const More = () => {
     </div>
   );
 };
+
+export default More;
