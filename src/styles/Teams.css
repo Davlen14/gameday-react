@@ -1,6 +1,5 @@
-/* 
- * Teams Comparison Dashboard - Modern UI (Revised Layout)
- * Redesigned teams container: now at the top, centered and more appealing.
+/* Teams Comparison Dashboard - Modern UI (Revised Layout)
+ * Redesigned teams container: now full width, centered and more appealing.
  */
 
 /* Import the same fonts for consistency */
@@ -80,8 +79,8 @@ body {
     "teams"
     "comparison";
   gap: 2rem;
-  max-width: 1600px;
-  margin: 2rem auto;
+  width: 100%; /* Removed max-width constraint */
+  margin: 2rem 0; /* Adjusted margin to span full width */
   padding: 0 2rem;
   min-height: calc(100vh - 4rem);
 }
@@ -96,7 +95,6 @@ body {
   padding: 2rem;
   box-shadow: var(--depth-shadow);
   border: var(--glass-border);
-  /* Full width to match comparison section */
   width: 100%;
   max-width: 100%;
   margin: 0;
@@ -105,7 +103,6 @@ body {
 /* Improve teams container inside the teams section */
 .tcd-teams-container {
   padding: 1rem 0;
-  /* New flex layout to start from left and use full width */
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
@@ -163,7 +160,7 @@ body {
 }
 
 /* -------------------------- */
-/* The remaining styles below remain unchanged except for namespacing */
+/* The remaining styles below remain largely unchanged except for updated sizing */
 /* -------------------------- */
 
 /* Enhanced Clear Button */
@@ -785,7 +782,6 @@ body {
 /* Teams Table - Modified to show multiple teams per row */
 .tcd-teams-table {
   display: grid;
-  /* Fixed column count based on screen size */
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   padding: 0.5rem;
@@ -811,17 +807,17 @@ body {
   align-items: stretch;
 }
 
-/* Team Card - Slightly more compact */
+/* Team Card - Increased size for a more spacious feel */
 .tcd-team-card {
   text-decoration: none;
   color: inherit;
   background: var(--bg-secondary);
   border-radius: 16px;
-  padding: 0.75rem 0.5rem;
+  padding: 1.5rem; /* increased padding */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 15px; /* increased gap */
   transition: all var(--transition-medium);
   flex: 1;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -859,10 +855,10 @@ body {
   z-index: 2;
 }
 
-/* Team Logo with Metallic Effect */
+/* Team Logo with Metallic Effect - Enlarged for prominence */
 .tcd-team-logo-container {
-  width: 64px;
-  height: 64px;
+  width: 80px;  /* increased from 64px */
+  height: 80px; /* increased from 64px */
   border-radius: 50%;
   background: var(--metal-light);
   display: flex;
@@ -881,8 +877,8 @@ body {
 }
 
 .tcd-team-logo {
-  width: 48px;
-  height: 48px;
+  width: 60px;  /* increased from 48px */
+  height: 60px; /* increased from 48px */
   object-fit: contain;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.1));
   transition: transform 0.3s ease;
@@ -892,9 +888,9 @@ body {
   transform: scale(1.1);
 }
 
-/* Team Name - Slightly smaller font */
+/* Team Name - Increased font size for better visibility */
 .tcd-team-name {
-  font-size: 0.85rem;
+  font-size: 1rem; /* increased from 0.85rem */
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
@@ -908,16 +904,16 @@ body {
   line-height: 1.2;
 }
 
-/* Enhanced Compare Button */
+/* Enhanced Compare Button - Scaled for larger cards */
 .tcd-compare-button {
   width: 100%;
   background: linear-gradient(145deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   border: none;
-  padding: 0.6rem 0;
+  padding: 0.8rem 0; /* increased padding */
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 1rem; /* increased font size */
   cursor: pointer;
   transition: all var(--transition-medium);
   letter-spacing: 0.5px;
@@ -947,7 +943,7 @@ body {
 }
 
 .tcd-compare-button svg {
-  font-size: 0.8rem;
+  font-size: 1rem; /* adjusted to match updated button size */
 }
 
 /* Enhanced Loading Screen */
