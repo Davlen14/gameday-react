@@ -11,13 +11,12 @@ const AdvancedGameDetailView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch team logos and both game data sources then merge them.
+  // Fetch team logos and game data from both REST and GraphQL then merge them.
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
-        // Fetch teams for logos and additional info from REST
+        // Fetch teams for logos and extra team details
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
 
@@ -25,10 +24,11 @@ const AdvancedGameDetailView = () => {
         const restGameData = await teamsService.getGameById(id);
         // Fetch detailed game data (scoreboard) from GraphQL
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
+        // Fetch comprehensive game info from GraphQL game_info table
+        const gameInfoData = await graphqlTeamsService.getGameInfo(id);
 
-        // Merge the two objects.
-        // Fields from restGameData override those in scoreboardData if present.
-        const mergedData = { ...scoreboardData, ...restGameData };
+        // Merge the three objects. REST data takes precedence.
+        const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
 
         if (mergedData) {
           setGameData(mergedData);
@@ -45,7 +45,7 @@ const AdvancedGameDetailView = () => {
     fetchData();
   }, [id]);
 
-  // Helper to get team logo from teams REST data
+  // Helper to get team logo from REST teams data.
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -55,7 +55,7 @@ const AdvancedGameDetailView = () => {
       : "/photos/default_team.png";
   };
 
-  // Helper to get team details for display (record, ranking, etc.)
+  // Helper to get team details for display.
   const getTeamDetails = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -67,23 +67,43 @@ const AdvancedGameDetailView = () => {
   if (error) return <div>Error: {error}</div>;
   if (!gameData) return <div>Game not found</div>;
 
-  // Destructure common fields from the merged data
+  // Destructure all fields from merged gameData (from game_info, scoreboard, and REST)
   const {
     id: gameId,
-    homeTeam,
-    awayTeam,
-    homePoints,
-    awayPoints,
-    homeLineScores,
-    awayLineScores,
-    homeConference,
+    attendance,
+    awayClassification,
     awayConference,
-    venue,
-    city,
-    state,
+    awayConferenceId,
+    awayEndElo,
+    awayLineScores,
+    awayPoints,
+    awayPostgameWinProb,
+    awayStartElo,
+    awayTeam,
+    awayTeamId,
+    conferenceGame,
+    excitement,
+    homeClassification,
+    homeConference,
+    homeConferenceId,
+    homeEndElo,
+    homeLineScores,
+    homePoints,
+    homePostgameWinProb,
+    homeStartElo,
+    homeTeam,
+    homeTeamId,
+    neutralSite,
+    notes,
+    season,
+    seasonType,
     startDate,
     startTimeTbd,
     status,
+    venue,
+    city,
+    state,
+    week,
     currentClock,
     currentPeriod,
     lastPlay,
@@ -96,13 +116,48 @@ const AdvancedGameDetailView = () => {
     windDirection,
     windSpeed,
     tv,
-    // Additional REST fields (if any) like notes, attendance, etc. can also be destructured here.
+    weather,   // Object: { temperature, weatherDescription, windDirection, windSpeed }
+    mediaInfo, // Array of objects: { id, network, outlet, ... }
+    lines,     // Array of objects: { provider, spread, overUnder, ... }
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
   const awayTeamDetails = getTeamDetails(awayTeam);
 
-  // Interactive tab content renderers:
+  // Modernized line scores table (for Statistics tab)
+  const renderLineScores = () => {
+    const periods = homeLineScores && homeLineScores.length;
+    if (!periods) return <p>No line score data available.</p>;
+    return (
+      <div className="line-scores">
+        <h3>Quarter Scores</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>{homeTeam}</th>
+              <th>{awayTeam}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: periods }).map((_, index) => (
+              <tr key={index}>
+                <td>{`Q${index + 1}`}</td>
+                <td>{homeLineScores[index] !== null ? homeLineScores[index] : '-'}</td>
+                <td>
+                  {awayLineScores && awayLineScores[index] !== undefined
+                    ? awayLineScores[index]
+                    : '-'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // Overview tab
   const renderOverview = () => (
     <div className="tab-content">
       <div className="teams-comparison">
@@ -143,19 +198,11 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  // Statistics tab
   const renderStatistics = () => (
     <div className="tab-content">
       <h2>Scoring by Period</h2>
-      <div className="stat-grid">
-        <div>
-          <h3>{homeTeam}</h3>
-          <p>{homeLineScores ? homeLineScores.join(" | ") : "N/A"}</p>
-        </div>
-        <div>
-          <h3>{awayTeam}</h3>
-          <p>{awayLineScores ? awayLineScores.join(" | ") : "N/A"}</p>
-        </div>
-      </div>
+      {renderLineScores()}
       {currentClock && (
         <p>
           <strong>Current Clock:</strong> {currentClock} (Period:{" "}
@@ -166,6 +213,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  // Betting tab
   const renderBetting = () => (
     <div className="tab-content">
       <h2>Betting Information</h2>
@@ -186,23 +234,31 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  // Weather tab
   const renderWeather = () => (
     <div className="tab-content">
       <h2>Weather Conditions</h2>
       <p>
-        <strong>Temperature:</strong> {temperature || "N/A"}°F
+        <strong>Temperature:</strong>{" "}
+        {temperature || (weather && weather.temperature) || "N/A"}°F
       </p>
       <p>
-        <strong>Description:</strong> {weatherDescription || "N/A"}
+        <strong>Description:</strong>{" "}
+        {weatherDescription || (weather && weather.weatherDescription) || "N/A"}
       </p>
       <p>
         <strong>Wind:</strong>{" "}
-        {windSpeed ? `${windSpeed} mph` : "N/A"}{" "}
-        {windDirection ? `(${windDirection}°)` : ""}
+        {windSpeed || (weather && weather.windSpeed)
+          ? `${windSpeed || weather.windSpeed} mph`
+          : "N/A"}{" "}
+        {windDirection || (weather && weather.windDirection)
+          ? `(${windDirection || weather.windDirection}°)`
+          : ""}
       </p>
     </div>
   );
 
+  // Venue tab
   const renderVenue = () => (
     <div className="tab-content">
       <h2>Venue Information</h2>
@@ -212,11 +268,96 @@ const AdvancedGameDetailView = () => {
       <p>
         <strong>Location:</strong> {city || "TBD"}, {state || ""}
       </p>
-      {/* Additional venue details from REST (like capacity or notes) can be rendered here */}
     </div>
   );
 
-  // Render tab buttons
+  // Details tab: displays additional game info from game_info
+  const renderDetails = () => (
+    <div className="tab-content">
+      <h2>Additional Game Details</h2>
+      <p>
+        <strong>Attendance:</strong> {attendance || "N/A"}
+      </p>
+      <p>
+        <strong>Season:</strong> {season || "N/A"}{" "}
+        {seasonType ? `(Type: ${seasonType})` : ""}
+      </p>
+      <p>
+        <strong>Conference Game:</strong>{" "}
+        {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
+      </p>
+      <p>
+        <strong>Excitement:</strong> {excitement || "N/A"}
+      </p>
+      <p>
+        <strong>Away Classification:</strong> {awayClassification || "N/A"}
+      </p>
+      <p>
+        <strong>Away Conference:</strong> {awayConference || "N/A"} (ID:{" "}
+        {awayConferenceId || "N/A"})
+      </p>
+      <p>
+        <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End:{" "}
+        {awayEndElo || "N/A"}, Postgame Win Prob:{" "}
+        {awayPostgameWinProb || "N/A"}
+      </p>
+      <p>
+        <strong>Away Team ID:</strong> {awayTeamId || "N/A"}
+      </p>
+      <p>
+        <strong>Home Classification:</strong> {homeClassification || "N/A"}
+      </p>
+      <p>
+        <strong>Home Conference:</strong> {homeConference || "N/A"} (ID:{" "}
+        {homeConferenceId || "N/A"})
+      </p>
+      <p>
+        <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End:{" "}
+        {homeEndElo || "N/A"}, Postgame Win Prob:{" "}
+        {homePostgameWinProb || "N/A"}
+      </p>
+      <p>
+        <strong>Home Team ID:</strong> {homeTeamId || "N/A"}
+      </p>
+      <p>
+        <strong>Neutral Site:</strong>{" "}
+        {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
+      </p>
+      {notes && <p><strong>Notes:</strong> {notes}</p>}
+      <p>
+        <strong>Week:</strong> {week || "N/A"}
+      </p>
+      {mediaInfo && mediaInfo.length > 0 && (
+        <div className="media-info">
+          <h3>Media Information</h3>
+          <ul>
+            {mediaInfo.map((media) => (
+              <li key={media.id}>
+                <strong>Network:</strong> {media.network}{" "}
+                {media.outlet && `- Outlet: ${media.outlet}`}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {lines && lines.length > 0 && (
+        <div className="lines-info">
+          <h3>Betting Lines</h3>
+          <ul>
+            {lines.map((line, idx) => (
+              <li key={idx}>
+                <strong>Provider:</strong> {line.provider} –{" "}
+                <strong>Spread:</strong> {line.spread || "N/A"} –{" "}
+                <strong>O/U:</strong> {line.overUnder || "N/A"}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
+  // Render tab buttons, including new "Details" tab.
   const renderTabs = () => (
     <div className="tabs">
       <button
@@ -248,6 +389,12 @@ const AdvancedGameDetailView = () => {
         onClick={() => setActiveTab("venue")}
       >
         Venue
+      </button>
+      <button
+        className={activeTab === "details" ? "active" : ""}
+        onClick={() => setActiveTab("details")}
+      >
+        Details
       </button>
     </div>
   );
@@ -350,6 +497,19 @@ const AdvancedGameDetailView = () => {
           flex: 1;
           min-width: 150px;
         }
+        .line-scores table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        .line-scores th, .line-scores td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: center;
+        }
+        .line-scores th {
+          background-color: #f2f2f2;
+        }
         @media (max-width: 768px) {
           .teams-comparison {
             flex-direction: column;
@@ -379,9 +539,9 @@ const AdvancedGameDetailView = () => {
       {activeTab === "betting" && renderBetting()}
       {activeTab === "weather" && renderWeather()}
       {activeTab === "venue" && renderVenue()}
+      {activeTab === "details" && renderDetails()}
     </div>
   );
 };
 
 export default AdvancedGameDetailView;
-
