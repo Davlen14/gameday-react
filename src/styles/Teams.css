@@ -86,7 +86,7 @@ body {
   min-height: calc(100vh - 4rem);
 }
 
-/* Teams List Section - Now placed on top and centered */
+/* Teams List Section - Now placed on top and full width */
 .tcd-teams-list-section {
   grid-area: teams;
   background: var(--glass-primary);
@@ -96,19 +96,19 @@ body {
   padding: 2rem;
   box-shadow: var(--depth-shadow);
   border: var(--glass-border);
-  /* Removed sticky positioning and centered the container */
-  margin: 0 auto;
-  width: 90%;
-  max-width: 800px;
+  /* Full width to match comparison section */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
 /* Improve teams container inside the teams section */
 .tcd-teams-container {
   padding: 1rem 0;
-  /* New flex layout to center team cards */
+  /* New flex layout to start from left and use full width */
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1rem;
 }
 
@@ -782,12 +782,26 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Teams Table */
+/* Teams Table - Modified to show multiple teams per row */
 .tcd-teams-table {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  /* Fixed column count based on screen size */
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   padding: 0.5rem;
+}
+
+/* Responsive grid for different screen sizes */
+@media (min-width: 768px) {
+  .tcd-teams-table {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .tcd-teams-table {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 /* Team Card Container */
@@ -797,17 +811,17 @@ body {
   align-items: stretch;
 }
 
-/* Team Card */
+/* Team Card - Slightly more compact */
 .tcd-team-card {
   text-decoration: none;
   color: inherit;
   background: var(--bg-secondary);
   border-radius: 16px;
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   transition: all var(--transition-medium);
   flex: 1;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -878,9 +892,9 @@ body {
   transform: scale(1.1);
 }
 
-/* Team Name */
+/* Team Name - Slightly smaller font */
 .tcd-team-name {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
@@ -890,7 +904,7 @@ body {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  min-height: 36px;
+  min-height: 32px;
   line-height: 1.2;
 }
 
