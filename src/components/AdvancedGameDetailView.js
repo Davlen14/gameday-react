@@ -5,27 +5,33 @@ import graphqlTeamsService from "../services/graphqlTeamsService";
 
 const AdvancedGameDetailView = () => {
   const { id } = useParams(); // game ID from URL
-  const [scoreboard, setScoreboard] = useState(null);
+  const [gameData, setGameData] = useState(null);
   const [teams, setTeams] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch team logos and scoreboard (GraphQL) data
+  // Fetch team logos and both game data sources then merge them.
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
 
-        // Fetch teams for logos and additional info
+        // Fetch teams for logos and additional info from REST
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
 
-        // Fetch detailed game data from GraphQL service
-        // (Assuming getGameScoreboard accepts the game id and returns the detailed data)
+        // Fetch REST game data (this method should exist in your REST service)
+        const restGameData = await teamsService.getGameById(id);
+        // Fetch detailed game data (scoreboard) from GraphQL
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
-        if (scoreboardData) {
-          setScoreboard(scoreboardData);
+
+        // Merge the two objects.
+        // Fields from restGameData override those in scoreboardData if present.
+        const mergedData = { ...scoreboardData, ...restGameData };
+
+        if (mergedData) {
+          setGameData(mergedData);
         } else {
           setError("Game not found");
         }
@@ -59,10 +65,9 @@ const AdvancedGameDetailView = () => {
 
   if (isLoading) return <div>Loading game details...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!scoreboard) return <div>Game not found</div>;
+  if (!gameData) return <div>Game not found</div>;
 
-  // Extract common fields from scoreboard data.
-  // These fields come from your GraphQL schema:
+  // Destructure common fields from the merged data
   const {
     id: gameId,
     homeTeam,
@@ -90,8 +95,9 @@ const AdvancedGameDetailView = () => {
     weatherDescription,
     windDirection,
     windSpeed,
-    tv
-  } = scoreboard;
+    tv,
+    // Additional REST fields (if any) like notes, attendance, etc. can also be destructured here.
+  } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
   const awayTeamDetails = getTeamDetails(awayTeam);
@@ -101,11 +107,7 @@ const AdvancedGameDetailView = () => {
     <div className="tab-content">
       <div className="teams-comparison">
         <div className="team-column">
-          <img
-            src={getTeamLogo(homeTeam)}
-            alt={homeTeam}
-            className="team-logo"
-          />
+          <img src={getTeamLogo(homeTeam)} alt={homeTeam} className="team-logo" />
           <div className="team-name">{homeTeam}</div>
           <div className="team-record">
             {homeTeamDetails.record ? `Record: ${homeTeamDetails.record}` : ""}{" "}
@@ -117,11 +119,7 @@ const AdvancedGameDetailView = () => {
         <div className="vs-column">VS</div>
 
         <div className="team-column">
-          <img
-            src={getTeamLogo(awayTeam)}
-            alt={awayTeam}
-            className="team-logo"
-          />
+          <img src={getTeamLogo(awayTeam)} alt={awayTeam} className="team-logo" />
           <div className="team-name">{awayTeam}</div>
           <div className="team-record">
             {awayTeamDetails.record ? `Record: ${awayTeamDetails.record}` : ""}{" "}
@@ -214,7 +212,7 @@ const AdvancedGameDetailView = () => {
       <p>
         <strong>Location:</strong> {city || "TBD"}, {state || ""}
       </p>
-      {/* You might add capacity or additional venue info if available */}
+      {/* Additional venue details from REST (like capacity or notes) can be rendered here */}
     </div>
   );
 
@@ -386,3 +384,4 @@ const AdvancedGameDetailView = () => {
 };
 
 export default AdvancedGameDetailView;
+

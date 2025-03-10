@@ -1,4 +1,4 @@
-// Simplified graphqlTeamsService.js – Now includes ratings, team info, and scoreboard data
+// Simplified graphqlTeamsService.js – Now includes ratings, team info, scoreboard data, and game info
 
 // Proxy-based API interaction using GraphQL
 const fetchData = async (query, variables = {}) => {
@@ -130,7 +130,7 @@ export const getTeams = async () => {
   return data?.currentTeams || [];
 };
 
-// New function: Get detailed game scoreboard data
+// New function: Get detailed game scoreboard data (from the "scoreboard" table)
 export const getGameScoreboard = async (gameId) => {
   const query = `
     query GetGameScoreboard($gameId: Int!) {
@@ -180,12 +180,78 @@ export const getGameScoreboard = async (gameId) => {
   return data?.scoreboard?.[0] || null;
 };
 
-// Export only ratings and team info functions along with the new scoreboard data function
+// New function: Get detailed game information (from the "game_info" table)
+// This query returns comprehensive game details including relationships for weather, lines, and media.
+export const getGameInfo = async (gameId) => {
+  const query = `
+    query GetGameInfo($gameId: Int!) {
+      game_info(where: { id: { _eq: $gameId } }) {
+        id
+        attendance
+        awayClassification
+        awayConference
+        awayConferenceId
+        awayEndElo
+        awayLineScores
+        awayPoints
+        awayPostgameWinProb
+        awayStartElo
+        awayTeam
+        awayTeamId
+        conferenceGame
+        excitement
+        homeClassification
+        homeConference
+        homeConferenceId
+        homeEndElo
+        homeLineScores
+        homePoints
+        homePostgameWinProb
+        homeStartElo
+        homeTeam
+        homeTeamId
+        neutralSite
+        notes
+        season
+        seasonType
+        startDate
+        startTimeTbd
+        status
+        venueId
+        week
+        weather {
+          temperature
+          weatherDescription
+          windDirection
+          windSpeed
+        }
+        mediaInfo {
+          id
+          network
+          outlet
+          // Add any additional fields needed
+        }
+        lines {
+          provider
+          spread
+          overUnder
+          // Add additional line fields if needed
+        }
+      }
+    }
+  `;
+  const variables = { gameId: parseInt(gameId) };
+  const data = await fetchData(query, variables);
+  return data?.game_info?.[0] || null;
+};
+
+// Export only ratings and team info functions along with the new game/scoreboard exports
 const graphqlTeamsService = {
   getTeams,                     // For basic team info needed by TeamDetail
   getTeamRatings,               // For gauge components
   getTeamDetailedRatings,       // For detailed ratings table
-  getGameScoreboard,            // New export for detailed game scoreboard data
+  getGameScoreboard,            // For detailed game scoreboard data
+  getGameInfo,                  // For comprehensive game details from "game_info"
 };
 
 export default graphqlTeamsService;
