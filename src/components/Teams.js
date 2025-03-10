@@ -238,11 +238,21 @@ const Teams = () => {
       for (const team of selectedTeams) {
         try {
           if (newRatings[team.id]) continue; // Use team.id as key
+          
           // Fetch ratings using team.school (as required by the API) and 2024 as parameters
           const data = await teamsService.getTeamRatings(team.school, 2024);
-          newRatings[team.id] = data;
+          
+          // Create a properly structured rating object for consistency
+          newRatings[team.id] = {
+            offense: { rating: data?.offense?.rating || 25 },
+            defense: { rating: data?.defense?.rating || 25 },
+            rating: data?.rating || 25
+          };
+          
+          console.log(`Fetched ratings for ${team.school}:`, newRatings[team.id]);
         } catch (err) {
           console.error(`Error fetching ratings for team ${team.school}:`, err);
+          // Provide default values when fetch fails
           newRatings[team.id] = {
             offense: { rating: 25 },
             defense: { rating: 25 },
@@ -256,6 +266,8 @@ const Teams = () => {
 
     if (selectedTeams.length > 0) {
       fetchSelectedTeamsRatings();
+    } else {
+      setChartsLoaded(false);
     }
   }, [selectedTeams]);
 
@@ -295,6 +307,10 @@ const Teams = () => {
   const handleTeamSelect = (team) => {
     setSelectedTeams((prevSelected) => {
       if (prevSelected.find((t) => t.id === team.id)) {
+        // If removing a team, also remove its ratings from state
+        const newRatings = { ...teamRatings };
+        delete newRatings[team.id];
+        setTeamRatings(newRatings);
         return prevSelected.filter((t) => t.id !== team.id);
       } else {
         if (prevSelected.length < 4) {
@@ -310,7 +326,9 @@ const Teams = () => {
   // Clear all selections
   const clearComparison = () => {
     setSelectedTeams([]);
+    setTeamRatings({});
     setChartsLoaded(false);
+    localStorage.removeItem("compareTeams");
   };
 
   // Helper to get team abbreviation
@@ -359,12 +377,18 @@ const Teams = () => {
   const chartData = METRICS.map((metric) => {
     const row = { metric };
     selectedTeams.forEach((team) => {
-      const r = teamRatings[team.id]; // Use team.id as key
-      // Handle the nested structure for offense and defense ratings
-      if (metric === "Offense" || metric === "Defense") {
-        row[team.id] = r ? r[metric.toLowerCase()]?.rating || 0 : 0;
+      const teamData = teamRatings[team.id]; // Use team.id as key
+      
+      if (teamData) {
+        if (metric === "Offense") {
+          row[team.id] = teamData.offense?.rating || 0;
+        } else if (metric === "Defense") {
+          row[team.id] = teamData.defense?.rating || 0;
+        } else { // Overall
+          row[team.id] = teamData.rating || 0;
+        }
       } else {
-        row[team.id] = r ? r.rating || 0 : 0;
+        row[team.id] = 0;
       }
     });
     return row;
@@ -435,6 +459,21 @@ const Teams = () => {
       );
     }
     return null;
+  };
+
+  // Helper function to safely get rating value
+  const getRatingValue = (team, metricType) => {
+    const ratings = teamRatings[team.id];
+    
+    if (!ratings) return null;
+    
+    if (metricType === "Offense") {
+      return ratings.offense?.rating;
+    } else if (metricType === "Defense") {
+      return ratings.defense?.rating;
+    } else { // Overall
+      return ratings.rating;
+    }
   };
 
   return (
@@ -670,29 +709,27 @@ const Teams = () => {
                                 {metric}
                               </td>
                               {selectedTeams.map((team) => {
-                                let value = "N/A";
-                                if (teamRatings[team.id]) {
-                                  if (metric === "Offense" || metric === "Defense") {
-                                    value = teamRatings[team.id][metric.toLowerCase()]?.rating || "N/A";
-                                  } else {
-                                    value = teamRatings[team.id].rating || "N/A";
-                                  }
+                                // Get the rating value using our helper function
+                                let value = getRatingValue(team, metric);
+                                
+                                // Apply default if missing
+                                if (value === null || value === undefined) {
+                                  value = 25; // Default rating when missing
                                 }
+                                
+                                // Determine the color based on value
                                 let valueColor = "#666";
                                 if (typeof value === "number") {
                                   if (value > 30) valueColor = "#04aa6d";
                                   else if (value < 20) valueColor = "#ff4d4d";
                                   else valueColor = "#ffc700";
                                 }
+                                
                                 return (
                                   <td key={team.id} className="tcd-value-cell">
-                                    {typeof value === "number" ? (
-                                      <span className="tcd-rating-value" style={{ color: valueColor }}>
-                                        {value.toFixed(2)}
-                                      </span>
-                                    ) : (
-                                      value
-                                    )}
+                                    <span className="tcd-rating-value" style={{ color: valueColor }}>
+                                      {typeof value === "number" ? value.toFixed(2) : "N/A"}
+                                    </span>
                                   </td>
                                 );
                               })}
