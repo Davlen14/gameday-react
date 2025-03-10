@@ -4,7 +4,6 @@ import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 import "../styles/AdvancedGameDetailView.css";
 
-
 // Modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
   let icon;
@@ -95,16 +94,6 @@ const WeatherIcon = ({ condition, temperature }) => {
           <animate attributeName="y2" values="17;19;17" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
         </line>
-        <line x1="10" y1="16" x2="10" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
-          <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
-          <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
-        </line>
-        <line x1="14" y1="16" x2="14" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
-          <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
-          <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
-        </line>
       </svg>
     );
   } else if (conditionLower.includes("snow")) {
@@ -128,14 +117,6 @@ const WeatherIcon = ({ condition, temperature }) => {
         <circle cx="16" cy="16" r="0.5" fill="white">
           <animate attributeName="cy" values="15;17;15" dur="2s" begin="0.6s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.6s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="10" cy="17" r="0.5" fill="white">
-          <animate attributeName="cy" values="16;18;16" dur="2s" begin="0.9s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.9s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="14" cy="17" r="0.5" fill="white">
-          <animate attributeName="cy" values="16;18;16" dur="2s" begin="1.2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="1.2s" repeatCount="indefinite" />
         </circle>
       </svg>
     );
@@ -174,14 +155,6 @@ const WeatherIcon = ({ condition, temperature }) => {
         <line x1="4" y1="14" x2="20" y2="14" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.7">
           <animate attributeName="y1" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
           <animate attributeName="y2" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
-        </line>
-        <line x1="6" y1="17" x2="18" y2="17" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.5">
-          <animate attributeName="y1" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
-          <animate attributeName="y2" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
-        </line>
-        <line x1="8" y1="20" x2="16" y2="20" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.3">
-          <animate attributeName="y1" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
-          <animate attributeName="y2" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
         </line>
       </svg>
     );
@@ -244,6 +217,7 @@ const TvIcon = () => (
 );
 
 // New ExcitementRating component with stars
+// Modified excitement calculation: now the value is out of 10 (not 100)
 const ExcitementRating = ({ value }) => {
   const normalizedValue = value ? Math.min(5, Math.max(0, (value / 10) * 5)) : 0;
   const fullStars = Math.floor(normalizedValue);
@@ -396,15 +370,35 @@ const EloRating = ({ startElo, endElo, label }) => {
   );
 };
 
+// Define sportsbook logos mapping
+const sportsbookLogos = {
+  "DraftKings": "/photos/draftkings.png",
+  "ESPN Bet": "/photos/espnbet.png",
+  "Bovada": "/photos/bovada.jpg",
+};
+
+// Helper function to get a sportsbook logo
+const getSportsbookLogo = (provider) => {
+  return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
+};
+
+// Helper function to get a random betting line for a game
+const getRandomLineForGame = (gameId, lines) => {
+  const gameLines = lines.filter((line) => line.gameId === gameId);
+  if (gameLines.length === 0) return null;
+  return gameLines[Math.floor(Math.random() * gameLines.length)];
+};
+
 const AdvancedGameDetailView = () => {
-  const { id } = useParams(); // Game ID from URL
+  const { id } = useParams();
   const [gameData, setGameData] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [lines, setLines] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch teams and game data (REST, GraphQL scoreboard, and GraphQL game_info) and merge them.
+  // Fetch teams, game data, and betting lines
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -414,6 +408,9 @@ const AdvancedGameDetailView = () => {
         const restGameData = await teamsService.getGameById(id);
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
+        // Fetch betting lines for the year 2024 (or adjust as needed)
+        const linesData = await teamsService.getGameLines(2024);
+        setLines(linesData);
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
         if (mergedData) {
           setGameData(mergedData);
@@ -429,7 +426,7 @@ const AdvancedGameDetailView = () => {
     fetchData();
   }, [id]);
 
-  // Helper: Get team logo from REST teams data.
+  // Helper functions for teams and colors
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -439,15 +436,13 @@ const AdvancedGameDetailView = () => {
       : "/photos/default_team.png";
   };
 
-  // Helper: Get team details for display.
   const getTeamDetails = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
     );
     return team || {};
   };
-  
-  // Helper: Get team primary color.
+
   const getTeamColor = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -455,28 +450,31 @@ const AdvancedGameDetailView = () => {
     return team && team.color ? `#${team.color}` : "#666666";
   };
 
-  if (isLoading) return (
-    <div className="loading-container">
-      <div className="loading-spinner"></div>
-      <p>Loading game details...</p>
-    </div>
-  );
-  
-  if (error) return (
-    <div className="error-container">
-      <div className="error-icon">⚠️</div>
-      <h2>Error</h2>
-      <p>{error}</p>
-    </div>
-  );
-  
-  if (!gameData) return (
-    <div className="not-found-container">
-      <div className="not-found-icon">🔍</div>
-      <h2>Game Not Found</h2>
-      <p>The requested game information could not be found.</p>
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading game details...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="error-container">
+        <div className="error-icon">⚠️</div>
+        <h2>Error</h2>
+        <p>{error}</p>
+      </div>
+    );
+
+  if (!gameData)
+    return (
+      <div className="not-found-container">
+        <div className="not-found-icon">🔍</div>
+        <h2>Game Not Found</h2>
+        <p>The requested game information could not be found.</p>
+      </div>
+    );
 
   const {
     id: gameId,
@@ -525,7 +523,7 @@ const AdvancedGameDetailView = () => {
     windDirection,
     windSpeed,
     tv,
-    weather, // Object containing weather details
+    weather,
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
@@ -535,13 +533,17 @@ const AdvancedGameDetailView = () => {
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
 
+  // Betting: get a random sportsbook line for the game
+  const randomLine = getRandomLineForGame(gameId, lines);
+
   // Render a modern line scores table with totals.
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
-    if (!periods) return <p className="no-data">No line score data available.</p>;
+    if (!periods)
+      return <p className="no-data">No line score data available.</p>;
     const homeTotalPoints = homeLineScores.reduce((sum, score) => sum + (score || 0), 0);
     const awayTotalPoints = awayLineScores ? awayLineScores.reduce((sum, score) => sum + (score || 0), 0) : 0;
-    
+
     return (
       <div className="line-scores-container">
         <h3>Quarter by Quarter</h3>
@@ -551,7 +553,9 @@ const AdvancedGameDetailView = () => {
               <tr>
                 <th className="team-cell">Team</th>
                 {Array.from({ length: periods }).map((_, index) => (
-                  <th key={`period-${index}`} className="period-header">Q{index + 1}</th>
+                  <th key={`period-${index}`} className="period-header">
+                    Q{index + 1}
+                  </th>
                 ))}
                 <th className="total-header">Total</th>
               </tr>
@@ -566,7 +570,7 @@ const AdvancedGameDetailView = () => {
                 </td>
                 {Array.from({ length: periods }).map((_, index) => (
                   <td key={`home-${index}`} className="score-cell">
-                    {homeLineScores[index] !== null ? homeLineScores[index] : '-'}
+                    {homeLineScores[index] !== null ? homeLineScores[index] : "-"}
                   </td>
                 ))}
                 <td className="total-cell">{homeTotalPoints}</td>
@@ -580,7 +584,7 @@ const AdvancedGameDetailView = () => {
                 </td>
                 {Array.from({ length: periods }).map((_, index) => (
                   <td key={`away-${index}`} className="score-cell">
-                    {awayLineScores && awayLineScores[index] !== undefined ? awayLineScores[index] : '-'}
+                    {awayLineScores && awayLineScores[index] !== undefined ? awayLineScores[index] : "-"}
                   </td>
                 ))}
                 <td className="total-cell">{awayTotalPoints}</td>
@@ -588,7 +592,6 @@ const AdvancedGameDetailView = () => {
             </tbody>
           </table>
         </div>
-        
         {currentClock && (
           <div className="current-game-state">
             <div className="clock-container">
@@ -614,7 +617,11 @@ const AdvancedGameDetailView = () => {
             <div className="team-name">{homeTeam}</div>
             <div className="team-record">
               {homeTeamDetails.record ? homeTeamDetails.record : ""}
-              {homeTeamDetails.rank ? <span className="team-rank">#{homeTeamDetails.rank}</span> : ""}
+              {homeTeamDetails.rank ? (
+                <span className="team-rank">#{homeTeamDetails.rank}</span>
+              ) : (
+                ""
+              )}
             </div>
             <div className="score-display">{homePoints || "0"}</div>
           </div>
@@ -626,13 +633,16 @@ const AdvancedGameDetailView = () => {
             ) : status === "in_progress" ? (
               <span className="status-live">LIVE</span>
             ) : (
-              <span className="status-upcoming">  </span>
+              <span className="status-upcoming"> </span>
             )}
           </div>
           <div className="versus-text">VS</div>
           {startDate && status !== "final" && status !== "in_progress" && (
             <div className="start-time">
-              {new Date(startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(startDate).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </div>
           )}
         </div>
@@ -644,35 +654,42 @@ const AdvancedGameDetailView = () => {
             <div className="team-name">{awayTeam}</div>
             <div className="team-record">
               {awayTeamDetails.record ? awayTeamDetails.record : ""}
-              {awayTeamDetails.rank ? <span className="team-rank">#{awayTeamDetails.rank}</span> : ""}
+              {awayTeamDetails.rank ? (
+                <span className="team-rank">#{awayTeamDetails.rank}</span>
+              ) : (
+                ""
+              )}
             </div>
             <div className="score-display">{awayPoints || "0"}</div>
           </div>
         </div>
       </div>
-      
       <div className="game-meta-info">
         <div className="meta-row">
           <div className="meta-item">
             <div className="meta-icon">
               <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
+                <path
+                  fill="currentColor"
+                  d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
+                />
               </svg>
             </div>
             <div className="meta-content">
               <div className="meta-label">Game Time</div>
               <div className="meta-value">
-                {startDate ? new Date(startDate).toLocaleString([], {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                }) : "TBD"}
+                {startDate
+                  ? new Date(startDate).toLocaleString([], {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "TBD"}
               </div>
             </div>
           </div>
-          
           <div className="meta-item">
             <div className="meta-icon">
               <TvIcon />
@@ -682,11 +699,13 @@ const AdvancedGameDetailView = () => {
               <div className="meta-value">ESPN</div>
             </div>
           </div>
-          
           <div className="meta-item">
             <div className="meta-icon">
               <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+                <path
+                  fill="currentColor"
+                  d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                />
               </svg>
             </div>
             <div className="meta-content">
@@ -695,7 +714,6 @@ const AdvancedGameDetailView = () => {
             </div>
           </div>
         </div>
-        
         <div className="meta-row">
           <div className="meta-item excitement-container">
             <div className="meta-label">Game Excitement Index</div>
@@ -703,28 +721,25 @@ const AdvancedGameDetailView = () => {
           </div>
         </div>
       </div>
-      
       {lastPlay && (
         <div className="last-play-container">
           <div className="last-play-label">Last Play</div>
           <div className="last-play-text">{lastPlay}</div>
         </div>
       )}
-      
       {renderLineScores()}
-      
       <div className="win-probability-section">
         <h3>Win Probability</h3>
         <div className="win-prob-container">
-          <WinProbabilityCircle 
-            probability={homePostgameWinProb * 100} 
-            teamName={homeTeam} 
+          <WinProbabilityCircle
+            probability={homePostgameWinProb * 100}
+            teamName={homeTeam}
             teamColor={homeTeamColor}
             teamLogo={homeLogo}
           />
-          <WinProbabilityCircle 
-            probability={awayPostgameWinProb * 100} 
-            teamName={awayTeam} 
+          <WinProbabilityCircle
+            probability={awayPostgameWinProb * 100}
+            teamName={awayTeam}
             teamColor={awayTeamColor}
             teamLogo={awayLogo}
           />
@@ -740,7 +755,6 @@ const AdvancedGameDetailView = () => {
         <h2>Scoring by Quarter</h2>
         {renderLineScores()}
       </div>
-      
       <div className="elo-section">
         <h2>Elo Ratings</h2>
         <div className="elo-container">
@@ -751,7 +765,6 @@ const AdvancedGameDetailView = () => {
             </div>
             <EloRating startElo={homeStartElo} endElo={homeEndElo} label="Elo Change" />
           </div>
-          
           <div className="elo-team-container" style={{ borderTop: `4px solid ${awayTeamColor}` }}>
             <div className="elo-team-header">
               <img src={awayLogo} alt={awayTeam} className="team-logo-small" />
@@ -761,7 +774,6 @@ const AdvancedGameDetailView = () => {
           </div>
         </div>
       </div>
-      
       {lastPlay && (
         <div className="last-play-container">
           <div className="last-play-label">Last Play</div>
@@ -772,71 +784,42 @@ const AdvancedGameDetailView = () => {
   );
 
   // Betting tab.
-  const renderBetting = () => (
-    <div className="tab-content betting">
-      <h2>Betting Information</h2>
-      <div className="betting-cards-container">
-        <div className="betting-card">
-          <div className="betting-card-header">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M3.5,3H20.5C21.33,3 22,3.67 22,4.5V7.5C22,8.33 21.33,9 20.5,9H3.5C2.67,9 2,8.33 2,7.5V4.5C2,3.67 2.67,3 3.5,3M3.5,11H20.5C21.33,11 22,11.67 22,12.5V15.5C22,16.33 21.33,17 20.5,17H3.5C2.67,17 2,16.33 2,15.5V12.5C2,11.67 2.67,11 3.5,11M3.5,19H20.5C21.33,19 22,19.67 22,20.5V21H2V20.5C2,19.67 2.67,19 3.5,19Z" />
-            </svg>
-            <span>Moneyline</span>
-          </div>
-          <div className="betting-card-content">
-            <div className="betting-team-odds" style={{ borderLeft: `4px solid ${homeTeamColor}` }}>
-              <div className="odds-team">
-                <img src={homeLogo} alt={homeTeam} className="team-logo-tiny" />
-                <span>{homeTeam}</span>
+  const renderBetting = () => {
+    // Get a random betting line for this game (if available)
+    const randomLine = getRandomLineForGame(gameId, lines);
+
+    return (
+      <div className="tab-content betting">
+        <h2>Betting Information</h2>
+        {randomLine ? (
+          <div className="betting-section">
+            <div className="sportsbook">
+              <img
+                src={getSportsbookLogo(randomLine.provider)}
+                alt={randomLine.provider}
+                className="sportsbook-logo"
+              />
+              <div className="betting-odds">
+                <div className="odds-item">
+                  <span className="odds-label">Spread:</span>
+                  <span className="odds-value">{randomLine.spread || "N/A"}</span>
+                </div>
+                <div className="odds-item">
+                  <span className="odds-label">O/U:</span>
+                  <span className="odds-value">{randomLine.overUnder || "N/A"}</span>
+                </div>
               </div>
-              <div className="odds-value">{moneylineHome || "N/A"}</div>
-            </div>
-            <div className="betting-team-odds" style={{ borderLeft: `4px solid ${awayTeamColor}` }}>
-              <div className="odds-team">
-                <img src={awayLogo} alt={awayTeam} className="team-logo-tiny" />
-                <span>{awayTeam}</span>
-              </div>
-              <div className="odds-value">{moneylineAway || "N/A"}</div>
             </div>
           </div>
-        </div>
-        
-        <div className="betting-card">
-          <div className="betting-card-header">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M19 13H5V11H19V13Z" />
-            </svg>
-            <span>Spread</span>
-          </div>
-          <div className="betting-card-content">
-            <div className="betting-value-card">
-              <div className="value-label">Spread</div>
-              <div className="value-number">{spread || "N/A"}</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="betting-card">
-          <div className="betting-card-header">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-            </svg>
-            <span>Over/Under</span>
-          </div>
-          <div className="betting-card-content">
-            <div className="betting-value-card">
-              <div className="value-label">Total Points</div>
-              <div className="value-number">{overUnder || "N/A"}</div>
-            </div>
-          </div>
+        ) : (
+          <p className="no-data">No betting lines available</p>
+        )}
+        <div className="betting-disclaimer">
+          <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
         </div>
       </div>
-      
-      <div className="betting-disclaimer">
-        <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Weather tab.
   const renderWeatherTab = () => (
@@ -939,7 +922,6 @@ const AdvancedGameDetailView = () => {
               <div className="detail-value">{city || "TBD"}{state ? `, ${state}` : ""}</div>
             </div>
           </div>
-          
           <div className="venue-detail">
             <div className="venue-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
@@ -948,10 +930,11 @@ const AdvancedGameDetailView = () => {
             </div>
             <div className="venue-detail-content">
               <div className="detail-label">Capacity</div>
-              <div className="detail-value">{attendance ? `${Number(attendance).toLocaleString()} (Attendance)` : "N/A"}</div>
+              <div className="detail-value">
+                {attendance ? `${Number(attendance).toLocaleString()} (Attendance)` : "N/A"}
+              </div>
             </div>
           </div>
-          
           <div className="venue-detail">
             <div className="venue-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
@@ -976,7 +959,10 @@ const AdvancedGameDetailView = () => {
         <div className="detail-card">
           <div className="detail-card-header">
             <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1H16M19,5V7H5V5H19Z" />
+              <path
+                fill="currentColor"
+                d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1H16M19,5V7H5V5H19Z"
+              />
             </svg>
             <span>Season Information</span>
           </div>
@@ -999,18 +985,25 @@ const AdvancedGameDetailView = () => {
         <div className="detail-card">
           <div className="detail-card-header">
             <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
+              <path
+                fill="currentColor"
+                d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z"
+              />
             </svg>
             <span>Game Type</span>
           </div>
           <div className="detail-card-content">
             <div className="detail-item">
               <div className="detail-label">Conference Game</div>
-              <div className="detail-value">{conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}</div>
+              <div className="detail-value">
+                {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
+              </div>
             </div>
             <div className="detail-item">
               <div className="detail-label">Neutral Site</div>
-              <div className="detail-value">{neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}</div>
+              <div className="detail-value">
+                {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
+              </div>
             </div>
           </div>
         </div>
@@ -1018,7 +1011,10 @@ const AdvancedGameDetailView = () => {
         <div className="detail-card">
           <div className="detail-card-header">
             <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
+              <path
+                fill="currentColor"
+                d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z"
+              />
             </svg>
             <span>Home Team Details</span>
           </div>
@@ -1049,7 +1045,10 @@ const AdvancedGameDetailView = () => {
         <div className="detail-card">
           <div className="detail-card-header">
             <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
+              <path
+                fill="currentColor"
+                d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z"
+              />
             </svg>
             <span>Away Team Details</span>
           </div>
@@ -1077,7 +1076,6 @@ const AdvancedGameDetailView = () => {
           </div>
         </div>
       </div>
-      
       {notes && (
         <div className="notes-container">
           <div className="notes-header">Game Notes</div>
@@ -1092,42 +1090,55 @@ const AdvancedGameDetailView = () => {
     <div className="tabs">
       <button className={`tab-button ${activeTab === "overview" ? "active" : ""}`} onClick={() => setActiveTab("overview")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
+          <path
+            fill="currentColor"
+            d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z"
+          />
         </svg>
         <span>Overview</span>
       </button>
-      
       <button className={`tab-button ${activeTab === "statistics" ? "active" : ""}`} onClick={() => setActiveTab("statistics")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />
+          <path
+            fill="currentColor"
+            d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+          />
         </svg>
         <span>Statistics</span>
       </button>
-      
       <button className={`tab-button ${activeTab === "betting" ? "active" : ""}`} onClick={() => setActiveTab("betting")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M3,4.27L4.28,3L21,19.72L19.73,21L17.06,18.33C16.41,18.75 15.73,19 15,19C13.9,19 13,18.1 13,17C13,16.27 13.26,15.59 13.67,15.06L11.5,12.89C10.59,13.43 9.26,13.62 8,13V15.8L13,18.35V19.93H3V18.35L8,15.8V12.79L2,14V5.42L3,4.27M8,5V4.58L7.88,4.63L8,5M8,6.33L7.5,5.5L4.67,8.08L8,6.33M15,17C15.56,17 16,16.56 16,16C16,15.44 15.56,15 15,15C14.44,15 14,15.44 14,16C14,16.56 14.44,17 15,17M10,10.83L8,12V8.83L10,10.83M11.17,12L8.67,9.5L12,7V11.17L11.17,12Z" />
+          <path
+            fill="currentColor"
+            d="M3.5,3H20.5C21.33,3 22,3.67 22,4.5V7.5C22,8.33 21.33,9 20.5,9H3.5C2.67,9 2,8.33 2,7.5V4.5C2,3.67 2.67,3 3.5,3M3.5,11H20.5C21.33,11 22,11.67 22,12.5V15.5C22,16.33 21.33,17 20.5,17H3.5C2.67,17 2,16.33 2,15.5V12.5C2,11.67 2.67,11 3.5,11M3.5,19H20.5C21.33,19 22,19.67 22,20.5V21H2V20.5C2,19.67 2.67,19 3.5,19Z"
+          />
         </svg>
         <span>Betting</span>
       </button>
-      
       <button className={`tab-button ${activeTab === "weather" ? "active" : ""}`} onClick={() => setActiveTab("weather")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M6,19A5,5 0 0,1 1,14A5,5 0 0,1 6,9C7,6.65 9.3,5 12,5C15.43,5 18.24,7.66 18.5,11.03L19,11A4,4 0 0,1 23,15A4,4 0 0,1 19,19H6M19,13H17V12A5,5 0 0,0 12,7C9.5,7 7.45,8.82 7.06,11.19C6.73,11.07 6.37,11 6,11A3,3 0 0,0 3,14A3,3 0 0,0 6,17H19A2,2 0 0,0 21,15A2,2 0 0,0 19,13Z" />
+          <path
+            fill="currentColor"
+            d="M6,19A5,5 0 0,1 1,14A5,5 0 0,1 6,9C7,6.65 9.3,5 12,5C15.43,5 18.24,7.66 18.5,11.03L19,11A4,4 0 0,1 23,15A4,4 0 0,1 19,19H6M19,13H17V12A5,5 0 0,0 12,7C9.5,7 7.45,8.82 7.06,11.19C6.73,11.07 6.37,11 6,11A3,3 0 0,0 3,14A3,3 0 0,0 6,17H19A2,2 0 0,0 21,15A2,2 0 0,0 19,13Z"
+          />
         </svg>
         <span>Weather</span>
       </button>
-      
       <button className={`tab-button ${activeTab === "venue" ? "active" : ""}`} onClick={() => setActiveTab("venue")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+          <path
+            fill="currentColor"
+            d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+          />
         </svg>
         <span>Venue</span>
       </button>
-      
       <button className={`tab-button ${activeTab === "details" ? "active" : ""}`} onClick={() => setActiveTab("details")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+          <path
+            fill="currentColor"
+            d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+          />
         </svg>
         <span>Details</span>
       </button>
@@ -1148,9 +1159,7 @@ const AdvancedGameDetailView = () => {
             : "Upcoming Game"}
         </div>
       </div>
-
       {renderTabs()}
-
       {activeTab === "overview" && renderOverview()}
       {activeTab === "statistics" && renderStatisticsTab()}
       {activeTab === "betting" && renderBetting()}
@@ -1162,3 +1171,4 @@ const AdvancedGameDetailView = () => {
 };
 
 export default AdvancedGameDetailView;
+
