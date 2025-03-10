@@ -483,31 +483,32 @@ const TeamPlayerStats = ({ teamName, year = 2024, teamColor }) => {
     box-shadow: 0 3px 6px ${accentColor}50;
   }
 
-  .section-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin: 40px 0 25px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 40px 0 25px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .section-icon {
-    color: var(--accent-color);
-    font-size: 1.5rem;
-  }
+.section-icon {
+  color: var(--accent-color);
+  font-size: 1.5rem;
+}
 
-  .section-title:after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-color), var(--accent-color-light));
-    border-radius: 2px;
-  }
+/* Change this part to use a solid color instead of gradient */
+.section-title:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: var(--accent-color); /* Changed from gradient to solid color */
+  border-radius: 2px;
+}
 
   /* Button Icons */
   .button-icon {
