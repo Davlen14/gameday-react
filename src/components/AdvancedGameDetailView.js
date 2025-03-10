@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
-import "..styles/AdvancedGameDetailView.css";
+import "../styles/AdvancedGameDetailView.css";
+
 
 // Modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
