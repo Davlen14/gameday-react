@@ -28,6 +28,11 @@
   --gauge-red: linear-gradient(180deg, #ff6b6b, #ff4d4d);
   --gauge-yellow: linear-gradient(180deg, #ffd166, #ffc700);
   --gauge-green: linear-gradient(180deg, #06d6a0, #04aa6d);
+  
+  /* Tab Colors */
+  --tab-inactive: rgba(255, 255, 255, 0.7);
+  --tab-active: var(--accent-primary);
+  --tab-hover: rgba(212, 0, 28, 0.1);
 }
 
 /* Dark Mode */
@@ -43,6 +48,8 @@
     --shadow-primary: rgba(0, 0, 0, 0.3);
     --glass-primary: rgba(30, 41, 59, 0.7);
     --glass-secondary: rgba(30, 41, 59, 0.5);
+    --tab-inactive: rgba(30, 41, 59, 0.7);
+    --tab-hover: rgba(255, 92, 92, 0.2);
   }
 }
 
@@ -225,10 +232,89 @@ body {
   color: var(--accent-primary);
 }
 
+/* Dashboard Tabs - NEW */
+.dashboard-tabs {
+  display: flex;
+  justify-content: space-between;
+  background: var(--glass-primary);
+  backdrop-filter: var(--glass-blur);
+  margin: 0 1rem;
+  margin-top: -1rem;
+  border-radius: 12px;
+  padding: 0.5rem;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: var(--glass-border);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.dashboard-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  position: relative;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.tab-item:hover {
+  background: var(--tab-hover);
+  transform: translateY(-2px);
+}
+
+.tab-item.active {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 20%;
+  width: 60%;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 3px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.tab-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+  transition: transform 0.3s ease;
+}
+
+.tab-item:hover .tab-icon {
+  transform: scale(1.2);
+}
+
+.tab-item.active .tab-icon {
+  color: var(--accent-primary);
+}
+
+.tab-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* Main Content Area */
 .dashboard-content {
   position: relative;
-  margin-top: -1rem; /* Overlap the header slightly */
+  margin-top: 1rem; /* Adjusted for tabs */
   padding: 2rem;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -236,9 +322,13 @@ body {
 
   /* Rounded corners & subtle shadow to look like a cohesive "dashboard" */
   background: var(--bg-secondary);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Full width card for tab content */
+.full-width-card {
+  grid-column: span 12 !important;
 }
 
 /* Section Styles - Glass Cards */
@@ -618,6 +708,76 @@ body {
   border-radius: 8px;
 }
 
+/* Coming Soon styling - NEW */
+.coming-soon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
+  border-radius: 12px;
+}
+
+.coming-soon-icon {
+  color: var(--accent-primary);
+  margin-bottom: 1.5rem;
+  animation: pulse 2s infinite;
+  filter: drop-shadow(0 0 10px rgba(212, 0, 28, 0.3));
+}
+
+.coming-soon-container h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, var(--text-primary), var(--accent-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.coming-soon-container p {
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.coming-soon-label {
+  background: var(--accent-primary);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(212, 0, 28, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.coming-soon-label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { left: -50%; }
+  100% { left: 150%; }
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .dashboard-content {
@@ -630,6 +790,24 @@ body {
   .team-roster-card,
   .team-detailed-ratings-card {
     grid-column: span 6;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-tabs {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.3rem;
+    padding: 0.3rem;
+  }
+  
+  .tab-item {
+    padding: 0.8rem 0.5rem;
+    min-width: auto;
+  }
+  
+  .tab-label {
+    font-size: 0.7rem;
   }
 }
 
@@ -706,6 +884,17 @@ body {
 }
 
 @media (max-width: 580px) {
+  .dashboard-tabs {
+    overflow-x: auto;
+    justify-content: flex-start;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .tab-item {
+    flex: 0 0 auto;
+  }
+  
   .roster-table {
     display: block;
     overflow-x: auto;
@@ -719,6 +908,14 @@ body {
   .gauge {
     transform: scale(0.9);
     margin: -0.5rem 0;
+  }
+  
+  .coming-soon-container h3 {
+    font-size: 1.4rem;
+  }
+  
+  .coming-soon-container p {
+    font-size: 0.95rem;
   }
 }
 
@@ -753,4 +950,9 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { width: 0; left: 50%; }
+  to { width: 60%; left: 20%; }
 }
