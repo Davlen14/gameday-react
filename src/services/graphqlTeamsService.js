@@ -242,6 +242,7 @@ export const getGameInfo = async (gameId) => {
 };
 
 
+
 // Export only ratings and team info functions along with the new game/scoreboard exports
 const graphqlTeamsService = {
   getTeams,                     // For basic team info needed by TeamDetail

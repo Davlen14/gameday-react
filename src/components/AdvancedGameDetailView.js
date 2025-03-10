@@ -4,30 +4,33 @@ import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
 const AdvancedGameDetailView = () => {
-  const { id } = useParams(); // game ID from URL
+  const { id } = useParams(); // Game ID from URL
   const [gameData, setGameData] = useState(null);
   const [teams, setTeams] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch team logos and game data from both REST and GraphQL then merge them.
+  // Fetch teams and game data (REST, GraphQL scoreboard, and GraphQL game_info) and merge them.
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        // Fetch teams for logos and extra team details
+
+        // Get teams from REST (for logos and extra team info)
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
 
-        // Fetch REST game data (this method should exist in your REST service)
+        // Get basic game data from REST (assuming getGameById exists)
         const restGameData = await teamsService.getGameById(id);
-        // Fetch detailed game data (scoreboard) from GraphQL
+
+        // Get detailed scoreboard data from GraphQL
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
-        // Fetch comprehensive game info from GraphQL game_info table
+
+        // Get comprehensive game info from GraphQL (using the full schema)
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
 
-        // Merge the three objects. REST data takes precedence.
+        // Merge data – REST values override GraphQL if present.
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
 
         if (mergedData) {
@@ -45,7 +48,7 @@ const AdvancedGameDetailView = () => {
     fetchData();
   }, [id]);
 
-  // Helper to get team logo from REST teams data.
+  // Helper: Get team logo from REST teams data.
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -55,7 +58,7 @@ const AdvancedGameDetailView = () => {
       : "/photos/default_team.png";
   };
 
-  // Helper to get team details for display.
+  // Helper: Get team details for display.
   const getTeamDetails = (teamName) => {
     const team = teams.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -67,7 +70,7 @@ const AdvancedGameDetailView = () => {
   if (error) return <div>Error: {error}</div>;
   if (!gameData) return <div>Game not found</div>;
 
-  // Destructure all fields from merged gameData (from game_info, scoreboard, and REST)
+  // Destructure all fields from merged gameData.
   const {
     id: gameId,
     attendance,
@@ -116,15 +119,15 @@ const AdvancedGameDetailView = () => {
     windDirection,
     windSpeed,
     tv,
-    weather,   // Object: { temperature, weatherDescription, windDirection, windSpeed }
-    mediaInfo, // Array of objects: { id, network, outlet, ... }
-    lines,     // Array of objects: { provider, spread, overUnder, ... }
+    weather,    // Nested object from game_info.weather
+    mediaInfo,  // Array from game_info.mediaInfo
+    lines       // Array from game_info.lines
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
   const awayTeamDetails = getTeamDetails(awayTeam);
 
-  // Modernized line scores table (for Statistics tab)
+  // Modernized line scores table for the Statistics tab.
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
     if (!periods) return <p>No line score data available.</p>;
@@ -157,7 +160,7 @@ const AdvancedGameDetailView = () => {
     );
   };
 
-  // Overview tab
+  // Overview tab.
   const renderOverview = () => (
     <div className="tab-content">
       <div className="teams-comparison">
@@ -170,9 +173,7 @@ const AdvancedGameDetailView = () => {
           </div>
           <div className="score">{homePoints || "0"}</div>
         </div>
-
         <div className="vs-column">VS</div>
-
         <div className="team-column">
           <img src={getTeamLogo(awayTeam)} alt={awayTeam} className="team-logo" />
           <div className="team-name">{awayTeam}</div>
@@ -198,7 +199,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Statistics tab
+  // Statistics tab.
   const renderStatistics = () => (
     <div className="tab-content">
       <h2>Scoring by Period</h2>
@@ -213,7 +214,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Betting tab
+  // Betting tab.
   const renderBetting = () => (
     <div className="tab-content">
       <h2>Betting Information</h2>
@@ -234,7 +235,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Weather tab
+  // Weather tab.
   const renderWeather = () => (
     <div className="tab-content">
       <h2>Weather Conditions</h2>
@@ -258,7 +259,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Venue tab
+  // Venue tab.
   const renderVenue = () => (
     <div className="tab-content">
       <h2>Venue Information</h2>
@@ -271,7 +272,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Details tab: displays additional game info from game_info
+  // Details tab: displays additional game info from game_info.
   const renderDetails = () => (
     <div className="tab-content">
       <h2>Additional Game Details</h2>
@@ -357,7 +358,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Render tab buttons, including new "Details" tab.
+  // Render tab buttons including the new "Details" tab.
   const renderTabs = () => (
     <div className="tabs">
       <button
