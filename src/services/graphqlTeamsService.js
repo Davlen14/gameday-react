@@ -183,7 +183,7 @@ export const getGameScoreboard = async (gameId) => {
 export const getGameInfo = async (gameId) => {
   const query = `
     query GetGameInfo($gameId: Int!) {
-      game_info(where: { id: { _eq: $gameId } }) {
+      game(where: { id: { _eq: $gameId } }) {
         id
         attendance
         awayClassification
@@ -238,8 +238,9 @@ export const getGameInfo = async (gameId) => {
   `;
   const variables = { gameId: parseInt(gameId) };
   const data = await fetchData(query, variables);
-  return data?.game_info?.[0] || null;
+  return data?.game?.[0] || null;
 };
+
 
 
 
