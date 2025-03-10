@@ -269,7 +269,6 @@ export const getGameInfo = async (gameId) => {
           windSpeed
         }
         mediaInfo {
-          id
           network
           outlet
         }
