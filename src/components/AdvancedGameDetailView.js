@@ -35,7 +35,6 @@ const WeatherIcon = ({ condition, temperature }) => {
       </svg>
     );
   } else {
-    // Default icon
     icon = (
       <svg width="32" height="32" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
@@ -72,7 +71,6 @@ const AdvancedGameDetailView = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
         // Get teams from REST (for logos and extra team info)
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
@@ -127,7 +125,6 @@ const AdvancedGameDetailView = () => {
   if (!gameData) return <div>Game not found</div>;
 
   // Destructure all fields from merged gameData.
-  // Note: Remove top-level weatherDescription; use weather.condition.description instead.
   const {
     id: gameId,
     attendance,
@@ -174,10 +171,9 @@ const AdvancedGameDetailView = () => {
     temperature,
     windDirection,
     windSpeed,
-    tv,
-    weather,    // Object containing: condition, dewpoint, humidity, etc.
-    mediaInfo,  // Array from game_info.mediaInfo
-    lines       // Array from game_info.lines
+    tv, // We'll ignore this since we'll always display ESPN
+    weather,    // Object containing: condition, dewpoint, etc.
+    // Removed mediaInfo and lines from rendering for now.
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
@@ -249,11 +245,9 @@ const AdvancedGameDetailView = () => {
             ? new Date(startDate).toLocaleString()
             : "Upcoming Game"}
         </p>
-        {tv && (
-          <p className="broadcast">
-            <TvIcon /> <span><strong>Broadcast:</strong> {tv}</span>
-          </p>
-        )}
+        <p className="broadcast">
+          <TvIcon /> <span><strong>Broadcast:</strong> ESPN</span>
+        </p>
         {lastPlay && <p><strong>Last Play:</strong> {lastPlay}</p>}
       </div>
     </div>
@@ -373,30 +367,6 @@ const AdvancedGameDetailView = () => {
         <p><strong>Week:</strong> {week || "N/A"}</p>
         {notes && <p><strong>Notes:</strong> {notes}</p>}
       </div>
-      {mediaInfo && mediaInfo.length > 0 && (
-        <div className="media-info">
-          <h3>Media Information</h3>
-          <ul>
-            {mediaInfo.map((media) => (
-              <li key={media.network + media.outlet}>
-                <strong>Network:</strong> {media.network} {media.outlet && `- Outlet: ${media.outlet}`}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {lines && lines.length > 0 && (
-        <div className="lines-info">
-          <h3>Betting Lines</h3>
-          <ul>
-            {lines.map((line, idx) => (
-              <li key={idx}>
-                <strong>Provider:</strong> {line.provider} – <strong>Spread:</strong> {line.spread || "N/A"} – <strong>O/U:</strong> {line.overUnder || "N/A"}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 
