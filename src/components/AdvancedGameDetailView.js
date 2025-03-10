@@ -259,7 +259,7 @@ const ExcitementRating = ({ value }) => {
       {[...Array(emptyStars)].map((_, i) => (
         <Star key={`empty-${i}`} fill="#D3D3D3" />
       ))}
-      <span className="excitement-value">{value ? `${value}/100` : 'N/A'}</span>
+      <span className="excitement-value">{value ? `${value}/10` : 'N/A'}</span>
     </div>
   );
 };
@@ -626,7 +626,7 @@ const AdvancedGameDetailView = () => {
             ) : status === "in_progress" ? (
               <span className="status-live">LIVE</span>
             ) : (
-              <span className="status-upcoming">UPCOMING</span>
+              <span className="status-upcoming">  </span>
             )}
           </div>
           <div className="versus-text">VS</div>
