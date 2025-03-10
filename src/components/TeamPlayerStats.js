@@ -183,9 +183,10 @@ const TeamPlayerStats = ({ teamName, year = 2024, teamColor }) => {
   return (
     <div className="team-player-stats">
       <div className="stats-header">
-        <h1>
-          <GiAmericanFootballHelmet className="team-icon" />
-          {teamName} Player Stats <span className="year-badge">{year}</span>
+      <h1>
+        <GiAmericanFootballHelmet className="team-icon" />
+        <span style={{ color: "#000000" }}>{teamName} Player Stats</span>
+        <span className="year-badge">{year}</span>
         </h1>
         <button 
           className="info-button" 
