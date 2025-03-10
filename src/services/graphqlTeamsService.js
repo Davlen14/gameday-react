@@ -180,8 +180,6 @@ export const getGameScoreboard = async (gameId) => {
   return data?.scoreboard?.[0] || null;
 };
 
-// New function: Get detailed game information (from the "game_info" table)
-// This query returns comprehensive game details including relationships for weather, lines, and media.
 export const getGameInfo = async (gameId) => {
   const query = `
     query GetGameInfo($gameId: Int!) {
@@ -229,13 +227,11 @@ export const getGameInfo = async (gameId) => {
           id
           network
           outlet
-          // Add any additional fields needed
         }
         lines {
           provider
           spread
           overUnder
-          // Add additional line fields if needed
         }
       }
     }
@@ -244,6 +240,7 @@ export const getGameInfo = async (gameId) => {
   const data = await fetchData(query, variables);
   return data?.game_info?.[0] || null;
 };
+
 
 // Export only ratings and team info functions along with the new game/scoreboard exports
 const graphqlTeamsService = {
