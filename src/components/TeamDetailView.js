@@ -10,7 +10,11 @@ import {
   FaCalendarAlt, 
   FaInfoCircle,
   FaChartLine,
-  FaUserFriends
+  FaUserFriends,
+  FaFootballBall,
+  FaClipboardList,
+  FaChartBar,
+  FaExclamationTriangle
 } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
 import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
@@ -41,6 +45,16 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Coming Soon Component
+const ComingSoon = ({ title }) => (
+  <div className="coming-soon-container">
+    <FaExclamationTriangle size={40} className="coming-soon-icon" />
+    <h3>{title} Feature</h3>
+    <p>We're currently working on this exciting new feature!</p>
+    <div className="coming-soon-label">Coming Soon</div>
+  </div>
+);
+
 const TeamDetail = () => {
   const { teamId } = useParams();
   const navigate = useNavigate();
@@ -56,6 +70,9 @@ const TeamDetail = () => {
     schedule: false,
   });
   const [error, setError] = useState(null);
+  
+  // State for active tab
+  const [activeTab, setActiveTab] = useState("overview");
   
   // Refs for animation
   const headerRef = useRef(null);
@@ -91,6 +108,10 @@ const TeamDetail = () => {
     if (newTeamId) {
       navigate(`/teams/${newTeamId}`);
     }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
   useEffect(() => {
@@ -233,6 +254,267 @@ const TeamDetail = () => {
     boxShadow: `0 4px 20px ${team.color ? team.color + '50' : 'rgba(0, 0, 0, 0.2)'}`
   };
 
+  // Render the active tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <>
+            {/* SP+ Ratings Card */}
+            <div className="dashboard-card team-ratings-card">
+              <div className="card-header">
+                <FaChartLine style={{ marginRight: "12px" }} /> 
+                SP+ Ratings
+              </div>
+              <div className="card-body">
+                <div className="gauges-container">
+                  <GaugeComponent 
+                    label="Overall" 
+                    rawValue={ratings.rating} 
+                    metricType="overall" 
+                    teamData={ratings}
+                  />
+                  <GaugeComponent 
+                    label="Offense" 
+                    rawValue={ratings.offense?.rating} 
+                    metricType="offense" 
+                    teamData={ratings}
+                  />
+                  <GaugeComponent 
+                    label="Defense" 
+                    rawValue={ratings.defense?.rating} 
+                    metricType="defense" 
+                    teamData={ratings}
+                  />
+                </div>
+                <div className="ratings-explanation">
+                  <h3>How SP+ Ratings Work</h3>
+                  <p>
+                    The SP+ ratings combine multiple aspects of team performance into a single composite metric.
+                    <br />
+                    <strong>Overall:</strong> Combines offense, defense, and special teams.
+                    <br />
+                    <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
+                    <br />
+                    <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
+                  </p>
+                  <p>
+                    <strong>Color zones indicate performance relative to national average:</strong><br />
+                    <span style={{ color: "#ff4d4d" }}><strong>Red:</strong> Below Average</span> | 
+                    <span style={{ color: "#ffc700" }}><strong>Yellow:</strong> Average</span> | 
+                    <span style={{ color: "#04aa6d" }}><strong>Green:</strong> Above Average</span>
+                  </p>
+                  <p>
+                    <strong>National Averages (2024):</strong><br />
+                    Overall: 0.55 | Offense: 27.14 | Defense: 26.61
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Team Info Card */}
+            <div className="dashboard-card team-info-card">
+              <div className="card-header">
+                <FaInfoCircle style={{ marginRight: "12px" }} />
+                About {team.school} {team.mascot}
+              </div>
+              <div className="card-body">
+                <table className="info-table">
+                  <tbody>
+                    <tr>
+                      <td>Location:</td>
+                      <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
+                    </tr>
+                    <tr>
+                      <td>Conference:</td>
+                      <td><strong>{teamConference}</strong></td>
+                    </tr>
+                    <tr>
+                      <td>Division:</td>
+                      <td><strong>Division I ({team.classification})</strong></td>
+                    </tr>
+                    <tr>
+                      <td>Team Colors:</td>
+                      <td>
+                        <div style={{
+                          display: 'flex',
+                          gap: '8px',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            background: team.color || "#1a1a1a",
+                            border: '1px solid rgba(0,0,0,0.1)'
+                          }}></div>
+                          <strong>{team.color || "Not available"}</strong>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        );
+      
+      case 'schedule':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header">
+              <FaCalendarAlt style={{ marginRight: "12px" }} />
+              Team Schedule
+            </div>
+            <div className="card-body">
+              {isLoading.schedule ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner />
+                  <p>Loading schedule...</p>
+                </div>
+              ) : (
+                <>
+                  {schedule.map((game, index) => (
+                    <div key={index} className="schedule-item">
+                      <div className="schedule-game">
+                        <img
+                          src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                          alt={game.homeTeam}
+                          className="schedule-team-logo"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/photos/default_team.png";
+                          }}
+                        />
+                        <span>
+                          {game.homeTeam} vs. {game.awayTeam}
+                        </span>
+                        <img
+                          src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                          alt={game.awayTeam}
+                          className="schedule-team-logo"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/photos/default_team.png";
+                          }}
+                        />
+                      </div>
+                      <div className="schedule-details">
+                        <p>
+                          Score: {game.homePoints || "-"} - {game.awayPoints || "-"}
+                        </p>
+                        <p>Venue: {game.venue || "TBD"}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {schedule.length === 0 && !isLoading.schedule && (
+                    <div className="no-data-message">
+                      No schedule information available
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'roster':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header">
+              <FaUserFriends style={{ marginRight: "12px" }} />
+              Team Roster
+            </div>
+            <div className="card-body">
+              {isLoading.roster ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner />
+                  <p>Loading roster...</p>
+                </div>
+              ) : (
+                <table className="roster-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Position</th>
+                      <th>Height</th>
+                      <th>Year</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {roster.map((player, index) => (
+                      <tr key={index}>
+                        <td>{player.fullName}</td>
+                        <td>{player.position || "N/A"}</td>
+                        <td>{player.height || "N/A"}</td>
+                        <td>{player.year || "N/A"}</td>
+                      </tr>
+                    ))}
+                    {roster.length === 0 && !isLoading.roster && (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: "center" }}>
+                          No roster information available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'ratings':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header">
+              <FaChartLine style={{ marginRight: "12px" }} />
+              Detailed Team Ratings
+            </div>
+            <div className="card-body">
+              {isLoading.ratings ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner />
+                  <p>Loading detailed ratings...</p>
+                </div>
+              ) : (
+                <RatingsComponent teamName={team.school} year={2024} />
+              )}
+            </div>
+          </div>
+        );
+        
+      case 'teamStats':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header">
+              <FaChartBar style={{ marginRight: "12px" }} />
+              Team Statistics
+            </div>
+            <div className="card-body">
+              <ComingSoon title="Team Statistics" />
+            </div>
+          </div>
+        );
+        
+      case 'playerStats':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header">
+              <FaFootballBall style={{ marginRight: "12px" }} />
+              Player Statistics
+            </div>
+            <div className="card-body">
+              <ComingSoon title="Player Statistics" />
+            </div>
+          </div>
+        );
+        
+      default:
+        return <div>Select a tab to view content</div>;
+    }
+  };
+
   return (
     <div className="team-dashboard">
       {/* Top Bar */}
@@ -288,223 +570,55 @@ const TeamDetail = () => {
         </div>
       </div>
 
+      {/* Dashboard Navigation Tabs */}
+      <div className="dashboard-tabs">
+        <div 
+          className={`tab-item ${activeTab === 'overview' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('overview')}
+        >
+          <FaInfoCircle className="tab-icon" />
+          <span className="tab-label">Overview</span>
+        </div>
+        <div 
+          className={`tab-item ${activeTab === 'schedule' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('schedule')}
+        >
+          <FaCalendarAlt className="tab-icon" />
+          <span className="tab-label">Schedule</span>
+        </div>
+        <div 
+          className={`tab-item ${activeTab === 'roster' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('roster')}
+        >
+          <FaUserFriends className="tab-icon" />
+          <span className="tab-label">Roster</span>
+        </div>
+        <div 
+          className={`tab-item ${activeTab === 'ratings' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('ratings')}
+        >
+          <FaChartLine className="tab-icon" />
+          <span className="tab-label">Ratings</span>
+        </div>
+        <div 
+          className={`tab-item ${activeTab === 'teamStats' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('teamStats')}
+        >
+          <FaChartBar className="tab-icon" />
+          <span className="tab-label">Team Stats</span>
+        </div>
+        <div 
+          className={`tab-item ${activeTab === 'playerStats' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('playerStats')}
+        >
+          <FaFootballBall className="tab-icon" />
+          <span className="tab-label">Player Stats</span>
+        </div>
+      </div>
+
       {/* Dashboard Content with animation */}
       <div className="dashboard-content" ref={contentRef}>
-        {/* SP+ Ratings Card */}
-        <div className="dashboard-card team-ratings-card">
-          <div className="card-header">
-            <FaChartLine style={{ marginRight: "12px" }} /> 
-            SP+ Ratings
-          </div>
-          <div className="card-body">
-            <div className="gauges-container">
-              <GaugeComponent 
-                label="Overall" 
-                rawValue={ratings.rating} 
-                metricType="overall" 
-                teamData={ratings}
-              />
-              <GaugeComponent 
-                label="Offense" 
-                rawValue={ratings.offense?.rating} 
-                metricType="offense" 
-                teamData={ratings}
-              />
-              <GaugeComponent 
-                label="Defense" 
-                rawValue={ratings.defense?.rating} 
-                metricType="defense" 
-                teamData={ratings}
-              />
-            </div>
-            <div className="ratings-explanation">
-              <h3>How SP+ Ratings Work</h3>
-              <p>
-                The SP+ ratings combine multiple aspects of team performance into a single composite metric.
-                <br />
-                <strong>Overall:</strong> Combines offense, defense, and special teams.
-                <br />
-                <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
-                <br />
-                <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
-              </p>
-              <p>
-                <strong>Color zones indicate performance relative to national average:</strong><br />
-                <span style={{ color: "#ff4d4d" }}><strong>Red:</strong> Below Average</span> | 
-                <span style={{ color: "#ffc700" }}><strong>Yellow:</strong> Average</span> | 
-                <span style={{ color: "#04aa6d" }}><strong>Green:</strong> Above Average</span>
-              </p>
-              <p>
-                <strong>National Averages (2024):</strong><br />
-                Overall: 0.55 | Offense: 27.14 | Defense: 26.61
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Team Info Card */}
-        <div className="dashboard-card team-info-card">
-          <div className="card-header">
-            <FaInfoCircle style={{ marginRight: "12px" }} />
-            About {team.school} {team.mascot}
-          </div>
-          <div className="card-body">
-            <table className="info-table">
-              <tbody>
-                <tr>
-                  <td>Location:</td>
-                  <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
-                </tr>
-                <tr>
-                  <td>Conference:</td>
-                  <td><strong>{teamConference}</strong></td>
-                </tr>
-                <tr>
-                  <td>Division:</td>
-                  <td><strong>Division I ({team.classification})</strong></td>
-                </tr>
-                <tr>
-                  <td>Team Colors:</td>
-                  <td>
-                    <div style={{
-                      display: 'flex',
-                      gap: '8px',
-                      alignItems: 'center'
-                    }}>
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: team.color || "#1a1a1a",
-                        border: '1px solid rgba(0,0,0,0.1)'
-                      }}></div>
-                      <strong>{team.color || "Not available"}</strong>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Schedule Card */}
-        <div className="dashboard-card team-schedule-card">
-          <div className="card-header">
-            <FaCalendarAlt style={{ marginRight: "12px" }} />
-            Schedule
-          </div>
-          <div className="card-body">
-            {isLoading.schedule ? (
-              <div className="loading-indicator">
-                <LoadingSpinner />
-                <p>Loading schedule...</p>
-              </div>
-            ) : (
-              <>
-                {schedule.map((game, index) => (
-                  <div key={index} className="schedule-item">
-                    <div className="schedule-game">
-                      <img
-                        src={game.homeLogo || getTeamLogo(game.homeTeam)}
-                        alt={game.homeTeam}
-                        className="schedule-team-logo"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
-                      <span>
-                        {game.homeTeam} vs. {game.awayTeam}
-                      </span>
-                      <img
-                        src={game.awayLogo || getTeamLogo(game.awayTeam)}
-                        alt={game.awayTeam}
-                        className="schedule-team-logo"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
-                    </div>
-                    <div className="schedule-details">
-                      <p>
-                        Score: {game.homePoints || "-"} - {game.awayPoints || "-"}
-                      </p>
-                      <p>Venue: {game.venue || "TBD"}</p>
-                    </div>
-                  </div>
-                ))}
-                {schedule.length === 0 && !isLoading.schedule && (
-                  <div className="no-data-message">
-                    No schedule information available
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Detailed Ratings Card - Moved below Schedule */}
-        <div className="dashboard-card team-detailed-ratings-card">
-          <div className="card-header">
-            <FaChartLine style={{ marginRight: "12px" }} />
-            Detailed Ratings
-          </div>
-          <div className="card-body">
-            {isLoading.ratings ? (
-              <div className="loading-indicator">
-                <LoadingSpinner />
-                <p>Loading detailed ratings...</p>
-              </div>
-            ) : (
-              <RatingsComponent teamName={team.school} year={2024} />
-            )}
-          </div>
-        </div>
-
-        {/* Team Roster Card */}
-        <div className="dashboard-card team-roster-card">
-          <div className="card-header">
-            <FaUserFriends style={{ marginRight: "12px" }} />
-            Team Roster
-          </div>
-          <div className="card-body">
-            {isLoading.roster ? (
-              <div className="loading-indicator">
-                <LoadingSpinner />
-                <p>Loading roster...</p>
-              </div>
-            ) : (
-              <table className="roster-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Height</th>
-                    <th>Year</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roster.map((player, index) => (
-                    <tr key={index}>
-                      <td>{player.fullName}</td>
-                      <td>{player.position || "N/A"}</td>
-                      <td>{player.height || "N/A"}</td>
-                      <td>{player.year || "N/A"}</td>
-                    </tr>
-                  ))}
-                  {roster.length === 0 && !isLoading.roster && (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: "center" }}>
-                        No roster information available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+        {renderTabContent()}
       </div>
     </div>
   );
