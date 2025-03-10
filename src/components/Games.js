@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import "../styles/GamesAndTeams.css";
 
@@ -11,6 +12,7 @@ const Games = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1);
+    const navigate = useNavigate(); // Add this for navigation
 
     useEffect(() => {
         const fetchGamesAndRelatedData = async () => {
@@ -50,6 +52,11 @@ const Games = () => {
 
     const handleWeekChange = (event) => {
         setWeek(Number(event.target.value));
+    };
+
+    // Handle navigation to advanced game details
+    const navigateToGameDetails = (gameId) => {
+        navigate(`/game/${gameId}`); // Navigate to the game details page with the game ID
     };
 
     const getTeamLogo = (teamName) => {
@@ -92,7 +99,7 @@ const Games = () => {
     };
 
 
-// Replace your WeatherIcon component with this:
+// WeatherIcon component
 const WeatherIcon = ({ condition }) => {
     const iconStyle = { width: 32, height: 32 }; // Bigger icons
     const normalizedCondition = condition?.toLowerCase() || '';
@@ -181,7 +188,7 @@ const WeatherIcon = ({ condition }) => {
     return icons[iconType] || <div style={iconStyle}>?</div>;
 };
 
-// Replace your TvIcon component with this:
+// TvIcon component
 const TvIcon = () => (
     <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -335,6 +342,16 @@ const TvIcon = () => (
                                     </div>
                                 </div>
                             )}
+                            
+                            {/* Advanced Game Details Button */}
+                            <div className="advanced-details-section">
+                                <button 
+                                    className="advanced-details-button"
+                                    onClick={() => navigateToGameDetails(game.id)}
+                                >
+                                    View Advanced Game Details
+                                </button>
+                            </div>
                         </article>
                     );
                 })}

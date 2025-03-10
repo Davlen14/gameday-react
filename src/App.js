@@ -15,6 +15,7 @@ import FanHub from "./components/FanHub"; // ✅ Import FanHub for the Fan Hub U
 import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Team Analytics component
 import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
 import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysis
+import AdvancedGameDetailView from "./components/AdvancedGameDetailView"; // Import the new AdvancedGameDetailView component
 
 // New ArbitrageEV Component Import
 import ArbitrageEV from "./components/ArbitrageEV";
@@ -492,7 +493,7 @@ function App() {
               <Route path="/more" element={<More />} />
               <Route path="/ask-questions" element={<Chatbot />} />
               <Route path="/games/:gameId" element={<GameDetailView />} />
-              <Route path="/game/:gameId" element={<GameDetailView />} />
+              <Route path="/game/:id" element={<AdvancedGameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
 
