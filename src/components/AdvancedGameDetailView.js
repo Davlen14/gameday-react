@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
+import "..styles/AdvancedGameDetailView.css";
 
-// Improved modern WeatherIcon component
+// Modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
   let icon;
   const conditionLower = condition ? condition.toLowerCase() : "";
@@ -35,11 +36,11 @@ const WeatherIcon = ({ condition, temperature }) => {
             <animate attributeName="x1" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
             <animate attributeName="y1" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
           </line>
-          <line x1="1" y1="12" x2="3" y2="12">
-            <animate attributeName="x2" values="3;4;3" dur="3s" repeatCount="indefinite" />
+          <line x1="1" y1="12" x2="4" y2="12">
+            <animate attributeName="x2" values="4;5;4" dur="3s" repeatCount="indefinite" />
           </line>
-          <line x1="21" y1="12" x2="23" y2="12">
-            <animate attributeName="x1" values="21;20;21" dur="3s" repeatCount="indefinite" />
+          <line x1="20" y1="12" x2="23" y2="12">
+            <animate attributeName="x1" values="20;19;20" dur="3s" repeatCount="indefinite" />
           </line>
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36">
             <animate attributeName="x2" values="5.64;6.34;5.64" dur="3s" repeatCount="indefinite" />
@@ -61,9 +62,7 @@ const WeatherIcon = ({ condition, temperature }) => {
             <stop offset="100%" stopColor="#B0C4DE" />
           </linearGradient>
         </defs>
-        <path d="M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z" fill="url(#cloudGradient)" stroke="#A9A9A9" strokeWidth="0.5">
-          <animate attributeName="d" values="M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z;M7,12 Q7,9 10,9 Q10,6 13,6 Q17,6 17,9 Q20,9 20,12 Q20,15 17,15 L7,15 Q4,15 4,12 Z;M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z" dur="8s" repeatCount="indefinite" />
-        </path>
+        <path d="M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z" fill="url(#cloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
       </svg>
     );
   } else if (conditionLower.includes("rain") || conditionLower.includes("drizzle")) {
@@ -80,31 +79,26 @@ const WeatherIcon = ({ condition, temperature }) => {
           </linearGradient>
         </defs>
         <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#rainCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
-        
         <line x1="8" y1="15" x2="8" y2="17" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
-          <animate attributeName="y1" values="15;16;15" dur="1.5s" begin="0s" repeatCount="indefinite" />
-          <animate attributeName="y2" values="17;19;17" dur="1.5s" begin="0s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0s" repeatCount="indefinite" />
+          <animate attributeName="y1" values="15;16;15" dur="1.5s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="17;19;17" dur="1.5s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
         </line>
-        
         <line x1="12" y1="14" x2="12" y2="16" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="y1" values="14;15;14" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
           <animate attributeName="y2" values="16;18;16" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
         </line>
-        
         <line x1="16" y1="15" x2="16" y2="17" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="y1" values="15;16;15" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
           <animate attributeName="y2" values="17;19;17" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
         </line>
-        
         <line x1="10" y1="16" x2="10" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
           <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
         </line>
-        
         <line x1="14" y1="16" x2="14" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
           <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
@@ -122,27 +116,22 @@ const WeatherIcon = ({ condition, temperature }) => {
           </linearGradient>
         </defs>
         <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#snowCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
-        
         <circle cx="8" cy="16" r="0.5" fill="white">
-          <animate attributeName="cy" values="15;17;15" dur="2s" begin="0s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0s" repeatCount="indefinite" />
+          <animate attributeName="cy" values="15;17;15" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
         </circle>
-        
         <circle cx="12" cy="15" r="0.5" fill="white">
           <animate attributeName="cy" values="14;16;14" dur="2s" begin="0.3s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.3s" repeatCount="indefinite" />
         </circle>
-        
         <circle cx="16" cy="16" r="0.5" fill="white">
           <animate attributeName="cy" values="15;17;15" dur="2s" begin="0.6s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.6s" repeatCount="indefinite" />
         </circle>
-        
         <circle cx="10" cy="17" r="0.5" fill="white">
           <animate attributeName="cy" values="16;18;16" dur="2s" begin="0.9s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.9s" repeatCount="indefinite" />
         </circle>
-        
         <circle cx="14" cy="17" r="0.5" fill="white">
           <animate attributeName="cy" values="16;18;16" dur="2s" begin="1.2s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0;1" dur="2s" begin="1.2s" repeatCount="indefinite" />
@@ -163,11 +152,9 @@ const WeatherIcon = ({ condition, temperature }) => {
           </linearGradient>
         </defs>
         <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#stormCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
-        
         <path d="M11,13 L9,17 L12,17 L10,21" fill="none" stroke="url(#lightningGradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <animate attributeName="opacity" values="0;1;0.6;0.8;0.3;1;0" dur="3s" repeatCount="indefinite" />
         </path>
-        
         <path d="M15,13 L14,15 L16,15 L15,17" fill="none" stroke="url(#lightningGradient)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
           <animate attributeName="opacity" values="0;0.6;1;0.3;0.8;0" dur="3s" begin="1s" repeatCount="indefinite" />
         </path>
@@ -183,17 +170,14 @@ const WeatherIcon = ({ condition, temperature }) => {
           </linearGradient>
         </defs>
         <path d="M6,8 Q6,5 9,5 Q9,2 12,2 Q16,2 16,5 Q19,5 19,8 Q19,11 16,11 L6,11 Q3,11 3,8 Z" fill="url(#fogGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
-        
         <line x1="4" y1="14" x2="20" y2="14" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.7">
           <animate attributeName="y1" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
           <animate attributeName="y2" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
         </line>
-        
         <line x1="6" y1="17" x2="18" y2="17" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.5">
           <animate attributeName="y1" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
           <animate attributeName="y2" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
         </line>
-        
         <line x1="8" y1="20" x2="16" y2="20" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.3">
           <animate attributeName="y1" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
           <animate attributeName="y2" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
@@ -206,11 +190,9 @@ const WeatherIcon = ({ condition, temperature }) => {
         <path d="M3,8 Q5,6 7,8" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="d" values="M3,8 Q5,6 7,8;M3,8 Q5,7 7,8;M3,8 Q5,6 7,8" dur="3s" repeatCount="indefinite" />
         </path>
-        
         <path d="M3,12 Q8,9 13,12 Q16,14 20,12" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="d" values="M3,12 Q8,9 13,12 Q16,14 20,12;M3,12 Q8,11 13,12 Q16,13 20,12;M3,12 Q8,9 13,12 Q16,14 20,12" dur="5s" repeatCount="indefinite" />
         </path>
-        
         <path d="M5,16 Q10,13 15,16" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
           <animate attributeName="d" values="M5,16 Q10,13 15,16;M5,16 Q10,15 15,16;M5,16 Q10,13 15,16" dur="4s" repeatCount="indefinite" />
         </path>
@@ -262,7 +244,6 @@ const TvIcon = () => (
 
 // New ExcitementRating component with stars
 const ExcitementRating = ({ value }) => {
-  // Normalize value between 0 and 5 if needed
   const normalizedValue = value ? Math.min(5, Math.max(0, (value / 100) * 5)) : 0;
   const fullStars = Math.floor(normalizedValue);
   const partialStar = normalizedValue % 1;
@@ -273,13 +254,10 @@ const ExcitementRating = ({ value }) => {
       {[...Array(fullStars)].map((_, i) => (
         <Star key={`full-${i}`} fill="#FFD700" />
       ))}
-      
       {partialStar > 0 && <PartialStar fill="#FFD700" percentage={partialStar * 100} />}
-      
       {[...Array(emptyStars)].map((_, i) => (
         <Star key={`empty-${i}`} fill="#D3D3D3" />
       ))}
-      
       <span className="excitement-value">{value ? `${value}/100` : 'N/A'}</span>
     </div>
   );
@@ -315,29 +293,17 @@ const PartialStar = ({ fill, percentage }) => (
   </svg>
 );
 
-// New Win Probability Circle component
+// New WinProbabilityCircle component
 const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) => {
   const normalizedProb = probability ? Math.min(100, Math.max(0, probability)) : 0;
-  const circumference = 2 * Math.PI * 40; // Circle radius is 40
+  const circumference = 2 * Math.PI * 40; // circle radius is 40
   const dashOffset = circumference * (1 - normalizedProb / 100);
-  
-  // Default team color if none provided
   const color = teamColor || "#4682B4";
   
   return (
     <div className="win-probability-container">
       <svg width="100" height="100" viewBox="0 0 100 100" className="win-probability-circle">
-        {/* Background circle */}
-        <circle
-          cx="50"
-          cy="50"
-          r="40"
-          fill="transparent"
-          stroke="#e6e6e6"
-          strokeWidth="8"
-        />
-        
-        {/* Foreground circle representing probability */}
+        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e9ecef" strokeWidth="8" />
         <circle
           cx="50"
           cy="50"
@@ -360,8 +326,6 @@ const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) =>
             keySplines="0.42 0 0.58 1"
           />
         </circle>
-        
-        {/* Team logo in the center */}
         {teamLogo && (
           <image
             href={teamLogo}
@@ -372,8 +336,6 @@ const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) =>
             clipPath="circle(25px at center)"
           />
         )}
-        
-        {/* Percentage text */}
         <text
           x="50"
           y="55"
@@ -386,7 +348,6 @@ const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) =>
           {normalizedProb ? `${Math.round(normalizedProb)}%` : 'N/A'}
         </text>
       </svg>
-      
       <div className="win-probability-label">
         <span>{teamName || "Team"}</span>
         <span className="win-prob-value">{normalizedProb ? `${Math.round(normalizedProb)}%` : 'N/A'}</span>
@@ -395,7 +356,7 @@ const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) =>
   );
 };
 
-// EloRating component to visualize Elo changes
+// EloRating component
 const EloRating = ({ startElo, endElo, label }) => {
   const hasData = startElo !== undefined && endElo !== undefined;
   const change = hasData ? endElo - startElo : 0;
@@ -442,27 +403,17 @@ const AdvancedGameDetailView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch teams and game data and merge them
+  // Fetch teams and game data (REST, GraphQL scoreboard, and GraphQL game_info) and merge them.
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        // Get teams from REST (for logos and extra team info)
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
-
-        // Get basic game data from REST
         const restGameData = await teamsService.getGameById(id);
-
-        // Get detailed scoreboard data from GraphQL
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
-
-        // Get comprehensive game info from GraphQL
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
-
-        // Merge data – REST values override GraphQL if present
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
-
         if (mergedData) {
           setGameData(mergedData);
         } else {
@@ -474,11 +425,10 @@ const AdvancedGameDetailView = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, [id]);
 
-  // Helper: Get team logo from REST teams data
+  // Helper: Get team logo from REST teams data.
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -488,7 +438,7 @@ const AdvancedGameDetailView = () => {
       : "/photos/default_team.png";
   };
 
-  // Helper: Get team details for display
+  // Helper: Get team details for display.
   const getTeamDetails = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -496,7 +446,7 @@ const AdvancedGameDetailView = () => {
     return team || {};
   };
   
-  // Helper: Get team primary color
+  // Helper: Get team primary color.
   const getTeamColor = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -527,7 +477,6 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Destructure all fields from merged gameData
   const {
     id: gameId,
     attendance,
@@ -575,7 +524,7 @@ const AdvancedGameDetailView = () => {
     windDirection,
     windSpeed,
     tv,
-    weather,
+    weather, // Object containing weather details
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
@@ -585,12 +534,10 @@ const AdvancedGameDetailView = () => {
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
 
-  // Render a modern line scores table with team logos
+  // Render a modern line scores table with totals.
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
     if (!periods) return <p className="no-data">No line score data available.</p>;
-    
-    // Calculate totals
     const homeTotalPoints = homeLineScores.reduce((sum, score) => sum + (score || 0), 0);
     const awayTotalPoints = awayLineScores ? awayLineScores.reduce((sum, score) => sum + (score || 0), 0) : 0;
     
@@ -632,9 +579,7 @@ const AdvancedGameDetailView = () => {
                 </td>
                 {Array.from({ length: periods }).map((_, index) => (
                   <td key={`away-${index}`} className="score-cell">
-                    {awayLineScores && awayLineScores[index] !== undefined
-                      ? awayLineScores[index]
-                      : '-'}
+                    {awayLineScores && awayLineScores[index] !== undefined ? awayLineScores[index] : '-'}
                   </td>
                 ))}
                 <td className="total-cell">{awayTotalPoints}</td>
@@ -656,7 +601,7 @@ const AdvancedGameDetailView = () => {
     );
   };
 
-  // Overview tab with modernized layout
+  // Overview tab.
   const renderOverview = () => (
     <div className="tab-content overview">
       <div className="scoreboard-container">
@@ -673,7 +618,6 @@ const AdvancedGameDetailView = () => {
             <div className="score-display">{homePoints || "0"}</div>
           </div>
         </div>
-        
         <div className="game-status-column">
           <div className="game-status-indicator">
             {status === "final" ? (
@@ -684,16 +628,13 @@ const AdvancedGameDetailView = () => {
               <span className="status-upcoming">UPCOMING</span>
             )}
           </div>
-          
           <div className="versus-text">VS</div>
-          
           {startDate && status !== "final" && status !== "in_progress" && (
             <div className="start-time">
               {new Date(startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
         </div>
-        
         <div className="team-column away-team">
           <div className="team-header" style={{ backgroundColor: awayTeamColor }}>
             <img src={awayLogo} alt={awayTeam} className="team-logo-large" />
@@ -714,7 +655,7 @@ const AdvancedGameDetailView = () => {
           <div className="meta-item">
             <div className="meta-icon">
               <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
+                <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
               </svg>
             </div>
             <div className="meta-content">
@@ -791,8 +732,8 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Statistics tab with modern visualizations
-  const renderStatistics = () => (
+  // Statistics tab.
+  const renderStatisticsTab = () => (
     <div className="tab-content statistics">
       <div className="stat-section">
         <h2>Scoring by Quarter</h2>
@@ -829,11 +770,10 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Betting tab with modern layout
+  // Betting tab.
   const renderBetting = () => (
     <div className="tab-content betting">
       <h2>Betting Information</h2>
-      
       <div className="betting-cards-container">
         <div className="betting-card">
           <div className="betting-card-header">
@@ -897,31 +837,30 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Weather tab with animated icons
-  const renderWeather = () => (
+  // Weather tab.
+  const renderWeatherTab = () => (
     <div className="tab-content weather">
       <h2>Weather Conditions</h2>
-      
       <div className="weather-card">
         <div className="weather-main">
           <WeatherIcon
             condition={weather && weather.condition && weather.condition.description ? weather.condition.description : ""}
             temperature={temperature || (weather && weather.temperature)}
           />
-          
           <div className="weather-info">
-            <div className="weather-temp">{temperature || (weather && weather.temperature) || "N/A"}°F</div>
+            <div className="weather-temp">
+              {temperature || (weather && weather.temperature) || "N/A"}°F
+            </div>
             <div className="weather-desc">
               {weather && weather.condition && weather.condition.description ? weather.condition.description : "N/A"}
             </div>
           </div>
         </div>
-        
         <div className="weather-details-grid">
           <div className="weather-detail-item">
             <div className="detail-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M4,10A1,1 0 0,1 3,9A1,1 0 0,1 4,8H12A2,2 0 0,0 14,6A2,2 0 0,0 12,4C11.45,4 10.95,4.22 10.59,4.59C10.2,5 9.56,5 9.17,4.59C8.78,4.2 8.78,3.56 9.17,3.17C9.9,2.45 10.9,2 12,2A4,4 0 0,1 16,6A4,4 0 0,1 12,10H4M19,12A1,1 0 0,0 20,11A1,1 0 0,0 19,10C18.72,10 18.47,10.11 18.29,10.29C17.9,10.68 17.27,10.68 16.88,10.29C16.5,9.9 16.5,9.27 16.88,8.88C17.42,8.34 18.17,8 19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14H5A1,1 0 0,1 4,13A1,1 0 0,1 5,12H19M18,18H4A1,1 0 0,1 3,17A1,1 0 0,1 4,16H18A3,3 0 0,1 21,19A3,3 0 0,1 18,22C17.17,22 16.42,21.66 15.88,21.12C15.5,20.73 15.5,20.1 15.88,19.71C16.27,19.32 16.9,19.32 17.29,19.71C17.47,19.89 17.72,20 18,20A1,1 0 0,0 19,19A1,1 0 0,0 18,18Z" />
+                <path fill="currentColor" d="M4,10A1,1 0 0,1 3,9A1,1 0 0,1 4,8H12A2,2 0 0,0 14,6A2,2 0 0,0 12,4C11.45,4 10.95,4.22 10.59,4.59C10.2,5 9.56,5 9.17,4.59C8.78,4.2 8.78,3.56 9.17,3.17C9.9,2.45 10.9,2 12,2A4,4 0 0,1 16,6A4,4 0 0,1 12,10H4M12,6A1,1 0 0,1 13,7V8H11V7A1,1 0 0,1 12,6Z" />
               </svg>
             </div>
             <div className="detail-content">
@@ -936,7 +875,6 @@ const AdvancedGameDetailView = () => {
               </div>
             </div>
           </div>
-          
           {weather && weather.dewpoint && (
             <div className="weather-detail-item">
               <div className="detail-icon">
@@ -950,7 +888,6 @@ const AdvancedGameDetailView = () => {
               </div>
             </div>
           )}
-          
           <div className="weather-detail-item">
             <div className="detail-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
@@ -962,11 +899,10 @@ const AdvancedGameDetailView = () => {
               <div className="detail-value">{temperature || (weather && weather.temperature) || "N/A"}°F</div>
             </div>
           </div>
-          
           <div className="weather-detail-item">
             <div className="detail-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
+                <path fill="currentColor" d="M5,16H19A1,1 0 0,1 20,17A1,1 0 0,1 19,18H5A1,1 0 0,1 4,17A1,1 0 0,1 5,16Z" />
               </svg>
             </div>
             <div className="detail-content">
@@ -979,11 +915,10 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Venue tab with modern layout
+  // Venue tab.
   const renderVenue = () => (
     <div className="tab-content venue">
       <h2>Venue Information</h2>
-      
       <div className="venue-card">
         <div className="venue-header">
           <svg width="32" height="32" viewBox="0 0 24 24">
@@ -991,12 +926,11 @@ const AdvancedGameDetailView = () => {
           </svg>
           <h3>{venue || "TBD"}</h3>
         </div>
-        
         <div className="venue-content">
           <div className="venue-detail">
             <div className="venue-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6M20,19C20,21.21 16.42,23 12,23C7.58,23 4,21.21 4,19C4,17.71 5.22,16.56 7.11,15.83L7.75,16.74C6.67,17.19 6,17.81 6,18.5C6,19.88 8.69,21 12,21C15.31,21 18,19.88 18,18.5C18,17.81 17.33,17.19 16.25,16.74L16.89,15.83C18.78,16.56 20,17.71 20,19Z" />
+                <path fill="currentColor" d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6Z" />
               </svg>
             </div>
             <div className="venue-detail-content">
@@ -1020,7 +954,7 @@ const AdvancedGameDetailView = () => {
           <div className="venue-detail">
             <div className="venue-icon">
               <svg width="24" height="24" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M18,2H6C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2M12,4A2.5,2.5 0 0,1 14.5,6.5A2.5,2.5 0 0,1 12,9A2.5,2.5 0 0,1 9.5,6.5A2.5,2.5 0 0,1 12,4M17,19H7V17.5C7,15.17 9.17,13 11.5,13H12.5C14.83,13 17,15.17 17,17.5V19Z" />
+                <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
               </svg>
             </div>
             <div className="venue-detail-content">
@@ -1033,11 +967,10 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Details tab with all additional game info
+  // Details tab.
   const renderDetails = () => (
     <div className="tab-content details">
       <h2>Additional Game Details</h2>
-      
       <div className="details-grid">
         <div className="detail-card">
           <div className="detail-card-header">
@@ -1065,7 +998,7 @@ const AdvancedGameDetailView = () => {
         <div className="detail-card">
           <div className="detail-card-header">
             <svg width="24" height="24" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,10.59L9.17,7.76L7.76,9.17L10.59,12L7.76,14.83L9.17,16.24L12,13.41L14.83,16.24L16.24,14.83L13.41,12L16.24,9.17L14.83,7.76L12,10.59Z" />
+              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
             </svg>
             <span>Game Type</span>
           </div>
@@ -1153,83 +1086,47 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Render tab buttons with modern styling
+  // Render tab buttons.
   const renderTabs = () => (
     <div className="tabs">
-      <button 
-        className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
-        onClick={() => setActiveTab("overview")}
-      >
+      <button className={`tab-button ${activeTab === "overview" ? "active" : ""}`} onClick={() => setActiveTab("overview")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" 
-          />
+          <path fill="currentColor" d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
         </svg>
         <span>Overview</span>
       </button>
       
-      <button 
-        className={`tab-button ${activeTab === "statistics" ? "active" : ""}`}
-        onClick={() => setActiveTab("statistics")}
-      >
+      <button className={`tab-button ${activeTab === "statistics" ? "active" : ""}`} onClick={() => setActiveTab("statistics")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" 
-          />
+          <path fill="currentColor" d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />
         </svg>
         <span>Statistics</span>
       </button>
       
-      <button 
-        className={`tab-button ${activeTab === "betting" ? "active" : ""}`}
-        onClick={() => setActiveTab("betting")}
-      >
+      <button className={`tab-button ${activeTab === "betting" ? "active" : ""}`} onClick={() => setActiveTab("betting")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M3,4.27L4.28,3L21,19.72L19.73,21L17.06,18.33C16.41,18.75 15.73,19 15,19C13.9,19 13,18.1 13,17C13,16.27 13.26,15.59 13.67,15.06L11.5,12.89C10.59,13.43 9.26,13.62 8,13V15.8L13,18.35V19.93H3V18.35L8,15.8V12.79L2,14V5.42L3,4.27M8,5V4.58L7.88,4.63L8,5M8,6.33L7.5,5.5L4.67,8.08L8,6.33M15,17C15.56,17 16,16.56 16,16C16,15.44 15.56,15 15,15C14.44,15 14,15.44 14,16C14,16.56 14.44,17 15,17M10,10.83L8,12V8.83L10,10.83M11.17,12L8.67,9.5L12,7V11.17L11.17,12Z" 
-          />
+          <path fill="currentColor" d="M3,4.27L4.28,3L21,19.72L19.73,21L17.06,18.33C16.41,18.75 15.73,19 15,19C13.9,19 13,18.1 13,17C13,16.27 13.26,15.59 13.67,15.06L11.5,12.89C10.59,13.43 9.26,13.62 8,13V15.8L13,18.35V19.93H3V18.35L8,15.8V12.79L2,14V5.42L3,4.27M8,5V4.58L7.88,4.63L8,5M8,6.33L7.5,5.5L4.67,8.08L8,6.33M15,17C15.56,17 16,16.56 16,16C16,15.44 15.56,15 15,15C14.44,15 14,15.44 14,16C14,16.56 14.44,17 15,17M10,10.83L8,12V8.83L10,10.83M11.17,12L8.67,9.5L12,7V11.17L11.17,12Z" />
         </svg>
         <span>Betting</span>
       </button>
       
-      <button 
-        className={`tab-button ${activeTab === "weather" ? "active" : ""}`}
-        onClick={() => setActiveTab("weather")}
-      >
+      <button className={`tab-button ${activeTab === "weather" ? "active" : ""}`} onClick={() => setActiveTab("weather")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M6,19A5,5 0 0,1 1,14A5,5 0 0,1 6,9C7,6.65 9.3,5 12,5C15.43,5 18.24,7.66 18.5,11.03L19,11A4,4 0 0,1 23,15A4,4 0 0,1 19,19H6M19,13H17V12A5,5 0 0,0 12,7C9.5,7 7.45,8.82 7.06,11.19C6.73,11.07 6.37,11 6,11A3,3 0 0,0 3,14A3,3 0 0,0 6,17H19A2,2 0 0,0 21,15A2,2 0 0,0 19,13Z" 
-          />
+          <path fill="currentColor" d="M6,19A5,5 0 0,1 1,14A5,5 0 0,1 6,9C7,6.65 9.3,5 12,5C15.43,5 18.24,7.66 18.5,11.03L19,11A4,4 0 0,1 23,15A4,4 0 0,1 19,19H6M19,13H17V12A5,5 0 0,0 12,7C9.5,7 7.45,8.82 7.06,11.19C6.73,11.07 6.37,11 6,11A3,3 0 0,0 3,14A3,3 0 0,0 6,17H19A2,2 0 0,0 21,15A2,2 0 0,0 19,13Z" />
         </svg>
         <span>Weather</span>
       </button>
       
-      <button 
-        className={`tab-button ${activeTab === "venue" ? "active" : ""}`}
-        onClick={() => setActiveTab("venue")}
-      >
+      <button className={`tab-button ${activeTab === "venue" ? "active" : ""}`} onClick={() => setActiveTab("venue")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" 
-          />
+          <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
         </svg>
         <span>Venue</span>
       </button>
       
-      <button 
-        className={`tab-button ${activeTab === "details" ? "active" : ""}`}
-        onClick={() => setActiveTab("details")}
-      >
+      <button className={`tab-button ${activeTab === "details" ? "active" : ""}`} onClick={() => setActiveTab("details")}>
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path 
-            fill="currentColor" 
-            d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" 
-          />
+          <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
         </svg>
         <span>Details</span>
       </button>
@@ -1238,655 +1135,6 @@ const AdvancedGameDetailView = () => {
 
   return (
     <div className="advanced-game-detail">
-      {/* Modern CSS with new components styling */}
-      <style jsx>{`
-        .advanced-game-detail {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-          color: #333;
-          background: #f8f9fa;
-          border-radius: 8px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        /* Header Styling */
-        .game-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .game-header h1 {
-          font-size: 1.75rem;
-          font-weight: 700;
-          margin: 0;
-          color: #212529;
-        }
-        
-        .game-status {
-          font-size: 0.9rem;
-          font-weight: 600;
-          padding: 6px 12px;
-          border-radius: 50px;
-          background-color: #e9ecef;
-          color: #495057;
-        }
-        
-        /* Tab Styling */
-        .tabs {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 24px;
-          overflow-x: auto;
-          padding-bottom: 4px;
-          scrollbar-width: thin;
-        }
-        
-        .tab-button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background-color: #f1f3f5;
-          border: none;
-          padding: 10px 16px;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-weight: 500;
-          font-size: 0.9rem;
-          color: #6c757d;
-          white-space: nowrap;
-        }
-        
-        .tab-button:hover {
-          background-color: #e9ecef;
-          color: #495057;
-        }
-        
-        .tab-button.active {
-          background-color: #D4001C;
-          color: white;
-        }
-        
-        .tab-button svg {
-          opacity: 0.7;
-        }
-        
-        .tab-button.active svg {
-          opacity: 1;
-        }
-        
-        /* Tab Content Styling */
-        .tab-content {
-          background-color: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          padding: 24px;
-          margin-bottom: 24px;
-          animation: fadeIn 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Scoreboard Container */
-        .scoreboard-container {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 16px;
-          margin-bottom: 24px;
-          align-items: center;
-        }
-        
-        .team-column {
-          display: flex;
-          flex-direction: column;
-          background: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          transition: transform 0.2s ease;
-        }
-        
-        .team-column:hover {
-          transform: translateY(-3px);
-        }
-        
-        .team-header {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 24px;
-          background-color: #eee;
-        }
-        
-        .team-logo-large {
-          width: 100px;
-          height: 100px;
-          object-fit: contain;
-        }
-        
-        .team-info {
-          padding: 20px;
-          text-align: center;
-        }
-        
-        .team-name {
-          font-size: 1.5rem;
-          font-weight: 700;
-          margin-bottom: 4px;
-        }
-        
-        .team-record {
-          font-size: 0.9rem;
-          color: #6c757d;
-          margin-bottom: 16px;
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-          align-items: center;
-        }
-        
-        .team-rank {
-          background-color: #f1f3f5;
-          color: #495057;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-weight: 600;
-        }
-        
-        .score-display {
-          font-size: 3rem;
-          font-weight: 700;
-          color: #212529;
-        }
-        
-        .game-status-column {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        
-        .temp-label {
-          margin-top: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .temp-value {
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #212529;
-        }
-        
-        .weather-card {
-          display: flex;
-          flex-direction: column;
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .weather-main {
-          display: flex;
-          align-items: center;
-          padding: 24px;
-          gap: 32px;
-          background: linear-gradient(to right, #f8f9fa, #e9ecef);
-        }
-        
-        .weather-info {
-          display: flex;
-          flex-direction: column;
-        }
-        
-        .weather-temp {
-          font-size: 2.5rem;
-          font-weight: 700;
-          margin-bottom: 4px;
-          color: #212529;
-        }
-        
-        .weather-desc {
-          font-size: 1.1rem;
-          color: #6c757d;
-        }
-        
-        .weather-details-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 16px;
-          padding: 24px;
-        }
-        
-        .weather-detail-item {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 12px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-        }
-        
-        .detail-icon {
-          color: #6c757d;
-        }
-        
-        .detail-content {
-          display: flex;
-          flex-direction: column;
-        }
-        
-        .detail-label {
-          font-size: 0.8rem;
-          color: #6c757d;
-          margin-bottom: 2px;
-        }
-        
-        .detail-value {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #212529;
-        }
-        
-        /* Betting */
-        .betting-cards-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
-        }
-        
-        .betting-card {
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          transition: transform 0.2s ease;
-        }
-        
-        .betting-card:hover {
-          transform: translateY(-3px);
-        }
-        
-        .betting-card-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 16px;
-          background-color: #f8f9fa;
-          color: #495057;
-          font-weight: 600;
-          font-size: 1rem;
-          border-bottom: 1px solid #e9ecef;
-        }
-        
-        .betting-card-content {
-          padding: 16px;
-        }
-        
-        .betting-team-odds {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px;
-          margin-bottom: 8px;
-          border-radius: 8px;
-          background-color: #f8f9fa;
-          font-size: 0.95rem;
-        }
-        
-        .odds-team {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 500;
-          color: #495057;
-        }
-        
-        .odds-value {
-          font-weight: 700;
-          color: #212529;
-        }
-        
-        .betting-value-card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 16px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-        }
-        
-        .value-label {
-          font-size: 0.9rem;
-          color: #6c757d;
-          margin-bottom: 4px;
-        }
-        
-        .value-number {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #212529;
-        }
-        
-        .betting-disclaimer {
-          font-size: 0.8rem;
-          color: #6c757d;
-          margin-top: 16px;
-          padding: 12px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-          border-left: 4px solid #ffc107;
-        }
-        
-        /* Venue */
-        .venue-card {
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .venue-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 20px;
-          background-color: #f8f9fa;
-          border-bottom: 1px solid #e9ecef;
-        }
-        
-        .venue-header h3 {
-          font-size: 1.3rem;
-          font-weight: 600;
-          margin: 0;
-          color: #212529;
-        }
-        
-        .venue-content {
-          padding: 20px;
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 16px;
-        }
-        
-        .venue-detail {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 16px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-        }
-        
-        .venue-icon {
-          color: #6c757d;
-        }
-        
-        .venue-detail-content {
-          display: flex;
-          flex-direction: column;
-        }
-        
-        /* Game Details */
-        .details-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
-        }
-        
-        .detail-card {
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .detail-card-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 16px;
-          background-color: #f8f9fa;
-          color: #495057;
-          font-weight: 600;
-          font-size: 1rem;
-          border-bottom: 1px solid #e9ecef;
-        }
-        
-        .detail-card-content {
-          padding: 16px;
-        }
-        
-        .detail-team-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 12px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #e9ecef;
-          font-weight: 600;
-          color: #212529;
-        }
-        
-        .detail-item {
-          display: flex;
-          justify-content: space-between;
-          padding: 8px 0;
-          border-bottom: 1px solid #f8f9fa;
-        }
-        
-        .detail-item:last-child {
-          border-bottom: none;
-        }
-        
-        .detail-label {
-          color: #6c757d;
-          font-size: 0.9rem;
-        }
-        
-        .detail-value {
-          font-weight: 500;
-          color: #212529;
-        }
-        
-        .notes-container {
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          margin-top: 24px;
-        }
-        
-        .notes-header {
-          padding: 16px;
-          background-color: #f8f9fa;
-          color: #495057;
-          font-weight: 600;
-          font-size: 1rem;
-          border-bottom: 1px solid #e9ecef;
-        }
-        
-        .notes-content {
-          padding: 16px;
-          color: #212529;
-          line-height: 1.6;
-        }
-        
-        /* Elo Ratings */
-        .elo-section {
-          margin-top: 32px;
-        }
-        
-        .elo-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 16px;
-        }
-        
-        .elo-team-container {
-          background-color: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          padding: 16px;
-        }
-        
-        .elo-team-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 16px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #e9ecef;
-          font-weight: 600;
-          color: #212529;
-        }
-        
-        .elo-rating {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        
-        .elo-label {
-          font-size: 0.8rem;
-          color: #6c757d;
-        }
-        
-        .elo-values {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 500;
-        }
-        
-        .elo-start, .elo-end {
-          font-size: 1.1rem;
-          color: #212529;
-        }
-        
-        .elo-arrow {
-          display: flex;
-          align-items: center;
-        }
-        
-        .elo-change {
-          font-size: 0.9rem;
-          margin-left: 4px;
-        }
-        
-        .elo-na {
-          color: #6c757d;
-          font-style: italic;
-        }
-        
-        /* Loading and Error States */
-        .loading-container, .error-container, .not-found-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 48px;
-          text-align: center;
-          background-color: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .loading-spinner {
-          width: 48px;
-          height: 48px;
-          border: 4px solid #e9ecef;
-          border-top: 4px solid #D4001C;
-          border-radius: 50%;
-          margin-bottom: 16px;
-          animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        .error-icon, .not-found-icon {
-          font-size: 48px;
-          margin-bottom: 16px;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .scoreboard-container {
-            grid-template-columns: 1fr;
-          }
-          
-          .game-status-column {
-            order: -1;
-            margin-bottom: 16px;
-          }
-          
-          .meta-row {
-            flex-direction: column;
-            gap: 8px;
-          }
-          
-          .meta-item {
-            width: 100%;
-          }
-          
-          .win-prob-container {
-            gap: 24px;
-          }
-          
-          .tabs {
-            flex-wrap: wrap;
-          }
-          
-          .tab-button {
-            flex: 1 0 calc(33.333% - 8px);
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .advanced-game-detail {
-            padding: 12px;
-          }
-          
-          .tab-content {
-            padding: 16px;
-          }
-          
-          .tab-button {
-            flex: 1 0 calc(50% - 4px);
-            padding: 8px;
-          }
-          
-          .team-logo-large {
-            width: 80px;
-            height: 80px;
-          }
-          
-          .team-name {
-            font-size: 1.2rem;
-          }
-          
-          .score-display {
-            font-size: 2.5rem;
-          }
-        }
-      `}</style>
-
       <div className="game-header">
         <h1>Game Details</h1>
         <div className="game-status">
@@ -1903,9 +1151,9 @@ const AdvancedGameDetailView = () => {
       {renderTabs()}
 
       {activeTab === "overview" && renderOverview()}
-      {activeTab === "statistics" && renderStatistics()}
+      {activeTab === "statistics" && renderStatisticsTab()}
       {activeTab === "betting" && renderBetting()}
-      {activeTab === "weather" && renderWeather()}
+      {activeTab === "weather" && renderWeatherTab()}
       {activeTab === "venue" && renderVenue()}
       {activeTab === "details" && renderDetails()}
     </div>
