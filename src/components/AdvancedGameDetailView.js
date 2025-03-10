@@ -3,60 +3,436 @@ import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
-// Simple WeatherIcon component.
+// Improved modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
   let icon;
-  if (!condition || condition.toLowerCase().includes("clear")) {
+  const conditionLower = condition ? condition.toLowerCase() : "";
+  
+  if (!condition || conditionLower.includes("clear") || conditionLower.includes("sun")) {
     icon = (
-      <svg width="32" height="32" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
-        <line x1="12" y1="1" x2="12" y2="4" stroke="#FFA000" strokeWidth="2" />
-        <line x1="12" y1="20" x2="12" y2="23" stroke="#FFA000" strokeWidth="2" />
-        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" stroke="#FFA000" strokeWidth="2" />
-        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke="#FFA000" strokeWidth="2" />
-        <line x1="1" y1="12" x2="4" y2="12" stroke="#FFA000" strokeWidth="2" />
-        <line x1="20" y1="12" x2="23" y2="12" stroke="#FFA000" strokeWidth="2" />
-        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" stroke="#FFA000" strokeWidth="2" />
-        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" stroke="#FFA000" strokeWidth="2" />
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#FFA500" />
+          </linearGradient>
+        </defs>
+        <circle cx="12" cy="12" r="5" fill="url(#sunGradient)">
+          <animate attributeName="r" values="4.5;5;4.5" dur="3s" repeatCount="indefinite" />
+        </circle>
+        <g stroke="#FFA000" strokeWidth="2" strokeLinecap="round">
+          <line x1="12" y1="1" x2="12" y2="3">
+            <animate attributeName="y2" values="3;4;3" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="12" y1="21" x2="12" y2="23">
+            <animate attributeName="y1" values="21;20;21" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64">
+            <animate attributeName="x2" values="5.64;6.34;5.64" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="5.64;6.34;5.64" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78">
+            <animate attributeName="x1" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="1" y1="12" x2="3" y2="12">
+            <animate attributeName="x2" values="3;4;3" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="21" y1="12" x2="23" y2="12">
+            <animate attributeName="x1" values="21;20;21" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36">
+            <animate attributeName="x2" values="5.64;6.34;5.64" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
+          </line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22">
+            <animate attributeName="x1" values="18.36;17.66;18.36" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="5.64;6.34;5.64" dur="3s" repeatCount="indefinite" />
+          </line>
+        </g>
       </svg>
     );
-  } else if (condition.toLowerCase().includes("cloud")) {
+  } else if (conditionLower.includes("cloud") || conditionLower.includes("overcast")) {
     icon = (
-      <svg width="32" height="32" viewBox="0 0 24 24">
-        <ellipse cx="12" cy="12" rx="8" ry="5" fill="#B0C4DE" />
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#E6E6FA" />
+            <stop offset="100%" stopColor="#B0C4DE" />
+          </linearGradient>
+        </defs>
+        <path d="M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z" fill="url(#cloudGradient)" stroke="#A9A9A9" strokeWidth="0.5">
+          <animate attributeName="d" values="M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z;M7,12 Q7,9 10,9 Q10,6 13,6 Q17,6 17,9 Q20,9 20,12 Q20,15 17,15 L7,15 Q4,15 4,12 Z;M6,12 Q6,9 9,9 Q9,6 12,6 Q16,6 16,9 Q19,9 19,12 Q19,15 16,15 L6,15 Q3,15 3,12 Z" dur="8s" repeatCount="indefinite" />
+        </path>
       </svg>
     );
-  } else if (condition.toLowerCase().includes("rain")) {
+  } else if (conditionLower.includes("rain") || conditionLower.includes("drizzle")) {
     icon = (
-      <svg width="32" height="32" viewBox="0 0 24 24">
-        <path d="M7 10h10a4 4 0 010 8H7a4 4 0 010-8z" fill="#4A90E2" />
-        <line x1="10" y1="18" x2="10" y2="21" stroke="#4A90E2" strokeWidth="2"/>
-        <line x1="14" y1="18" x2="14" y2="21" stroke="#4A90E2" strokeWidth="2"/>
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="rainCloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#E6E6FA" />
+            <stop offset="100%" stopColor="#B0C4DE" />
+          </linearGradient>
+          <linearGradient id="rainDropGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#87CEFA" />
+            <stop offset="100%" stopColor="#4682B4" />
+          </linearGradient>
+        </defs>
+        <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#rainCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
+        
+        <line x1="8" y1="15" x2="8" y2="17" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="y1" values="15;16;15" dur="1.5s" begin="0s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="17;19;17" dur="1.5s" begin="0s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="12" y1="14" x2="12" y2="16" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="y1" values="14;15;14" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="16;18;16" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="16" y1="15" x2="16" y2="17" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="y1" values="15;16;15" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="17;19;17" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="10" y1="16" x2="10" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="14" y1="16" x2="14" y2="18" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="y1" values="16;17;16" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="18;20;18" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="1.5s" begin="0.8s" repeatCount="indefinite" />
+        </line>
+      </svg>
+    );
+  } else if (conditionLower.includes("snow")) {
+    icon = (
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="snowCloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#E6E6FA" />
+            <stop offset="100%" stopColor="#B0C4DE" />
+          </linearGradient>
+        </defs>
+        <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#snowCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
+        
+        <circle cx="8" cy="16" r="0.5" fill="white">
+          <animate attributeName="cy" values="15;17;15" dur="2s" begin="0s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0s" repeatCount="indefinite" />
+        </circle>
+        
+        <circle cx="12" cy="15" r="0.5" fill="white">
+          <animate attributeName="cy" values="14;16;14" dur="2s" begin="0.3s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.3s" repeatCount="indefinite" />
+        </circle>
+        
+        <circle cx="16" cy="16" r="0.5" fill="white">
+          <animate attributeName="cy" values="15;17;15" dur="2s" begin="0.6s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.6s" repeatCount="indefinite" />
+        </circle>
+        
+        <circle cx="10" cy="17" r="0.5" fill="white">
+          <animate attributeName="cy" values="16;18;16" dur="2s" begin="0.9s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="0.9s" repeatCount="indefinite" />
+        </circle>
+        
+        <circle cx="14" cy="17" r="0.5" fill="white">
+          <animate attributeName="cy" values="16;18;16" dur="2s" begin="1.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0;1" dur="2s" begin="1.2s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+    );
+  } else if (conditionLower.includes("thunder") || conditionLower.includes("lightning")) {
+    icon = (
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="stormCloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#708090" />
+            <stop offset="100%" stopColor="#4B5363" />
+          </linearGradient>
+          <linearGradient id="lightningGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#FFA500" />
+          </linearGradient>
+        </defs>
+        <path d="M6,10 Q6,7 9,7 Q9,4 12,4 Q16,4 16,7 Q19,7 19,10 Q19,13 16,13 L6,13 Q3,13 3,10 Z" fill="url(#stormCloudGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
+        
+        <path d="M11,13 L9,17 L12,17 L10,21" fill="none" stroke="url(#lightningGradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <animate attributeName="opacity" values="0;1;0.6;0.8;0.3;1;0" dur="3s" repeatCount="indefinite" />
+        </path>
+        
+        <path d="M15,13 L14,15 L16,15 L15,17" fill="none" stroke="url(#lightningGradient)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <animate attributeName="opacity" values="0;0.6;1;0.3;0.8;0" dur="3s" begin="1s" repeatCount="indefinite" />
+        </path>
+      </svg>
+    );
+  } else if (conditionLower.includes("fog") || conditionLower.includes("mist")) {
+    icon = (
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="fogGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#E6E6FA" />
+            <stop offset="100%" stopColor="#B0C4DE" />
+          </linearGradient>
+        </defs>
+        <path d="M6,8 Q6,5 9,5 Q9,2 12,2 Q16,2 16,5 Q19,5 19,8 Q19,11 16,11 L6,11 Q3,11 3,8 Z" fill="url(#fogGradient)" stroke="#A9A9A9" strokeWidth="0.5" />
+        
+        <line x1="4" y1="14" x2="20" y2="14" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.7">
+          <animate attributeName="y1" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="14;14.5;14" dur="3s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="6" y1="17" x2="18" y2="17" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.5">
+          <animate attributeName="y1" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="17;17.5;17" dur="3s" begin="0.5s" repeatCount="indefinite" />
+        </line>
+        
+        <line x1="8" y1="20" x2="16" y2="20" stroke="#B0C4DE" strokeWidth="1.5" opacity="0.3">
+          <animate attributeName="y1" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
+          <animate attributeName="y2" values="20;20.5;20" dur="3s" begin="1s" repeatCount="indefinite" />
+        </line>
+      </svg>
+    );
+  } else if (conditionLower.includes("wind")) {
+    icon = (
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <path d="M3,8 Q5,6 7,8" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="d" values="M3,8 Q5,6 7,8;M3,8 Q5,7 7,8;M3,8 Q5,6 7,8" dur="3s" repeatCount="indefinite" />
+        </path>
+        
+        <path d="M3,12 Q8,9 13,12 Q16,14 20,12" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="d" values="M3,12 Q8,9 13,12 Q16,14 20,12;M3,12 Q8,11 13,12 Q16,13 20,12;M3,12 Q8,9 13,12 Q16,14 20,12" dur="5s" repeatCount="indefinite" />
+        </path>
+        
+        <path d="M5,16 Q10,13 15,16" fill="none" stroke="#A9A9A9" strokeWidth="1.5" strokeLinecap="round">
+          <animate attributeName="d" values="M5,16 Q10,13 15,16;M5,16 Q10,15 15,16;M5,16 Q10,13 15,16" dur="4s" repeatCount="indefinite" />
+        </path>
       </svg>
     );
   } else {
+    // Default icon for unknown conditions
     icon = (
-      <svg width="32" height="32" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
+      <svg width="48" height="48" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="defaultGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#87CEEB" />
+            <stop offset="100%" stopColor="#4682B4" />
+          </linearGradient>
+        </defs>
+        <circle cx="12" cy="12" r="5" fill="url(#defaultGradient)" />
       </svg>
     );
   }
+  
   return (
-    <div className="weather-icon">
+    <div className="weather-icon-container">
       {icon}
-      {temperature && <span className="temp-label">{temperature}°F</span>}
+      {temperature && (
+        <div className="temp-label">
+          <span className="temp-value">{temperature}°F</span>
+        </div>
+      )}
     </div>
   );
 };
 
-// Simple TvIcon component.
+// Modern TvIcon component
 const TvIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24">
-    <rect x="2" y="3" width="20" height="14" rx="2" fill="#666" />
-    <rect x="3" y="4" width="18" height="12" rx="1" fill="#333" />
-    <path d="M10 17h4v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z" fill="#555" />
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="tvGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#555" />
+        <stop offset="100%" stopColor="#333" />
+      </linearGradient>
+    </defs>
+    <rect x="2" y="3" width="20" height="14" rx="2" fill="url(#tvGradient)" />
+    <rect x="3" y="4" width="18" height="12" rx="1" fill="#111" />
+    <path d="M10 17h4v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z" fill="#444" />
+    <rect x="4" y="5" width="16" height="10" rx="1" fill="#1a1a1a" />
+    <circle cx="19" cy="4.5" r="0.5" fill="#ff3333" />
   </svg>
 );
+
+// New ExcitementRating component with stars
+const ExcitementRating = ({ value }) => {
+  // Normalize value between 0 and 5 if needed
+  const normalizedValue = value ? Math.min(5, Math.max(0, (value / 100) * 5)) : 0;
+  const fullStars = Math.floor(normalizedValue);
+  const partialStar = normalizedValue % 1;
+  const emptyStars = 5 - fullStars - (partialStar > 0 ? 1 : 0);
+  
+  return (
+    <div className="excitement-rating">
+      {[...Array(fullStars)].map((_, i) => (
+        <Star key={`full-${i}`} fill="#FFD700" />
+      ))}
+      
+      {partialStar > 0 && <PartialStar fill="#FFD700" percentage={partialStar * 100} />}
+      
+      {[...Array(emptyStars)].map((_, i) => (
+        <Star key={`empty-${i}`} fill="#D3D3D3" />
+      ))}
+      
+      <span className="excitement-value">{value ? `${value}/100` : 'N/A'}</span>
+    </div>
+  );
+};
+
+// Star component for excitement rating
+const Star = ({ fill }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" className="star-icon">
+    <path
+      d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.1-6.3-4.6-6.3 4.6 2.3-7.1-6-4.4h7.6z"
+      fill={fill}
+      stroke="#FFA500"
+      strokeWidth="0.5"
+    />
+  </svg>
+);
+
+// Partial Star component for fractional ratings
+const PartialStar = ({ fill, percentage }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" className="star-icon">
+    <defs>
+      <linearGradient id="partialFill" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset={`${percentage}%`} stopColor={fill} />
+        <stop offset={`${percentage}%`} stopColor="#D3D3D3" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.1-6.3-4.6-6.3 4.6 2.3-7.1-6-4.4h7.6z"
+      fill="url(#partialFill)"
+      stroke="#FFA500"
+      strokeWidth="0.5"
+    />
+  </svg>
+);
+
+// New Win Probability Circle component
+const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) => {
+  const normalizedProb = probability ? Math.min(100, Math.max(0, probability)) : 0;
+  const circumference = 2 * Math.PI * 40; // Circle radius is 40
+  const dashOffset = circumference * (1 - normalizedProb / 100);
+  
+  // Default team color if none provided
+  const color = teamColor || "#4682B4";
+  
+  return (
+    <div className="win-probability-container">
+      <svg width="100" height="100" viewBox="0 0 100 100" className="win-probability-circle">
+        {/* Background circle */}
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="transparent"
+          stroke="#e6e6e6"
+          strokeWidth="8"
+        />
+        
+        {/* Foreground circle representing probability */}
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="transparent"
+          stroke={color}
+          strokeWidth="8"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          transform="rotate(-90 50 50)"
+        >
+          <animate 
+            attributeName="stroke-dashoffset" 
+            from={circumference} 
+            to={dashOffset} 
+            dur="1.5s" 
+            fill="freeze" 
+            calcMode="spline"
+            keySplines="0.42 0 0.58 1"
+          />
+        </circle>
+        
+        {/* Team logo in the center */}
+        {teamLogo && (
+          <image
+            href={teamLogo}
+            x="25"
+            y="25"
+            width="50"
+            height="50"
+            clipPath="circle(25px at center)"
+          />
+        )}
+        
+        {/* Percentage text */}
+        <text
+          x="50"
+          y="55"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={teamLogo ? "transparent" : "#333"}
+          fontSize="16"
+          fontWeight="bold"
+        >
+          {normalizedProb ? `${Math.round(normalizedProb)}%` : 'N/A'}
+        </text>
+      </svg>
+      
+      <div className="win-probability-label">
+        <span>{teamName || "Team"}</span>
+        <span className="win-prob-value">{normalizedProb ? `${Math.round(normalizedProb)}%` : 'N/A'}</span>
+      </div>
+    </div>
+  );
+};
+
+// EloRating component to visualize Elo changes
+const EloRating = ({ startElo, endElo, label }) => {
+  const hasData = startElo !== undefined && endElo !== undefined;
+  const change = hasData ? endElo - startElo : 0;
+  const changeColor = change > 0 ? "#4CAF50" : change < 0 ? "#F44336" : "#757575";
+  
+  return (
+    <div className="elo-rating">
+      <div className="elo-label">{label || "Elo Rating"}</div>
+      <div className="elo-values">
+        {hasData ? (
+          <>
+            <span className="elo-start">{startElo}</span>
+            <span className="elo-arrow">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <line x1="6" y1="12" x2="18" y2="12" stroke={changeColor} strokeWidth="2" strokeLinecap="round" />
+                <polyline 
+                  points={change > 0 ? "14,8 18,12 14,16" : change < 0 ? "10,8 6,12 10,16" : ""}
+                  fill="none" 
+                  stroke={changeColor} 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="elo-end">{endElo}</span>
+            <span className="elo-change" style={{ color: changeColor }}>
+              ({change > 0 ? "+" : ""}{change})
+            </span>
+          </>
+        ) : (
+          <span className="elo-na">N/A</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const AdvancedGameDetailView = () => {
   const { id } = useParams(); // Game ID from URL
@@ -66,7 +442,7 @@ const AdvancedGameDetailView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch teams and game data (REST, GraphQL scoreboard, and GraphQL game_info) and merge them.
+  // Fetch teams and game data and merge them
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,16 +451,16 @@ const AdvancedGameDetailView = () => {
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
 
-        // Get basic game data from REST (assuming getGameById exists)
+        // Get basic game data from REST
         const restGameData = await teamsService.getGameById(id);
 
         // Get detailed scoreboard data from GraphQL
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
 
-        // Get comprehensive game info from GraphQL (using the full schema)
+        // Get comprehensive game info from GraphQL
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
 
-        // Merge data – REST values override GraphQL if present.
+        // Merge data – REST values override GraphQL if present
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
 
         if (mergedData) {
@@ -102,29 +478,56 @@ const AdvancedGameDetailView = () => {
     fetchData();
   }, [id]);
 
-  // Helper: Get team logo from REST teams data.
+  // Helper: Get team logo from REST teams data
   const getTeamLogo = (teamName) => {
     const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
     );
     return team && team.logos && team.logos.length > 0
       ? team.logos[0]
       : "/photos/default_team.png";
   };
 
-  // Helper: Get team details for display.
+  // Helper: Get team details for display
   const getTeamDetails = (teamName) => {
     const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
     );
     return team || {};
   };
+  
+  // Helper: Get team primary color
+  const getTeamColor = (teamName) => {
+    const team = teams.find(
+      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.color ? `#${team.color}` : "#666666";
+  };
 
-  if (isLoading) return <div>Loading game details...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!gameData) return <div>Game not found</div>;
+  if (isLoading) return (
+    <div className="loading-container">
+      <div className="loading-spinner"></div>
+      <p>Loading game details...</p>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="error-container">
+      <div className="error-icon">⚠️</div>
+      <h2>Error</h2>
+      <p>{error}</p>
+    </div>
+  );
+  
+  if (!gameData) return (
+    <div className="not-found-container">
+      <div className="not-found-icon">🔍</div>
+      <h2>Game Not Found</h2>
+      <p>The requested game information could not be found.</p>
+    </div>
+  );
 
-  // Destructure all fields from merged gameData.
+  // Destructure all fields from merged gameData
   const {
     id: gameId,
     attendance,
@@ -171,364 +574,1315 @@ const AdvancedGameDetailView = () => {
     temperature,
     windDirection,
     windSpeed,
-    tv, // We'll ignore this since we'll always display ESPN
-    weather,    // Object containing: condition, dewpoint, etc.
-    // Removed mediaInfo and lines from rendering for now.
+    tv,
+    weather,
   } = gameData;
 
   const homeTeamDetails = getTeamDetails(homeTeam);
   const awayTeamDetails = getTeamDetails(awayTeam);
+  const homeTeamColor = getTeamColor(homeTeam);
+  const awayTeamColor = getTeamColor(awayTeam);
+  const homeLogo = getTeamLogo(homeTeam);
+  const awayLogo = getTeamLogo(awayTeam);
 
-  // Render a modern line scores table.
+  // Render a modern line scores table with team logos
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
-    if (!periods) return <p>No line score data available.</p>;
+    if (!periods) return <p className="no-data">No line score data available.</p>;
+    
+    // Calculate totals
+    const homeTotalPoints = homeLineScores.reduce((sum, score) => sum + (score || 0), 0);
+    const awayTotalPoints = awayLineScores ? awayLineScores.reduce((sum, score) => sum + (score || 0), 0) : 0;
+    
     return (
-      <div className="line-scores">
-        <h3>Quarter Scores</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>{homeTeam}</th>
-              <th>{awayTeam}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: periods }).map((_, index) => (
-              <tr key={index}>
-                <td>{`Q${index + 1}`}</td>
-                <td>{homeLineScores[index] !== null ? homeLineScores[index] : '-'}</td>
-                <td>
-                  {awayLineScores && awayLineScores[index] !== undefined
-                    ? awayLineScores[index]
-                    : '-'}
-                </td>
+      <div className="line-scores-container">
+        <h3>Quarter by Quarter</h3>
+        <div className="line-scores-card">
+          <table className="line-scores-table">
+            <thead>
+              <tr>
+                <th className="team-cell">Team</th>
+                {Array.from({ length: periods }).map((_, index) => (
+                  <th key={`period-${index}`} className="period-header">Q{index + 1}</th>
+                ))}
+                <th className="total-header">Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <tr className="home-team-row" style={{ borderLeft: `4px solid ${homeTeamColor}` }}>
+                <td className="team-cell">
+                  <div className="team-info-cell">
+                    <img src={homeLogo} alt={homeTeam} className="team-logo-small" />
+                    <span className="team-abbr">{homeTeam}</span>
+                  </div>
+                </td>
+                {Array.from({ length: periods }).map((_, index) => (
+                  <td key={`home-${index}`} className="score-cell">
+                    {homeLineScores[index] !== null ? homeLineScores[index] : '-'}
+                  </td>
+                ))}
+                <td className="total-cell">{homeTotalPoints}</td>
+              </tr>
+              <tr className="away-team-row" style={{ borderLeft: `4px solid ${awayTeamColor}` }}>
+                <td className="team-cell">
+                  <div className="team-info-cell">
+                    <img src={awayLogo} alt={awayTeam} className="team-logo-small" />
+                    <span className="team-abbr">{awayTeam}</span>
+                  </div>
+                </td>
+                {Array.from({ length: periods }).map((_, index) => (
+                  <td key={`away-${index}`} className="score-cell">
+                    {awayLineScores && awayLineScores[index] !== undefined
+                      ? awayLineScores[index]
+                      : '-'}
+                  </td>
+                ))}
+                <td className="total-cell">{awayTotalPoints}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        {currentClock && (
+          <div className="current-game-state">
+            <div className="clock-container">
+              <span className="clock-label">CURRENT</span>
+              <span className="clock-value">{currentClock}</span>
+              <span className="period-value">Q{currentPeriod || "?"}</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
-  // Overview tab.
+  // Overview tab with modernized layout
   const renderOverview = () => (
     <div className="tab-content overview">
-      <div className="teams-comparison">
-        <div className="team-column">
-          <img src={getTeamLogo(homeTeam)} alt={homeTeam} className="team-logo" />
-          <div className="team-name">{homeTeam}</div>
-          <div className="team-record">
-            {homeTeamDetails.record ? `Record: ${homeTeamDetails.record}` : ""}{" "}
-            {homeTeamDetails.rank ? `• Rank: #${homeTeamDetails.rank}` : ""}
+      <div className="scoreboard-container">
+        <div className="team-column home-team">
+          <div className="team-header" style={{ backgroundColor: homeTeamColor }}>
+            <img src={homeLogo} alt={homeTeam} className="team-logo-large" />
           </div>
-          <div className="score">{homePoints || "0"}</div>
+          <div className="team-info">
+            <div className="team-name">{homeTeam}</div>
+            <div className="team-record">
+              {homeTeamDetails.record ? homeTeamDetails.record : ""}
+              {homeTeamDetails.rank ? <span className="team-rank">#{homeTeamDetails.rank}</span> : ""}
+            </div>
+            <div className="score-display">{homePoints || "0"}</div>
+          </div>
         </div>
-        <div className="vs-column">VS</div>
-        <div className="team-column">
-          <img src={getTeamLogo(awayTeam)} alt={awayTeam} className="team-logo" />
-          <div className="team-name">{awayTeam}</div>
-          <div className="team-record">
-            {awayTeamDetails.record ? `Record: ${awayTeamDetails.record}` : ""}{" "}
-            {awayTeamDetails.rank ? `• Rank: #${awayTeamDetails.rank}` : ""}
+        
+        <div className="game-status-column">
+          <div className="game-status-indicator">
+            {status === "final" ? (
+              <span className="status-final">FINAL</span>
+            ) : status === "in_progress" ? (
+              <span className="status-live">LIVE</span>
+            ) : (
+              <span className="status-upcoming">UPCOMING</span>
+            )}
           </div>
-          <div className="score">{awayPoints || "0"}</div>
+          
+          <div className="versus-text">VS</div>
+          
+          {startDate && status !== "final" && status !== "in_progress" && (
+            <div className="start-time">
+              {new Date(startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
+        </div>
+        
+        <div className="team-column away-team">
+          <div className="team-header" style={{ backgroundColor: awayTeamColor }}>
+            <img src={awayLogo} alt={awayTeam} className="team-logo-large" />
+          </div>
+          <div className="team-info">
+            <div className="team-name">{awayTeam}</div>
+            <div className="team-record">
+              {awayTeamDetails.record ? awayTeamDetails.record : ""}
+              {awayTeamDetails.rank ? <span className="team-rank">#{awayTeamDetails.rank}</span> : ""}
+            </div>
+            <div className="score-display">{awayPoints || "0"}</div>
+          </div>
         </div>
       </div>
-      <div className="basic-info">
-        <p>
-          <strong>Status:</strong>{" "}
-          {status === "final"
-            ? "Final Score"
-            : startDate
-            ? new Date(startDate).toLocaleString()
-            : "Upcoming Game"}
-        </p>
-        <p className="broadcast">
-          <TvIcon /> <span><strong>Broadcast:</strong> ESPN</span>
-        </p>
-        {lastPlay && <p><strong>Last Play:</strong> {lastPlay}</p>}
+      
+      <div className="game-meta-info">
+        <div className="meta-row">
+          <div className="meta-item">
+            <div className="meta-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
+              </svg>
+            </div>
+            <div className="meta-content">
+              <div className="meta-label">Game Time</div>
+              <div className="meta-value">
+                {startDate ? new Date(startDate).toLocaleString([], {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) : "TBD"}
+              </div>
+            </div>
+          </div>
+          
+          <div className="meta-item">
+            <div className="meta-icon">
+              <TvIcon />
+            </div>
+            <div className="meta-content">
+              <div className="meta-label">Broadcast</div>
+              <div className="meta-value">ESPN</div>
+            </div>
+          </div>
+          
+          <div className="meta-item">
+            <div className="meta-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+              </svg>
+            </div>
+            <div className="meta-content">
+              <div className="meta-label">Venue</div>
+              <div className="meta-value">{venue || "TBD"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="meta-row">
+          <div className="meta-item excitement-container">
+            <div className="meta-label">Game Excitement Index</div>
+            <ExcitementRating value={excitement} />
+          </div>
+        </div>
+      </div>
+      
+      {lastPlay && (
+        <div className="last-play-container">
+          <div className="last-play-label">Last Play</div>
+          <div className="last-play-text">{lastPlay}</div>
+        </div>
+      )}
+      
+      {renderLineScores()}
+      
+      <div className="win-probability-section">
+        <h3>Win Probability</h3>
+        <div className="win-prob-container">
+          <WinProbabilityCircle 
+            probability={homePostgameWinProb * 100} 
+            teamName={homeTeam} 
+            teamColor={homeTeamColor}
+            teamLogo={homeLogo}
+          />
+          <WinProbabilityCircle 
+            probability={awayPostgameWinProb * 100} 
+            teamName={awayTeam} 
+            teamColor={awayTeamColor}
+            teamLogo={awayLogo}
+          />
+        </div>
       </div>
     </div>
   );
 
-  // Statistics tab.
+  // Statistics tab with modern visualizations
   const renderStatistics = () => (
     <div className="tab-content statistics">
-      <h2>Scoring by Period</h2>
-      {renderLineScores()}
-      {currentClock && (
-        <p>
-          <strong>Current Clock:</strong> {currentClock} (Period: {currentPeriod || "N/A"})
-        </p>
+      <div className="stat-section">
+        <h2>Scoring by Quarter</h2>
+        {renderLineScores()}
+      </div>
+      
+      <div className="elo-section">
+        <h2>Elo Ratings</h2>
+        <div className="elo-container">
+          <div className="elo-team-container" style={{ borderTop: `4px solid ${homeTeamColor}` }}>
+            <div className="elo-team-header">
+              <img src={homeLogo} alt={homeTeam} className="team-logo-small" />
+              <span>{homeTeam}</span>
+            </div>
+            <EloRating startElo={homeStartElo} endElo={homeEndElo} label="Elo Change" />
+          </div>
+          
+          <div className="elo-team-container" style={{ borderTop: `4px solid ${awayTeamColor}` }}>
+            <div className="elo-team-header">
+              <img src={awayLogo} alt={awayTeam} className="team-logo-small" />
+              <span>{awayTeam}</span>
+            </div>
+            <EloRating startElo={awayStartElo} endElo={awayEndElo} label="Elo Change" />
+          </div>
+        </div>
+      </div>
+      
+      {lastPlay && (
+        <div className="last-play-container">
+          <div className="last-play-label">Last Play</div>
+          <div className="last-play-text">{lastPlay}</div>
+        </div>
       )}
-      {lastPlay && <p><strong>Last Play:</strong> {lastPlay}</p>}
     </div>
   );
 
-  // Betting tab.
+  // Betting tab with modern layout
   const renderBetting = () => (
     <div className="tab-content betting">
       <h2>Betting Information</h2>
-      <div className="betting-grid">
-        <p>
-          <strong>Moneyline (Home):</strong> {moneylineHome || "N/A"}
-        </p>
-        <p>
-          <strong>Moneyline (Away):</strong> {moneylineAway || "N/A"}
-        </p>
-        <p>
-          <strong>Spread:</strong> {spread || "N/A"}
-        </p>
-        <p>
-          <strong>Over/Under:</strong> {overUnder || "N/A"}
-        </p>
+      
+      <div className="betting-cards-container">
+        <div className="betting-card">
+          <div className="betting-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M3.5,3H20.5C21.33,3 22,3.67 22,4.5V7.5C22,8.33 21.33,9 20.5,9H3.5C2.67,9 2,8.33 2,7.5V4.5C2,3.67 2.67,3 3.5,3M3.5,11H20.5C21.33,11 22,11.67 22,12.5V15.5C22,16.33 21.33,17 20.5,17H3.5C2.67,17 2,16.33 2,15.5V12.5C2,11.67 2.67,11 3.5,11M3.5,19H20.5C21.33,19 22,19.67 22,20.5V21H2V20.5C2,19.67 2.67,19 3.5,19Z" />
+            </svg>
+            <span>Moneyline</span>
+          </div>
+          <div className="betting-card-content">
+            <div className="betting-team-odds" style={{ borderLeft: `4px solid ${homeTeamColor}` }}>
+              <div className="odds-team">
+                <img src={homeLogo} alt={homeTeam} className="team-logo-tiny" />
+                <span>{homeTeam}</span>
+              </div>
+              <div className="odds-value">{moneylineHome || "N/A"}</div>
+            </div>
+            <div className="betting-team-odds" style={{ borderLeft: `4px solid ${awayTeamColor}` }}>
+              <div className="odds-team">
+                <img src={awayLogo} alt={awayTeam} className="team-logo-tiny" />
+                <span>{awayTeam}</span>
+              </div>
+              <div className="odds-value">{moneylineAway || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="betting-card">
+          <div className="betting-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13H5V11H19V13Z" />
+            </svg>
+            <span>Spread</span>
+          </div>
+          <div className="betting-card-content">
+            <div className="betting-value-card">
+              <div className="value-label">Spread</div>
+              <div className="value-number">{spread || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="betting-card">
+          <div className="betting-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            </svg>
+            <span>Over/Under</span>
+          </div>
+          <div className="betting-card-content">
+            <div className="betting-value-card">
+              <div className="value-label">Total Points</div>
+              <div className="value-number">{overUnder || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="betting-disclaimer">
+        <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
       </div>
     </div>
   );
 
-  // Weather tab.
+  // Weather tab with animated icons
   const renderWeather = () => (
     <div className="tab-content weather">
       <h2>Weather Conditions</h2>
-      <div className="weather-details">
-        <WeatherIcon
-          condition={weather && weather.condition && weather.condition.description ? weather.condition.description : ""}
-          temperature={temperature || (weather && weather.temperature)}
-        />
-        <p>
-          <strong>Description:</strong>{" "}
-          {weather && weather.condition && weather.condition.description ? weather.condition.description : "N/A"}
-        </p>
-        <p>
-          <strong>Wind:</strong>{" "}
-          {windSpeed || (weather && weather.windSpeed)
-            ? `${windSpeed || weather.windSpeed} mph`
-            : "N/A"}{" "}
-          {windDirection || (weather && weather.windDirection)
-            ? `(${windDirection || weather.windDirection}°)`
-            : ""}
-        </p>
-        {weather && weather.dewpoint && (
-          <p>
-            <strong>Dewpoint:</strong> {weather.dewpoint}
-          </p>
-        )}
+      
+      <div className="weather-card">
+        <div className="weather-main">
+          <WeatherIcon
+            condition={weather && weather.condition && weather.condition.description ? weather.condition.description : ""}
+            temperature={temperature || (weather && weather.temperature)}
+          />
+          
+          <div className="weather-info">
+            <div className="weather-temp">{temperature || (weather && weather.temperature) || "N/A"}°F</div>
+            <div className="weather-desc">
+              {weather && weather.condition && weather.condition.description ? weather.condition.description : "N/A"}
+            </div>
+          </div>
+        </div>
+        
+        <div className="weather-details-grid">
+          <div className="weather-detail-item">
+            <div className="detail-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M4,10A1,1 0 0,1 3,9A1,1 0 0,1 4,8H12A2,2 0 0,0 14,6A2,2 0 0,0 12,4C11.45,4 10.95,4.22 10.59,4.59C10.2,5 9.56,5 9.17,4.59C8.78,4.2 8.78,3.56 9.17,3.17C9.9,2.45 10.9,2 12,2A4,4 0 0,1 16,6A4,4 0 0,1 12,10H4M19,12A1,1 0 0,0 20,11A1,1 0 0,0 19,10C18.72,10 18.47,10.11 18.29,10.29C17.9,10.68 17.27,10.68 16.88,10.29C16.5,9.9 16.5,9.27 16.88,8.88C17.42,8.34 18.17,8 19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14H5A1,1 0 0,1 4,13A1,1 0 0,1 5,12H19M18,18H4A1,1 0 0,1 3,17A1,1 0 0,1 4,16H18A3,3 0 0,1 21,19A3,3 0 0,1 18,22C17.17,22 16.42,21.66 15.88,21.12C15.5,20.73 15.5,20.1 15.88,19.71C16.27,19.32 16.9,19.32 17.29,19.71C17.47,19.89 17.72,20 18,20A1,1 0 0,0 19,19A1,1 0 0,0 18,18Z" />
+              </svg>
+            </div>
+            <div className="detail-content">
+              <div className="detail-label">Wind</div>
+              <div className="detail-value">
+                {windSpeed || (weather && weather.windSpeed)
+                  ? `${windSpeed || weather.windSpeed} mph`
+                  : "N/A"}{" "}
+                {windDirection || (weather && weather.windDirection)
+                  ? `${windDirection || weather.windDirection}°`
+                  : ""}
+              </div>
+            </div>
+          </div>
+          
+          {weather && weather.dewpoint && (
+            <div className="weather-detail-item">
+              <div className="detail-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z" />
+                </svg>
+              </div>
+              <div className="detail-content">
+                <div className="detail-label">Dewpoint</div>
+                <div className="detail-value">{weather.dewpoint}°F</div>
+              </div>
+            </div>
+          )}
+          
+          <div className="weather-detail-item">
+            <div className="detail-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M15,13V5A3,3 0 0,0 12,2A3,3 0 0,0 9,5V13A5,5 0 1,0 15,13M12,4A1,1 0 0,1 13,5V8H11V5A1,1 0 0,1 12,4Z" />
+              </svg>
+            </div>
+            <div className="detail-content">
+              <div className="detail-label">Temperature</div>
+              <div className="detail-value">{temperature || (weather && weather.temperature) || "N/A"}°F</div>
+            </div>
+          </div>
+          
+          <div className="weather-detail-item">
+            <div className="detail-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
+              </svg>
+            </div>
+            <div className="detail-content">
+              <div className="detail-label">Humidity</div>
+              <div className="detail-value">{weather && weather.humidity ? `${weather.humidity}%` : "N/A"}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  // Venue tab.
+  // Venue tab with modern layout
   const renderVenue = () => (
     <div className="tab-content venue">
       <h2>Venue Information</h2>
-      <p>
-        <strong>Stadium:</strong> {venue || "TBD"}
-      </p>
-      <p>
-        <strong>Location:</strong> {city || "TBD"}, {state || ""}
-      </p>
-    </div>
-  );
-
-  // Details tab: displays additional game info.
-  const renderDetails = () => (
-    <div className="tab-content details">
-      <h2>Additional Game Details</h2>
-      <div className="details-grid">
-        <p><strong>Attendance:</strong> {attendance || "N/A"}</p>
-        <p>
-          <strong>Season:</strong> {season || "N/A"} {seasonType ? `(Type: ${seasonType})` : ""}
-        </p>
-        <p>
-          <strong>Conference Game:</strong> {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
-        </p>
-        <p><strong>Excitement:</strong> {excitement || "N/A"}</p>
-        <p><strong>Away Classification:</strong> {awayClassification || "N/A"}</p>
-        <p>
-          <strong>Away Conference:</strong> {awayConference || "N/A"} (ID: {awayConferenceId || "N/A"})
-        </p>
-        <p>
-          <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End: {awayEndElo || "N/A"}, Postgame Win Prob: {awayPostgameWinProb || "N/A"}
-        </p>
-        <p><strong>Away Team ID:</strong> {awayTeamId || "N/A"}</p>
-        <p><strong>Home Classification:</strong> {homeClassification || "N/A"}</p>
-        <p>
-          <strong>Home Conference:</strong> {homeConference || "N/A"} (ID: {homeConferenceId || "N/A"})
-        </p>
-        <p>
-          <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End: {homeEndElo || "N/A"}, Postgame Win Prob: {homePostgameWinProb || "N/A"}
-        </p>
-        <p><strong>Home Team ID:</strong> {homeTeamId || "N/A"}</p>
-        <p>
-          <strong>Neutral Site:</strong> {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
-        </p>
-        <p><strong>Week:</strong> {week || "N/A"}</p>
-        {notes && <p><strong>Notes:</strong> {notes}</p>}
+      
+      <div className="venue-card">
+        <div className="venue-header">
+          <svg width="32" height="32" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+          </svg>
+          <h3>{venue || "TBD"}</h3>
+        </div>
+        
+        <div className="venue-content">
+          <div className="venue-detail">
+            <div className="venue-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6M20,19C20,21.21 16.42,23 12,23C7.58,23 4,21.21 4,19C4,17.71 5.22,16.56 7.11,15.83L7.75,16.74C6.67,17.19 6,17.81 6,18.5C6,19.88 8.69,21 12,21C15.31,21 18,19.88 18,18.5C18,17.81 17.33,17.19 16.25,16.74L16.89,15.83C18.78,16.56 20,17.71 20,19Z" />
+              </svg>
+            </div>
+            <div className="venue-detail-content">
+              <div className="detail-label">Location</div>
+              <div className="detail-value">{city || "TBD"}{state ? `, ${state}` : ""}</div>
+            </div>
+          </div>
+          
+          <div className="venue-detail">
+            <div className="venue-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M4,2H14V4H4V14H2V4C2,2.89 2.89,2 4,2M8,6H18V8H8V18H6V8C6,6.89 6.89,6 8,6M12,10H20C21.11,10 22,10.89 22,12V20C22,21.11 21.11,22 20,22H12C10.89,22 10,21.11 10,20V12C10,10.89 10.89,10 12,10M14,12V20H20V12H14Z" />
+              </svg>
+            </div>
+            <div className="venue-detail-content">
+              <div className="detail-label">Capacity</div>
+              <div className="detail-value">{attendance ? `${Number(attendance).toLocaleString()} (Attendance)` : "N/A"}</div>
+            </div>
+          </div>
+          
+          <div className="venue-detail">
+            <div className="venue-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M18,2H6C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2M12,4A2.5,2.5 0 0,1 14.5,6.5A2.5,2.5 0 0,1 12,9A2.5,2.5 0 0,1 9.5,6.5A2.5,2.5 0 0,1 12,4M17,19H7V17.5C7,15.17 9.17,13 11.5,13H12.5C14.83,13 17,15.17 17,17.5V19Z" />
+              </svg>
+            </div>
+            <div className="venue-detail-content">
+              <div className="detail-label">Neutral Site</div>
+              <div className="detail-value">{neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  // Render tab buttons.
+  // Details tab with all additional game info
+  const renderDetails = () => (
+    <div className="tab-content details">
+      <h2>Additional Game Details</h2>
+      
+      <div className="details-grid">
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1H16M19,5V7H5V5H19Z" />
+            </svg>
+            <span>Season Information</span>
+          </div>
+          <div className="detail-card-content">
+            <div className="detail-item">
+              <div className="detail-label">Season</div>
+              <div className="detail-value">{season || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Season Type</div>
+              <div className="detail-value">{seasonType || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Week</div>
+              <div className="detail-value">{week || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,10.59L9.17,7.76L7.76,9.17L10.59,12L7.76,14.83L9.17,16.24L12,13.41L14.83,16.24L16.24,14.83L13.41,12L16.24,9.17L14.83,7.76L12,10.59Z" />
+            </svg>
+            <span>Game Type</span>
+          </div>
+          <div className="detail-card-content">
+            <div className="detail-item">
+              <div className="detail-label">Conference Game</div>
+              <div className="detail-value">{conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Neutral Site</div>
+              <div className="detail-value">{neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
+            </svg>
+            <span>Home Team Details</span>
+          </div>
+          <div className="detail-card-content">
+            <div className="detail-team-header">
+              <img src={homeLogo} alt={homeTeam} className="team-logo-tiny" />
+              <span>{homeTeam}</span>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Classification</div>
+              <div className="detail-value">{homeClassification || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Conference</div>
+              <div className="detail-value">{homeConference || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Team ID</div>
+              <div className="detail-value">{homeTeamId || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Conference ID</div>
+              <div className="detail-value">{homeConferenceId || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M14,8A2,2 0 0,0 12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8M8,17H16V16C16,14.67 13.33,14 12,14C10.67,14 8,14.67 8,16V17M16,3H8A1,1 0 0,0 7,4A1,1 0 0,0 8,5H16A1,1 0 0,0 17,4A1,1 0 0,0 16,3Z" />
+            </svg>
+            <span>Away Team Details</span>
+          </div>
+          <div className="detail-card-content">
+            <div className="detail-team-header">
+              <img src={awayLogo} alt={awayTeam} className="team-logo-tiny" />
+              <span>{awayTeam}</span>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Classification</div>
+              <div className="detail-value">{awayClassification || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Conference</div>
+              <div className="detail-value">{awayConference || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Team ID</div>
+              <div className="detail-value">{awayTeamId || "N/A"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="detail-label">Conference ID</div>
+              <div className="detail-value">{awayConferenceId || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {notes && (
+        <div className="notes-container">
+          <div className="notes-header">Game Notes</div>
+          <div className="notes-content">{notes}</div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Render tab buttons with modern styling
   const renderTabs = () => (
     <div className="tabs">
-      <button className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>
-        Overview
+      <button 
+        className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+        onClick={() => setActiveTab("overview")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" 
+          />
+        </svg>
+        <span>Overview</span>
       </button>
-      <button className={activeTab === "statistics" ? "active" : ""} onClick={() => setActiveTab("statistics")}>
-        Statistics
+      
+      <button 
+        className={`tab-button ${activeTab === "statistics" ? "active" : ""}`}
+        onClick={() => setActiveTab("statistics")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" 
+          />
+        </svg>
+        <span>Statistics</span>
       </button>
-      <button className={activeTab === "betting" ? "active" : ""} onClick={() => setActiveTab("betting")}>
-        Betting
+      
+      <button 
+        className={`tab-button ${activeTab === "betting" ? "active" : ""}`}
+        onClick={() => setActiveTab("betting")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M3,4.27L4.28,3L21,19.72L19.73,21L17.06,18.33C16.41,18.75 15.73,19 15,19C13.9,19 13,18.1 13,17C13,16.27 13.26,15.59 13.67,15.06L11.5,12.89C10.59,13.43 9.26,13.62 8,13V15.8L13,18.35V19.93H3V18.35L8,15.8V12.79L2,14V5.42L3,4.27M8,5V4.58L7.88,4.63L8,5M8,6.33L7.5,5.5L4.67,8.08L8,6.33M15,17C15.56,17 16,16.56 16,16C16,15.44 15.56,15 15,15C14.44,15 14,15.44 14,16C14,16.56 14.44,17 15,17M10,10.83L8,12V8.83L10,10.83M11.17,12L8.67,9.5L12,7V11.17L11.17,12Z" 
+          />
+        </svg>
+        <span>Betting</span>
       </button>
-      <button className={activeTab === "weather" ? "active" : ""} onClick={() => setActiveTab("weather")}>
-        Weather
+      
+      <button 
+        className={`tab-button ${activeTab === "weather" ? "active" : ""}`}
+        onClick={() => setActiveTab("weather")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M6,19A5,5 0 0,1 1,14A5,5 0 0,1 6,9C7,6.65 9.3,5 12,5C15.43,5 18.24,7.66 18.5,11.03L19,11A4,4 0 0,1 23,15A4,4 0 0,1 19,19H6M19,13H17V12A5,5 0 0,0 12,7C9.5,7 7.45,8.82 7.06,11.19C6.73,11.07 6.37,11 6,11A3,3 0 0,0 3,14A3,3 0 0,0 6,17H19A2,2 0 0,0 21,15A2,2 0 0,0 19,13Z" 
+          />
+        </svg>
+        <span>Weather</span>
       </button>
-      <button className={activeTab === "venue" ? "active" : ""} onClick={() => setActiveTab("venue")}>
-        Venue
+      
+      <button 
+        className={`tab-button ${activeTab === "venue" ? "active" : ""}`}
+        onClick={() => setActiveTab("venue")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" 
+          />
+        </svg>
+        <span>Venue</span>
       </button>
-      <button className={activeTab === "details" ? "active" : ""} onClick={() => setActiveTab("details")}>
-        Details
+      
+      <button 
+        className={`tab-button ${activeTab === "details" ? "active" : ""}`}
+        onClick={() => setActiveTab("details")}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path 
+            fill="currentColor" 
+            d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" 
+          />
+        </svg>
+        <span>Details</span>
       </button>
     </div>
   );
 
   return (
     <div className="advanced-game-detail">
-      {/* Inline CSS */}
-      <style>{`
+      {/* Modern CSS with new components styling */}
+      <style jsx>{`
         .advanced-game-detail {
-          padding: 20px;
-          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          max-width: 1000px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+          max-width: 1200px;
           margin: 0 auto;
-          background-color: #fafafa;
+          padding: 20px;
+          color: #333;
+          background: #f8f9fa;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
+        /* Header Styling */
         .game-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 2px solid #ddd;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #e0e0e0;
         }
+        
         .game-header h1 {
-          font-size: 2rem;
+          font-size: 1.75rem;
+          font-weight: 700;
           margin: 0;
-          color: #333;
+          color: #212529;
         }
+        
         .game-status {
-          font-size: 1rem;
-          color: #555;
+          font-size: 0.9rem;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 50px;
+          background-color: #e9ecef;
+          color: #495057;
         }
+        
+        /* Tab Styling */
         .tabs {
           display: flex;
-          gap: 10px;
-          margin-bottom: 20px;
+          gap: 8px;
+          margin-bottom: 24px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          scrollbar-width: thin;
         }
-        .tabs button {
-          flex: 1;
-          background-color: #eee;
-          border: none;
-          padding: 12px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 1rem;
-          transition: background-color 0.3s;
-        }
-        .tabs button.active {
-          background-color: #D4001C;
-          color: #fff;
-        }
-        .teams-comparison {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-        .team-column {
-          text-align: center;
-        }
-        .vs-column {
-          font-size: 2rem;
-          font-weight: bold;
-          color: #777;
-        }
-        .team-logo {
-          width: 100px;
-          height: 100px;
-          object-fit: cover;
-          border-radius: 50%;
-          margin: 0 auto 10px;
-        }
-        .team-name {
-          font-size: 1.5rem;
-          font-weight: bold;
-          margin-bottom: 5px;
-          color: #333;
-        }
-        .team-record {
-          font-size: 1rem;
-          color: #777;
-          margin-bottom: 10px;
-        }
-        .score {
-          font-size: 2rem;
-          font-weight: bold;
-          color: #222;
-        }
-        .basic-info {
-          text-align: center;
-          margin-bottom: 20px;
-        }
-        .basic-info p {
-          font-size: 1rem;
-          color: #555;
-          margin: 5px 0;
-        }
-        .tab-content {
-          background-color: #fff;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          margin-bottom: 20px;
-        }
-        .line-scores table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 10px;
-        }
-        .line-scores th, .line-scores td {
-          border: 1px solid #ddd;
-          padding: 10px;
-          text-align: center;
-        }
-        .line-scores th {
-          background-color: #f7f7f7;
-        }
-        .betting-grid, .details-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 15px;
-          margin-top: 15px;
-        }
-        .weather-icon {
+        
+        .tab-button {
           display: flex;
           align-items: center;
           gap: 8px;
+          background-color: #f1f3f5;
+          border: none;
+          padding: 10px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 500;
+          font-size: 0.9rem;
+          color: #6c757d;
+          white-space: nowrap;
         }
+        
+        .tab-button:hover {
+          background-color: #e9ecef;
+          color: #495057;
+        }
+        
+        .tab-button.active {
+          background-color: #D4001C;
+          color: white;
+        }
+        
+        .tab-button svg {
+          opacity: 0.7;
+        }
+        
+        .tab-button.active svg {
+          opacity: 1;
+        }
+        
+        /* Tab Content Styling */
+        .tab-content {
+          background-color: white;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          padding: 24px;
+          margin-bottom: 24px;
+          animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Scoreboard Container */
+        .scoreboard-container {
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          gap: 16px;
+          margin-bottom: 24px;
+          align-items: center;
+        }
+        
+        .team-column {
+          display: flex;
+          flex-direction: column;
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: transform 0.2s ease;
+        }
+        
+        .team-column:hover {
+          transform: translateY(-3px);
+        }
+        
+        .team-header {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 24px;
+          background-color: #eee;
+        }
+        
+        .team-logo-large {
+          width: 100px;
+          height: 100px;
+          object-fit: contain;
+        }
+        
+        .team-info {
+          padding: 20px;
+          text-align: center;
+        }
+        
+        .team-name {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        
+        .team-record {
+          font-size: 0.9rem;
+          color: #6c757d;
+          margin-bottom: 16px;
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          align-items: center;
+        }
+        
+        .team-rank {
+          background-color: #f1f3f5;
+          color: #495057;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+        
+        .score-display {
+          font-size: 3rem;
+          font-weight: 700;
+          color: #212529;
+        }
+        
+        .game-status-column {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
         .temp-label {
-          font-size: 1rem;
-          color: #333;
+          margin-top: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
+        
+        .temp-value {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #212529;
+        }
+        
+        .weather-card {
+          display: flex;
+          flex-direction: column;
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .weather-main {
+          display: flex;
+          align-items: center;
+          padding: 24px;
+          gap: 32px;
+          background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        }
+        
+        .weather-info {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .weather-temp {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 4px;
+          color: #212529;
+        }
+        
+        .weather-desc {
+          font-size: 1.1rem;
+          color: #6c757d;
+        }
+        
+        .weather-details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          padding: 24px;
+        }
+        
+        .weather-detail-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+        }
+        
+        .detail-icon {
+          color: #6c757d;
+        }
+        
+        .detail-content {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .detail-label {
+          font-size: 0.8rem;
+          color: #6c757d;
+          margin-bottom: 2px;
+        }
+        
+        .detail-value {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #212529;
+        }
+        
+        /* Betting */
+        .betting-cards-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        
+        .betting-card {
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          transition: transform 0.2s ease;
+        }
+        
+        .betting-card:hover {
+          transform: translateY(-3px);
+        }
+        
+        .betting-card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 16px;
+          background-color: #f8f9fa;
+          color: #495057;
+          font-weight: 600;
+          font-size: 1rem;
+          border-bottom: 1px solid #e9ecef;
+        }
+        
+        .betting-card-content {
+          padding: 16px;
+        }
+        
+        .betting-team-odds {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px;
+          margin-bottom: 8px;
+          border-radius: 8px;
+          background-color: #f8f9fa;
+          font-size: 0.95rem;
+        }
+        
+        .odds-team {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+          color: #495057;
+        }
+        
+        .odds-value {
+          font-weight: 700;
+          color: #212529;
+        }
+        
+        .betting-value-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 16px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+        }
+        
+        .value-label {
+          font-size: 0.9rem;
+          color: #6c757d;
+          margin-bottom: 4px;
+        }
+        
+        .value-number {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #212529;
+        }
+        
+        .betting-disclaimer {
+          font-size: 0.8rem;
+          color: #6c757d;
+          margin-top: 16px;
+          padding: 12px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          border-left: 4px solid #ffc107;
+        }
+        
+        /* Venue */
+        .venue-card {
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .venue-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 20px;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #e9ecef;
+        }
+        
+        .venue-header h3 {
+          font-size: 1.3rem;
+          font-weight: 600;
+          margin: 0;
+          color: #212529;
+        }
+        
+        .venue-content {
+          padding: 20px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+        }
+        
+        .venue-detail {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+        }
+        
+        .venue-icon {
+          color: #6c757d;
+        }
+        
+        .venue-detail-content {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        /* Game Details */
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        
+        .detail-card {
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .detail-card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 16px;
+          background-color: #f8f9fa;
+          color: #495057;
+          font-weight: 600;
+          font-size: 1rem;
+          border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-card-content {
+          padding: 16px;
+        }
+        
+        .detail-team-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #e9ecef;
+          font-weight: 600;
+          color: #212529;
+        }
+        
+        .detail-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-item:last-child {
+          border-bottom: none;
+        }
+        
+        .detail-label {
+          color: #6c757d;
+          font-size: 0.9rem;
+        }
+        
+        .detail-value {
+          font-weight: 500;
+          color: #212529;
+        }
+        
+        .notes-container {
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          margin-top: 24px;
+        }
+        
+        .notes-header {
+          padding: 16px;
+          background-color: #f8f9fa;
+          color: #495057;
+          font-weight: 600;
+          font-size: 1rem;
+          border-bottom: 1px solid #e9ecef;
+        }
+        
+        .notes-content {
+          padding: 16px;
+          color: #212529;
+          line-height: 1.6;
+        }
+        
+        /* Elo Ratings */
+        .elo-section {
+          margin-top: 32px;
+        }
+        
+        .elo-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 16px;
+        }
+        
+        .elo-team-container {
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          padding: 16px;
+        }
+        
+        .elo-team-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 16px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #e9ecef;
+          font-weight: 600;
+          color: #212529;
+        }
+        
+        .elo-rating {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        
+        .elo-label {
+          font-size: 0.8rem;
+          color: #6c757d;
+        }
+        
+        .elo-values {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+        }
+        
+        .elo-start, .elo-end {
+          font-size: 1.1rem;
+          color: #212529;
+        }
+        
+        .elo-arrow {
+          display: flex;
+          align-items: center;
+        }
+        
+        .elo-change {
+          font-size: 0.9rem;
+          margin-left: 4px;
+        }
+        
+        .elo-na {
+          color: #6c757d;
+          font-style: italic;
+        }
+        
+        /* Loading and Error States */
+        .loading-container, .error-container, .not-found-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 48px;
+          text-align: center;
+          background-color: white;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #e9ecef;
+          border-top: 4px solid #D4001C;
+          border-radius: 50%;
+          margin-bottom: 16px;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .error-icon, .not-found-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+        
+        /* Responsive Design */
         @media (max-width: 768px) {
-          .teams-comparison {
+          .scoreboard-container {
             grid-template-columns: 1fr;
-            gap: 10px;
           }
-          .vs-column {
-            font-size: 1.5rem;
+          
+          .game-status-column {
+            order: -1;
+            margin-bottom: 16px;
+          }
+          
+          .meta-row {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .meta-item {
+            width: 100%;
+          }
+          
+          .win-prob-container {
+            gap: 24px;
+          }
+          
+          .tabs {
+            flex-wrap: wrap;
+          }
+          
+          .tab-button {
+            flex: 1 0 calc(33.333% - 8px);
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .advanced-game-detail {
+            padding: 12px;
+          }
+          
+          .tab-content {
+            padding: 16px;
+          }
+          
+          .tab-button {
+            flex: 1 0 calc(50% - 4px);
+            padding: 8px;
+          }
+          
+          .team-logo-large {
+            width: 80px;
+            height: 80px;
+          }
+          
+          .team-name {
+            font-size: 1.2rem;
+          }
+          
+          .score-display {
+            font-size: 2.5rem;
           }
         }
       `}</style>
@@ -538,8 +1892,10 @@ const AdvancedGameDetailView = () => {
         <div className="game-status">
           {status === "final"
             ? "Final Score"
+            : status === "in_progress"
+            ? "Live"
             : startDate
-            ? new Date(startDate).toLocaleString()
+            ? new Date(startDate).toLocaleDateString()
             : "Upcoming Game"}
         </div>
       </div>
