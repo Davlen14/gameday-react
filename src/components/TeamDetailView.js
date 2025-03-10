@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
+import TeamPlayerStats from "./TeamPlayerStats"; // Import the Player Stats component
 
 import { 
   FaMapMarkerAlt, 
@@ -240,30 +241,19 @@ const TeamDetail = () => {
 
   // Get contrast color for text based on background color
   const getContrastColor = (hexColor) => {
-    // Default to white if no color is provided
     if (!hexColor) return "#ffffff";
-    
-    // Remove the hash if it exists
     hexColor = hexColor.replace('#', '');
-    
-    // Convert to RGB
     const r = parseInt(hexColor.substr(0, 2), 16);
     const g = parseInt(hexColor.substr(2, 2), 16);
     const b = parseInt(hexColor.substr(4, 2), 16);
-    
-    // Calculate contrast (YIQ formula)
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    
     return (yiq >= 128) ? '#000000' : '#ffffff';
   };
   
   // Generate team color gradient for metallic effect
   const getTeamColorGradient = (hexColor) => {
     if (!hexColor) return "linear-gradient(145deg, #1a1a1a, #333333)";
-    
-    // Create a slightly lighter version for gradient
     const lighterColor = lightenColor(hexColor, 20);
-    
     return `linear-gradient(145deg, ${hexColor}, ${lighterColor})`;
   };
   
@@ -274,7 +264,6 @@ const TeamDetail = () => {
           R = (num >> 16) + amt,
           G = (num >> 8 & 0x00FF) + amt,
           B = (num & 0x0000FF) + amt;
-          
     return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
                   (G < 255 ? G : 255) * 0x100 +
                   (B < 255 ? B : 255)).toString(16).slice(1);
@@ -301,7 +290,6 @@ const TeamDetail = () => {
               </div>
               <div className="card-body">
                 <div className="gauges-container">
-                  {/* Modified to use teamName and year like RatingsComponent */}
                   <GaugeComponent 
                     label="Overall" 
                     metricType="overall" 
@@ -409,11 +397,9 @@ const TeamDetail = () => {
               ) : (
                 <div className="schedule-container">
                   {schedule.map((game, index) => {
-                    // Determine if game is completed, has score
                     const isCompleted = game.homePoints !== null && game.homePoints !== undefined && 
-                                      game.awayPoints !== null && game.awayPoints !== undefined;
+                                        game.awayPoints !== null && game.awayPoints !== undefined;
                     
-                    // Determine winner if game is completed
                     let homeWinner = false;
                     let awayWinner = false;
                     let isTie = false;
@@ -424,7 +410,6 @@ const TeamDetail = () => {
                       isTie = game.homePoints === game.awayPoints;
                     }
                     
-                    // Format date if available
                     const gameDate = game.date ? new Date(game.date).toLocaleDateString() : "TBD";
                     
                     return (
@@ -603,7 +588,8 @@ const TeamDetail = () => {
               Player Statistics
             </div>
             <div className="card-body">
-              <ComingSoon title="Player Statistics" />
+              {/* Render the TeamPlayerStats component here */}
+              <TeamPlayerStats teamName={team.school} year={2024} />
             </div>
           </div>
         );

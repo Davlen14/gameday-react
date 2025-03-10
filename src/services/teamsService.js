@@ -542,6 +542,14 @@ export const getPlayerSearch = async (searchTerm) => {
     return await fetchData(endpoint, params);
   };
   
+// GET /ppa/players/season - Fetch PPA data for players for a specific team and year
+export const getPPAPlayers = async (team, year) => {
+  const endpoint = "/ppa/players/season";
+  const params = { year, team };
+  return await fetchData(endpoint, params);
+};
+
+
   // GET /ppa/games - Fetch PPA data for games
   export const getPPAGames = async (year) => {
     const endpoint = "/ppa/games";
@@ -688,6 +696,7 @@ const teamsService = {
     getPPATeams,
     getPPAGames,
     getPPAPlayersGames,
+    getPPAPlayers,
     getMetricsWP,
     getMetricsWPPregame,
     getMetricsFGEP,
