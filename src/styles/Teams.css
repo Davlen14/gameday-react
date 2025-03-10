@@ -103,10 +103,12 @@ body {
 /* Improve teams container inside the teams section */
 .tcd-teams-container {
   padding: 1rem 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  /* Use a responsive grid instead of flex */
+  display: grid;
+  /* Adjust minmax() to control how wide each card can grow */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+  width: 100%;
 }
 
 /* Comparison Section - Main Content remains below the teams area */
@@ -819,11 +821,12 @@ body {
   align-items: center;
   gap: 15px; /* increased gap */
   transition: all var(--transition-medium);
-  flex: 1;
+  /* Removed flex: 1; so the grid can size items properly */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
 }
+
 
 .tcd-team-card::before {
   content: '';
