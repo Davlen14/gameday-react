@@ -264,7 +264,7 @@ body {
   font-weight: 600;
   font-size: 1.2rem;
   /* Make this text gray instead of white */
-  color: var(--text-secondary);
+  color: rgb(108, 108, 108);
   background: var(--glass-secondary);
   backdrop-filter: var(--glass-blur);
   display: flex;
