@@ -268,15 +268,6 @@ export const getGameInfo = async (gameId) => {
           windGust
           windSpeed
         }
-        mediaInfo {
-          network
-          outlet
-        }
-        lines {
-          provider
-          spread
-          overUnder
-        }
         week
       }
     }
@@ -285,6 +276,7 @@ export const getGameInfo = async (gameId) => {
   const data = await fetchData(query, variables);
   return data?.game?.[0] || null;
 };
+
 
 
 
