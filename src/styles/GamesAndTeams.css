@@ -407,7 +407,7 @@
   }
   
   .advanced-details-button {
-    background-color: #3b82f6;
+    background-color: #D4001C;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -418,7 +418,7 @@
   }
   
   .advanced-details-button:hover {
-    background-color: #2563eb;
+    background-color: #d12d43;
   }
 /* Loading & Error States */
 .loading, .error {
