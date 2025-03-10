@@ -3,6 +3,65 @@ import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
+// A simple WeatherIcon component based on the condition description.
+const WeatherIcon = ({ condition, temperature }) => {
+  let icon;
+  if (!condition || condition.toLowerCase().includes("clear")) {
+    // Sun icon
+    icon = (
+      <svg width="32" height="32" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
+        <line x1="12" y1="1" x2="12" y2="4" stroke="#FFA000" strokeWidth="2" />
+        <line x1="12" y1="20" x2="12" y2="23" stroke="#FFA000" strokeWidth="2" />
+        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" stroke="#FFA000" strokeWidth="2" />
+        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke="#FFA000" strokeWidth="2" />
+        <line x1="1" y1="12" x2="4" y2="12" stroke="#FFA000" strokeWidth="2" />
+        <line x1="20" y1="12" x2="23" y2="12" stroke="#FFA000" strokeWidth="2" />
+        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" stroke="#FFA000" strokeWidth="2" />
+        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" stroke="#FFA000" strokeWidth="2" />
+      </svg>
+    );
+  } else if (condition.toLowerCase().includes("cloud")) {
+    // Cloud icon
+    icon = (
+      <svg width="32" height="32" viewBox="0 0 24 24">
+        <ellipse cx="12" cy="12" rx="8" ry="5" fill="#B0C4DE" />
+      </svg>
+    );
+  } else if (condition.toLowerCase().includes("rain")) {
+    // Rain icon
+    icon = (
+      <svg width="32" height="32" viewBox="0 0 24 24">
+        <path d="M7 10h10a4 4 0 010 8H7a4 4 0 010-8z" fill="#4A90E2" />
+        <line x1="10" y1="18" x2="10" y2="21" stroke="#4A90E2" strokeWidth="2"/>
+        <line x1="14" y1="18" x2="14" y2="21" stroke="#4A90E2" strokeWidth="2"/>
+      </svg>
+    );
+  } else {
+    // Default (sun)
+    icon = (
+      <svg width="32" height="32" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5" fill="#FFEB3B" />
+      </svg>
+    );
+  }
+  return (
+    <div className="weather-icon">
+      {icon}
+      {temperature && <span className="temp-label">{temperature}°F</span>}
+    </div>
+  );
+};
+
+// A simple TV Icon for broadcast info.
+const TvIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24">
+    <rect x="2" y="3" width="20" height="14" rx="2" fill="#666" />
+    <rect x="3" y="4" width="18" height="12" rx="1" fill="#333" />
+    <path d="M10 17h4v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z" fill="#555" />
+  </svg>
+);
+
 const AdvancedGameDetailView = () => {
   const { id } = useParams(); // Game ID from URL
   const [gameData, setGameData] = useState(null);
@@ -16,7 +75,6 @@ const AdvancedGameDetailView = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
         // Get teams from REST (for logos and extra team info)
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
@@ -44,7 +102,6 @@ const AdvancedGameDetailView = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, [id]);
 
@@ -115,7 +172,7 @@ const AdvancedGameDetailView = () => {
     overUnder,
     spread,
     temperature,
-    weatherDescription,
+    // Remove weatherDescription field since it's nested in weather.condition.description
     windDirection,
     windSpeed,
     tv,
@@ -162,7 +219,7 @@ const AdvancedGameDetailView = () => {
 
   // Overview tab.
   const renderOverview = () => (
-    <div className="tab-content">
+    <div className="tab-content overview">
       <div className="teams-comparison">
         <div className="team-column">
           <img src={getTeamLogo(homeTeam)} alt={homeTeam} className="team-logo" />
@@ -193,7 +250,11 @@ const AdvancedGameDetailView = () => {
             ? new Date(startDate).toLocaleString()
             : "Upcoming Game"}
         </p>
-        {tv && <p><strong>Broadcast:</strong> {tv}</p>}
+        {tv && (
+          <p className="broadcast">
+            <TvIcon /> <span><strong>Broadcast:</strong> {tv}</span>
+          </p>
+        )}
         {lastPlay && <p><strong>Last Play:</strong> {lastPlay}</p>}
       </div>
     </div>
@@ -201,7 +262,7 @@ const AdvancedGameDetailView = () => {
 
   // Statistics tab.
   const renderStatistics = () => (
-    <div className="tab-content">
+    <div className="tab-content statistics">
       <h2>Scoring by Period</h2>
       {renderLineScores()}
       {currentClock && (
@@ -216,7 +277,7 @@ const AdvancedGameDetailView = () => {
 
   // Betting tab.
   const renderBetting = () => (
-    <div className="tab-content">
+    <div className="tab-content betting">
       <h2>Betting Information</h2>
       <div className="betting-grid">
         <p>
@@ -237,31 +298,43 @@ const AdvancedGameDetailView = () => {
 
   // Weather tab.
   const renderWeather = () => (
-    <div className="tab-content">
+    <div className="tab-content weather">
       <h2>Weather Conditions</h2>
-      <p>
-        <strong>Temperature:</strong>{" "}
-        {temperature || (weather && weather.temperature) || "N/A"}°F
-      </p>
-      <p>
-        <strong>Description:</strong>{" "}
-        {weatherDescription || (weather && weather.weatherDescription) || "N/A"}
-      </p>
-      <p>
-        <strong>Wind:</strong>{" "}
-        {windSpeed || (weather && weather.windSpeed)
-          ? `${windSpeed || weather.windSpeed} mph`
-          : "N/A"}{" "}
-        {windDirection || (weather && weather.windDirection)
-          ? `(${windDirection || weather.windDirection}°)`
-          : ""}
-      </p>
+      <div className="weather-details">
+        <WeatherIcon
+          condition={
+            weather && weather.condition && weather.condition.description
+              ? weather.condition.description
+              : ""
+          }
+          temperature={temperature || (weather && weather.temperature)}
+        />
+        <p>
+          <strong>Description:</strong>{" "}
+          {(weather && weather.condition && weather.condition.description) ||
+            "N/A"}
+        </p>
+        <p>
+          <strong>Wind:</strong>{" "}
+          {windSpeed || (weather && weather.windSpeed)
+            ? `${windSpeed || weather.windSpeed} mph`
+            : "N/A"}{" "}
+          {windDirection || (weather && weather.windDirection)
+            ? `(${windDirection || weather.windDirection}°)`
+            : ""}
+        </p>
+        {weather && weather.dewpoint && (
+          <p>
+            <strong>Dewpoint:</strong> {weather.dewpoint}
+          </p>
+        )}
+      </div>
     </div>
   );
 
   // Venue tab.
   const renderVenue = () => (
-    <div className="tab-content">
+    <div className="tab-content venue">
       <h2>Venue Information</h2>
       <p>
         <strong>Stadium:</strong> {venue || "TBD"}
@@ -272,62 +345,64 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Details tab: displays additional game info from game_info.
+  // Details tab: displays additional game info.
   const renderDetails = () => (
-    <div className="tab-content">
+    <div className="tab-content details">
       <h2>Additional Game Details</h2>
-      <p>
-        <strong>Attendance:</strong> {attendance || "N/A"}
-      </p>
-      <p>
-        <strong>Season:</strong> {season || "N/A"}{" "}
-        {seasonType ? `(Type: ${seasonType})` : ""}
-      </p>
-      <p>
-        <strong>Conference Game:</strong>{" "}
-        {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
-      </p>
-      <p>
-        <strong>Excitement:</strong> {excitement || "N/A"}
-      </p>
-      <p>
-        <strong>Away Classification:</strong> {awayClassification || "N/A"}
-      </p>
-      <p>
-        <strong>Away Conference:</strong> {awayConference || "N/A"} (ID:{" "}
-        {awayConferenceId || "N/A"})
-      </p>
-      <p>
-        <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End:{" "}
-        {awayEndElo || "N/A"}, Postgame Win Prob:{" "}
-        {awayPostgameWinProb || "N/A"}
-      </p>
-      <p>
-        <strong>Away Team ID:</strong> {awayTeamId || "N/A"}
-      </p>
-      <p>
-        <strong>Home Classification:</strong> {homeClassification || "N/A"}
-      </p>
-      <p>
-        <strong>Home Conference:</strong> {homeConference || "N/A"} (ID:{" "}
-        {homeConferenceId || "N/A"})
-      </p>
-      <p>
-        <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End:{" "}
-        {homeEndElo || "N/A"}, Postgame Win Prob:{" "}
-        {homePostgameWinProb || "N/A"}
-      </p>
-      <p>
-        <strong>Home Team ID:</strong> {homeTeamId || "N/A"}
-      </p>
-      <p>
-        <strong>Neutral Site:</strong>{" "}
-        {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
-      </p>
-      {notes && <p><strong>Notes:</strong> {notes}</p>}
-      <p>
-        <strong>Week:</strong> {week || "N/A"}
-      </p>
+      <div className="details-grid">
+        <p>
+          <strong>Attendance:</strong> {attendance || "N/A"}
+        </p>
+        <p>
+          <strong>Season:</strong> {season || "N/A"}{" "}
+          {seasonType ? `(Type: ${seasonType})` : ""}
+        </p>
+        <p>
+          <strong>Conference Game:</strong>{" "}
+          {conferenceGame !== undefined ? (conferenceGame ? "Yes" : "No") : "N/A"}
+        </p>
+        <p>
+          <strong>Excitement:</strong> {excitement || "N/A"}
+        </p>
+        <p>
+          <strong>Away Classification:</strong> {awayClassification || "N/A"}
+        </p>
+        <p>
+          <strong>Away Conference:</strong> {awayConference || "N/A"} (ID:{" "}
+          {awayConferenceId || "N/A"})
+        </p>
+        <p>
+          <strong>Away Elo:</strong> Start: {awayStartElo || "N/A"}, End:{" "}
+          {awayEndElo || "N/A"}, Postgame Win Prob:{" "}
+          {awayPostgameWinProb || "N/A"}
+        </p>
+        <p>
+          <strong>Away Team ID:</strong> {awayTeamId || "N/A"}
+        </p>
+        <p>
+          <strong>Home Classification:</strong> {homeClassification || "N/A"}
+        </p>
+        <p>
+          <strong>Home Conference:</strong> {homeConference || "N/A"} (ID:{" "}
+          {homeConferenceId || "N/A"})
+        </p>
+        <p>
+          <strong>Home Elo:</strong> Start: {homeStartElo || "N/A"}, End:{" "}
+          {homeEndElo || "N/A"}, Postgame Win Prob:{" "}
+          {homePostgameWinProb || "N/A"}
+        </p>
+        <p>
+          <strong>Home Team ID:</strong> {homeTeamId || "N/A"}
+        </p>
+        <p>
+          <strong>Neutral Site:</strong>{" "}
+          {neutralSite !== undefined ? (neutralSite ? "Yes" : "No") : "N/A"}
+        </p>
+        {notes && <p><strong>Notes:</strong> {notes}</p>}
+        <p>
+          <strong>Week:</strong> {week || "N/A"}
+        </p>
+      </div>
       {mediaInfo && mediaInfo.length > 0 && (
         <div className="media-info">
           <h3>Media Information</h3>
@@ -358,7 +433,7 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Render tab buttons including the new "Details" tab.
+  // Render tab buttons.
   const renderTabs = () => (
     <div className="tabs">
       <button
@@ -402,13 +477,14 @@ const AdvancedGameDetailView = () => {
 
   return (
     <div className="advanced-game-detail">
-      {/* Inline CSS for the component */}
+      {/* Inline CSS */}
       <style>{`
         .advanced-game-detail {
           padding: 20px;
-          font-family: Arial, sans-serif;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           max-width: 1000px;
           margin: 0 auto;
+          background-color: #fafafa;
         }
         .game-header {
           display: flex;
@@ -416,10 +492,16 @@ const AdvancedGameDetailView = () => {
           align-items: center;
           margin-bottom: 20px;
           padding-bottom: 10px;
-          border-bottom: 1px solid #eee;
+          border-bottom: 2px solid #ddd;
         }
         .game-header h1 {
+          font-size: 2rem;
           margin: 0;
+          color: #333;
+        }
+        .game-status {
+          font-size: 1rem;
+          color: #555;
         }
         .tabs {
           display: flex;
@@ -427,76 +509,71 @@ const AdvancedGameDetailView = () => {
           margin-bottom: 20px;
         }
         .tabs button {
+          flex: 1;
           background-color: #eee;
           border: none;
-          padding: 10px 15px;
+          padding: 12px;
           border-radius: 4px;
           cursor: pointer;
-          font-weight: bold;
+          font-size: 1rem;
+          transition: background-color 0.3s;
         }
         .tabs button.active {
           background-color: #D4001C;
           color: #fff;
         }
         .teams-comparison {
-          display: flex;
-          justify-content: space-between;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
           align-items: center;
           margin-bottom: 20px;
         }
         .team-column {
-          flex: 1;
           text-align: center;
-          padding: 10px;
         }
         .vs-column {
-          width: 80px;
-          text-align: center;
-          font-size: 28px;
+          font-size: 2rem;
           font-weight: bold;
+          color: #777;
         }
         .team-logo {
           width: 100px;
           height: 100px;
           object-fit: contain;
-          margin-bottom: 10px;
+          border-radius: 50%;
+          margin: 0 auto 10px;
         }
         .team-name {
-          font-size: 24px;
+          font-size: 1.5rem;
           font-weight: bold;
           margin-bottom: 5px;
+          color: #333;
         }
         .team-record {
-          color: #666;
+          font-size: 1rem;
+          color: #777;
           margin-bottom: 10px;
         }
         .score {
-          font-size: 42px;
+          font-size: 2rem;
           font-weight: bold;
-          margin: 10px 0;
+          color: #222;
         }
         .basic-info {
           text-align: center;
           margin-bottom: 20px;
         }
         .basic-info p {
+          font-size: 1rem;
+          color: #555;
           margin: 5px 0;
-          font-size: 16px;
         }
         .tab-content {
-          background-color: #f9f9f9;
-          border-radius: 8px;
+          background-color: #fff;
           padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           margin-bottom: 20px;
-        }
-        .stat-grid, .betting-grid {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-        }
-        .stat-grid > div, .betting-grid > p {
-          flex: 1;
-          min-width: 150px;
         }
         .line-scores table {
           width: 100%;
@@ -505,18 +582,34 @@ const AdvancedGameDetailView = () => {
         }
         .line-scores th, .line-scores td {
           border: 1px solid #ddd;
-          padding: 8px;
+          padding: 10px;
           text-align: center;
         }
         .line-scores th {
-          background-color: #f2f2f2;
+          background-color: #f7f7f7;
+        }
+        .betting-grid, .details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 15px;
+          margin-top: 15px;
+        }
+        .weather-icon {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .temp-label {
+          font-size: 1rem;
+          color: #333;
         }
         @media (max-width: 768px) {
           .teams-comparison {
-            flex-direction: column;
+            grid-template-columns: 1fr;
+            gap: 10px;
           }
           .vs-column {
-            margin: 15px 0;
+            font-size: 1.5rem;
           }
         }
       `}</style>
@@ -534,7 +627,6 @@ const AdvancedGameDetailView = () => {
 
       {renderTabs()}
 
-      {/* Render tab content based on activeTab */}
       {activeTab === "overview" && renderOverview()}
       {activeTab === "statistics" && renderStatistics()}
       {activeTab === "betting" && renderBetting()}

@@ -189,6 +189,14 @@ export const getGameInfo = async (gameId) => {
         awayClassification
         awayConference
         awayConferenceId
+        awayConferenceInfo {
+          abbreviation
+          division
+          id
+          name
+          shortName
+          srName
+        }
         awayEndElo
         awayLineScores
         awayPoints
@@ -196,11 +204,28 @@ export const getGameInfo = async (gameId) => {
         awayStartElo
         awayTeam
         awayTeamId
+        awayTeamInfo {
+          abbreviation
+          classification
+          conference
+          conferenceId
+          division
+          school
+          teamId
+        }
         conferenceGame
         excitement
         homeClassification
         homeConference
         homeConferenceId
+        homeConferenceInfo {
+          abbreviation
+          division
+          id
+          name
+          shortName
+          srName
+        }
         homeEndElo
         homeLineScores
         homePoints
@@ -208,6 +233,15 @@ export const getGameInfo = async (gameId) => {
         homeStartElo
         homeTeam
         homeTeamId
+        homeTeamInfo {
+          abbreviation
+          classification
+          conference
+          conferenceId
+          division
+          school
+          teamId
+        }
         neutralSite
         notes
         season
@@ -216,11 +250,22 @@ export const getGameInfo = async (gameId) => {
         startTimeTbd
         status
         venueId
-        week
         weather {
+          condition {
+            description
+            id
+          }
+          dewpoint
+          gameId
+          humidity
+          precipitation
+          pressure
+          snowfall
           temperature
-          weatherDescription
+          totalSun
+          weatherConditionCode
           windDirection
+          windGust
           windSpeed
         }
         mediaInfo {
@@ -233,6 +278,7 @@ export const getGameInfo = async (gameId) => {
           spread
           overUnder
         }
+        week
       }
     }
   `;
