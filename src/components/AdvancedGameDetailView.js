@@ -1127,10 +1127,10 @@ const AdvancedGameDetailView = () => {
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path
             fill="currentColor"
-            d="M12,2A10,10 0 1,0 22,12A10,10 0 0,0 12,2ZM11,17H13V15H11Zm0-4H13V7H11Z"
+            d="M3.5,18.5L9.5,12.5L13.5,16.5L22,6.92L20.59,5.5L13.5,13.5L9.5,9.5L2,17L3.5,18.5Z"
           />
         </svg>
-        <span>Win Metrics</span>
+        <span>Metrics</span>
       </button>
     </div>
   );
