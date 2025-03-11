@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
+import WinProb from "./WinProb";
 import "../styles/AdvancedGameDetailView.css";
 
 // Modern WeatherIcon component
@@ -217,7 +218,6 @@ const TvIcon = () => (
 );
 
 // New ExcitementRating component with stars
-// Modified excitement calculation: now the value is out of 10 (not 100)
 const ExcitementRating = ({ value }) => {
   const normalizedValue = value ? Math.min(5, Math.max(0, (value / 10) * 5)) : 0;
   const fullStars = Math.floor(normalizedValue);
@@ -238,7 +238,6 @@ const ExcitementRating = ({ value }) => {
   );
 };
 
-// Star component for excitement rating
 const Star = ({ fill }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" className="star-icon">
     <path
@@ -250,7 +249,6 @@ const Star = ({ fill }) => (
   </svg>
 );
 
-// Partial Star component for fractional ratings
 const PartialStar = ({ fill, percentage }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" className="star-icon">
     <defs>
@@ -268,10 +266,9 @@ const PartialStar = ({ fill, percentage }) => (
   </svg>
 );
 
-// New WinProbabilityCircle component
 const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) => {
   const normalizedProb = probability ? Math.min(100, Math.max(0, probability)) : 0;
-  const circumference = 2 * Math.PI * 40; // circle radius is 40
+  const circumference = 2 * Math.PI * 40;
   const dashOffset = circumference * (1 - normalizedProb / 100);
   const color = teamColor || "#4682B4";
   
@@ -331,7 +328,6 @@ const WinProbabilityCircle = ({ probability, teamName, teamColor, teamLogo }) =>
   );
 };
 
-// EloRating component
 const EloRating = ({ startElo, endElo, label }) => {
   const hasData = startElo !== undefined && endElo !== undefined;
   const change = hasData ? endElo - startElo : 0;
@@ -370,19 +366,16 @@ const EloRating = ({ startElo, endElo, label }) => {
   );
 };
 
-// Define sportsbook logos mapping
 const sportsbookLogos = {
   "DraftKings": "/photos/draftkings.png",
   "ESPN Bet": "/photos/espnbet.png",
   "Bovada": "/photos/bovada.jpg",
 };
 
-// Helper function to get a sportsbook logo
 const getSportsbookLogo = (provider) => {
   return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
 };
 
-// Helper function to get a random betting line for a game
 const getRandomLineForGame = (gameId, lines) => {
   const gameLines = lines.filter((line) => line.gameId === gameId);
   if (gameLines.length === 0) return null;
@@ -398,7 +391,6 @@ const AdvancedGameDetailView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch teams, game data, and betting lines
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -408,7 +400,6 @@ const AdvancedGameDetailView = () => {
         const restGameData = await teamsService.getGameById(id);
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
-        // Fetch betting lines for the year 2024 (or adjust as needed)
         const linesData = await teamsService.getGameLines(2024);
         setLines(linesData);
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
@@ -426,7 +417,6 @@ const AdvancedGameDetailView = () => {
     fetchData();
   }, [id]);
 
-  // Helper functions for teams and colors
   const getTeamLogo = (teamName) => {
     const team = teams.find(
       (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
@@ -532,11 +522,8 @@ const AdvancedGameDetailView = () => {
   const awayTeamColor = getTeamColor(awayTeam);
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
-
-  // Betting: get a random sportsbook line for the game
   const randomLine = getRandomLineForGame(gameId, lines);
 
-  // Render a modern line scores table with totals.
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
     if (!periods)
@@ -605,7 +592,6 @@ const AdvancedGameDetailView = () => {
     );
   };
 
-  // Overview tab.
   const renderOverview = () => (
     <div className="tab-content overview">
       <div className="scoreboard-container">
@@ -702,10 +688,7 @@ const AdvancedGameDetailView = () => {
           <div className="meta-item">
             <div className="meta-icon">
               <svg width="20" height="20" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z"
-                />
+                <path fill="currentColor" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z" />
               </svg>
             </div>
             <div className="meta-content">
@@ -748,7 +731,6 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Statistics tab.
   const renderStatisticsTab = () => (
     <div className="tab-content statistics">
       <div className="stat-section">
@@ -783,11 +765,8 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Betting tab.
   const renderBetting = () => {
-    // Get a random betting line for this game (if available)
     const randomLine = getRandomLineForGame(gameId, lines);
-
     return (
       <div className="tab-content betting">
         <h2>Betting Information</h2>
@@ -821,7 +800,6 @@ const AdvancedGameDetailView = () => {
     );
   };
 
-  // Weather tab.
   const renderWeatherTab = () => (
     <div className="tab-content weather">
       <h2>Weather Conditions</h2>
@@ -899,7 +877,6 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Venue tab.
   const renderVenue = () => (
     <div className="tab-content venue">
       <h2>Venue Information</h2>
@@ -951,7 +928,6 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // Details tab.
   const renderDetails = () => (
     <div className="tab-content details">
       <h2>Additional Game Details</h2>
@@ -1085,15 +1061,12 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
-  // New Win Metrics tab (placeholder content)
   const renderWinMetrics = () => (
     <div className="tab-content win-metrics">
-      <h2>Win Metrics</h2>
-      <p>Metrics</p>
+      <WinProb year={season} week={week} />
     </div>
   );
 
-  // Render tab buttons.
   const renderTabs = () => (
     <div className="tabs">
       <button className={`tab-button ${activeTab === "overview" ? "active" : ""}`} onClick={() => setActiveTab("overview")}>
@@ -1189,5 +1162,6 @@ const AdvancedGameDetailView = () => {
 };
 
 export default AdvancedGameDetailView;
+
 
 
