@@ -4,7 +4,7 @@ import teamsService from "../services/teamsService";
 
 // Register required Chart.js components
 import {
-  Chart,
+  Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -13,14 +13,14 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
 const WinProb = ({ gameId }) => {
   const [wpData, setWpData] = useState([]);
   const [teams, setTeams] = useState({ home: {}, away: {} });
   const [loading, setLoading] = useState(true);
   const [selectedPlay, setSelectedPlay] = useState(null);
-  const [hoveredPlay, setHoveredPlay] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -54,49 +54,46 @@ const WinProb = ({ gameId }) => {
         
         setWpData(uniquePlays);
         
-        // The key problem is here - we need to fetch teams data separately, not rely on bn.getTeam
-        if (uniquePlays.length > 0) {
-          // Get all teams first
-          const allTeams = await teamsService.getTeams();
-          
-          // Find the home and away teams from the complete team list
-          const homeTeam = allTeams.find(t => t.id === uniquePlays[0].homeId);
-          const awayTeam = allTeams.find(t => t.id === uniquePlays[0].awayId);
-          
-          if (homeTeam && awayTeam) {
-            setTeams({ 
-              home: { 
-                name: uniquePlays[0].home || homeTeam.school || "Home", 
-                color: homeTeam.color ? `#${homeTeam.color}` : "#007bff",
-                alternateColor: homeTeam.alt_color ? `#${homeTeam.alt_color}` : "#4b9cff",
-                logo: homeTeam.logos && homeTeam.logos.length > 0 ? homeTeam.logos[0] : null,
-                id: uniquePlays[0].homeId,
-                mascot: homeTeam.mascot || "",
-              }, 
-              away: { 
-                name: uniquePlays[0].away || awayTeam.school || "Away", 
-                color: awayTeam.color ? `#${awayTeam.color}` : "#28a745",
-                alternateColor: awayTeam.alt_color ? `#${awayTeam.alt_color}` : "#66c17d",
-                logo: awayTeam.logos && awayTeam.logos.length > 0 ? awayTeam.logos[0] : null,
-                id: uniquePlays[0].awayId,
-                mascot: awayTeam.mascot || "",
-              }
-            });
-          } else {
-            // Fallback if we can't find the teams
-            setTeams({
-              home: {
-                name: uniquePlays[0].home || "Home Team",
-                color: "#007bff",
-                id: uniquePlays[0].homeId
-              },
-              away: {
-                name: uniquePlays[0].away || "Away Team",
-                color: "#28a745",
-                id: uniquePlays[0].awayId
-              }
-            });
-          }
+        // Get all teams first
+        const allTeams = await teamsService.getTeams();
+        
+        // Find the home and away teams from the complete team list
+        const homeTeam = allTeams.find(t => t.id === uniquePlays[0].homeId);
+        const awayTeam = allTeams.find(t => t.id === uniquePlays[0].awayId);
+        
+        if (homeTeam && awayTeam) {
+          setTeams({ 
+            home: { 
+              name: uniquePlays[0].home || homeTeam.school || "Home", 
+              color: homeTeam.color ? `#${homeTeam.color}` : "#007bff",
+              alternateColor: homeTeam.alt_color ? `#${homeTeam.alt_color}` : "#4b9cff",
+              logo: homeTeam.logos && homeTeam.logos.length > 0 ? homeTeam.logos[0] : null,
+              id: uniquePlays[0].homeId,
+              mascot: homeTeam.mascot || "",
+            }, 
+            away: { 
+              name: uniquePlays[0].away || awayTeam.school || "Away", 
+              color: awayTeam.color ? `#${awayTeam.color}` : "#28a745",
+              alternateColor: awayTeam.alt_color ? `#${awayTeam.alt_color}` : "#66c17d",
+              logo: awayTeam.logos && awayTeam.logos.length > 0 ? awayTeam.logos[0] : null,
+              id: uniquePlays[0].awayId,
+              mascot: awayTeam.mascot || "",
+            }
+          });
+        } else {
+          // Fallback if we can't find the teams
+          setTeams({
+            home: {
+              name: uniquePlays[0].home || "Home Team",
+              color: "#007bff",
+              id: uniquePlays[0].homeId
+            },
+            away: {
+              name: uniquePlays[0].away || "Away Team",
+              color: "#28a745",
+              id: uniquePlays[0].awayId
+            }
+          });
         }
       } catch (error) {
         console.error("Error fetching win probability metrics:", error);
@@ -129,30 +126,88 @@ const WinProb = ({ gameId }) => {
     }
   };
 
-  // Prepare data for Chart.js
-  const chartData = {
-    labels: wpData.map((d) => d.playNumber),
-    datasets: [
-      {
-        label: `Win Probability`,
-        data: wpData.map((d) => d.homeWinProbability * 100),
+  // Create datasets with separate segments for each possession change
+  const createDatasetWithSegments = () => {
+    if (!wpData.length) return [];
+    
+    const dataset = {
+      label: "Win Probability",
+      data: wpData.map(d => d.homeWinProbability * 100),
+      borderWidth: 3,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      tension: 0.1,
+      fill: false,
+      segments: []
+    };
+    
+    // Create segments based on possession changes
+    let currentPossession = wpData[0].homeBall;
+    let segmentStart = 0;
+    
+    for (let i = 1; i < wpData.length; i++) {
+      if (wpData[i].homeBall !== currentPossession) {
+        // Possession changed, add segment
+        dataset.segments.push({
+          from: segmentStart,
+          to: i,
+          color: currentPossession ? teams.home.color : teams.away.color
+        });
+        
+        // Start new segment
+        segmentStart = i;
+        currentPossession = wpData[i].homeBall;
+      }
+    }
+    
+    // Add the final segment
+    dataset.segments.push({
+      from: segmentStart,
+      to: wpData.length - 1,
+      color: currentPossession ? teams.home.color : teams.away.color
+    });
+    
+    return dataset;
+  };
+
+  // This is the key function to make different colored line segments based on possession
+  const createSegmentedData = () => {
+    if (!wpData.length) return { labels: [], datasets: [] };
+    
+    const dataset = createDatasetWithSegments();
+    const datasets = [];
+    
+    // Convert each segment to its own dataset
+    dataset.segments.forEach((segment, index) => {
+      // Create a dataset for this segment
+      const segmentData = new Array(wpData.length).fill(null);
+      
+      // Fill in the data only for this segment's range
+      for (let i = segment.from; i <= segment.to; i++) {
+        segmentData[i] = dataset.data[i];
+      }
+      
+      // Add connecting point if not the first segment
+      if (index > 0 && segment.from > 0) {
+        segmentData[segment.from - 1] = dataset.data[segment.from - 1];
+      }
+      
+      datasets.push({
+        label: `Segment ${index + 1}`,
+        data: segmentData,
+        borderColor: segment.color,
         borderWidth: 3,
         pointRadius: 0,
         pointHoverRadius: 6,
-        pointBackgroundColor: (ctx) => {
-          if (!ctx.raw || !wpData[ctx.dataIndex]) return teams.home.color;
-          return wpData[ctx.dataIndex].homeBall ? teams.home.color : teams.away.color;
-        },
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        tension: 0.2,
+        tension: 0.1,
         fill: false,
-        borderColor: (ctx) => {
-          if (!ctx.p0DataIndex || !wpData[ctx.p0DataIndex]) return teams.home.color;
-          return wpData[ctx.p0DataIndex].homeBall ? teams.home.color : teams.away.color;
-        },
-      }
-    ],
+      });
+    });
+    
+    return {
+      labels: wpData.map(d => d.playNumber),
+      datasets: datasets
+    };
   };
 
   // Enhanced chart options
@@ -216,20 +271,15 @@ const WinProb = ({ gameId }) => {
       mode: 'index',
       intersect: false,
     },
-    onHover: (event, elements, chart) => {
-      if (elements && elements.length > 0) {
-        setHoveredPlay(elements[0].index);
-      } else {
-        setHoveredPlay(null);
-      }
-    },
     onClick: (event, elements, chart) => {
       if (elements && elements.length > 0) {
-        const index = elements[0].index;
-        setSelectedPlay(index);
+        const index = elements[0].dataIndex;
+        if (index >= 0 && index < wpData.length) {
+          setSelectedPlay(index);
+        }
       } else if (chart && chart.scales && chart.scales.x) {
         // If clicked on empty area, try to find closest point
-        const canvasPosition = Chart.getRelativePosition(event, chart);
+        const canvasPosition = ChartJS.getRelativePosition(event, chart);
         const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
         
         // Find closest point if clicked between points
@@ -493,7 +543,7 @@ const WinProb = ({ gameId }) => {
           {renderPossessionLegend()}
           
           <div className="chart-container">
-            <Line data={chartData} options={options} height={400} />
+            <Line data={createSegmentedData()} options={options} height={400} />
           </div>
           
           {selectedPlay !== null && renderPlayDetails()}
@@ -504,8 +554,8 @@ const WinProb = ({ gameId }) => {
           <p>No win probability data available for this game.</p>
         </div>
       )}
-      
-      <style jsx>{`
+
+<style jsx>{`
         .winprob-container {
           width: 100%;
           max-width: 1200px;
@@ -773,8 +823,7 @@ const WinProb = ({ gameId }) => {
         .down-distance {
           color: #333;
         }
-        
-        .yard-line {
+          .yard-line {
           color: #555;
         }
         
@@ -901,5 +950,3 @@ const WinProb = ({ gameId }) => {
     </div>
   );
 };
-
-export default WinProb;
