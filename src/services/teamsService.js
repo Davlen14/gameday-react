@@ -564,12 +564,12 @@ export const getPPAPlayers = async (team, year) => {
     return await fetchData(endpoint, params);
   };
   
-  // GET /metrics/wp - Fetch win probability metrics
-  export const getMetricsWP = async (year, week) => {
+  export const getMetricsWP = async (gameId) => {
     const endpoint = "/metrics/wp";
-    const params = { year, week };
+    const params = { gameId };
     return await fetchData(endpoint, params);
   };
+  
   
   // GET /metrics/wp/pregame - Fetch pregame win probability metrics
   export const getMetricsWPPregame = async (year, week) => {
