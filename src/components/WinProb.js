@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import teamsService from "../services/teamsService";
 
@@ -26,11 +26,16 @@ function parseColor(rawColor, fallback) {
 
 const WinProb = ({ gameId }) => {
   const [wpData, setWpData] = useState([]);
+  const [visibleData, setVisibleData] = useState([]);
   const [teams, setTeams] = useState({ home: {}, away: {} });
   const [loading, setLoading] = useState(true);
-  const [selectedPlay, setSelectedPlay] = useState(null);
+  const [selectedPlay, setSelectedPlay] = useState(0); // Default to first play
   const [hoveredPlay, setHoveredPlay] = useState(null);
   const [error, setError] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto-play by default
+  const [playSpeed, setPlaySpeed] = useState(500); // Animation speed in ms
+  const animationRef = useRef(null);
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +67,9 @@ const WinProb = ({ gameId }) => {
         });
         
         setWpData(uniquePlays);
+        // Initialize with just the first play
+        setVisibleData([uniquePlays[0]]);
+        setSelectedPlay(0);
         
         if (uniquePlays.length > 0) {
           // Get all teams first
@@ -86,7 +94,7 @@ const WinProb = ({ gameId }) => {
               home: { 
                 name: uniquePlays[0].home || homeTeam.school || "Home", 
                 color: homeColor,
-                alternateColor: awayColor, // or you can keep alt_color if you want
+                alternateColor: awayColor,
                 logo: homeTeam.logos && homeTeam.logos.length > 0 ? homeTeam.logos[0] : null,
                 id: uniquePlays[0].homeId,
                 mascot: homeTeam.mascot || "",
@@ -94,7 +102,7 @@ const WinProb = ({ gameId }) => {
               away: { 
                 name: uniquePlays[0].away || awayTeam.school || "Away", 
                 color: awayColor,
-                alternateColor: homeColor, // or keep alt_color if you want
+                alternateColor: homeColor,
                 logo: awayTeam.logos && awayTeam.logos.length > 0 ? awayTeam.logos[0] : null,
                 id: uniquePlays[0].awayId,
                 mascot: awayTeam.mascot || "",
@@ -125,7 +133,95 @@ const WinProb = ({ gameId }) => {
     };
 
     fetchData();
+    
+    // Cleanup animation on component unmount
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, [gameId]);
+
+  // Start animation when data is loaded and animation is set to play
+  useEffect(() => {
+    if (wpData.length > 0 && isPlaying) {
+      startAnimation();
+    } else if (!isPlaying && animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [wpData, isPlaying, playSpeed]);
+
+  // Animation function to show plays one by one
+  const startAnimation = () => {
+    let currentIndex = visibleData.length;
+    let lastUpdateTime = Date.now();
+    
+    const animate = () => {
+      const now = Date.now();
+      const deltaTime = now - lastUpdateTime;
+      
+      if (deltaTime >= playSpeed && currentIndex < wpData.length) {
+        // Add the next play
+        setVisibleData(prev => [...prev, wpData[currentIndex]]);
+        setSelectedPlay(currentIndex);
+        
+        currentIndex++;
+        lastUpdateTime = now;
+        
+        // Stop animation when we reach the end
+        if (currentIndex >= wpData.length) {
+          setIsPlaying(false);
+          return;
+        }
+      }
+      
+      if (isPlaying) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Toggle play/pause
+  const togglePlayPause = () => {
+    if (!isPlaying && visibleData.length < wpData.length) {
+      setIsPlaying(true);
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  // Reset animation
+  const resetAnimation = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    setVisibleData([wpData[0]]);
+    setSelectedPlay(0);
+    setIsPlaying(true);
+  };
+
+  // Skip to end
+  const skipToEnd = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    setVisibleData(wpData);
+    setSelectedPlay(wpData.length - 1);
+    setIsPlaying(false);
+  };
+
+  // Change playback speed
+  const changeSpeed = (newSpeed) => {
+    setPlaySpeed(newSpeed);
+  };
 
   // Helper function to format down
   const getDownString = (down) => {
@@ -149,19 +245,19 @@ const WinProb = ({ gameId }) => {
 
   // Prepare data for Chart.js with team color based on possession
   const chartData = {
-    labels: wpData.map((d) => d.playNumber),
+    labels: visibleData.map((d) => d.playNumber),
     datasets: [
       {
         label: `Win Probability`,
-        data: wpData.map((d) => d.homeWinProbability * 100),
+        data: visibleData.map((d) => d.homeWinProbability * 100),
         borderWidth: 3,
         pointRadius: 0,
         pointHoverRadius: 6,
         // Set point color based on which team has possession
         pointBackgroundColor: (ctx) => {
           const index = ctx.dataIndex;
-          if (!wpData[index]) return teams.home.color;
-          return wpData[index].homeBall ? teams.home.color : teams.away.color;
+          if (!visibleData[index]) return teams.home.color;
+          return visibleData[index].homeBall ? teams.home.color : teams.away.color;
         },
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
@@ -173,8 +269,8 @@ const WinProb = ({ gameId }) => {
         segment: {
           borderColor: (ctx) => {
             const index = ctx.p0DataIndex;
-            if (!wpData[index]) return teams.home.color;
-            return wpData[index].homeBall ? teams.home.color : teams.away.color;
+            if (!visibleData[index]) return teams.home.color;
+            return visibleData[index].homeBall ? teams.home.color : teams.away.color;
           }
         }
       }
@@ -197,14 +293,14 @@ const WinProb = ({ gameId }) => {
         callbacks: {
           title: (tooltipItems) => {
             const idx = tooltipItems[0].dataIndex;
-            if (!wpData[idx]) return "Play";
-            return `Play #${wpData[idx].playNumber}`;
+            if (!visibleData[idx]) return "Play";
+            return `Play #${visibleData[idx].playNumber}`;
           },
           label: (tooltipItem) => {
             const idx = tooltipItem.dataIndex;
-            if (!wpData[idx]) return "";
+            if (!visibleData[idx]) return "";
             
-            const play = wpData[idx];
+            const play = visibleData[idx];
             const homeProb = (play.homeWinProbability * 100).toFixed(1);
             const awayProb = (100 - parseFloat(homeProb)).toFixed(1);
             
@@ -218,9 +314,9 @@ const WinProb = ({ gameId }) => {
           },
           afterLabel: (tooltipItem) => {
             const idx = tooltipItem.dataIndex;
-            if (!wpData[idx]) return "";
+            if (!visibleData[idx]) return "";
             
-            const play = wpData[idx];
+            const play = visibleData[idx];
             const possession = play.homeBall ? teams.home.name : teams.away.name;
             let result = [];
             
@@ -256,10 +352,10 @@ const WinProb = ({ gameId }) => {
         const canvasPosition = Chart.getRelativePosition(event, chart);
         const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
         
-        if (dataX !== undefined && wpData.length > 0) {
+        if (dataX !== undefined && visibleData.length > 0) {
           const closestIdx = Math.min(
             Math.max(0, Math.round(dataX)), 
-            wpData.length - 1
+            visibleData.length - 1
           );
           setSelectedPlay(closestIdx);
         }
@@ -321,14 +417,14 @@ const WinProb = ({ gameId }) => {
       },
     },
     animation: {
-      duration: 1500,
+      duration: 500, // Faster animations for real-time updates
       easing: 'easeOutQuart',
     },
   };
 
   // Display team headers with logos and scores
   const renderTeamHeaders = () => {
-    const finalScore = wpData.length > 0 ? wpData[wpData.length - 1] : null;
+    const currentPlay = visibleData.length > 0 ? visibleData[visibleData.length - 1] : null;
     
     return (
       <div className="team-header-container">
@@ -347,17 +443,17 @@ const WinProb = ({ gameId }) => {
             <span className="team-mascot">{teams.home.mascot}</span>
           </div>
           <div className="team-score" style={{ backgroundColor: teams.home.color }}>
-            {finalScore ? finalScore.homeScore : "0"}
+            {currentPlay ? currentPlay.homeScore : "0"}
           </div>
         </div>
         
         <div className="game-status">
-          <span>FINAL</span>
+          <span>{visibleData.length === wpData.length ? "FINAL" : "LIVE"}</span>
         </div>
         
         <div className="team-header away-team" style={{ borderColor: teams.away.color }}>
           <div className="team-score" style={{ backgroundColor: teams.away.color }}>
-            {finalScore ? finalScore.awayScore : "0"}
+            {currentPlay ? currentPlay.awayScore : "0"}
           </div>
           <div className="team-name-container">
             <h3 className="team-name">{teams.away.name}</h3>
@@ -393,11 +489,66 @@ const WinProb = ({ gameId }) => {
     );
   };
 
+  // Playback controls
+  const renderPlaybackControls = () => {
+    const isComplete = visibleData.length === wpData.length;
+    const playButtonIcon = isPlaying ? "⏸" : "▶";
+    
+    return (
+      <div className="playback-controls">
+        <button 
+          className="control-button" 
+          onClick={resetAnimation} 
+          disabled={visibleData.length === 1 && !isPlaying}
+          title="Restart"
+        >
+          ⏮
+        </button>
+        
+        <button 
+          className="control-button" 
+          onClick={togglePlayPause} 
+          disabled={isComplete}
+          title={isPlaying ? "Pause" : "Play"}
+        >
+          {playButtonIcon}
+        </button>
+        
+        <button 
+          className="control-button" 
+          onClick={skipToEnd} 
+          disabled={isComplete}
+          title="Skip to End"
+        >
+          ⏭
+        </button>
+        
+        <div className="speed-controls">
+          <span>Speed:</span>
+          <select 
+            value={playSpeed} 
+            onChange={(e) => changeSpeed(Number(e.target.value))}
+            className="speed-select"
+          >
+            <option value="1000">Slow</option>
+            <option value="500">Normal</option>
+            <option value="200">Fast</option>
+            <option value="50">Very Fast</option>
+          </select>
+        </div>
+        
+        <div className="progress-indicator">
+          Play: {visibleData.length} / {wpData.length}
+        </div>
+      </div>
+    );
+  };
+
   // Display selected play details
   const renderPlayDetails = () => {
-    if (!selectedPlay || !wpData[selectedPlay]) return null;
+    if (selectedPlay === null || !visibleData[selectedPlay]) return null;
     
-    const play = wpData[selectedPlay];
+    const play = visibleData[selectedPlay];
     const homeProb = (play.homeWinProbability * 100).toFixed(1);
     const awayProb = (100 - parseFloat(homeProb)).toFixed(1);
     const isPossessionHome = play.homeBall;
@@ -514,9 +665,10 @@ const WinProb = ({ gameId }) => {
           </div>
           
           {renderPossessionLegend()}
+          {renderPlaybackControls()}
           
           <div className="chart-container">
-            <Line data={chartData} options={options} height={400} />
+            <Line data={chartData} options={options} height={400} ref={chartRef} />
           </div>
           
           {selectedPlay !== null && renderPlayDetails()}
@@ -629,6 +781,73 @@ const WinProb = ({ gameId }) => {
           font-weight: 700;
           color: #333;
           letter-spacing: 1px;
+        }
+        
+        /* Playback Controls */
+        .playback-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 16px 0 24px;
+          padding: 12px;
+          background: #f8f8f8;
+          border-radius: 8px;
+          gap: 16px;
+        }
+        
+        .control-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          border: none;
+          background: #fff;
+          color: #333;
+          font-size: 1.2rem;
+          cursor: pointer;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s;
+        }
+        
+        .control-button:hover:not(:disabled) {
+          background: #f0f0f0;
+          transform: scale(1.05);
+        }
+        
+        .control-button:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        
+        .speed-controls {
+          display: flex;
+          align-items: center;
+          margin-left: 16px;
+          gap: 8px;
+        }
+        
+        .speed-controls span {
+          font-size: 0.9rem;
+          color: #666;
+        }
+        
+        .speed-select {
+          padding: 4px 8px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+          background: #fff;
+          font-size: 0.9rem;
+        }
+        
+        .progress-indicator {
+          margin-left: auto;
+          padding: 4px 10px;
+          background: #eee;
+          border-radius: 12px;
+          font-size: 0.85rem;
+          color: #555;
         }
         
         /* View Advanced Link */
