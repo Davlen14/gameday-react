@@ -54,29 +54,49 @@ const WinProb = ({ gameId }) => {
         
         setWpData(uniquePlays);
         
-        // Fetch team information
+        // The key problem is here - we need to fetch teams data separately, not rely on bn.getTeam
         if (uniquePlays.length > 0) {
-          const homeTeamData = await teamsService.getTeam(uniquePlays[0].homeId);
-          const awayTeamData = await teamsService.getTeam(uniquePlays[0].awayId);
+          // Get all teams first
+          const allTeams = await teamsService.getTeams();
           
-          setTeams({ 
-            home: { 
-              name: uniquePlays[0].home || homeTeamData.school || "Home", 
-              color: homeTeamData.color ? `#${homeTeamData.color}` : "#007bff",
-              alternateColor: homeTeamData.alt_color ? `#${homeTeamData.alt_color}` : "#4b9cff",
-              logo: homeTeamData.logos && homeTeamData.logos.length > 0 ? homeTeamData.logos[0] : null,
-              id: uniquePlays[0].homeId,
-              mascot: homeTeamData.mascot || "",
-            }, 
-            away: { 
-              name: uniquePlays[0].away || awayTeamData.school || "Away", 
-              color: awayTeamData.color ? `#${awayTeamData.color}` : "#28a745",
-              alternateColor: awayTeamData.alt_color ? `#${awayTeamData.alt_color}` : "#66c17d",
-              logo: awayTeamData.logos && awayTeamData.logos.length > 0 ? awayTeamData.logos[0] : null,
-              id: uniquePlays[0].awayId,
-              mascot: awayTeamData.mascot || "",
-            }
-          });
+          // Find the home and away teams from the complete team list
+          const homeTeam = allTeams.find(t => t.id === uniquePlays[0].homeId);
+          const awayTeam = allTeams.find(t => t.id === uniquePlays[0].awayId);
+          
+          if (homeTeam && awayTeam) {
+            setTeams({ 
+              home: { 
+                name: uniquePlays[0].home || homeTeam.school || "Home", 
+                color: homeTeam.color ? `#${homeTeam.color}` : "#007bff",
+                alternateColor: homeTeam.alt_color ? `#${homeTeam.alt_color}` : "#4b9cff",
+                logo: homeTeam.logos && homeTeam.logos.length > 0 ? homeTeam.logos[0] : null,
+                id: uniquePlays[0].homeId,
+                mascot: homeTeam.mascot || "",
+              }, 
+              away: { 
+                name: uniquePlays[0].away || awayTeam.school || "Away", 
+                color: awayTeam.color ? `#${awayTeam.color}` : "#28a745",
+                alternateColor: awayTeam.alt_color ? `#${awayTeam.alt_color}` : "#66c17d",
+                logo: awayTeam.logos && awayTeam.logos.length > 0 ? awayTeam.logos[0] : null,
+                id: uniquePlays[0].awayId,
+                mascot: awayTeam.mascot || "",
+              }
+            });
+          } else {
+            // Fallback if we can't find the teams
+            setTeams({
+              home: {
+                name: uniquePlays[0].home || "Home Team",
+                color: "#007bff",
+                id: uniquePlays[0].homeId
+              },
+              away: {
+                name: uniquePlays[0].away || "Away Team",
+                color: "#28a745",
+                id: uniquePlays[0].awayId
+              }
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching win probability metrics:", error);
@@ -100,15 +120,6 @@ const WinProb = ({ gameId }) => {
     }
   };
 
-  // Prepare gradient backgrounds for chart
-  const createGradient = (canvas, teamColor, opacity) => {
-    const ctx = canvas.getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, `${teamColor}${opacity}`);
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    return gradient;
-  };
-
   // Format yard line for display
   const formatYardLine = (yardLine, homeBall) => {
     if (yardLine <= 50) {
@@ -123,7 +134,7 @@ const WinProb = ({ gameId }) => {
     labels: wpData.map((d) => d.playNumber),
     datasets: [
       {
-        label: `${teams.home.name} Win Probability`,
+        label: `Win Probability`,
         data: wpData.map((d) => d.homeWinProbability * 100),
         borderWidth: 3,
         pointRadius: 0,
@@ -139,12 +150,6 @@ const WinProb = ({ gameId }) => {
         borderColor: (ctx) => {
           if (!ctx.p0DataIndex || !wpData[ctx.p0DataIndex]) return teams.home.color;
           return wpData[ctx.p0DataIndex].homeBall ? teams.home.color : teams.away.color;
-        },
-        segment: {
-          borderColor: (ctx) => {
-            if (!ctx.p0DataIndex || !wpData[ctx.p0DataIndex]) return teams.home.color;
-            return wpData[ctx.p0DataIndex].homeBall ? teams.home.color : teams.away.color;
-          }
         },
       }
     ],
