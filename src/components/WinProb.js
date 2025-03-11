@@ -25,10 +25,36 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
       try {
         // Fetch win probability metrics for the specific game
         const data = await teamsService.getMetricsWP(gameId);
-        setWpData(data);
         
-        // Fetch team information for colors
-        if (data.length > 0) {
+        // Filter out duplicate play numbers if they exist
+        // We want to ensure we have unique play numbers to avoid chart issues
+        const uniquePlays = [];
+        const playNumbersSeen = {};
+        
+        data.forEach(play => {
+          if (!playNumbersSeen[play.playNumber]) {
+            playNumbersSeen[play.playNumber] = true;
+            uniquePlays.push(play);
+          }
+        });
+        
+        setWpData(uniquePlays);
+        
+        // Set teams directly if passed as props
+        if (homeTeam && awayTeam) {
+          setTeams({
+            home: { 
+              name: homeTeam.school || "Home", 
+              color: homeTeam.color || "#007bff"
+            },
+            away: {
+              name: awayTeam.school || "Away",
+              color: awayTeam.color || "#28a745"
+            }
+          });
+        }
+        // Otherwise, fetch team information for colors
+        else if (data.length > 0) {
           const homeTeamData = await teamsService.getTeam(data[0].homeId);
           const awayTeamData = await teamsService.getTeam(data[0].awayId);
           setTeams({ 
@@ -50,15 +76,12 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
     };
 
     fetchData();
-  }, [gameId]);
+  }, [gameId, homeTeam, awayTeam]);
 
-  // Set up data segment colors based on possession
-  const getSegmentColors = () => {
-    if (!wpData.length) return [];
-    
-    return wpData.map((d) => {
-      return d.homeBall ? teams.home.color : teams.away.color;
-    });
+  // Function to determine which team color to use at a particular play
+  const getTeamColorForPlay = (playIndex) => {
+    if (!wpData[playIndex]) return teams.home.color;
+    return wpData[playIndex].homeBall ? teams.home.color : teams.away.color;
   };
 
   // Prepare data for Chart.js
@@ -66,19 +89,26 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
     labels: wpData.map((d) => d.playNumber),
     datasets: [
       {
-        label: "Win Probability",
+        label: `${teams.home.name} Win Probability`,
         data: wpData.map((d) => d.homeWinProbability * 100),
-        borderWidth: 2,
+        borderWidth: 2.5,
         pointRadius: 0,
         tension: 0.1,
         fill: false,
-        segment: {
-          borderColor: (ctx) => {
-            const colors = getSegmentColors();
-            return colors[ctx.p0DataIndex];
-          }
+        borderColor: (ctx) => {
+          if (!wpData[ctx.p0DataIndex]) return teams.home.color;
+          return wpData[ctx.p0DataIndex].homeBall ? teams.home.color : teams.away.color;
         },
       },
+      {
+        label: `${teams.away.name} Win Probability`,
+        data: wpData.map((d) => (1 - d.homeWinProbability) * 100),
+        borderWidth: 0, // Hidden line, just for legend
+        pointRadius: 0,
+        tension: 0.1,
+        fill: false,
+        hidden: true, // Hide the actual line
+      }
     ],
   };
 
@@ -101,20 +131,30 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
             if (!wpData[idx]) return "";
             
             const play = wpData[idx];
-            const probText = `${teams.home.name} Win Prob: ${(play.homeWinProbability * 100).toFixed(1)}%`;
+            const homeProb = (play.homeWinProbability * 100).toFixed(1);
+            const awayProb = (100 - homeProb).toFixed(1);
             
-            return [
-              probText,
-              `${play.playText}`,
-              `Score: ${play.homeScore}-${play.awayScore}`
-            ];
+            // Only show the first dataset's info (home team)
+            if (tooltipItem.datasetIndex === 0) {
+              return [
+                `${teams.home.name}: ${homeProb}%`,
+                `${teams.away.name}: ${awayProb}%`,
+                `${play.playText}`,
+                `Score: ${play.homeScore}-${play.awayScore}`
+              ];
+            }
+            return [];
           },
           afterLabel: (tooltipItem) => {
             const idx = tooltipItem.dataIndex;
-            if (!wpData[idx]) return "";
+            if (!wpData[idx] || tooltipItem.datasetIndex !== 0) return "";
             
             const play = wpData[idx];
-            return `${play.down > 0 ? `${getDownString(play.down)} & ${play.distance}` : ""}`;
+            const possession = play.homeBall ? teams.home.name : teams.away.name;
+            return [
+              `${play.down > 0 ? `${getDownString(play.down)} & ${play.distance}` : ""}`,
+              `Possession: ${possession}`
+            ];
           }
         },
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -124,10 +164,30 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
         displayColors: false,
       },
       legend: {
-        display: false,
+        display: true,
+        position: 'top',
+        labels: {
+          generateLabels: () => {
+            // Custom legend to show possession indicators
+            return [
+              {
+                text: `${teams.home.name} possession`,
+                fillStyle: teams.home.color,
+                lineWidth: 0,
+                strokeStyle: teams.home.color
+              },
+              {
+                text: `${teams.away.name} possession`,
+                fillStyle: teams.away.color,
+                lineWidth: 0,
+                strokeStyle: teams.away.color
+              }
+            ];
+          }
+        }
       },
-      annotation: {
-        annotations: selectedPlay ? {
+      annotation: selectedPlay ? {
+        annotations: {
           box1: {
             type: 'box',
             xMin: selectedPlay - 0.5,
@@ -137,8 +197,8 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
             backgroundColor: 'rgba(0, 0, 0, 0.1)',
             borderWidth: 0,
           }
-        } : {}
-      }
+        }
+      } : {},
     },
     interaction: {
       mode: 'index',
@@ -270,7 +330,9 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
         {teams.home.name} {wpData.length > 0 ? wpData[wpData.length - 1].homeScore : ''}, {teams.away.name} {wpData.length > 0 ? wpData[wpData.length - 1].awayScore : ''}
       </h2>
       
-      {renderLegend()}
+      <div className="view-advanced">
+        <a href="#">View Advanced Box Score</a>
+      </div>
       
       <div className="chart-container">
         <Line data={chartData} options={options} height={400} />
@@ -292,9 +354,25 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
         
         .winprob-container h2 {
           text-align: center;
-          margin-bottom: 20px;
-          font-size: 1.5rem;
+          margin-bottom: 10px;
+          font-size: 1.8rem;
           color: #333;
+          font-weight: bold;
+        }
+        
+        .view-advanced {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        
+        .view-advanced a {
+          color: #0275d8;
+          text-decoration: none;
+          font-size: 0.9rem;
+        }
+        
+        .view-advanced a:hover {
+          text-decoration: underline;
         }
         
         .chart-container {
@@ -331,11 +409,15 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
           border-radius: 5px;
           margin-top: 20px;
           border-left: 4px solid #007bff;
+          max-width: 800px;
+          margin-left: auto;
+          margin-right: auto;
         }
         
         .play-details h3 {
           margin-top: 0;
           font-size: 1.2rem;
+          color: #333;
         }
       `}</style>
     </div>
