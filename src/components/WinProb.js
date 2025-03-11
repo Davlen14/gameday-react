@@ -107,6 +107,7 @@ const WinProb = ({ gameId }) => {
     fetchData();
   }, [gameId]);
 
+  // Helper function to format down
   const getDownString = (down) => {
     switch (down) {
       case 1: return "1st Down";
@@ -117,6 +118,7 @@ const WinProb = ({ gameId }) => {
     }
   };
 
+  // Format yard line for display
   const formatYardLine = (yardLine, homeBall) => {
     if (yardLine <= 50) {
       return `${homeBall ? teams.home.name : teams.away.name} ${yardLine}`;
@@ -125,40 +127,36 @@ const WinProb = ({ gameId }) => {
     }
   };
 
-  // Prepare data for Chart.js with team color based on possession
+  // Prepare data for Chart.js
   const chartData = {
     labels: wpData.map((d) => d.playNumber),
     datasets: [
       {
-        label: `Win Probability`,
-        data: wpData.map((d) => d.homeWinProbability * 100),
-        borderWidth: 3,
+        label: `${teams.home.name} Win Probability`,
+        data: wpData.map((d) => (d.homeWinProbability * 100).toFixed(1)),
+        borderColor: teams.home.color,
+        backgroundColor: teams.home.color,
+        borderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 6,
-        // Set point color based on which team has possession
-        pointBackgroundColor: (ctx) => {
-          const index = ctx.dataIndex;
-          if (!wpData[index]) return teams.home.color;
-          return wpData[index].homeBall ? teams.home.color : teams.away.color;
-        },
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
+        pointHoverRadius: 5,
         tension: 0.2,
         fill: false,
-        // Default borderColor (won't be used because segment overrides it)
-        borderColor: teams.home.color,
-        // Use the segment API to color each line segment based on possession
-        segment: {
-          borderColor: (ctx) => {
-            const index = ctx.p0DataIndex;
-            if (!wpData[index]) return teams.home.color;
-            return wpData[index].homeBall ? teams.home.color : teams.away.color;
-          }
-        }
+      },
+      {
+        label: `${teams.away.name} Win Probability`,
+        data: wpData.map((d) => (100 - d.homeWinProbability * 100).toFixed(1)),
+        borderColor: teams.away.color,
+        backgroundColor: teams.away.color,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        tension: 0.2,
+        fill: false,
       }
     ],
   };
 
+  // Enhanced chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -171,48 +169,53 @@ const WinProb = ({ gameId }) => {
         bodyFont: { size: 13 },
         padding: 12,
         cornerRadius: 4,
-        displayColors: false,
+        displayColors: true, // now we show each dataset color in tooltip
         callbacks: {
           title: (tooltipItems) => {
+            // We'll grab the index from the first item (both lines share the same x-label)
             const idx = tooltipItems[0].dataIndex;
             if (!wpData[idx]) return "Play";
             return `Play #${wpData[idx].playNumber}`;
           },
           label: (tooltipItem) => {
             const idx = tooltipItem.dataIndex;
+            const datasetLabel = tooltipItem.dataset.label || "";
+            const value = tooltipItem.formattedValue;
+
             if (!wpData[idx]) return "";
             
-            const play = wpData[idx];
-            const homeProb = (play.homeWinProbability * 100).toFixed(1);
-            const awayProb = (100 - parseFloat(homeProb)).toFixed(1);
-            
-            return [
-              `${teams.home.name}: ${homeProb}%`,
-              `${teams.away.name}: ${awayProb}%`,
-              "",
-              `${play.playText}`,
-              `Score: ${play.homeScore}-${play.awayScore}`
-            ];
+            // Show each dataset's label and the % value
+            return `${datasetLabel}: ${value}%`;
           },
-          afterLabel: (tooltipItem) => {
-            const idx = tooltipItem.dataIndex;
+          afterBody: (tooltipItems) => {
+            // Show extra info about the play after the two lines
+            const idx = tooltipItems[0].dataIndex;
             if (!wpData[idx]) return "";
-            
+
             const play = wpData[idx];
-            const possession = play.homeBall ? teams.home.name : teams.away.name;
-            let result = [];
-            
+            const lines = [];
+            lines.push(`Score: ${play.homeScore} - ${play.awayScore}`);
+            lines.push(`${play.playText}`);
+
+            // Down & distance
             if (play.down > 0) {
-              result.push(`${getDownString(play.down)} & ${play.distance} at the ${formatYardLine(play.yardLine, play.homeBall)}`);
+              lines.push(`${getDownString(play.down)} & ${play.distance} at the ${formatYardLine(play.yardLine, play.homeBall)}`);
             }
-            
-            result.push(`Possession: ${possession}`);
-            return result;
-          }
+
+            const possession = play.homeBall ? teams.home.name : teams.away.name;
+            lines.push(`Possession: ${possession}`);
+
+            return lines;
+          },
         },
       },
       legend: {
-        display: false,
+        display: true,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
       },
     },
     interaction: {
@@ -221,6 +224,7 @@ const WinProb = ({ gameId }) => {
     },
     onHover: (event, elements, chart) => {
       if (elements && elements.length > 0) {
+        // Each "element" is a point from a specific dataset, but they share the same index
         setHoveredPlay(elements[0].index);
       } else {
         setHoveredPlay(null);
@@ -234,6 +238,7 @@ const WinProb = ({ gameId }) => {
         const canvasPosition = Chart.getRelativePosition(event, chart);
         const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
         
+        // If clicked in empty area, try to find closest point
         if (dataX !== undefined && wpData.length > 0) {
           const closestIdx = Math.min(
             Math.max(0, Math.round(dataX)), 
@@ -304,6 +309,7 @@ const WinProb = ({ gameId }) => {
     },
   };
 
+  // Display team headers with logos and scores
   const renderTeamHeaders = () => {
     const finalScore = wpData.length > 0 ? wpData[wpData.length - 1] : null;
     
@@ -354,21 +360,7 @@ const WinProb = ({ gameId }) => {
     );
   };
 
-  const renderPossessionLegend = () => {
-    return (
-      <div className="possession-legend">
-        <div className="legend-item">
-          <div className="color-box" style={{ backgroundColor: teams.home.color }}></div>
-          <span className="legend-text">{teams.home.name} possession</span>
-        </div>
-        <div className="legend-item">
-          <div className="color-box" style={{ backgroundColor: teams.away.color }}></div>
-          <span className="legend-text">{teams.away.name} possession</span>
-        </div>
-      </div>
-    );
-  };
-
+  // Display selected play details (same logic as before)
   const renderPlayDetails = () => {
     if (!selectedPlay || !wpData[selectedPlay]) return null;
     
@@ -487,8 +479,6 @@ const WinProb = ({ gameId }) => {
           <div className="view-advanced">
             <a href="#">View Advanced Box Score</a>
           </div>
-          
-          {renderPossessionLegend()}
           
           <div className="chart-container">
             <Line data={chartData} options={options} height={400} />
@@ -641,35 +631,6 @@ const WinProb = ({ gameId }) => {
         .view-advanced a:hover::after {
           transform: scaleX(1);
           transform-origin: bottom left;
-        }
-        
-        /* Possession Legend */
-        .possession-legend {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-          gap: 24px;
-        }
-        
-        .legend-item {
-          display: flex;
-          align-items: center;
-        }
-        
-        .color-box {
-          display: inline-block;
-          width: 16px;
-          height: 16px;
-          margin-right: 8px;
-          border-radius: 3px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .legend-text {
-          font-size: 0.95rem;
-          color: #444;
         }
         
         /* Chart Container */
