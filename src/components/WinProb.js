@@ -14,7 +14,7 @@ import {
 } from "chart.js";
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-const WinProb = ({ gameId, homeTeam, awayTeam }) => {
+const WinProb = ({ gameId }) => {
   const [wpData, setWpData] = useState([]);
   const [teams, setTeams] = useState({ home: {}, away: {} });
   const [loading, setLoading] = useState(true);
@@ -40,31 +40,25 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
         
         setWpData(uniquePlays);
         
-        // Set teams directly if passed as props
-        if (homeTeam && awayTeam) {
-          setTeams({
-            home: { 
-              name: homeTeam.school || "Home", 
-              color: homeTeam.color || "#007bff"
-            },
-            away: {
-              name: awayTeam.school || "Away",
-              color: awayTeam.color || "#28a745"
-            }
-          });
-        }
-        // Otherwise, fetch team information for colors
-        else if (data.length > 0) {
-          const homeTeamData = await teamsService.getTeam(data[0].homeId);
-          const awayTeamData = await teamsService.getTeam(data[0].awayId);
+        // Get team information from the first play data
+        if (uniquePlays.length > 0) {
+          const homeTeamData = await teamsService.getTeam(uniquePlays[0].homeId);
+          const awayTeamData = await teamsService.getTeam(uniquePlays[0].awayId);
+          
+          // Set default colors in case actual colors aren't available
+          const homeColor = homeTeamData.color ? `#${homeTeamData.color}` : "#007bff";
+          const awayColor = awayTeamData.color ? `#${awayTeamData.color}` : "#28a745";
+          
           setTeams({ 
             home: { 
-              name: homeTeamData.school, 
-              color: homeTeamData.color || "#007bff"
+              name: uniquePlays[0].home || homeTeamData.school || "Home", 
+              color: homeColor,
+              id: uniquePlays[0].homeId
             }, 
-            away: {
-              name: awayTeamData.school,
-              color: awayTeamData.color || "#28a745"
+            away: { 
+              name: uniquePlays[0].away || awayTeamData.school || "Away", 
+              color: awayColor,
+              id: uniquePlays[0].awayId
             }
           });
         }
@@ -76,12 +70,17 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
     };
 
     fetchData();
-  }, [gameId, homeTeam, awayTeam]);
+  }, [gameId]);
 
-  // Function to determine which team color to use at a particular play
-  const getTeamColorForPlay = (playIndex) => {
-    if (!wpData[playIndex]) return teams.home.color;
-    return wpData[playIndex].homeBall ? teams.home.color : teams.away.color;
+  // Helper function to format down
+  const getDownString = (down) => {
+    switch (down) {
+      case 1: return "1st Down";
+      case 2: return "2nd Down";
+      case 3: return "3rd Down";
+      case 4: return "4th Down";
+      default: return "";
+    }
   };
 
   // Prepare data for Chart.js
@@ -89,25 +88,16 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
     labels: wpData.map((d) => d.playNumber),
     datasets: [
       {
-        label: `${teams.home.name} Win Probability`,
+        label: `Win Probability`,
         data: wpData.map((d) => d.homeWinProbability * 100),
-        borderWidth: 2.5,
+        borderWidth: 2,
         pointRadius: 0,
         tension: 0.1,
         fill: false,
         borderColor: (ctx) => {
-          if (!wpData[ctx.p0DataIndex]) return teams.home.color;
+          if (!ctx.p0DataIndex || !wpData[ctx.p0DataIndex]) return teams.home.color;
           return wpData[ctx.p0DataIndex].homeBall ? teams.home.color : teams.away.color;
         },
-      },
-      {
-        label: `${teams.away.name} Win Probability`,
-        data: wpData.map((d) => (1 - d.homeWinProbability) * 100),
-        borderWidth: 0, // Hidden line, just for legend
-        pointRadius: 0,
-        tension: 0.1,
-        fill: false,
-        hidden: true, // Hide the actual line
       }
     ],
   };
@@ -132,29 +122,29 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
             
             const play = wpData[idx];
             const homeProb = (play.homeWinProbability * 100).toFixed(1);
-            const awayProb = (100 - homeProb).toFixed(1);
+            const awayProb = (100 - parseFloat(homeProb)).toFixed(1);
             
-            // Only show the first dataset's info (home team)
-            if (tooltipItem.datasetIndex === 0) {
-              return [
-                `${teams.home.name}: ${homeProb}%`,
-                `${teams.away.name}: ${awayProb}%`,
-                `${play.playText}`,
-                `Score: ${play.homeScore}-${play.awayScore}`
-              ];
-            }
-            return [];
+            return [
+              `${teams.home.name}: ${homeProb}%`,
+              `${teams.away.name}: ${awayProb}%`,
+              `${play.playText}`,
+              `Score: ${play.homeScore}-${play.awayScore}`
+            ];
           },
           afterLabel: (tooltipItem) => {
             const idx = tooltipItem.dataIndex;
-            if (!wpData[idx] || tooltipItem.datasetIndex !== 0) return "";
+            if (!wpData[idx]) return "";
             
             const play = wpData[idx];
             const possession = play.homeBall ? teams.home.name : teams.away.name;
-            return [
-              `${play.down > 0 ? `${getDownString(play.down)} & ${play.distance}` : ""}`,
-              `Possession: ${possession}`
-            ];
+            let result = [];
+            
+            if (play.down > 0) {
+              result.push(`${getDownString(play.down)} & ${play.distance}`);
+            }
+            
+            result.push(`Possession: ${possession}`);
+            return result;
           }
         },
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -164,50 +154,31 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
         displayColors: false,
       },
       legend: {
-        display: true,
-        position: 'top',
-        labels: {
-          generateLabels: () => {
-            // Custom legend to show possession indicators
-            return [
-              {
-                text: `${teams.home.name} possession`,
-                fillStyle: teams.home.color,
-                lineWidth: 0,
-                strokeStyle: teams.home.color
-              },
-              {
-                text: `${teams.away.name} possession`,
-                fillStyle: teams.away.color,
-                lineWidth: 0,
-                strokeStyle: teams.away.color
-              }
-            ];
-          }
-        }
+        display: false, // Hide default legend since we use custom legend
       },
-      annotation: selectedPlay ? {
-        annotations: {
-          box1: {
-            type: 'box',
-            xMin: selectedPlay - 0.5,
-            xMax: selectedPlay + 0.5,
-            yMin: 0,
-            yMax: 100,
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-            borderWidth: 0,
-          }
-        }
-      } : {},
     },
     interaction: {
       mode: 'index',
       intersect: false,
     },
-    onClick: (e, elements) => {
-      if (elements.length > 0) {
+    onClick: (event, elements, chart) => {
+      // Handle click on chart to show details for a specific play
+      if (elements && elements.length > 0) {
         const index = elements[0].index;
         setSelectedPlay(index);
+      } else if (chart && chart.scales && chart.scales.x) {
+        // If clicked on empty area, try to find closest point
+        const canvasPosition = Chart.getRelativePosition(event, chart);
+        const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
+        
+        // Find closest point if clicked between points
+        if (dataX !== undefined && wpData.length > 0) {
+          const closestIdx = Math.min(
+            Math.max(0, Math.round(dataX)), 
+            wpData.length - 1
+          );
+          setSelectedPlay(closestIdx);
+        }
       }
     },
     scales: {
@@ -255,62 +226,42 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
     },
   };
 
-  // Helper function to format down
-  const getDownString = (down) => {
-    switch (down) {
-      case 1: return "1st Down";
-      case 2: return "2nd Down";
-      case 3: return "3rd Down";
-      case 4: return "4th Down";
-      default: return "";
-    }
-  };
-
   // Display selected play details
   const renderPlayDetails = () => {
     if (!selectedPlay || !wpData[selectedPlay]) return null;
     
     const play = wpData[selectedPlay];
+    const homeProb = (play.homeWinProbability * 100).toFixed(1);
+    const awayProb = (100 - parseFloat(homeProb)).toFixed(1);
+    
     return (
       <div className="play-details">
         <h3>Play #{play.playNumber}</h3>
-        <p>{play.playText}</p>
-        <p>
-          <strong>Score:</strong> {teams.home.name} {play.homeScore} - {teams.away.name} {play.awayScore}
-        </p>
-        {play.down > 0 && (
+        <p className="play-text">{play.playText}</p>
+        <div className="play-meta">
           <p>
-            <strong>{getDownString(play.down)} & {play.distance}</strong> at the {
-              play.yardLine <= 50 
-                ? `${play.homeBall ? teams.home.name : teams.away.name} ${play.yardLine}` 
-                : `${!play.homeBall ? teams.home.name : teams.away.name} ${100 - play.yardLine}`
-            }
+            <strong>Score:</strong> {teams.home.name} {play.homeScore} - {teams.away.name} {play.awayScore}
           </p>
-        )}
-        <p>
-          <strong>Win Probability:</strong> {(play.homeWinProbability * 100).toFixed(1)}% for {teams.home.name}
-        </p>
-      </div>
-    );
-  };
-
-  // Create legend items for home and away teams
-  const renderLegend = () => {
-    return (
-      <div className="chart-legend">
-        <div className="legend-item">
-          <span 
-            className="color-box" 
-            style={{ backgroundColor: teams.home.color }}
-          ></span>
-          <span>{teams.home.name} has possession</span>
-        </div>
-        <div className="legend-item">
-          <span 
-            className="color-box" 
-            style={{ backgroundColor: teams.away.color }}
-          ></span>
-          <span>{teams.away.name} has possession</span>
+          {play.down > 0 && (
+            <p>
+              <strong>{getDownString(play.down)} & {play.distance}</strong> at the {
+                play.yardLine <= 50 
+                  ? `${play.homeBall ? teams.home.name : teams.away.name} ${play.yardLine}` 
+                  : `${!play.homeBall ? teams.home.name : teams.away.name} ${100 - play.yardLine}`
+              }
+            </p>
+          )}
+          <p className="possession">
+            <strong>Possession:</strong> {play.homeBall ? teams.home.name : teams.away.name}
+          </p>
+          <div className="win-probabilities">
+            <p className="home-prob" style={{ color: teams.home.color }}>
+              <strong>{teams.home.name}:</strong> {homeProb}%
+            </p>
+            <p className="away-prob" style={{ color: teams.away.color }}>
+              <strong>{teams.away.name}:</strong> {awayProb}%
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -326,19 +277,38 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
 
   return (
     <div className="winprob-container">
-      <h2>
-        {teams.home.name} {wpData.length > 0 ? wpData[wpData.length - 1].homeScore : ''}, {teams.away.name} {wpData.length > 0 ? wpData[wpData.length - 1].awayScore : ''}
-      </h2>
-      
-      <div className="view-advanced">
-        <a href="#">View Advanced Box Score</a>
-      </div>
-      
-      <div className="chart-container">
-        <Line data={chartData} options={options} height={400} />
-      </div>
-      
-      {selectedPlay !== null && renderPlayDetails()}
+      {wpData.length > 0 ? (
+        <>
+          <h2>
+            {teams.home.name} {wpData[wpData.length - 1].homeScore}, {teams.away.name} {wpData[wpData.length - 1].awayScore}
+          </h2>
+          
+          <div className="view-advanced">
+            <a href="#">View Advanced Box Score</a>
+          </div>
+          
+          <div className="chart-legend">
+            <div className="legend-item">
+              <span className="color-box" style={{ backgroundColor: teams.home.color }}></span>
+              <span>{teams.home.name} possession</span>
+            </div>
+            <div className="legend-item">
+              <span className="color-box" style={{ backgroundColor: teams.away.color }}></span>
+              <span>{teams.away.name} possession</span>
+            </div>
+          </div>
+          
+          <div className="chart-container">
+            <Line data={chartData} options={options} height={400} />
+          </div>
+          
+          {selectedPlay !== null && renderPlayDetails()}
+        </>
+      ) : (
+        <div className="no-data-message">
+          <p>No win probability data available for this game.</p>
+        </div>
+      )}
       
       <style jsx>{`
         .winprob-container {
@@ -418,6 +388,52 @@ const WinProb = ({ gameId, homeTeam, awayTeam }) => {
           margin-top: 0;
           font-size: 1.2rem;
           color: #333;
+          margin-bottom: 15px;
+        }
+        
+        .play-text {
+          font-size: 1rem;
+          line-height: 1.5;
+          margin-bottom: 15px;
+          color: #333;
+        }
+        
+        .play-meta {
+          background: #f1f1f1;
+          padding: 12px;
+          border-radius: 4px;
+          font-size: 0.95rem;
+        }
+        
+        .play-meta p {
+          margin: 5px 0;
+        }
+        
+        .win-probabilities {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid #e0e0e0;
+        }
+        
+        .home-prob, .away-prob {
+          font-weight: 500;
+        }
+        
+        .possession {
+          font-style: italic;
+        }
+        
+        .no-data-message, .loading-indicator {
+          text-align: center;
+          padding: 40px;
+          font-size: 1.1rem;
+          color: #666;
+        }
+        
+        .loading-indicator {
+          color: #0275d8;
         }
       `}</style>
     </div>

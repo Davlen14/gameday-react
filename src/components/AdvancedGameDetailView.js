@@ -1063,7 +1063,7 @@ const AdvancedGameDetailView = () => {
 
   const renderWinMetrics = () => (
     <div className="tab-content win-metrics">
-      <WinProb year={season} week={week} />
+      <WinProb gameId={id} />
     </div>
   );
 
