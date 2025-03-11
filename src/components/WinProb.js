@@ -86,7 +86,7 @@ const WinProb = ({ gameId }) => {
               home: { 
                 name: uniquePlays[0].home || homeTeam.school || "Home", 
                 color: homeColor,
-                alternateColor: awayColor, // or you can keep alt_color if you want
+                alternateColor: awayColor,
                 logo: homeTeam.logos && homeTeam.logos.length > 0 ? homeTeam.logos[0] : null,
                 id: uniquePlays[0].homeId,
                 mascot: homeTeam.mascot || "",
@@ -94,7 +94,7 @@ const WinProb = ({ gameId }) => {
               away: { 
                 name: uniquePlays[0].away || awayTeam.school || "Away", 
                 color: awayColor,
-                alternateColor: homeColor, // or keep alt_color if you want
+                alternateColor: homeColor,
                 logo: awayTeam.logos && awayTeam.logos.length > 0 ? awayTeam.logos[0] : null,
                 id: uniquePlays[0].awayId,
                 mascot: awayTeam.mascot || "",
@@ -147,7 +147,7 @@ const WinProb = ({ gameId }) => {
     }
   };
 
-  // Prepare data for Chart.js with team color based on possession
+  // Prepare data for Chart.js
   const chartData = {
     labels: wpData.map((d) => d.playNumber),
     datasets: [
@@ -155,28 +155,52 @@ const WinProb = ({ gameId }) => {
         label: `Win Probability`,
         data: wpData.map((d) => d.homeWinProbability * 100),
         borderWidth: 3,
-        pointRadius: 0,
+        pointRadius: 1,
         pointHoverRadius: 6,
-        // Set point color based on which team has possession
+        tension: 0.3,
         pointBackgroundColor: (ctx) => {
           const index = ctx.dataIndex;
           if (!wpData[index]) return teams.home.color;
+          
+          // Color based on possession
           return wpData[index].homeBall ? teams.home.color : teams.away.color;
         },
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
-        tension: 0.2,
-        fill: false,
-        // Default borderColor (used if no segment callback)
-        borderColor: teams.home.color,
-        // Use the segment API to color each line segment based on possession
-        segment: {
-          borderColor: (ctx) => {
-            const index = ctx.p0DataIndex;
-            if (!wpData[index]) return teams.home.color;
-            return wpData[index].homeBall ? teams.home.color : teams.away.color;
+        fill: 'origin',
+        backgroundColor: (ctx) => {
+          const chart = ctx.chart;
+          const {ctx: canvas, chartArea} = chart;
+          
+          if (!chartArea) {
+            return 'rgba(0,0,0,0)';
           }
-        }
+          
+          // Create a gradient that shows team advantage
+          // Top area is home team, bottom area is away team, middle is neutral gray
+          const gradient = canvas.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, `${teams.home.color}80`); // 50% opacity
+          gradient.addColorStop(0.4, `${teams.home.color}40`); // 25% opacity
+          gradient.addColorStop(0.5, 'rgba(180, 180, 180, 0.1)'); // Neutral gray in middle
+          gradient.addColorStop(0.6, `${teams.away.color}40`); // 25% opacity
+          gradient.addColorStop(1, `${teams.away.color}80`); // 50% opacity
+          return gradient;
+        },
+        // Color the line based on possession
+        borderColor: (ctx) => {
+          // Get the data for this point
+          const play = wpData[ctx.dataIndex];
+          if (!play) return '#666666';
+          
+          // Check if we're in a neutral zone (close to 50%)
+          const homeProb = play.homeWinProbability * 100;
+          if (homeProb > 45 && homeProb < 55) {
+            return '#909090'; // Gray for near-neutral probabilities
+          }
+          
+          // Otherwise color based on which team has advantage
+          return homeProb >= 50 ? teams.home.color : teams.away.color;
+        },
       }
     ],
   };
@@ -301,12 +325,20 @@ const WinProb = ({ gameId }) => {
           drawBorder: false,
         },
         ticks: {
-          stepSize: 10,
+          stepSize: 25,
           color: '#666',
           font: {
             size: 11,
           },
-          callback: (value) => `${value}%`,
+          callback: (value) => {
+            // Special labels for key probabilities
+            if (value === 0) return `0%`;
+            if (value === 25) return `25%`;
+            if (value === 50) return `50%`;
+            if (value === 75) return `75%`;
+            if (value === 100) return `100%`;
+            return "";
+          },
         },
         title: {
           display: true,
@@ -321,7 +353,7 @@ const WinProb = ({ gameId }) => {
       },
     },
     animation: {
-      duration: 1500,
+      duration: 1200,
       easing: 'easeOutQuart',
     },
   };
@@ -329,49 +361,35 @@ const WinProb = ({ gameId }) => {
   // Display team headers with logos and scores
   const renderTeamHeaders = () => {
     const finalScore = wpData.length > 0 ? wpData[wpData.length - 1] : null;
+    const gameDate = finalScore?.gameDate ? new Date(finalScore.gameDate).toLocaleDateString() : "";
     
     return (
       <div className="team-header-container">
-        <div className="team-header home-team" style={{ borderColor: teams.home.color }}>
-          <div className="team-logo-container">
-            {teams.home.logo && (
+        {/* Team logos at the sides of the chart */}
+        <div className="team-logo-display">
+          {teams.home.logo && (
+            <div className="team-logo home-logo">
               <img 
                 src={teams.home.logo} 
                 alt={`${teams.home.name} logo`} 
-                className="team-logo" 
               />
-            )}
-          </div>
-          <div className="team-name-container">
-            <h3 className="team-name">{teams.home.name}</h3>
-            <span className="team-mascot">{teams.home.mascot}</span>
-          </div>
-          <div className="team-score" style={{ backgroundColor: teams.home.color }}>
-            {finalScore ? finalScore.homeScore : "0"}
-          </div>
+            </div>
+          )}
         </div>
         
-        <div className="game-status">
-          <span>FINAL</span>
+        <div className="win-prob-title">
+          <h2>Win Probability - {teams.away.name} @ {teams.home.name}{gameDate ? ` - ${gameDate}` : ""}</h2>
         </div>
         
-        <div className="team-header away-team" style={{ borderColor: teams.away.color }}>
-          <div className="team-score" style={{ backgroundColor: teams.away.color }}>
-            {finalScore ? finalScore.awayScore : "0"}
-          </div>
-          <div className="team-name-container">
-            <h3 className="team-name">{teams.away.name}</h3>
-            <span className="team-mascot">{teams.away.mascot}</span>
-          </div>
-          <div className="team-logo-container">
-            {teams.away.logo && (
+        <div className="team-logo-display">
+          {teams.away.logo && (
+            <div className="team-logo away-logo">
               <img 
                 src={teams.away.logo} 
                 alt={`${teams.away.name} logo`} 
-                className="team-logo" 
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -388,6 +406,10 @@ const WinProb = ({ gameId }) => {
         <div className="legend-item">
           <div className="color-box" style={{ backgroundColor: teams.away.color }}></div>
           <span className="legend-text">{teams.away.name} possession</span>
+        </div>
+        <div className="legend-item">
+          <div className="color-box" style={{ backgroundColor: "#909090" }}></div>
+          <span className="legend-text">Neutral (close to 50%)</span>
         </div>
       </div>
     );
@@ -509,10 +531,6 @@ const WinProb = ({ gameId }) => {
         <>
           {renderTeamHeaders()}
           
-          <div className="view-advanced">
-            <a href="#">View Advanced Box Score</a>
-          </div>
-          
           {renderPossessionLegend()}
           
           <div className="chart-container">
@@ -548,124 +566,33 @@ const WinProb = ({ gameId }) => {
           margin-bottom: 24px;
         }
         
-        .team-header {
-          display: flex;
-          align-items: center;
-          width: 45%;
-          border-bottom: 4px solid;
-          padding-bottom: 12px;
-          position: relative;
-        }
-        
-        .home-team {
-          flex-direction: row;
-          text-align: left;
-        }
-        
-        .away-team {
-          flex-direction: row-reverse;
-          text-align: right;
-        }
-        
-        .team-logo-container {
-          width: 60px;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .team-logo {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-        }
-        
-        .team-name-container {
-          padding: 0 12px;
+        .win-prob-title {
+          text-align: center;
           flex: 1;
         }
         
-        .team-name {
-          margin: 0;
+        .win-prob-title h2 {
           font-size: 1.4rem;
           font-weight: 700;
-          line-height: 1.2;
-          color: #222;
-        }
-        
-        .team-mascot {
-          font-size: 0.9rem;
-          color: #666;
-          display: block;
-          margin-top: 4px;
-        }
-        
-        .team-score {
-          font-size: 2rem;
-          font-weight: 700;
-          color: white;
-          width: 64px;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 8px;
-        }
-        
-        .game-status {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 16px;
-          background-color: #f5f5f5;
-          border-radius: 20px;
-          margin: 0 16px;
-        }
-        
-        .game-status span {
-          font-size: 0.9rem;
-          font-weight: 700;
+          margin: 0;
           color: #333;
-          letter-spacing: 1px;
         }
         
-        /* View Advanced Link */
-        .view-advanced {
-          text-align: center;
-          margin-bottom: 24px;
+        .team-logo-display {
+          display: flex;
+          justify-content: center;
+          width: 60px;
         }
         
-        .view-advanced a {
-          color: #0275d8;
-          text-decoration: none;
-          font-size: 0.95rem;
-          position: relative;
-          padding-bottom: 2px;
-          transition: color 0.3s;
+        .team-logo {
+          width: 50px;
+          height: 50px;
         }
         
-        .view-advanced a:hover {
-          color: #014c8c;
-        }
-        
-        .view-advanced a::after {
-          content: "";
-          position: absolute;
+        .team-logo img {
           width: 100%;
-          height: 1px;
-          bottom: 0;
-          left: 0;
-          background-color: #0275d8;
-          transform: scaleX(0);
-          transform-origin: bottom right;
-          transition: transform 0.3s;
-        }
-        
-        .view-advanced a:hover::after {
-          transform: scaleX(1);
-          transform-origin: bottom left;
+          height: 100%;
+          object-fit: contain;
         }
         
         /* Possession Legend */
