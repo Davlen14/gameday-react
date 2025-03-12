@@ -681,13 +681,13 @@ const WinProb = ({ gameId }) => {
       )}
       
       <style jsx>{`
-        .winprob-container {
+         .winprob-container {
           width: 100%;
-          max-width: 1200px;
-          margin: 20px auto;
-          padding: 24px;
+          max-width: 100%; /* Changed from 1200px to 100% */
+          margin: 0; /* Changed from 20px auto to 0 */
+          padding: 24px 0; /* Removed horizontal padding */
           background: #ffffff;
-          border-radius: 10px;
+          border-radius: 0; /* Changed from 10px to 0 */
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -698,6 +698,7 @@ const WinProb = ({ gameId }) => {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 24px;
+          padding: 0 24px; /* Added horizontal padding */
         }
         
         .team-header {
@@ -762,7 +763,7 @@ const WinProb = ({ gameId }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 8px;
+          border-radius: 0; /* Changed from 8px to 0 */
         }
         
         .game-status {
@@ -772,7 +773,7 @@ const WinProb = ({ gameId }) => {
           justify-content: center;
           padding: 8px 16px;
           background-color: #f5f5f5;
-          border-radius: 20px;
+          border-radius: 0; /* Changed from 20px to 0 */
           margin: 0 16px;
         }
         
@@ -788,10 +789,10 @@ const WinProb = ({ gameId }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 16px 0 24px;
+          margin: 16px 24px 24px; /* Added horizontal margin */
           padding: 12px;
           background: #f8f8f8;
-          border-radius: 8px;
+          border-radius: 0; /* Changed from 8px to 0 */
           gap: 16px;
         }
         
@@ -801,7 +802,7 @@ const WinProb = ({ gameId }) => {
           justify-content: center;
           width: 40px;
           height: 40px;
-          border-radius: 50%;
+          border-radius: 0; /* Changed from 50% to 0 */
           border: none;
           background: #fff;
           color: #333;
@@ -835,7 +836,7 @@ const WinProb = ({ gameId }) => {
         
         .speed-select {
           padding: 4px 8px;
-          border-radius: 4px;
+          border-radius: 0; /* Changed from 4px to 0 */
           border: 1px solid #ddd;
           background: #fff;
           font-size: 0.9rem;
@@ -845,7 +846,7 @@ const WinProb = ({ gameId }) => {
           margin-left: auto;
           padding: 4px 10px;
           background: #eee;
-          border-radius: 12px;
+          border-radius: 0; /* Changed from 12px to 0 */
           font-size: 0.85rem;
           color: #555;
         }
@@ -854,6 +855,7 @@ const WinProb = ({ gameId }) => {
         .view-advanced {
           text-align: center;
           margin-bottom: 24px;
+          padding: 0 24px; /* Added horizontal padding */
         }
         
         .view-advanced a {
@@ -895,6 +897,7 @@ const WinProb = ({ gameId }) => {
           margin-bottom: 20px;
           flex-wrap: wrap;
           gap: 24px;
+          padding: 0 24px; /* Added horizontal padding */
         }
         
         .legend-item {
@@ -907,7 +910,7 @@ const WinProb = ({ gameId }) => {
           width: 16px;
           height: 16px;
           margin-right: 8px;
-          border-radius: 3px;
+          border-radius: 0; /* Changed from 3px to 0 */
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
@@ -920,9 +923,9 @@ const WinProb = ({ gameId }) => {
         .chart-container {
           height: 400px;
           position: relative;
-          margin-bottom: 24px;
+          margin: 0 24px 24px; /* Changed from margin-bottom to margin with horizontal padding */
           border: 1px solid #f0f0f0;
-          border-radius: 8px;
+          border-radius: 0; /* Changed from 8px to 0 */
           padding: 12px;
           background-color: #fafafa;
           box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -931,8 +934,8 @@ const WinProb = ({ gameId }) => {
         /* Play Details Styling */
         .play-details {
           background: #fff;
-          margin-top: 30px;
-          border-radius: 8px;
+          margin: 30px 24px 0; /* Added horizontal margin */
+          border-radius: 0; /* Changed from 8px to 0 */
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
           border-left: 5px solid;
           overflow: hidden;
@@ -965,7 +968,7 @@ const WinProb = ({ gameId }) => {
         .play-meta {
           background: #f8f8f8;
           padding: 16px;
-          border-radius: 6px;
+          border-radius: 0; /* Changed from 6px to 0 */
           font-size: 0.95rem;
         }
         
@@ -988,7 +991,7 @@ const WinProb = ({ gameId }) => {
           flex-direction: column;
           align-items: center;
           color: white;
-          border-radius: 6px;
+          border-radius: 0; /* Changed from 6px to 0 */
           width: 48%;
           padding: 10px 8px;
         }
@@ -1007,7 +1010,7 @@ const WinProb = ({ gameId }) => {
         .field-position {
           background: white;
           padding: 10px 14px;
-          border-radius: 4px;
+          border-radius: 0; /* Changed from 4px to 0 */
           border-left: 4px solid #ddd;
           font-size: 0.95rem;
         }
@@ -1062,13 +1065,13 @@ const WinProb = ({ gameId }) => {
           height: 8px;
           width: 100%;
           background-color: #e9ecef;
-          border-radius: 4px;
+          border-radius: 0; /* Changed from 4px to 0 */
           overflow: hidden;
         }
         
         .prob-bar {
           height: 100%;
-          border-radius: 4px;
+          border-radius: 0; /* Changed from 4px to 0 */
           transition: width 0.4s ease;
         }
         
@@ -1079,6 +1082,7 @@ const WinProb = ({ gameId }) => {
           justify-content: center;
           align-items: center;
           height: 300px;
+          margin: 0 24px; /* Added horizontal margin */
         }
         
         .loading-spinner {
@@ -1086,7 +1090,7 @@ const WinProb = ({ gameId }) => {
           height: 40px;
           border: 4px solid #f3f3f3;
           border-top: 4px solid #0275d8;
-          border-radius: 50%;
+          border-radius: 0; /* Changed from 50% to 0 */
           animation: spin 1s linear infinite;
           margin-bottom: 16px;
         }
@@ -1110,7 +1114,8 @@ const WinProb = ({ gameId }) => {
           height: 200px;
           color: #721c24;
           background-color: #f8d7da;
-          border-radius: 8px;
+          border-radius: 0; /* Changed from 8px to 0 */
+          margin: 0 24px; /* Added horizontal margin */
         }
         
         .error-icon {
@@ -1131,8 +1136,9 @@ const WinProb = ({ gameId }) => {
           height: 200px;
           color: #0c5460;
           background-color: #d1ecf1;
-          border-radius: 8px;
+          border-radius: 0; /* Changed from 8px to 0 */
           padding: 24px;
+          margin: 0 24px; /* Added horizontal margin */
         }
         
         .no-data-icon {
