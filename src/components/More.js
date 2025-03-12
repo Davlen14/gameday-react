@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import teamsService from "../services/teamsService";
-import { MapContainer, TileLayer, GeoJSON, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Set up Leaflet to handle image paths
+// Fixing the icon issue in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -12,27 +12,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
-// Component to trigger map updates
-const MapUpdater = ({ voronoiLayer, bounds }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (voronoiLayer && bounds) {
-      map.fitBounds(bounds);
-      voronoiLayer.addTo(map);
-    }
-  }, [map, voronoiLayer, bounds]);
-  
-  return null;
-};
-
 const More = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedConference, setSelectedConference] = useState("");
-  const [voronoiLayer, setVoronoiLayer] = useState(null);
-  const [mapBounds, setMapBounds] = useState(null);
   const mapRef = useRef(null);
 
   // CSS styles
@@ -129,7 +113,7 @@ const More = () => {
     }
     
     .cfb-map-wrapper {
-      height: 700px;
+      height: 600px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -220,32 +204,32 @@ const More = () => {
       text-align: center;
       margin: 20px 0;
     }
-
+    
+    .leaflet-popup-content {
+      margin: 12px;
+    }
+    
     .team-popup {
-      width: 250px;
-      padding: 5px;
+      width: 220px;
     }
     
     .team-popup-header {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
-      padding-bottom: 8px;
+      margin-bottom: 8px;
     }
     
     .team-popup-logo {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       margin-right: 10px;
       object-fit: contain;
     }
     
     .team-popup-name {
-      font-weight: 700;
-      font-size: 1.1rem;
+      font-weight: 600;
+      font-size: 1rem;
       margin: 0;
-      color: #333;
     }
     
     .team-popup-details {
@@ -254,76 +238,11 @@ const More = () => {
     
     .team-popup-detail {
       margin: 4px 0;
-      display: flex;
-      align-items: center;
     }
     
     .team-popup-detail strong {
       font-weight: 600;
       margin-right: 5px;
-      min-width: 80px;
-      display: inline-block;
-    }
-
-    .leaflet-popup-content {
-      margin: 10px;
-    }
-
-    .territory-logo {
-      position: absolute;
-      z-index: 450;
-      pointer-events: none;
-      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.7));
-    }
-
-    .leaflet-container {
-      background: #f0f0f0;
-    }
-
-    .legend {
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-height: 300px;
-      overflow-y: auto;
-      max-width: 200px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-      cursor: pointer;
-      padding: 3px;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-    }
-
-    .legend-item:hover {
-      background-color: #f0f0f0;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 8px;
-      border: 1px solid rgba(0,0,0,0.1);
-    }
-
-    .legend-name {
-      font-size: 0.75rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .map-attribution {
-      font-size: 0.7rem;
-      text-align: center;
-      margin-top: 5px;
-      color: #666;
     }
   `;
 
@@ -357,7 +276,7 @@ const More = () => {
     }
   };
 
-  // Conference order and logos mapping
+  // Conference order and logos mapping similar to Teams component
   const conferenceOrder = [
     "Big Ten",
     "SEC",
@@ -385,184 +304,6 @@ const More = () => {
     Independent: "/photos/FBS Independents.png"
   };
 
-  // This function generates Voronoi polygons for team territories
-  const generateVoronoiTerritories = (teams) => {
-    // Import d3-delaunay for Voronoi tessellation
-    const d3Delaunay = window.d3?.Delaunay;
-    
-    if (!d3Delaunay || teams.length === 0) {
-      console.error("D3-Delaunay not available or no teams provided");
-      return null;
-    }
-    
-    try {
-      // Define the bounds of the US
-      const usaBounds = [
-        [24.396308, -125.0], // Southwest - covering Hawaii
-        [49.384358, -66.93457] // Northeast
-      ];
-      
-      // Create a GeoJSON FeatureCollection to hold all territories
-      const territoriesGeoJSON = {
-        type: "FeatureCollection",
-        features: []
-      };
-      
-      // Extract team points for Voronoi calculation
-      const points = teams.map(team => [team.location.longitude, team.location.latitude]);
-      const teamIds = teams.map(team => team.id);
-      
-      // Calculate Voronoi diagram with D3-Delaunay
-      if (points.length > 0) {
-        // Create a larger area for clipping to make sure territories extend to edges
-        const width = Math.abs(usaBounds[1][1] - usaBounds[0][1]) * 1.2;
-        const height = Math.abs(usaBounds[1][0] - usaBounds[0][0]) * 1.2;
-        const centerX = (usaBounds[0][1] + usaBounds[1][1]) / 2;
-        const centerY = (usaBounds[0][0] + usaBounds[1][0]) / 2;
-        
-        const clipBounds = [
-          centerX - width/2, centerY - height/2,
-          centerX + width/2, centerY + height/2
-        ];
-
-        // Create Delaunay triangulation then Voronoi diagram
-        const delaunay = d3Delaunay.Delaunay.from(points);
-        const voronoi = delaunay.voronoi(clipBounds);
-        
-        // Generate GeoJSON polygons for each cell
-        for (let i = 0; i < teams.length; i++) {
-          const cell = voronoi.cellPolygon(i);
-          
-          if (cell) {
-            // Convert cell to GeoJSON
-            const coordinates = cell.map(point => [point[0], point[1]]);
-            
-            // Make sure polygon is closed
-            if (coordinates.length > 0 && 
-                (coordinates[0][0] !== coordinates[coordinates.length-1][0] || 
-                 coordinates[0][1] !== coordinates[coordinates.length-1][1])) {
-              coordinates.push(coordinates[0]);
-            }
-            
-            // Create GeoJSON feature
-            const feature = {
-              type: "Feature",
-              properties: {
-                teamId: teamIds[i],
-                team: teams[i]
-              },
-              geometry: {
-                type: "Polygon",
-                coordinates: [coordinates]
-              }
-            };
-            
-            territoriesGeoJSON.features.push(feature);
-          }
-        }
-        
-        // Create Leaflet layer with styles
-        const layer = L.geoJSON(territoriesGeoJSON, {
-          style: (feature) => {
-            const team = feature.properties.team;
-            const color = team.color && team.color !== "null" ? team.color : "#333";
-            return {
-              fillColor: color,
-              weight: 1,
-              opacity: 0.8,
-              color: lightenColor(color, 20),
-              fillOpacity: 0.6
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            const team = feature.properties.team;
-            
-            // Add popup
-            layer.bindPopup(() => {
-              const popupContent = document.createElement('div');
-              popupContent.className = 'team-popup';
-              
-              const header = document.createElement('div');
-              header.className = 'team-popup-header';
-              
-              const logo = document.createElement('img');
-              logo.className = 'team-popup-logo';
-              logo.src = team.logos?.[0] || "/photos/default_team.png";
-              logo.alt = team.school;
-              logo.onerror = function() {
-                this.onerror = null;
-                this.src = "/photos/default_team.png";
-              };
-              
-              const name = document.createElement('h3');
-              name.className = 'team-popup-name';
-              name.textContent = team.school;
-              
-              header.appendChild(logo);
-              header.appendChild(name);
-              
-              const details = document.createElement('div');
-              details.className = 'team-popup-details';
-              
-              // Add details
-              const detailsList = [
-                { label: 'Mascot', value: team.mascot || 'N/A' },
-                { label: 'Conference', value: team.conference || 'Independent' },
-                { label: 'Stadium', value: team.location?.name || 'N/A' },
-                { label: 'Location', value: `${team.location?.city}, ${team.location?.state}` },
-                { label: 'Capacity', value: team.location?.capacity?.toLocaleString() || 'N/A' }
-              ];
-              
-              detailsList.forEach(item => {
-                const detail = document.createElement('p');
-                detail.className = 'team-popup-detail';
-                
-                const label = document.createElement('strong');
-                label.textContent = item.label + ':';
-                
-                const value = document.createTextNode(item.value);
-                
-                detail.appendChild(label);
-                detail.appendChild(value);
-                details.appendChild(detail);
-              });
-              
-              popupContent.appendChild(header);
-              popupContent.appendChild(details);
-              
-              return popupContent;
-            });
-          }
-        });
-        
-        // Add team logos to the map
-        teams.forEach(team => {
-          // Create an img element for each team logo
-          const logoIcon = L.divIcon({
-            className: 'territory-logo',
-            html: `<img src="${team.logos?.[0] || "/photos/default_team.png"}" 
-                   alt="${team.school}" 
-                   style="width: 40px; height: 40px; object-fit: contain;"
-                   onerror="this.onerror=null; this.src='/photos/default_team.png';">`
-          });
-          
-          // Add marker at team location
-          L.marker([team.location.latitude, team.location.longitude], {
-            icon: logoIcon,
-            interactive: false
-          }).addTo(layer);
-        });
-        
-        return { layer, bounds: layer.getBounds() };
-      }
-    } catch (error) {
-      console.error("Error generating Voronoi territories:", error);
-      return null;
-    }
-    
-    return null;
-  };
-
   // Fetch teams data
   useEffect(() => {
     const fetchTeams = async () => {
@@ -578,7 +319,7 @@ const More = () => {
                  team.location.longitude
         );
         
-        // Sort teams by conference order
+        // Sort teams by conference order like in Teams component
         const sortedTeams = [...fbsTeamsWithCoordinates].sort((a, b) => {
           const confA = a.conference || "Independent";
           const confB = b.conference || "Independent";
@@ -587,11 +328,13 @@ const More = () => {
           const orderB = conferenceOrder.indexOf(confB);
           
           if (orderA !== orderB) {
+            // If one conference is not in our list, put it at the end
             if (orderA === -1) return 1;
             if (orderB === -1) return -1;
             return orderA - orderB;
           }
           
+          // If same conference, sort alphabetically by school name
           return a.school.localeCompare(b.school);
         });
         
@@ -607,38 +350,6 @@ const More = () => {
     fetchTeams();
   }, []);
 
-  // Filter teams based on selected conference
-  const filteredTeams = React.useMemo(() => {
-    if (!selectedConference) {
-      return teams;
-    }
-    return teams.filter(team => team.conference === selectedConference);
-  }, [teams, selectedConference]);
-
-  // Generate Voronoi territories
-  useEffect(() => {
-    if (filteredTeams.length > 0) {
-      // Include D3-Delaunay library
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/d3-delaunay@6';
-      script.async = true;
-      
-      script.onload = () => {
-        const voronoi = generateVoronoiTerritories(filteredTeams);
-        if (voronoi) {
-          setVoronoiLayer(voronoi.layer);
-          setMapBounds(voronoi.bounds);
-        }
-      };
-      
-      document.body.appendChild(script);
-      
-      return () => {
-        document.body.removeChild(script);
-      };
-    }
-  }, [filteredTeams]);
-
   // Get unique conferences for the filter dropdown
   const conferences = React.useMemo(() => {
     const uniqueConferences = new Set();
@@ -650,35 +361,37 @@ const More = () => {
     return Array.from(uniqueConferences).sort();
   }, [teams]);
 
+  // Filter teams based on selected conference
+  const filteredTeams = React.useMemo(() => {
+    if (!selectedConference) {
+      return teams;
+    }
+    return teams.filter(team => team.conference === selectedConference);
+  }, [teams, selectedConference]);
+
+  // Custom icon function based on team colors
+  const getTeamIcon = (team) => {
+    // Get the team color with fallback
+    const teamColor = team.color || '#333';
+    
+    // Handle null or "null" color values
+    const color = teamColor === "null" || teamColor === null ? '#333' : teamColor;
+    
+    return L.divIcon({
+      className: "team-marker",
+      html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+  };
+
   // Function to fly to a team's location
   const flyToTeam = (lat, lng) => {
     if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 10, {
+      mapRef.current.flyTo([lat, lng], 12, {
         duration: 1.5
       });
     }
-  };
-
-  // Simple legend component
-  const Legend = ({ teams }) => {
-    return (
-      <div className="legend leaflet-control">
-        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Teams</div>
-        {teams.map(team => (
-          <div 
-            key={team.id} 
-            className="legend-item"
-            onClick={() => flyToTeam(team.location.latitude, team.location.longitude)}
-          >
-            <div 
-              className="legend-color" 
-              style={{ backgroundColor: team.color && team.color !== "null" ? team.color : "#333" }}
-            ></div>
-            <div className="legend-name">{team.school}</div>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -687,7 +400,7 @@ const More = () => {
       
       <div className="cfb-map-header">
         <h1>Interactive CFB Map</h1>
-        <p>Explore FBS college football team territories across the United States</p>
+        <p>Explore FBS college football teams across the United States</p>
       </div>
 
       {error && (
@@ -707,10 +420,7 @@ const More = () => {
             <div className="cfb-map-dropdown">
               <select 
                 value={selectedConference}
-                onChange={(e) => {
-                  setSelectedConference(e.target.value);
-                  setVoronoiLayer(null); // Reset layer on conference change
-                }}
+                onChange={(e) => setSelectedConference(e.target.value)}
               >
                 <option value="">All Conferences</option>
                 {conferences.map(conf => (
@@ -726,41 +436,60 @@ const More = () => {
               zoom={4} 
               style={{ height: "100%", width: "100%" }}
               whenCreated={map => (mapRef.current = map)}
-              zoomControl={false}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                opacity={0.4}
               />
               
-              {voronoiLayer && mapBounds && (
-                <MapUpdater voronoiLayer={voronoiLayer} bounds={mapBounds} />
-              )}
-              
-              {/* Add zoom controls in a custom position */}
-              <div className="leaflet-top leaflet-left" style={{ top: '60px' }}>
-                <div className="leaflet-control leaflet-bar">
-                  <a href="#" title="Zoom in" onClick={(e) => {
-                    e.preventDefault();
-                    mapRef.current.zoomIn();
-                  }}>+</a>
-                  <a href="#" title="Zoom out" onClick={(e) => {
-                    e.preventDefault();
-                    mapRef.current.zoomOut();
-                  }}>-</a>
-                </div>
-              </div>
-              
-              {/* Add legend in bottom right */}
-              <div className="leaflet-bottom leaflet-right">
-                <Legend teams={filteredTeams} />
-              </div>
+              {filteredTeams.map(team => {
+                // Handle null or invalid colors
+                const teamColor = team.color && team.color !== "null" ? team.color : "#333";
+                
+                return (
+                  <Marker 
+                    key={team.id}
+                    position={[team.location.latitude, team.location.longitude]}
+                    icon={getTeamIcon(team)}
+                  >
+                    <Popup>
+                      <div className="team-popup">
+                        <div className="team-popup-header">
+                          <img 
+                            src={team.logos?.[0] || "/photos/default_team.png"} 
+                            alt={team.school}
+                            className="team-popup-logo"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/photos/default_team.png";
+                            }}
+                            loading="lazy"
+                          />
+                          <h3 className="team-popup-name">{team.school}</h3>
+                        </div>
+                        <div className="team-popup-details">
+                          <p className="team-popup-detail">
+                            <strong>Mascot:</strong> {team.mascot || "N/A"}
+                          </p>
+                          <p className="team-popup-detail">
+                            <strong>Conference:</strong> {team.conference || "Independent"}
+                          </p>
+                          <p className="team-popup-detail">
+                            <strong>Stadium:</strong> {team.location?.name || "N/A"}
+                          </p>
+                          <p className="team-popup-detail">
+                            <strong>Location:</strong> {team.location?.city}, {team.location?.state}
+                          </p>
+                          <p className="team-popup-detail">
+                            <strong>Capacity:</strong> {team.location?.capacity?.toLocaleString() || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
             </MapContainer>
-          </div>
-          
-          <div className="map-attribution">
-            Map inspired by <a href="https://mapchart.net" target="_blank" rel="noopener noreferrer">MapChart.net</a> college football team territories visualization
           </div>
 
           <div className="team-list">
@@ -784,7 +513,7 @@ const More = () => {
                   <h4 className="team-name">{team.school}</h4>
                   <p className="team-conference">{team.conference || "Independent"}</p>
                 </div>
-                <div 
+                                  <div 
                   className="team-color-dot" 
                   style={{ backgroundColor: team.color && team.color !== "null" ? team.color : "#333" }}
                 ></div>
