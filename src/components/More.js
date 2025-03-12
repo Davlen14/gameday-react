@@ -3,14 +3,17 @@ import teamsService from "../services/teamsService";
 import {
   MapContainer,
   TileLayer,
+  GeoJSON,
   Marker,
-  Popup,
-  ImageOverlay
+  Popup
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fix default Leaflet icon paths
+// Import the relevant Turf functions
+import { points, voronoi } from "@turf/turf";
+
+// Fix default Leaflet icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -21,25 +24,22 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
-// Approximate bounding box for the lower 48 US states
-const US_BOUNDS = [
-  [24.396308, -124.848974], // Southwest [Lat, Lng]
-  [49.384358, -66.885444]   // Northeast [Lat, Lng]
-];
-
 const More = () => {
   const [teams, setTeams] = useState([]);
+  const [voronoiData, setVoronoiData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const mapRef = useRef(null);
 
+  // 1) Fetch your teams from the service
   useEffect(() => {
     const fetchTeams = async () => {
       try {
         setLoading(true);
         const data = await teamsService.getTeams();
-        // Filter for FBS teams with valid coordinates
+
+        // Filter for FBS teams that have valid coordinates
         const fbsTeams = data.filter(
           (team) =>
             team.classification === "fbs" &&
@@ -54,11 +54,78 @@ const More = () => {
         console.error(err);
       }
     };
-
     fetchTeams();
   }, []);
 
-  // Helper to create a small colored circle or a standard icon
+  // 2) Once teams are loaded, generate Voronoi polygons
+  useEffect(() => {
+    if (teams.length === 0) return;
+
+    // Convert team stadiums to GeoJSON points (note: Turf uses [lng, lat])
+    const teamCoords = teams.map((team) => [
+      team.location.longitude,
+      team.location.latitude
+    ]);
+    const teamPoints = points(teamCoords);
+
+    // Generate Voronoi polygons for the entire bounding box of the US
+    // Adjust this [minX, minY, maxX, maxY] to include your region of interest.
+    // For the lower-48 states, something like:
+    const options = {
+      bbox: [-125, 24, -66, 50] // [west, south, east, north]
+    };
+
+    // voronoi() returns a FeatureCollection of polygons
+    const voronoiPolygons = voronoi(teamPoints, options);
+
+    // Each polygon in the result has a property "pointIndex"
+    // which indicates which input point generated it.
+    // We can attach each team's color and info to that polygon:
+    voronoiPolygons.features.forEach((feature) => {
+      const idx = feature.properties.pointIndex; // index of the team in 'teams'
+      const team = teams[idx];
+      feature.properties.teamId = team.id;
+      feature.properties.teamSchool = team.school;
+      feature.properties.teamConference = team.conference;
+      feature.properties.teamColor =
+        team.color && team.color !== "null" ? team.color : "#666";
+      feature.properties.teamLogo = team.logos?.[0] || "/photos/default_team.png";
+    });
+
+    setVoronoiData(voronoiPolygons);
+  }, [teams]);
+
+  // 3) Define a style function for each Voronoi polygon
+  const styleVoronoiPolygon = (feature) => {
+    return {
+      fillColor: feature.properties.teamColor,
+      color: "#ffffff", // Outline color
+      weight: 1,
+      fillOpacity: 0.6
+    };
+  };
+
+  // 4) Optionally, bind popups or tooltips to polygons
+  const onEachVoronoiPolygon = (feature, layer) => {
+    const props = feature.properties;
+    const popupContent = `
+      <div style="text-align:center;">
+        <img 
+          src="${props.teamLogo}" 
+          alt="${props.teamSchool}" 
+          style="width:50px;height:auto;margin-bottom:5px;"
+          onerror="this.src='/photos/default_team.png';"
+        />
+        <h3 style="margin:5px 0;">${props.teamSchool}</h3>
+        <p style="margin:0;"><strong>Conference:</strong> ${
+          props.teamConference || "Independent"
+        }</p>
+      </div>
+    `;
+    layer.bindPopup(popupContent);
+  };
+
+  // 5) If you still want markers at each stadium:
   const getTeamIcon = (team) => {
     const color = team.color && team.color !== "null" ? team.color : "#333";
     return L.divIcon({
@@ -75,7 +142,7 @@ const More = () => {
     });
   };
 
-  // If you want to "fly to" a team’s location when clicked in a list:
+  // Helper: fly to a team's location if you click on them in a list
   const flyToTeam = (lat, lng) => {
     if (mapRef.current) {
       mapRef.current.flyTo([lat, lng], 6, { duration: 1.5 });
@@ -84,80 +151,81 @@ const More = () => {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      <h1>My Interactive CFB Map (No Polygons)</h1>
+      <h1>Voronoi FBS Map</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {loading ? (
-        <p>Loading FBS teams...</p>
+        <p>Loading teams...</p>
       ) : (
-        <>
-          <MapContainer
-            center={[37.8, -96]} // Center on the US
-            zoom={4}
-            style={{ height: "600px", width: "100%" }}
-            whenCreated={(map) => (mapRef.current = map)}
-          >
-            {/* Standard OSM tile layer (optional). 
-                You could remove this if you only want the custom image. */}
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org">OSM</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+        <MapContainer
+          center={[37.8, -96]} // roughly center of the US
+          zoom={4}
+          style={{ height: "600px", width: "100%" }}
+          whenCreated={(map) => (mapRef.current = map)}
+        >
+          {/* Base map tiles */}
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org">OSM</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-            {/* The key piece: an ImageOverlay with your pre-colored map */}
-            <ImageOverlay
-              url="/images/pre_colored_cfb_map.png" // The custom map image
-              bounds={US_BOUNDS}
-              opacity={0.7} // Adjust if you want some transparency
+          {/* The Voronoi polygons, each colored by the team color */}
+          {voronoiData && (
+            <GeoJSON
+              data={voronoiData}
+              style={styleVoronoiPolygon}
+              onEachFeature={onEachVoronoiPolygon}
             />
+          )}
 
-            {/* Now place markers on top */}
+          {/* Optional markers for stadium locations */}
+          {teams.map((team) => (
+            <Marker
+              key={team.id}
+              position={[team.location.latitude, team.location.longitude]}
+              icon={getTeamIcon(team)}
+            >
+              <Popup>
+                <div style={{ textAlign: "center" }}>
+                  <img
+                    src={team.logos?.[0] || "/photos/default_team.png"}
+                    alt={team.school}
+                    style={{ width: 50, height: "auto", marginBottom: 5 }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/photos/default_team.png";
+                    }}
+                  />
+                  <h3 style={{ margin: "5px 0" }}>{team.school}</h3>
+                  <p style={{ margin: 0 }}>
+                    <strong>Conference:</strong>{" "}
+                    {team.conference || "Independent"}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+
+      {/* Optional list to fly to a team */}
+      {!loading && teams.length > 0 && (
+        <div style={{ marginTop: "20px" }}>
+          <h2>Team List</h2>
+          <ul>
             {teams.map((team) => (
-              <Marker
+              <li
                 key={team.id}
-                position={[team.location.latitude, team.location.longitude]}
-                icon={getTeamIcon(team)}
+                style={{ cursor: "pointer", margin: "5px 0" }}
+                onClick={() =>
+                  flyToTeam(team.location.latitude, team.location.longitude)
+                }
               >
-                <Popup>
-                  <div style={{ textAlign: "center" }}>
-                    <img
-                      src={team.logos?.[0] || "/photos/default_team.png"}
-                      alt={team.school}
-                      style={{ width: 50, height: "auto", marginBottom: 5 }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/photos/default_team.png";
-                      }}
-                    />
-                    <h3 style={{ margin: "5px 0" }}>{team.school}</h3>
-                    <p style={{ margin: 0 }}>
-                      <strong>Conference:</strong>{" "}
-                      {team.conference || "Independent"}
-                    </p>
-                  </div>
-                </Popup>
-              </Marker>
+                {team.school} ({team.conference})
+              </li>
             ))}
-          </MapContainer>
-
-          {/* Optional list of teams to click and fly to location */}
-          <div style={{ marginTop: "20px" }}>
-            <h2>Team List</h2>
-            <ul>
-              {teams.map((team) => (
-                <li
-                  key={team.id}
-                  style={{ cursor: "pointer", margin: "5px 0" }}
-                  onClick={() =>
-                    flyToTeam(team.location.latitude, team.location.longitude)
-                  }
-                >
-                  {team.school} ({team.conference})
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+          </ul>
+        </div>
       )}
     </div>
   );
