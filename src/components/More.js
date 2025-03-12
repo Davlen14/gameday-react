@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import teamsService from "../services/teamsService";
-import { MapContainer, TileLayer, GeoJSON, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Delaunay } from "d3-delaunay";
@@ -17,12 +17,37 @@ L.Icon.Default.mergeOptions({
 });
 
 // Component to create Voronoi diagram
-const VoronoiLayer = ({ teams }) => {
+const USATerritorialMap = ({ teams }) => {
   const map = useMap();
-  const [voronoiGeoJSON, setVoronoiGeoJSON] = useState(null);
+  const layerRef = useRef(null);
   
   useEffect(() => {
     if (!teams || teams.length === 0) return;
+
+    // Clean up previous layer if it exists
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+    }
+    
+    // Set US boundaries for better focus
+    const usBounds = L.latLngBounds(
+      L.latLng(24.396308, -125.000000), // Southwest - includes Hawaii
+      L.latLng(49.384358, -66.934570)   // Northeast
+    );
+    
+    // Add Alaska and Hawaii bounds
+    const alaskaBounds = L.latLngBounds(
+      L.latLng(51.214183, -179.148909),
+      L.latLng(71.365162, -129.974567)
+    );
+    
+    const hawaiiBounds = L.latLngBounds(
+      L.latLng(18.910361, -160.236588),
+      L.latLng(22.236967, -154.807819)
+    );
+    
+    // Set map to US view
+    map.fitBounds(usBounds);
     
     // Convert teams to points for Voronoi generation
     const points = teams.map(team => [
@@ -31,140 +56,149 @@ const VoronoiLayer = ({ teams }) => {
       team
     ]);
     
-    // Get map bounds and extend them to create a slightly larger bounding box
-    const bounds = map.getBounds();
-    const sw = bounds.getSouthWest();
-    const ne = bounds.getNorthEast();
+    // Create a new layer group for all the polygons
+    const territoryLayer = L.layerGroup().addTo(map);
+    layerRef.current = territoryLayer;
     
-    // Create extended bounds for Voronoi diagram
-    const boundingBox = [
-      [sw.lng - 10, sw.lat - 5],
-      [ne.lng + 10, ne.lat + 5]
-    ];
-    
-    // Generate Voronoi diagram using d3-delaunay
-    const pointsArray = points.map(p => [p[0], p[1]]);
-    const delaunay = Delaunay.from(pointsArray);
-    const voronoi = delaunay.voronoi([
-      boundingBox[0][0], boundingBox[0][1], 
-      boundingBox[1][0], boundingBox[1][1]
-    ]);
-    
-    // Convert Voronoi polygons to GeoJSON
-    const features = points.map((point, i) => {
-      const cell = voronoi.cellPolygon(i);
-      if (!cell) return null;
+    // Function to generate the Voronoi diagram
+    const generateVoronoi = () => {
+      // Get current map bounds
+      const bounds = map.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
       
-      // Convert polygon to GeoJSON format
-      const coordinates = [cell.map(point => [point[0], point[1]])];
+      // Create extended bounds for Voronoi diagram
+      const boundingBox = [
+        sw.lng - 5, sw.lat - 5,
+        ne.lng + 5, ne.lat + 5
+      ];
       
-      // The cell is already closed (first and last points are the same)
+      // Generate Voronoi diagram using d3-delaunay
+      const pointsArray = points.map(p => [p[0], p[1]]);
+      const delaunay = Delaunay.from(pointsArray);
+      const voronoi = delaunay.voronoi(boundingBox);
       
-      return {
-        type: "Feature",
-        properties: {
-          team: points[i][2]
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: coordinates
+      // Clear existing polygons
+      territoryLayer.clearLayers();
+      
+      // Create polygons for each team
+      points.forEach((point, i) => {
+        const cell = voronoi.cellPolygon(i);
+        if (!cell) return;
+        
+        const team = point[2];
+        const teamColor = team.color && team.color !== "null" ? team.color : "#333";
+        
+        // Create polygon for team's territory
+        const polygonPoints = cell.map(point => [point[1], point[0]]);
+        
+        const polygon = L.polygon(polygonPoints, {
+          fillColor: teamColor,
+          weight: 1.5,
+          opacity: 1,
+          color: 'white',
+          fillOpacity: 0.8
+        }).addTo(territoryLayer);
+        
+        // Add popup to polygon
+        polygon.bindPopup(`
+          <div style="text-align: center">
+            <img
+              src="${team.logos?.[0] || "/photos/default_team.png"}"
+              alt="${team.school}"
+              style="width: 50px; height: auto; margin-bottom: 5px"
+              onerror="this.onerror=null; this.src='/photos/default_team.png';"
+            />
+            <h3 style="margin: 5px 0">${team.school}</h3>
+            <p style="margin: 0">
+              <strong>Conference:</strong> ${team.conference || "Independent"}
+            </p>
+          </div>
+        `);
+        
+        // Calculate area of polygon to determine logo size
+        let area = 0;
+        for (let j = 0; j < polygonPoints.length - 1; j++) {
+          area += polygonPoints[j][0] * polygonPoints[j+1][1] - polygonPoints[j+1][0] * polygonPoints[j][1];
         }
-      };
-    }).filter(feature => feature !== null);
-    
-    const geoJSON = {
-      type: "FeatureCollection",
-      features: features
+        area = Math.abs(area / 2);
+        
+        // Scale logo size based on territory area
+        const baseSize = 40;
+        const minSize = 30;
+        const maxSize = 60;
+        
+        // Normalize area to a reasonable size range
+        const normalizedArea = Math.sqrt(area) * 10;
+        const size = Math.max(minSize, Math.min(maxSize, baseSize * (normalizedArea / 10)));
+        
+        // Create custom icon with team logo sized by territory
+        const teamIcon = L.divIcon({
+          className: "team-logo-marker",
+          html: `<div style="background-image: url('${team.logos?.[0] || "/photos/default_team.png"}');
+                            background-size: contain;
+                            background-repeat: no-repeat;
+                            background-position: center;
+                            width: ${size}px;
+                            height: ${size}px;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            background-color: white;
+                            box-shadow: 0 0 4px rgba(0,0,0,0.4);">
+                 </div>`,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2]
+        });
+        
+        // Place logo at team location
+        L.marker(
+          [team.location.latitude, team.location.longitude],
+          { icon: teamIcon }
+        ).addTo(territoryLayer);
+      });
     };
     
-    setVoronoiGeoJSON(geoJSON);
+    // Generate initial Voronoi diagram
+    generateVoronoi();
+    
+    // Update Voronoi on zoom end
+    const handleZoomEnd = () => {
+      generateVoronoi();
+    };
+    
+    // Debounce for performance
+    let moveTimeout = null;
+    const handleMoveEnd = () => {
+      clearTimeout(moveTimeout);
+      moveTimeout = setTimeout(generateVoronoi, 300);
+    };
+    
+    map.on('zoomend', handleZoomEnd);
+    map.on('moveend', handleMoveEnd);
+    
+    // Handle special regions (Alaska, Hawaii)
+    // For teams in Alaska
+    const alaskaTeams = teams.filter(team => 
+      team.location.latitude > 50 && team.location.longitude < -130
+    );
+    
+    // For teams in Hawaii
+    const hawaiiTeams = teams.filter(team => 
+      team.location.latitude < 23 && team.location.longitude < -154
+    );
+    
+    // Cleanup function
+    return () => {
+      map.off('zoomend', handleZoomEnd);
+      map.off('moveend', handleMoveEnd);
+      clearTimeout(moveTimeout);
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+      }
+    };
   }, [teams, map]);
   
-  // Function to style each polygon based on team colors
-  const stylePolygon = (feature) => {
-    const team = feature.properties.team;
-    const color = team.color && team.color !== "null" ? team.color : "#333";
-    
-    return {
-      fillColor: color,
-      weight: 2,
-      opacity: 1,
-      color: 'white',
-      dashArray: '3',
-      fillOpacity: 0.7
-    };
-  };
-  
-  // Function to create popups for each region
-  const onEachFeature = (feature, layer) => {
-    const team = feature.properties.team;
-    
-    layer.bindPopup(() => {
-      const popupDiv = L.DomUtil.create('div', 'team-popup');
-      popupDiv.innerHTML = `
-        <div style="text-align: center">
-          <img
-            src="${team.logos?.[0] || "/photos/default_team.png"}"
-            alt="${team.school}"
-            style="width: 50px; height: auto; margin-bottom: 5px"
-            onerror="this.onerror=null; this.src='/photos/default_team.png';"
-          />
-          <h3 style="margin: 5px 0">${team.school}</h3>
-          <p style="margin: 0">
-            <strong>Conference:</strong> ${team.conference || "Independent"}
-          </p>
-        </div>
-      `;
-      return popupDiv;
-    });
-  };
-  
-  // Create team logos at the center of each region
-  const TeamMarkers = () => {
-    return teams.map(team => {
-      // Create a custom icon with the team's logo
-      const teamIcon = L.divIcon({
-        className: "team-logo-marker",
-        html: `<div style="background-image: url('${team.logos?.[0] || "/photos/default_team.png"}');
-                          background-size: contain;
-                          background-repeat: no-repeat;
-                          background-position: center;
-                          width: 40px;
-                          height: 40px;
-                          border-radius: 50%;
-                          border: 2px solid white;
-                          background-color: white;
-                          box-shadow: 0 0 4px rgba(0,0,0,0.4);">
-               </div>`,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
-      });
-      
-      // Create a marker with the custom icon
-      const marker = L.marker(
-        [team.location.latitude, team.location.longitude],
-        { icon: teamIcon }
-      );
-      
-      // Add the marker to the map
-      marker.addTo(map);
-      
-      return null;
-    });
-  };
-  
-  return (
-    <>
-      {voronoiGeoJSON && (
-        <GeoJSON 
-          data={voronoiGeoJSON} 
-          style={stylePolygon}
-          onEachFeature={onEachFeature}
-        />
-      )}
-      <TeamMarkers />
-    </>
-  );
+  return null;
 };
 
 const More = () => {
@@ -225,17 +259,19 @@ const More = () => {
       <MapContainer
         center={[39.8283, -98.5795]}
         zoom={4}
-        style={{ height: "600px", width: "100%" }}
+        style={{ height: "750px", width: "100%" }} // Taller map for better view
         whenCreated={(map) => {
           mapRef.current = map;
         }}
+        minZoom={3} // Prevent zooming out too far
+        maxBoundsViscosity={1.0} // Prevent dragging outside bounds
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          opacity={0.3} // Make the base map less visible to better see the team colors
+          opacity={0.2} // Very faint base map to emphasize territories
         />
-        {validTeams.length > 0 && <VoronoiLayer teams={validTeams} />}
+        {validTeams.length > 0 && <USATerritorialMap teams={validTeams} />}
       </MapContainer>
 
       <div style={{ marginTop: "20px" }}>
@@ -245,7 +281,9 @@ const More = () => {
           padding: 0,
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: "10px"
+          gap: "10px",
+          maxHeight: "400px",
+          overflowY: "auto"
         }}>
           {validTeams.map((team) => (
             <li
