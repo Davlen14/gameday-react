@@ -292,56 +292,54 @@ const TvIcon = () => (
                                 </div>
                             </div>
 
-                            <div className="game-meta">
-                                <div className="weather-card">
-                                    <WeatherIcon condition={gameWeather?.weatherCondition} />
-                                    <div className="weather-info">
-                                        <span className="temperature">
-                                            {gameWeather?.temperature || '--'}°F
-                                        </span>
-                                        <span className="condition">
-                                            {gameWeather?.weatherCondition || 'N/A'}
-                                        </span>
-                                    </div>
-                                </div>
+                                <div className="game-meta">
+                            {/* Single row for TV network + weather */}
+                            <div className="broadcast-weather-row">
+                                {/* TV network icon and name */}
+                                <TvIcon />
+                                <span className="network">{tvNetwork || 'N/A'}</span>
 
-                                <div className="broadcast-card">
-                                    <TvIcon />
-                                    <div className="broadcast-info">
-                                        <span className="network">{tvNetwork}</span>
-                                        <span className="time">
-                                            Live Coverage
-                                        </span>
-                                    </div>
-                                </div>
+                                <span className="separator">|</span>
+
+                                {/* Weather icon and info */}
+                                <WeatherIcon condition={gameWeather?.weatherCondition} />
+                                <span className="temperature">
+                                {gameWeather?.temperature || '--'}°F
+                                </span>
+                                <span className="condition">
+                                {gameWeather?.weatherCondition || 'N/A'}
+                                </span>
+                            </div>
                             </div>
 
                             {gameLines && (
-                                <div className="betting-section">
-                                    <h4>Betting Lines</h4>
-                                    <div className="sportsbooks">
-                                        {gameLines.lines && gameLines.lines.map((line) => (
-                                            <div key={line.provider} className="sportsbook">
-                                                <img 
-                                                    src={getSportsbookLogo(line.provider)} 
-                                                    alt={line.provider} 
-                                                    className="sportsbook-logo" 
-                                                />
-                                                <div className="odds">
-                                                    <div className="spread">
-                                                        <span>Spread:</span>
-                                                        <strong>{line.spread || 'N/A'}</strong>
-                                                    </div>
-                                                    <div className="overunder">
-                                                        <span>O/U:</span>
-                                                        <strong>{line.overUnder || 'N/A'}</strong>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                            <div className="betting-section">
+                                {/* You can keep or remove this heading if desired */}
+                                <h4>Betting Lines</h4>
+
+                                <div className="sportsbooks">
+                                {gameLines.lines && gameLines.lines.map((line) => (
+                                    <div key={line.provider} className="sportsbook-line">
+                                    {/* Sportsbook logo/icon */}
+                                    <img 
+                                        src={getSportsbookLogo(line.provider)} 
+                                        alt={line.provider} 
+                                        className="sportsbook-logo" 
+                                    />
+
+                                    {/* Spread, Over/Under, and (optionally) Moneyline in one row */}
+                                    <span className="spread">SP: {line.spread || 'N/A'}</span>
+                                    <span className="separator">|</span>
+                                    <span className="overunder">O/U: {line.overUnder || 'N/A'}</span>
+                                    <span className="separator">|</span>
+                                    {/* If you have a moneyLine field, display it here */}
+                                    <span className="moneyline">ML: {line.moneyLine || 'N/A'}</span>
                                     </div>
+                                ))}
                                 </div>
+                            </div>
                             )}
+
                             
                             {/* Advanced Game Details Button */}
                             <div className="advanced-details-section">

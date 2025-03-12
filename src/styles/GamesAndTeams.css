@@ -240,53 +240,24 @@
     font-family: "Orbitron", "Titillium Web", sans-serif;
 }
 
-/* Game Meta - FIXED SIDE-BY-SIDE LAYOUT */
-.game-meta {
+/* Broadcast & Weather - Combined in a Single Row */
+.broadcast-weather-row {
     display: flex;
+    align-items: center;
     padding: 0.35rem 0.75rem;
     border-bottom: 1px solid #edf2f7;
     background-color: white;
-    justify-content: space-between;
-    align-items: center;
+    gap: 0.5rem;
     width: 100%;
 }
 
-.weather-card, .broadcast-card {
-    display: flex;
-    align-items: center;
-    padding: 0.3rem 0.25rem;
-    width: 50%; /* Force each card to take exactly half the width */
+/* Separator for inline items */
+.separator {
+    margin: 0 0.5rem;
+    color: #64748b;
 }
 
-.weather-card {
-    border-right: 1px solid #edf2f7;
-    padding-right: 0.75rem;
-    margin-right: 0; /* Remove margin */
-}
-
-.broadcast-card {
-    padding-left: 0.75rem;
-}
-
-/* Bigger icons with no background */
-.weather-card svg, .broadcast-card svg {
-    width: 32px !important; /* Force larger size */
-    height: 32px !important;
-    margin-right: 0.5rem;
-    background: transparent !important; /* Remove background */
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
-    flex-shrink: 0;
-}
-
-.weather-info, .broadcast-info {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    align-items: flex-start;
-}
-
+/* Text Styling for Network & Weather Info */
 .temperature, .network {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-size: 0.85rem;
@@ -296,7 +267,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%; /* Ensure text truncates if too long */
+    max-width: 100%;
 }
 
 .condition, .time {
@@ -306,7 +277,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%; /* Ensure text truncates if too long */
+    max-width: 100%;
 }
 
 /* Betting Section */
@@ -339,13 +310,15 @@
     background: linear-gradient(to right, #D4001C, transparent);
 }
 
+/* New Betting Lines Layout */
 .sportsbooks {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.4rem;
     flex-grow: 1;
 }
 
-.sportsbook {
+.sportsbook-line {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -356,7 +329,7 @@
     transition: transform 0.2s ease;
 }
 
-.sportsbook:hover {
+.sportsbook-line:hover {
     transform: translateX(3px);
     background: #f0f5ff;
 }
@@ -372,41 +345,24 @@
     flex-shrink: 0;
 }
 
-.odds {
-    flex-grow: 1;
-    display: flex;
-    justify-content: space-between;
-}
-
-.spread, .overunder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.7rem;
-    min-width: 0;
-}
-
-.spread span, .overunder span {
-    font-size: 0.65rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.spread strong, .overunder strong {
+/* Inline Odds styling */
+.spread, .overunder, .moneyline {
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    color: #D4001C;
-    font-weight: 700;
     font-size: 0.8rem;
+    font-weight: 700;
+    color: #D4001C;
+    white-space: nowrap;
 }
+
+/* Advanced Details */
 .advanced-details-section {
     margin-top: 15px;
     text-align: center;
     padding: 10px 0;
     border-top: 1px solid #eee;
-  }
-  
-  .advanced-details-button {
+}
+
+.advanced-details-button {
     background-color: #D4001C;
     color: white;
     border: none;
@@ -415,11 +371,12 @@
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.2s;
-  }
-  
-  .advanced-details-button:hover {
+}
+
+.advanced-details-button:hover {
     background-color: #d12d43;
-  }
+}
+
 /* Loading & Error States */
 .loading, .error {
     display: flex;
