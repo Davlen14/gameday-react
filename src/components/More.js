@@ -3,7 +3,7 @@ import teamsService from "../services/teamsService";
 import { MapContainer, TileLayer, GeoJSON, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import * as d3 from "d3";
+import { Delaunay } from "d3-delaunay";
 
 // Fix default Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -42,23 +42,23 @@ const VoronoiLayer = ({ teams }) => {
       [ne.lng + 10, ne.lat + 5]
     ];
     
-    // Generate Voronoi diagram
-    const voronoi = d3.voronoi()
-      .extent(boundingBox);
-    
-    const diagram = voronoi(points);
+    // Generate Voronoi diagram using d3-delaunay
+    const pointsArray = points.map(p => [p[0], p[1]]);
+    const delaunay = Delaunay.from(pointsArray);
+    const voronoi = delaunay.voronoi([
+      boundingBox[0][0], boundingBox[0][1], 
+      boundingBox[1][0], boundingBox[1][1]
+    ]);
     
     // Convert Voronoi polygons to GeoJSON
-    const features = diagram.polygons().map((polygon, i) => {
-      if (!polygon) return null;
+    const features = points.map((point, i) => {
+      const cell = voronoi.cellPolygon(i);
+      if (!cell) return null;
       
       // Convert polygon to GeoJSON format
-      const coordinates = [polygon.map(point => [point[0], point[1]])];
+      const coordinates = [cell.map(point => [point[0], point[1]])];
       
-      // Add the first point again to close the polygon
-      if (coordinates[0].length > 0) {
-        coordinates[0].push(coordinates[0][0]);
-      }
+      // The cell is already closed (first and last points are the same)
       
       return {
         type: "Feature",
