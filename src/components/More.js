@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import teamsService from "../services/teamsService";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fixing the icon issue in Leaflet
+// Set up Leaflet to handle image paths
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -12,11 +12,139 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
+// Component to update the map view
+const MapUpdater = ({ bounds }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (bounds) {
+      map.fitBounds(bounds);
+    }
+  }, [map, bounds]);
+  
+  return null;
+};
+
+// Team logo component
+const TeamLogo = ({ team, map }) => {
+  const [position, setPosition] = useState([
+    team.location.latitude,
+    team.location.longitude
+  ]);
+
+  useEffect(() => {
+    const logoElement = document.createElement('div');
+    logoElement.className = 'team-logo-overlay';
+    
+    const logoImg = document.createElement('img');
+    logoImg.src = team.logos?.[0] || "/photos/default_team.png";
+    logoImg.alt = team.school;
+    logoImg.style.width = '40px';
+    logoImg.style.height = '40px';
+    logoImg.style.objectFit = 'contain';
+    logoImg.style.filter = 'drop-shadow(1px 1px 3px rgba(0,0,0,0.7))';
+    logoImg.onerror = function() {
+      this.onerror = null;
+      this.src = "/photos/default_team.png";
+    };
+    
+    logoElement.appendChild(logoImg);
+    
+    const logoIcon = L.divIcon({
+      html: logoElement,
+      className: 'team-logo-marker',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+    
+    const marker = L.marker(position, {
+      icon: logoIcon,
+      interactive: true,
+      zIndexOffset: 1000
+    });
+    
+    // Add popup
+    const popupContent = document.createElement('div');
+    popupContent.className = 'team-popup';
+    
+    const header = document.createElement('div');
+    header.className = 'team-popup-header';
+    
+    const logo = document.createElement('img');
+    logo.className = 'team-popup-logo';
+    logo.src = team.logos?.[0] || "/photos/default_team.png";
+    logo.alt = team.school;
+    logo.style.width = '50px';
+    logo.style.height = '50px';
+    logo.style.marginRight = '10px';
+    logo.style.objectFit = 'contain';
+    logo.onerror = function() {
+      this.onerror = null;
+      this.src = "/photos/default_team.png";
+    };
+    
+    const name = document.createElement('h3');
+    name.className = 'team-popup-name';
+    name.textContent = team.school;
+    name.style.fontWeight = 'bold';
+    name.style.fontSize = '1.1rem';
+    name.style.margin = '0';
+    
+    header.appendChild(logo);
+    header.appendChild(name);
+    
+    const details = document.createElement('div');
+    details.className = 'team-popup-details';
+    details.style.fontSize = '0.9rem';
+    
+    // Add details
+    const detailsList = [
+      { label: 'Mascot', value: team.mascot || 'N/A' },
+      { label: 'Conference', value: team.conference || 'Independent' },
+      { label: 'Stadium', value: team.location?.name || 'N/A' },
+      { label: 'Location', value: `${team.location?.city}, ${team.location?.state}` },
+      { label: 'Capacity', value: team.location?.capacity?.toLocaleString() || 'N/A' }
+    ];
+    
+    detailsList.forEach(item => {
+      const detail = document.createElement('p');
+      detail.style.margin = '5px 0';
+      
+      const label = document.createElement('strong');
+      label.textContent = item.label + ': ';
+      label.style.fontWeight = 'bold';
+      
+      const value = document.createTextNode(item.value);
+      
+      detail.appendChild(label);
+      detail.appendChild(value);
+      details.appendChild(detail);
+    });
+    
+    popupContent.appendChild(header);
+    popupContent.appendChild(details);
+    
+    marker.bindPopup(popupContent, { 
+      maxWidth: 300,
+      className: 'team-popup-container'
+    });
+    
+    marker.addTo(map);
+    
+    return () => {
+      map.removeLayer(marker);
+    };
+  }, [team, position, map]);
+  
+  return null;
+};
+
 const More = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedConference, setSelectedConference] = useState("");
+  const [mapBounds, setMapBounds] = useState(null);
   const mapRef = useRef(null);
 
   // CSS styles
@@ -113,7 +241,7 @@ const More = () => {
     }
     
     .cfb-map-wrapper {
-      height: 600px;
+      height: 700px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -204,45 +332,83 @@ const More = () => {
       text-align: center;
       margin: 20px 0;
     }
-    
-    .leaflet-popup-content {
-      margin: 12px;
+
+    .team-popup-container .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      padding: 0;
     }
     
-    .team-popup {
-      width: 220px;
+    .team-popup-container .leaflet-popup-content {
+      margin: 0;
+      padding: 12px;
+      min-width: 250px;
     }
     
     .team-popup-header {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .legend {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      max-width: 200px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+      cursor: pointer;
+      padding: 3px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .legend-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .legend-name {
+      font-size: 0.75rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .map-attribution {
+      font-size: 0.7rem;
+      text-align: center;
+      margin-top: 5px;
+      color: #666;
     }
     
-    .team-popup-logo {
+    .team-logo-marker div {
+      background: none !important;
+      border: none !important;
+    }
+    
+    .team-logo-overlay {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 40px;
       height: 40px;
-      margin-right: 10px;
-      object-fit: contain;
-    }
-    
-    .team-popup-name {
-      font-weight: 600;
-      font-size: 1rem;
-      margin: 0;
-    }
-    
-    .team-popup-details {
-      font-size: 0.9rem;
-    }
-    
-    .team-popup-detail {
-      margin: 4px 0;
-    }
-    
-    .team-popup-detail strong {
-      font-weight: 600;
-      margin-right: 5px;
     }
   `;
 
@@ -276,7 +442,7 @@ const More = () => {
     }
   };
 
-  // Conference order and logos mapping similar to Teams component
+  // Conference order and logos mapping
   const conferenceOrder = [
     "Big Ten",
     "SEC",
@@ -319,7 +485,7 @@ const More = () => {
                  team.location.longitude
         );
         
-        // Sort teams by conference order like in Teams component
+        // Sort teams by conference order
         const sortedTeams = [...fbsTeamsWithCoordinates].sort((a, b) => {
           const confA = a.conference || "Independent";
           const confB = b.conference || "Independent";
@@ -328,17 +494,34 @@ const More = () => {
           const orderB = conferenceOrder.indexOf(confB);
           
           if (orderA !== orderB) {
-            // If one conference is not in our list, put it at the end
             if (orderA === -1) return 1;
             if (orderB === -1) return -1;
             return orderA - orderB;
           }
           
-          // If same conference, sort alphabetically by school name
           return a.school.localeCompare(b.school);
         });
         
         setTeams(sortedTeams);
+        
+        // Calculate bounds for the teams
+        if (sortedTeams.length > 0) {
+          const lats = sortedTeams.map(t => t.location.latitude);
+          const lngs = sortedTeams.map(t => t.location.longitude);
+          
+          const southWest = [
+            Math.min(...lats) - 2, // Add padding
+            Math.min(...lngs) - 2
+          ];
+          
+          const northEast = [
+            Math.max(...lats) + 2,
+            Math.max(...lngs) + 2
+          ];
+          
+          setMapBounds([southWest, northEast]);
+        }
+        
         setLoading(false);
       } catch (err) {
         setError("Failed to load team data");
@@ -369,29 +552,44 @@ const More = () => {
     return teams.filter(team => team.conference === selectedConference);
   }, [teams, selectedConference]);
 
-  // Custom icon function based on team colors
-  const getTeamIcon = (team) => {
-    // Get the team color with fallback
-    const teamColor = team.color || '#333';
-    
-    // Handle null or "null" color values
-    const color = teamColor === "null" || teamColor === null ? '#333' : teamColor;
-    
-    return L.divIcon({
-      className: "team-marker",
-      html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
-      iconSize: [16, 16],
-      iconAnchor: [8, 8]
-    });
+  // Calculate the circle radius based on the number of teams
+  // We want circles to overlap and create a territory-like appearance
+  const getCircleRadius = (numTeams) => {
+    if (numTeams <= 20) return 120; // Larger territories for fewer teams
+    if (numTeams <= 50) return 90;
+    if (numTeams <= 100) return 70;
+    return 50; // Smaller territories for many teams
   };
 
   // Function to fly to a team's location
   const flyToTeam = (lat, lng) => {
     if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 12, {
+      mapRef.current.flyTo([lat, lng], 8, {
         duration: 1.5
       });
     }
+  };
+
+  // Simple legend component
+  const Legend = ({ teams }) => {
+    return (
+      <div className="legend leaflet-control">
+        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Teams</div>
+        {teams.map(team => (
+          <div 
+            key={team.id} 
+            className="legend-item"
+            onClick={() => flyToTeam(team.location.latitude, team.location.longitude)}
+          >
+            <div 
+              className="legend-color" 
+              style={{ backgroundColor: team.color && team.color !== "null" ? team.color : "#333" }}
+            ></div>
+            <div className="legend-name">{team.school}</div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -400,7 +598,7 @@ const More = () => {
       
       <div className="cfb-map-header">
         <h1>Interactive CFB Map</h1>
-        <p>Explore FBS college football teams across the United States</p>
+        <p>Explore FBS college football team territories across the United States</p>
       </div>
 
       {error && (
@@ -420,7 +618,9 @@ const More = () => {
             <div className="cfb-map-dropdown">
               <select 
                 value={selectedConference}
-                onChange={(e) => setSelectedConference(e.target.value)}
+                onChange={(e) => {
+                  setSelectedConference(e.target.value);
+                }}
               >
                 <option value="">All Conferences</option>
                 {conferences.map(conf => (
@@ -436,21 +636,41 @@ const More = () => {
               zoom={4} 
               style={{ height: "100%", width: "100%" }}
               whenCreated={map => (mapRef.current = map)}
+              minZoom={3}
+              maxZoom={10}
+              zoomControl={false}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                opacity={0.3} // Very light base map
               />
+
+              {mapBounds && <MapUpdater bounds={mapBounds} />}
               
+              {/* Add large colored circles for team territories */}
               {filteredTeams.map(team => {
-                // Handle null or invalid colors
                 const teamColor = team.color && team.color !== "null" ? team.color : "#333";
+                const circleRadius = getCircleRadius(filteredTeams.length) * 1000; // Convert to meters
                 
                 return (
-                  <Marker 
+                  <CircleMarker
                     key={team.id}
-                    position={[team.location.latitude, team.location.longitude]}
-                    icon={getTeamIcon(team)}
+                    center={[team.location.latitude, team.location.longitude]}
+                    radius={circleRadius}
+                    pathOptions={{
+                      fillColor: teamColor,
+                      fillOpacity: 0.7,
+                      stroke: true,
+                      color: lightenColor(teamColor, 20),
+                      weight: 2,
+                      opacity: 0.8
+                    }}
+                    eventHandlers={{
+                      click: () => {
+                        flyToTeam(team.location.latitude, team.location.longitude);
+                      }
+                    }}
                   >
                     <Popup>
                       <div className="team-popup">
@@ -459,37 +679,80 @@ const More = () => {
                             src={team.logos?.[0] || "/photos/default_team.png"} 
                             alt={team.school}
                             className="team-popup-logo"
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              marginRight: '10px',
+                              objectFit: 'contain'
+                            }}
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = "/photos/default_team.png";
                             }}
-                            loading="lazy"
                           />
-                          <h3 className="team-popup-name">{team.school}</h3>
+                          <h3 
+                            className="team-popup-name"
+                            style={{
+                              fontWeight: 'bold',
+                              fontSize: '1.1rem',
+                              margin: 0
+                            }}
+                          >{team.school}</h3>
                         </div>
-                        <div className="team-popup-details">
-                          <p className="team-popup-detail">
-                            <strong>Mascot:</strong> {team.mascot || "N/A"}
+                        <div 
+                          className="team-popup-details"
+                          style={{ fontSize: '0.9rem' }}
+                        >
+                          <p style={{ margin: '5px 0' }}>
+                            <strong style={{ fontWeight: 'bold' }}>Mascot:</strong> {team.mascot || "N/A"}
                           </p>
-                          <p className="team-popup-detail">
-                            <strong>Conference:</strong> {team.conference || "Independent"}
+                          <p style={{ margin: '5px 0' }}>
+                            <strong style={{ fontWeight: 'bold' }}>Conference:</strong> {team.conference || "Independent"}
                           </p>
-                          <p className="team-popup-detail">
-                            <strong>Stadium:</strong> {team.location?.name || "N/A"}
+                          <p style={{ margin: '5px 0' }}>
+                            <strong style={{ fontWeight: 'bold' }}>Stadium:</strong> {team.location?.name || "N/A"}
                           </p>
-                          <p className="team-popup-detail">
-                            <strong>Location:</strong> {team.location?.city}, {team.location?.state}
+                          <p style={{ margin: '5px 0' }}>
+                            <strong style={{ fontWeight: 'bold' }}>Location:</strong> {team.location?.city}, {team.location?.state}
                           </p>
-                          <p className="team-popup-detail">
-                            <strong>Capacity:</strong> {team.location?.capacity?.toLocaleString() || "N/A"}
+                          <p style={{ margin: '5px 0' }}>
+                            <strong style={{ fontWeight: 'bold' }}>Capacity:</strong> {team.location?.capacity?.toLocaleString() || "N/A"}
                           </p>
                         </div>
                       </div>
                     </Popup>
-                  </Marker>
+                  </CircleMarker>
                 );
               })}
+              
+              {/* Add team logos */}
+              {mapRef.current && filteredTeams.map(team => (
+                <TeamLogo key={team.id} team={team} map={mapRef.current} />
+              ))}
+              
+              {/* Add zoom controls in a custom position */}
+              <div className="leaflet-top leaflet-left" style={{ top: '60px' }}>
+                <div className="leaflet-control leaflet-bar">
+                  <a href="#" title="Zoom in" onClick={(e) => {
+                    e.preventDefault();
+                    mapRef.current.zoomIn();
+                  }}>+</a>
+                  <a href="#" title="Zoom out" onClick={(e) => {
+                    e.preventDefault();
+                    mapRef.current.zoomOut();
+                  }}>-</a>
+                </div>
+              </div>
+              
+              {/* Add legend in bottom right */}
+              <div className="leaflet-bottom leaflet-right">
+                <Legend teams={filteredTeams} />
+              </div>
             </MapContainer>
+          </div>
+          
+          <div className="map-attribution">
+            Map inspired by college football team territories visualization
           </div>
 
           <div className="team-list">
@@ -513,7 +776,7 @@ const More = () => {
                   <h4 className="team-name">{team.school}</h4>
                   <p className="team-conference">{team.conference || "Independent"}</p>
                 </div>
-                                  <div 
+                <div 
                   className="team-color-dot" 
                   style={{ backgroundColor: team.color && team.color !== "null" ? team.color : "#333" }}
                 ></div>
