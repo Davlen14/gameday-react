@@ -453,267 +453,12 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
   return null;
 };
 
-// Conference Map Component - Group teams by conference
-const USAConferenceMap = ({ teams }) => {
-  const map = useMap();
-  const layerRef = useRef(null);
-
-  useEffect(() => {
-    if (!teams || teams.length === 0) return;
-
-    // Remove any existing layer
-    if (layerRef.current) {
-      map.removeLayer(layerRef.current);
-    }
-
-    // Set view to center of US
-    const usCenter = [39.8283, -98.5795];
-    map.setView(usCenter, 4);
-
-    // Create a new layer group
-    const conferenceLayer = L.layerGroup().addTo(map);
-    layerRef.current = conferenceLayer;
-
-    try {
-      // Add US states boundary
-      const statesLayer = L.geoJSON(usStates, {
-        style: {
-          weight: 1.5,
-          opacity: 1,
-          color: "#666",
-          fillOpacity: 0.1,
-          fillColor: "#eee"
-        }
-      }).addTo(conferenceLayer);
-
-      // Group teams by conference
-      const conferenceGroups = {};
-      
-      teams.forEach(team => {
-        if (!team.location || !team.location.latitude || !team.location.longitude) {
-          return;
-        }
-        
-        const conference = team.conference || "Independent";
-        
-        if (!conferenceGroups[conference]) {
-          conferenceGroups[conference] = [];
-        }
-        
-        conferenceGroups[conference].push(team);
-      });
-
-      // Generate a color for each conference
-      const conferenceColors = {};
-      const baseColors = [
-        "#E53935", "#D81B60", "#8E24AA", "#5E35B1", "#3949AB", 
-        "#1E88E5", "#039BE5", "#00ACC1", "#00897B", "#43A047", 
-        "#7CB342", "#C0CA33", "#FDD835", "#FFB300", "#FB8C00", 
-        "#F4511E", "#6D4C41", "#757575", "#546E7A"
-      ];
-      
-      let colorIndex = 0;
-      Object.keys(conferenceGroups).forEach(conference => {
-        conferenceColors[conference] = baseColors[colorIndex % baseColors.length];
-        colorIndex++;
-      });
-
-      // Helper function to calculate convex hull
-      const getConvexHull = (points) => {
-        if (points.length <= 3) return points;
-        
-        // Find the lowest point
-        let lowestPoint = points[0];
-        for (let i = 1; i < points.length; i++) {
-          if (points[i][0] < lowestPoint[0] || (points[i][0] === lowestPoint[0] && points[i][1] < lowestPoint[1])) {
-            lowestPoint = points[i];
-          }
-        }
-        
-        // Sort points by polar angle
-        const sortedPoints = [...points].sort((a, b) => {
-          const angleA = Math.atan2(a[0] - lowestPoint[0], a[1] - lowestPoint[1]);
-          const angleB = Math.atan2(b[0] - lowestPoint[0], b[1] - lowestPoint[1]);
-          return angleA - angleB;
-        });
-        
-        // Graham scan algorithm
-        const hull = [sortedPoints[0], sortedPoints[1]];
-        for (let i = 2; i < sortedPoints.length; i++) {
-          while (hull.length > 1) {
-            const p1 = hull[hull.length - 2];
-            const p2 = hull[hull.length - 1];
-            const p3 = sortedPoints[i];
-            
-            // Calculate cross product
-            const cross = (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]);
-            
-            if (cross >= 0) break; // Convex turn
-            hull.pop(); // Remove point that makes a non-convex turn
-          }
-          hull.push(sortedPoints[i]);
-        }
-        
-        return hull;
-      };
-
-      // Draw conference hulls that follow US boundaries
-      Object.entries(conferenceGroups).forEach(([conference, conferenceTeams]) => {
-        // If conference has only one team, just show a circle
-        if (conferenceTeams.length === 1) {
-          const team = conferenceTeams[0];
-          const circle = L.circle(
-            [team.location.latitude, team.location.longitude], 
-            {
-              radius: 120000,
-              color: conferenceColors[conference],
-              weight: 2,
-              opacity: 0.8,
-              fillColor: conferenceColors[conference],
-              fillOpacity: 0.5
-            }
-          ).addTo(conferenceLayer);
-          
-          circle.bindTooltip(conference, {
-            permanent: true,
-            direction: 'center',
-            className: 'conference-label'
-          });
-        } 
-        // If conference has 2+ teams, create a convex hull
-        else if (conferenceTeams.length >= 2) {
-          try {
-            // Get all team coordinates
-            const points = conferenceTeams.map(team => 
-              [team.location.latitude, team.location.longitude]
-            );
-            
-            // Create a convex hull around the teams
-            const hullPoints = points.length > 3 ? getConvexHull(points) : points;
-            
-            // Create a polygon with padding
-            const paddedPoints = [];
-            const centerLat = hullPoints.reduce((sum, p) => sum + p[0], 0) / hullPoints.length;
-            const centerLng = hullPoints.reduce((sum, p) => sum + p[1], 0) / hullPoints.length;
-            
-            hullPoints.forEach(point => {
-              // Add padding by moving points outward from center
-              const lat = point[0];
-              const lng = point[1];
-              const dlat = lat - centerLat;
-              const dlng = lng - centerLng;
-              const dist = Math.sqrt(dlat * dlat + dlng * dlng);
-              
-              if (dist > 0) {
-                // Add 15% padding
-                const padFactor = 1.15;
-                paddedPoints.push([
-                  centerLat + dlat * padFactor,
-                  centerLng + dlng * padFactor
-                ]);
-              } else {
-                paddedPoints.push([lat, lng]);
-              }
-            });
-            
-            // Create the polygon
-            const polygon = L.polygon(paddedPoints, {
-              color: conferenceColors[conference],
-              weight: 2,
-              opacity: 0.8,
-              fillColor: conferenceColors[conference],
-              fillOpacity: 0.5
-            }).addTo(conferenceLayer);
-            
-            // Add conference label at the center of the polygon
-            const center = polygon.getBounds().getCenter();
-            L.marker(center, {
-              icon: L.divIcon({
-                className: 'conference-label-container',
-                html: `<div class="conference-label">${conference}</div>`,
-                iconSize: [100, 40],
-                iconAnchor: [50, 20]
-              })
-            }).addTo(conferenceLayer);
-          } catch (error) {
-            console.warn(`Error creating polygon for conference ${conference}:`, error);
-          }
-        }
-      });
-
-      // Add team logo markers on top with transparent backgrounds
-      teams.forEach(team => {
-        if (!team.location || !team.location.latitude || !team.location.longitude) {
-          return;
-        }
-        
-        const size = 40;
-        
-        const teamIcon = L.divIcon({
-          className: "team-logo-marker",
-          html: `<div style="
-                    background-image: url('${team.logos?.[0] || "/photos/default_team.png"}');
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: center;
-                    width: ${size}px;
-                    height: ${size}px;
-                    border-radius: 50%;
-                    background-color: transparent;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                 </div>`,
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2]
-        });
-
-        const marker = L.marker(
-          [team.location.latitude, team.location.longitude],
-          { icon: teamIcon, zIndexOffset: 1000 }
-        ).addTo(conferenceLayer);
-
-        marker.on("click", () => {
-          marker
-            .bindPopup(`
-              <div style="text-align: center">
-                <img
-                  src="${team.logos?.[0] || "/photos/default_team.png"}"
-                  alt="${team.school}"
-                  style="width: 60px; height: auto; margin-bottom: 5px"
-                  onerror="this.onerror=null; this.src='/photos/default_team.png';"
-                />
-                <h3 style="margin: 5px 0">${team.school}</h3>
-                <p style="margin: 0">
-                  <strong>Conference:</strong> ${team.conference || "Independent"}
-                </p>
-              </div>
-            `)
-            .openPopup();
-            
-          map.flyTo([team.location.latitude, team.location.longitude], 8, {
-            duration: 1.5
-          });
-        });
-      });
-    } catch (error) {
-      console.error("Error generating conference map:", error);
-    }
-
-    return () => {
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-      }
-    };
-  }, [teams, map]);
-
-  return null;
-};
-
 // Main component
 const More = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mapMode, setMapMode] = useState("basic"); // "basic", "voronoi", or "conference"
+  const [mapMode, setMapMode] = useState("basic"); // "basic" or "voronoi"
   const mapRef = useRef(null);
 
   // Fetch teams from the API
@@ -784,15 +529,6 @@ const More = () => {
           />
           Voronoi Map (Team Territories)
         </label>
-        <label>
-          <input
-            type="radio"
-            value="conference"
-            checked={mapMode === "conference"}
-            onChange={() => setMapMode("conference")}
-          />
-          Conference Map
-        </label>
       </div>
       
       {/* Map container */}
@@ -822,15 +558,18 @@ const More = () => {
         {validTeams.length > 0 && mapMode === "voronoi" && (
           <AdvancedUSATerritorialMap teams={validTeams} />
         )}
-        {validTeams.length > 0 && mapMode === "conference" && (
-          <USAConferenceMap teams={validTeams} />
-        )}
       </MapContainer>
 
-      {/* Add a key/legend for the advanced map */}
+      {/* Add a key/legend for the maps */}
       {mapMode === "voronoi" && (
         <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
           <p>Each colored region represents a team's territory based on proximity. Click on a territory or team logo to see details.</p>
+        </div>
+      )}
+      
+      {mapMode === "basic" && (
+        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+          <p>Each team is represented by its logo and a colored circle. Click on a logo to see team details.</p>
         </div>
       )}
 
@@ -866,20 +605,15 @@ const More = () => {
                 flyToTeam(team.location.latitude, team.location.longitude)
               }
             >
-              <img
-                src={team.logos?.[0] || "/photos/default_team.png"}
-                alt=""
+              <div
                 style={{
                   width: "25px",
                   height: "25px",
                   marginRight: "10px",
-                  backgroundColor: "white",
-                  borderRadius: "50%",
-                  padding: "2px"
-                }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/photos/default_team.png";
+                  backgroundImage: `url('${team.logos?.[0] || "/photos/default_team.png"}')`,
+                  backgroundSize: "contain",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat"
                 }}
               />
               <span>{team.school}</span>
@@ -888,19 +622,15 @@ const More = () => {
         </ul>
       </div>
 
-      {/* CSS for conference labels */}
+      {/* CSS for logo markers */}
       <style jsx global>{`
-        .conference-label-container {
-          background: transparent;
+        .team-logo-marker {
+          filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+          transition: transform 0.2s ease;
         }
-        .conference-label {
-          background-color: white;
-          border: 2px solid #333;
-          padding: 5px 10px;
-          border-radius: 5px;
-          font-weight: bold;
-          text-align: center;
-          white-space: nowrap;
+        .team-logo-marker:hover {
+          transform: scale(1.1);
+          z-index: 1000 !important;
         }
       `}</style>
     </div>
