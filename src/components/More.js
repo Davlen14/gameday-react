@@ -12,7 +12,7 @@ import {
   FaEye
 } from "react-icons/fa";
 
-const FcsTeams = () => {
+const More = () => {
   const [teams, setTeams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,8 +122,8 @@ const FcsTeams = () => {
 
   return (
     <div style={styles.container}>
+      {/* Inline CSS for FCS teams page */}
       <style>{`
-        /* Inline CSS for FCS teams page */
         .fcs-header {
           text-align: center;
           margin-bottom: 40px;
@@ -241,24 +241,25 @@ const FcsTeams = () => {
                   }`}
                   onClick={() => handleTeamSelect(team)}
                 >
-                  {selectedTeams.find((t) => t.id === team.id)
-                    ? (
-                      <>
-                        <FaMinus size={12} /> Remove
-                      </>
-                    )
-                    : (
-                      <>
-                        <FaPlus size={12} /> Compare
-                      </>
-                    )}
+                  {selectedTeams.find((t) => t.id === team.id) ? (
+                    <>
+                      <FaMinus size={12} /> Remove
+                    </>
+                  ) : (
+                    <>
+                      <FaPlus size={12} /> Compare
+                    </>
+                  )}
                 </button>
-                <div style={{ marginTop: "8px" }}>
+                <div style={{ marginTop: "8px", fontSize: "0.9rem", color: "#666" }}>
                   <FaMapMarkerAlt size={12} />{" "}
                   {team.location?.city}, {team.location?.state}
                 </div>
                 <div style={{ marginTop: "4px" }}>
-                  <Link to={`/teams/${team.id}`} style={{ color: "#007BFF", textDecoration: "none" }}>
+                  <Link
+                    to={`/teams/${team.id}`}
+                    style={{ color: "#007BFF", textDecoration: "none", fontSize: "0.9rem" }}
+                  >
                     <FaEye size={12} /> View Team
                   </Link>
                 </div>
@@ -293,4 +294,4 @@ const styles = {
   }
 };
 
-export default FcsTeams;
+export default More;
