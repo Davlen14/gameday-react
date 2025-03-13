@@ -22,17 +22,15 @@ const More = () => {
   const fcsConferencesOrder = [
     "Big Sky Conference",
     "Big South Conference",
-    "Colonial Athletic Association (CAA)",
+    "Colonial Athletic Association ",
     "Missouri Valley Football Conference",
-    "Northeast Conference (NEC)",
-    "Ohio Valley Conference (OVC)",
+    "Northeast Conference",
+    "Ohio Valley Conference",
     "Patriot League",
     "Pioneer Football League",
     "Southern Conference",
     "Southland Conference",
-    "Southwestern Athletic Conference (SWAC)",
-    "Mid-Eastern Athletic Conference (MEAC)",
-    "United Athletic Conference (UAC, formerly ASUN/WAC)"
+    "United Athletic Conference "
   ];
 
   // Fetch FCS teams on mount.
