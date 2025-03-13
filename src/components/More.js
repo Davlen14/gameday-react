@@ -34,26 +34,47 @@ const deg2rad = (deg) => {
   return deg * (Math.PI/180);
 };
 
-// Point in polygon test - returns true if the point is in the polygon
+// Improved point in polygon test with better handling of edge cases
 const pointInPolygon = (point, polygon) => {
-  // Ray-casting algorithm
   let inside = false;
   const x = point[0], y = point[1];
   
+  // First check if point is exactly on any vertex
+  for (let i = 0; i < polygon.length; i++) {
+    if (Math.abs(x - polygon[i][0]) < 0.0001 && Math.abs(y - polygon[i][1]) < 0.0001) {
+      return true; // Point is exactly on a vertex
+    }
+  }
+  
+  // Then check if point is on any edge
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const xi = polygon[i][0], yi = polygon[i][1];
     const xj = polygon[j][0], yj = polygon[j][1];
     
-    const intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    // Check if point is on horizontal edge
+    if (Math.abs(yi - yj) < 0.0001 && Math.abs(y - yi) < 0.0001 && 
+        x >= Math.min(xi, xj) && x <= Math.max(xi, xj)) {
+      return true;
+    }
+    
+    // Check if point is on vertical edge
+    if (Math.abs(xi - xj) < 0.0001 && Math.abs(x - xi) < 0.0001 && 
+        y >= Math.min(yi, yj) && y <= Math.max(yi, yj)) {
+      return true;
+    }
+    
+    // Standard ray casting algorithm for other points
+    const intersect = ((yi > y) !== (yj > y)) &&
+        (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
     if (intersect) inside = !inside;
   }
   
   return inside;
 };
 
-// Check if a point is within the US boundaries
+// Improved function to check if a point is within the US boundaries
 const isPointInUS = (point, states) => {
+  // Apply a small buffer for points near boundaries
   for (const state of states.features) {
     if (state.geometry.type === 'Polygon') {
       if (pointInPolygon([point[1], point[0]], state.geometry.coordinates[0])) {
@@ -68,6 +89,21 @@ const isPointInUS = (point, states) => {
     }
   }
   return false;
+};
+
+// Helper function to get state boundaries as GeoJSON
+const getStateBoundaries = (usStates) => {
+  const boundaries = [];
+  
+  usStates.features.forEach(state => {
+    const stateName = state.properties.name;
+    boundaries.push({
+      name: stateName,
+      geometry: state.geometry
+    });
+  });
+  
+  return boundaries;
 };
 
 // Generate a grid-based territory map
@@ -105,7 +141,7 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
     const bounds = baseUSA.getBounds();
     map.fitBounds(bounds);
 
-    // Define continental US bounds more strictly
+    // Define continental US bounds
     const continentalUS = {
       south: 24.396308, // Southern tip of Florida
       north: 49.384358, // Northern border with Canada
@@ -113,7 +149,7 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
       east: -66.93457  // Eastern coast
     };
 
-    // Filter teams with valid coordinates that are clearly within US bounds
+    // Filter teams with valid coordinates within US bounds
     const filteredTeams = teams.filter(
       (team) => {
         if (!team || !team.location || !team.location.latitude || !team.location.longitude) {
@@ -133,20 +169,11 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
     );
 
     try {
-      // Precompute the US border shape as a collection of boundary points
-      const usBorderPoints = [];
-      usStates.features.forEach(state => {
-        if (state.geometry.type === 'Polygon') {
-          usBorderPoints.push(...state.geometry.coordinates[0]);
-        } else if (state.geometry.type === 'MultiPolygon') {
-          state.geometry.coordinates.forEach(poly => {
-            usBorderPoints.push(...poly[0]);
-          });
-        }
-      });
-
+      // Get state boundaries
+      const stateBoundaries = getStateBoundaries(usStates);
+      
       // Create a grid overlay to represent territories
-      const gridSize = 0.3; // Grid cell size in degrees - smaller for better resolution
+      const gridSize = 0.15; // Smaller grid size for better resolution
       const minLat = continentalUS.south - 0.1;
       const maxLat = continentalUS.north + 0.1;
       const minLng = continentalUS.west - 0.1;
@@ -155,41 +182,112 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
       // Calculate grid cells for the entire US
       const gridCells = [];
       
-      for (let lat = minLat; lat <= maxLat; lat += gridSize) {
-        for (let lng = minLng; lng <= maxLng; lng += gridSize) {
-          const cellCenter = [lat + gridSize/2, lng + gridSize/2];
+      // Process each state boundary to ensure no gaps
+      stateBoundaries.forEach(state => {
+        // Create a finer grid for each state
+        if (state.geometry.type === 'Polygon') {
+          const coordinates = state.geometry.coordinates[0];
+          const bbox = getBoundingBox(coordinates);
           
-          // First check if this point is likely in the US
-          if (!isPointInUS([cellCenter[0], cellCenter[1]], usStates)) {
-            continue; // Skip points outside the US
+          // Create grid cells within state bounds
+          for (let lat = bbox.minLat; lat <= bbox.maxLat; lat += gridSize) {
+            for (let lng = bbox.minLng; lng <= bbox.maxLng; lng += gridSize) {
+              const cellCenter = [lat + gridSize/2, lng + gridSize/2];
+              
+              // Check if point is in state
+              if (pointInPolygon([cellCenter[1], cellCenter[0]], coordinates)) {
+                // Find closest team
+                let closestTeam = null;
+                let minDistance = Infinity;
+                
+                filteredTeams.forEach(team => {
+                  const distance = getDistance(
+                    cellCenter[0], 
+                    cellCenter[1], 
+                    team.location.latitude, 
+                    team.location.longitude
+                  );
+                  
+                  if (distance < minDistance) {
+                    minDistance = distance;
+                    closestTeam = team;
+                  }
+                });
+                
+                if (closestTeam) {
+                  gridCells.push({
+                    bounds: [[lat, lng], [lat + gridSize, lng + gridSize]],
+                    team: closestTeam,
+                    center: cellCenter,
+                    state: state.name
+                  });
+                }
+              }
+            }
           }
-          
-          // Determine which team is closest to this cell
-          let closestTeam = null;
-          let minDistance = Infinity;
-          
-          filteredTeams.forEach(team => {
-            const distance = getDistance(
-              cellCenter[0], 
-              cellCenter[1], 
-              team.location.latitude, 
-              team.location.longitude
-            );
+        } else if (state.geometry.type === 'MultiPolygon') {
+          state.geometry.coordinates.forEach(polyCoords => {
+            const coordinates = polyCoords[0];
+            const bbox = getBoundingBox(coordinates);
             
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestTeam = team;
+            // Create grid cells within state bounds
+            for (let lat = bbox.minLat; lat <= bbox.maxLat; lat += gridSize) {
+              for (let lng = bbox.minLng; lng <= bbox.maxLng; lng += gridSize) {
+                const cellCenter = [lat + gridSize/2, lng + gridSize/2];
+                
+                // Check if point is in state
+                if (pointInPolygon([cellCenter[1], cellCenter[0]], coordinates)) {
+                  // Find closest team
+                  let closestTeam = null;
+                  let minDistance = Infinity;
+                  
+                  filteredTeams.forEach(team => {
+                    const distance = getDistance(
+                      cellCenter[0], 
+                      cellCenter[1], 
+                      team.location.latitude, 
+                      team.location.longitude
+                    );
+                    
+                    if (distance < minDistance) {
+                      minDistance = distance;
+                      closestTeam = team;
+                    }
+                  });
+                  
+                  if (closestTeam) {
+                    gridCells.push({
+                      bounds: [[lat, lng], [lat + gridSize, lng + gridSize]],
+                      team: closestTeam,
+                      center: cellCenter,
+                      state: state.name
+                    });
+                  }
+                }
+              }
             }
           });
-          
-          if (closestTeam) {
-            gridCells.push({
-              bounds: [[lat, lng], [lat + gridSize, lng + gridSize]],
-              team: closestTeam,
-              center: cellCenter
-            });
-          }
         }
+      });
+      
+      // Get bounding box of polygon coordinates
+      function getBoundingBox(coordinates) {
+        let minLat = Infinity;
+        let maxLat = -Infinity;
+        let minLng = Infinity;
+        let maxLng = -Infinity;
+        
+        coordinates.forEach(point => {
+          const lng = point[0];
+          const lat = point[1];
+          
+          minLat = Math.min(minLat, lat);
+          maxLat = Math.max(maxLat, lat);
+          minLng = Math.min(minLng, lng);
+          maxLng = Math.max(maxLng, lng);
+        });
+        
+        return { minLat, maxLat, minLng, maxLng };
       }
       
       // Map to track territory size per team (for logo sizing)
@@ -212,7 +310,7 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
         // Create rectangle for the grid cell
         L.rectangle(cell.bounds, {
           color: "#222",
-          weight: 0.3,
+          weight: 0.2,  // Thinner borders
           fillColor: teamColor,
           fillOpacity: 1
         }).addTo(territoryLayer);
@@ -225,20 +323,44 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
         
         const team = cells[0].team; // All cells have the same team
         
-        // Find the average position of all cells as an approximation of territory center
-        let totalLat = 0;
-        let totalLng = 0;
+        // Find centroid using weighted approach for more natural placement
+        let weightedLat = 0;
+        let weightedLng = 0;
+        let totalCells = cells.length;
+        
+        // Group cells by state for better logo positioning
+        const stateGroups = {};
         cells.forEach(cell => {
-          totalLat += cell.center[0];
-          totalLng += cell.center[1];
+          if (!stateGroups[cell.state]) {
+            stateGroups[cell.state] = [];
+          }
+          stateGroups[cell.state].push(cell);
         });
         
-        const centerLat = totalLat / cells.length;
-        const centerLng = totalLng / cells.length;
+        // Find the state with the most cells
+        let maxCells = 0;
+        let primaryState = null;
+        Object.keys(stateGroups).forEach(state => {
+          if (stateGroups[state].length > maxCells) {
+            maxCells = stateGroups[state].length;
+            primaryState = state;
+          }
+        });
+        
+        // Calculate center based on primary state if available, otherwise use all cells
+        const cellsToUse = primaryState ? stateGroups[primaryState] : cells;
+        
+        cellsToUse.forEach(cell => {
+          weightedLat += cell.center[0];
+          weightedLng += cell.center[1];
+        });
+        
+        const centerLat = weightedLat / cellsToUse.length;
+        const centerLng = weightedLng / cellsToUse.length;
         
         // Scale logo size based on territory size
         const size = teamTerritorySizes[teamId];
-        const baseSize = Math.max(25, Math.min(65, 20 + Math.sqrt(size) * 2.5));
+        const baseSize = Math.max(25, Math.min(70, 20 + Math.sqrt(size) * 2));
         
         // Create logo without background
         const teamIcon = L.divIcon({
@@ -288,7 +410,7 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
         });
       });
       
-      // Add state boundaries on top
+      // Add state boundaries on top with thinner lines
       L.geoJSON(usStates, {
         style: {
           weight: 0.8,
