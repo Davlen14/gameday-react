@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Delaunay } from "d3-delaunay";
 import usStates from "../data/us-states.json";
+import * as turf from '@turf/turf';
 
 // Fix default Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,10 +44,11 @@ const USATerritorialMap = ({ teams }) => {
       const statesLayer = L.geoJSON(usStates, {
         style: {
           weight: 1,
-          opacity: 1,
-          color: "#666",
+          opacity: 0.8,
+          color: "#555",
           fillOpacity: 0.1,
-          fillColor: "#eee"
+          fillColor: "#f8f8f8",
+          dashArray: "2"
         }
       }).addTo(markerLayer);
 
@@ -64,10 +66,10 @@ const USATerritorialMap = ({ teams }) => {
           {
             radius: 100000, // 100km radius
             color: teamColor,
-            weight: 2,
+            weight: 3,
             opacity: 0.8,
             fillColor: teamColor,
-            fillOpacity: 0.3
+            fillOpacity: 0.4
           }
         ).addTo(markerLayer);
         
@@ -77,7 +79,7 @@ const USATerritorialMap = ({ teams }) => {
           });
         });
         
-        // Add team logo marker - Transparent background
+        // Add team logo marker with improved styling
         const size = 40;
         
         const teamIcon = L.divIcon({
@@ -88,10 +90,63 @@ const USATerritorialMap = ({ teams }) => {
                     background-repeat: no-repeat;
                     background-position: center;
                     width: ${size}px;
-                    height: ${size}px;
+                    height: 30px;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 300px;
+          color: #d32f2f;
+        }
+        
+        .error-icon {
+          font-size: 36px;
+          margin-bottom: 12px;
+        }
+        
+        .error-container button {
+          margin-top: 16px;
+          padding: 8px 16px;
+          background: #333;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        /* Custom popup styling */
+        .custom-popup .leaflet-popup-content-wrapper {
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 8px;
+          box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+          background: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Team logo marker styling */
+        .team-logo-marker {
+          filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+          transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        
+        .team-logo-marker:hover {
+          transform: scale(1.1) translateY(-3px);
+          filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
+          z-index: 1000 !important;
+        }: ${size}px;
                     border-radius: 50%;
-                    background-color: transparent;
-                    box-shadow: 0 0 8px rgba(0,0,0,0.6);">
+                    background-color: white;
+                    box-shadow: 0 3px 14px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.4);">
                  </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2]
@@ -139,14 +194,64 @@ const USATerritorialMap = ({ teams }) => {
   return null;
 };
 
-// Advanced Voronoi Map clipped to US boundaries
+// Enhanced Voronoi Map strictly confined to US boundaries
 const AdvancedUSATerritorialMap = ({ teams }) => {
   const map = useMap();
   const layerRef = useRef(null);
 
+  // Helper function to determine if a state should be fully colored
+  const getSingleTeamForState = (stateName, teamsInState) => {
+    // If only one team in state, return that team
+    if (teamsInState.length === 1) return teamsInState[0];
+    
+    // If a flagship state university exists, prioritize it
+    const flagship = teamsInState.find(team => {
+      const school = team.school.toLowerCase();
+      const pattern = new RegExp(`university of ${stateName.toLowerCase()}|${stateName.toLowerCase()} state`);
+      return pattern.test(school);
+    });
+    
+    return flagship || null;
+  };
+  
+  // Function to generate state-based coloring
+  const createStateBasedColoring = (states, teamsByState) => {
+    const stateFeatures = [];
+    
+    states.features.forEach(state => {
+      const stateName = state.properties.name;
+      const teamsInState = teamsByState[stateName] || [];
+      
+      // Get dominant team for the state if applicable
+      const dominantTeam = getSingleTeamForState(stateName, teamsInState);
+      
+      if (dominantTeam) {
+        // If there's a dominant team, color the whole state
+        const teamColor = dominantTeam.color && dominantTeam.color !== "null" ? dominantTeam.color : "#333";
+        
+        stateFeatures.push({
+          type: "Feature",
+          properties: { 
+            team: dominantTeam,
+            color: teamColor,
+            name: stateName,
+            isDominant: true
+          },
+          geometry: state.geometry
+        });
+      }
+      // If no dominant team but has teams, will be handled by Voronoi
+    });
+    
+    return {
+      type: "FeatureCollection",
+      features: stateFeatures
+    };
+  };
+
   useEffect(() => {
     if (!teams || teams.length < 3) {
-      console.warn("Not enough teams to generate Voronoi diagram");
+      console.warn("Not enough teams to generate territorial map");
       return;
     }
 
@@ -155,208 +260,103 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
       map.removeLayer(layerRef.current);
     }
 
+    // Create a new layer group
+    const voronoiLayer = L.layerGroup().addTo(map);
+    layerRef.current = voronoiLayer;
+    
     // Set view to center of US
     const usCenter = [39.8283, -98.5795];
     map.setView(usCenter, 4);
 
-    // Create a new layer group for polygons and markers
-    const voronoiLayer = L.layerGroup().addTo(map);
-    layerRef.current = voronoiLayer;
-
     try {
-      // First, add US states outline
-      const statesLayer = L.geoJSON(usStates, {
+      // First, add a nicer base US map layer
+      const baseUSA = L.geoJSON(usStates, {
         style: {
-          weight: 2,
-          opacity: 1,
-          color: "#444",
-          fillOpacity: 0,
-          fillColor: "#eee"
+          weight: 0.5,
+          opacity: 0.7,
+          color: "#888",
+          fillOpacity: 0.05,
+          fillColor: "#f8f8f8"
         }
       }).addTo(voronoiLayer);
 
-      // Define US continental bounds for Voronoi
-      const bounds = statesLayer.getBounds();
-      const continentalBounds = L.latLngBounds(
-        L.latLng(bounds.getSouth() - 1, bounds.getWest() - 1),
-        L.latLng(bounds.getNorth() + 1, bounds.getEast() + 1)
+      // Get the bounds of the US
+      const bounds = baseUSA.getBounds();
+      const usBounds = L.latLngBounds(
+        L.latLng(bounds.getSouth() - 0.5, bounds.getWest() - 0.5),
+        L.latLng(bounds.getNorth() + 0.5, bounds.getEast() + 0.5)
       );
       
-      // Adjust the map view to US continental bounds
-      map.fitBounds(continentalBounds);
-
-      // Filter teams to only include those within continental US with some padding
+      // Fit map to US bounds
+      map.fitBounds(usBounds);
+      
+      // Filter teams to only include those within US bounds with padding
       const filteredTeams = teams.filter(team => {
         if (!team.location || !team.location.latitude || !team.location.longitude) {
           return false;
         }
         
-        // Check if team is within expanded continental US bounds (with some margin)
-        const expanded = continentalBounds.pad(0.3); // 30% padding
+        // Check if team is within expanded US bounds
+        const expanded = usBounds.pad(0.2);
         return expanded.contains(L.latLng(team.location.latitude, team.location.longitude));
       });
-
+      
       if (filteredTeams.length < 3) {
-        console.warn("Not enough teams in continental US to generate Voronoi diagram");
+        console.warn("Not enough teams in US to generate map");
         return;
       }
-
-      // Create canvas for clipping
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const width = 1000;
-      const height = 600;
-      canvas.width = width;
-      canvas.height = height;
       
-      // Function to convert lat/lng to canvas coordinates
-      const projectToCanvas = (latlng) => {
-        const boundWidth = continentalBounds.getEast() - continentalBounds.getWest();
-        const boundHeight = continentalBounds.getNorth() - continentalBounds.getSouth();
+      // Group teams by state for dominant team analysis
+      const teamsByState = {};
+      
+      filteredTeams.forEach(team => {
+        // Find which state the team is in
+        const teamPoint = [team.location.longitude, team.location.latitude];
         
-        const x = ((latlng[1] - continentalBounds.getWest()) / boundWidth) * width;
-        const y = ((continentalBounds.getNorth() - latlng[0]) / boundHeight) * height;
-        
-        return [x, y];
-      };
-      
-      // Draw US states on canvas for clipping
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = '#000000';
-      
-      usStates.features.forEach(feature => {
-        ctx.beginPath();
-        
-        if (feature.geometry.type === 'Polygon') {
-          feature.geometry.coordinates.forEach(ring => {
-            ring.forEach((coord, i) => {
-              const [x, y] = projectToCanvas([coord[1], coord[0]]);
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            });
-          });
-        } else if (feature.geometry.type === 'MultiPolygon') {
-          feature.geometry.coordinates.forEach(polygon => {
-            polygon.forEach(ring => {
-              ring.forEach((coord, i) => {
-                const [x, y] = projectToCanvas([coord[1], coord[0]]);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-              });
-            });
-          });
-        }
-        
-        ctx.fill();
-      });
-      
-      // Convert teams into points for Voronoi generation
-      const points = filteredTeams.map(team => {
-        const [x, y] = projectToCanvas([team.location.latitude, team.location.longitude]);
-        return [x, y, team];
-      });
-      
-      // Create Delaunay triangulation and Voronoi diagram
-      const delaunay = Delaunay.from(points.map(p => [p[0], p[1]]));
-      const voronoi = delaunay.voronoi([0, 0, width, height]);
-      
-      // Generate GeoJSON-like structure for each Voronoi cell
-      const voronoiPolygons = [];
-      
-      points.forEach((point, i) => {
-        try {
-          const cell = voronoi.cellPolygon(i);
-          if (!cell) return;
+        for (const feature of usStates.features) {
+          const stateName = feature.properties.name;
           
-          const team = point[2];
-          const teamColor = team.color && team.color !== "null" ? team.color : "#333";
-          
-          // Convert canvas coordinates back to lat/lng
-          const boundWidth = continentalBounds.getEast() - continentalBounds.getWest();
-          const boundHeight = continentalBounds.getNorth() - continentalBounds.getSouth();
-          
-          const latlngPolygon = cell.map(p => {
-            if (p[0] < 0 || p[0] > width || p[1] < 0 || p[1] > height) {
-              return null;
+          if (feature.geometry.type === 'Polygon') {
+            if (turf.booleanPointInPolygon(teamPoint, feature.geometry)) {
+              if (!teamsByState[stateName]) teamsByState[stateName] = [];
+              teamsByState[stateName].push(team);
+              break;
             }
-            
-            const lng = (p[0] / width) * boundWidth + continentalBounds.getWest();
-            const lat = continentalBounds.getNorth() - (p[1] / height) * boundHeight;
-            
-            return [lat, lng];
-          }).filter(p => p !== null);
-          
-          if (latlngPolygon.length < 3) return;
-          
-          // Create the GeoJSON-like feature
-          voronoiPolygons.push({
-            type: "Feature",
-            properties: { team: team, color: teamColor },
-            geometry: {
-              type: "Polygon",
-              coordinates: [latlngPolygon]
+          } else if (feature.geometry.type === 'MultiPolygon') {
+            const multiPoly = turf.multiPolygon(feature.geometry.coordinates);
+            if (turf.booleanPointInPolygon(teamPoint, multiPoly)) {
+              if (!teamsByState[stateName]) teamsByState[stateName] = [];
+              teamsByState[stateName].push(team);
+              break;
             }
-          });
-        } catch (e) {
-          console.warn(`Error processing Voronoi cell for team ${i}:`, e);
+          }
         }
       });
       
-      // Create a combined GeoJSON object
-      const voronoiGeoJSON = {
-        type: "FeatureCollection",
-        features: voronoiPolygons
-      };
+      // Create state-based coloring for dominant teams
+      const stateBasedColoring = createStateBasedColoring(usStates, teamsByState);
       
-      // Clip the Voronoi cells to the US shape
-      const clippedVoronoi = {
-        type: "FeatureCollection",
-        features: []
-      };
-      
-      // Function to check if a point is inside US (using canvas)
-      const isPointInUS = (x, y) => {
-        const pixelData = ctx.getImageData(x, y, 1, 1).data;
-        // Black means inside the US
-        return pixelData[0] < 128;
-      };
-      
-      // Clip each Voronoi polygon to US shape
-      voronoiGeoJSON.features.forEach(feature => {
-        try {
+      // Add solid colored states for dominant teams
+      const dominantStatesLayer = L.geoJSON(stateBasedColoring, {
+        style: (feature) => {
+          return {
+            fillColor: feature.properties.color,
+            weight: 0.8,
+            opacity: 1,
+            color: "#fff",
+            fillOpacity: 0.8
+          };
+        },
+        onEachFeature: (feature, layer) => {
           const team = feature.properties.team;
-          const teamColor = feature.properties.color;
           
-          // Check if most points of the polygon are within US
-          const coords = feature.geometry.coordinates[0];
-          const canvasCoords = coords.map(p => projectToCanvas(p));
-          
-          // Filter points to only those inside the US
-          const validPoints = canvasCoords.filter(p => 
-            p[0] >= 0 && p[0] < width && p[1] >= 0 && p[1] < height && isPointInUS(p[0], p[1])
-          );
-          
-          if (validPoints.length < 3) return;
-          
-          // Add the clipped polygon
-          const polygon = L.polygon(coords, {
-            fillColor: teamColor,
-            weight: 1.5,
-            opacity: 0.8,
-            color: "white",
-            fillOpacity: 0.7
-          }).addTo(voronoiLayer);
-          
-          // When clicking the polygon, fly to the team's location
-          polygon.on("click", () => {
+          layer.on("click", () => {
             map.flyTo([team.location.latitude, team.location.longitude], 8, {
               duration: 1.5
             });
           });
 
-          // Bind a popup with team details
-          polygon.bindPopup(`
+          layer.bindPopup(`
             <div style="text-align: center">
               <img
                 src="${team.logos?.[0] || "/photos/default_team.png"}"
@@ -368,28 +368,185 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
               <p style="margin: 0">
                 <strong>Conference:</strong> ${team.conference || "Independent"}
               </p>
+              <p style="margin: 5px 0"><em>Dominant team in ${feature.properties.name}</em></p>
             </div>
           `);
-        } catch (e) {
-          console.warn("Error processing clipped polygon:", e);
         }
+      }).addTo(voronoiLayer);
+      
+      // Create a list of states that already have dominant teams
+      const dominantStateNames = stateBasedColoring.features.map(f => f.properties.name);
+      
+      // Filter out teams from dominant states for Voronoi generation
+      const teamsForVoronoi = filteredTeams.filter(team => {
+        const teamPoint = [team.location.longitude, team.location.latitude];
+        
+        for (const feature of usStates.features) {
+          const stateName = feature.properties.name;
+          
+          // Skip if state already has a dominant team
+          if (dominantStateNames.includes(stateName)) continue;
+          
+          if (feature.geometry.type === 'Polygon') {
+            if (turf.booleanPointInPolygon(teamPoint, feature.geometry)) {
+              return true;
+            }
+          } else if (feature.geometry.type === 'MultiPolygon') {
+            const multiPoly = turf.multiPolygon(feature.geometry.coordinates);
+            if (turf.booleanPointInPolygon(teamPoint, multiPoly)) {
+              return true;
+            }
+          }
+        }
+        
+        return false;
       });
       
-      // Add state boundaries on top of Voronoi cells
+      // If we have teams for Voronoi, generate them
+      if (teamsForVoronoi.length >= 3) {
+        // Create a USA GeoJSON that excludes states with dominant teams
+        const remainingStates = {
+          type: "FeatureCollection",
+          features: usStates.features.filter(f => !dominantStateNames.includes(f.properties.name))
+        };
+        
+        // Generate points for Voronoi
+        const points = teamsForVoronoi.map(team => [
+          team.location.longitude, 
+          team.location.latitude, 
+          team
+        ]);
+        
+        // Create Voronoi Polygons
+        const voronoiPolygons = [];
+        
+        // Calculate the bounding box of remaining states
+        const bbox = turf.bbox(remainingStates);
+        
+        // Add padding to bbox
+        const paddedBbox = [
+          bbox[0] - 1, // min lon
+          bbox[1] - 1, // min lat
+          bbox[2] + 1, // max lon
+          bbox[3] + 1  // max lat
+        ];
+        
+        // Create Voronoi diagram
+        const voronoiCells = turf.voronoi(
+          turf.featureCollection(points.map(p => turf.point([p[0], p[1]]))),
+          { bbox: paddedBbox }
+        );
+        
+        // Intersect Voronoi cells with USA shape
+        voronoiCells.features.forEach((cell, i) => {
+          const team = teamsForVoronoi[i];
+          const teamColor = team.color && team.color !== "null" ? team.color : "#333";
+          
+          try {
+            // Create a polygon with all remaining states
+            const statesPolygon = turf.combine(remainingStates);
+            
+            // Intersect the Voronoi cell with the states shape
+            const intersection = turf.intersect(cell, statesPolygon.features[0]);
+            
+            if (intersection) {
+              // Add the team properties to the clipped polygon
+              intersection.properties = {
+                team: team,
+                color: teamColor
+              };
+              
+              voronoiPolygons.push(intersection);
+            }
+          } catch (e) {
+            console.warn(`Error processing Voronoi cell for team ${i}:`, e);
+          }
+        });
+        
+        // Create a GeoJSON collection of the clipped Voronoi cells
+        const clippedVoronoi = {
+          type: "FeatureCollection",
+          features: voronoiPolygons
+        };
+        
+        // Add the Voronoi polygons to the map
+        const voronoiGeoJSON = L.geoJSON(clippedVoronoi, {
+          style: (feature) => {
+            return {
+              fillColor: feature.properties.color,
+              weight: 1.2,
+              opacity: 1,
+              color: "#fff",
+              fillOpacity: 0.7
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const team = feature.properties.team;
+            
+            layer.on("click", () => {
+              map.flyTo([team.location.latitude, team.location.longitude], 8, {
+                duration: 1.5
+              });
+            });
+
+            layer.bindPopup(`
+              <div style="text-align: center">
+                <img
+                  src="${team.logos?.[0] || "/photos/default_team.png"}"
+                  alt="${team.school}"
+                  style="width: 60px; height: auto; margin-bottom: 5px"
+                  onerror="this.onerror=null; this.src='/photos/default_team.png';"
+                />
+                <h3 style="margin: 5px 0">${team.school}</h3>
+                <p style="margin: 0">
+                  <strong>Conference:</strong> ${team.conference || "Independent"}
+                </p>
+              </div>
+            `);
+          }
+        }).addTo(voronoiLayer);
+      }
+      
+      // Add state boundaries on top with improved styling
       L.geoJSON(usStates, {
         style: {
           weight: 1.5,
-          opacity: 0.8,
-          color: "#555",
+          opacity: 0.7,
+          color: "#666",
           fillOpacity: 0,
+          dashArray: "3,3",
           fillColor: "transparent"
         }
       }).addTo(voronoiLayer);
       
-      // Add team logo markers on top with transparent background
+      // Add outer US border for a cleaner look
+      L.geoJSON(usStates, {
+        style: {
+          weight: 3,
+          opacity: 0.9,
+          color: "#444",
+          fill: false
+        }
+      }).addTo(voronoiLayer);
+      
+      // Create a visual offset counter to scale logo sizes inversely with density
+      const locationCounts = {};
+      
+      filteredTeams.forEach(team => {
+        const key = `${Math.round(team.location.latitude * 10)},${Math.round(team.location.longitude * 10)}`;
+        if (!locationCounts[key]) locationCounts[key] = 0;
+        locationCounts[key]++;
+      });
+      
+      // Add team logo markers on top with scaling based on density
       filteredTeams.forEach(team => {
         try {
-          const size = 40;
+          const key = `${Math.round(team.location.latitude * 10)},${Math.round(team.location.longitude * 10)}`;
+          const density = locationCounts[key] || 1;
+          
+          // Scale logo size inversely with density
+          let baseSize = 40;
+          if (density > 1) baseSize = Math.max(24, 40 - (density * 4));
           
           const teamIcon = L.divIcon({
             className: "team-logo-marker",
@@ -398,14 +555,15 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
                       background-size: contain;
                       background-repeat: no-repeat;
                       background-position: center;
-                      width: ${size}px;
-                      height: ${size}px;
+                      width: ${baseSize}px;
+                      height: ${baseSize}px;
                       border-radius: 50%;
-                      background-color: transparent;
-                      box-shadow: 0 0 8px rgba(0,0,0,0.6);">
+                      background-color: white;
+                      box-shadow: 0 3px 14px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.2);
+                      border: 1px solid rgba(255,255,255,0.8);">
                    </div>`,
-            iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2]
+            iconSize: [baseSize, baseSize],
+            iconAnchor: [baseSize / 2, baseSize / 2]
           });
 
           const marker = L.marker(
@@ -428,7 +586,9 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
                     <strong>Conference:</strong> ${team.conference || "Independent"}
                   </p>
                 </div>
-              `)
+              `, {
+                className: 'custom-popup' // For custom styling
+              })
               .openPopup();
               
             map.flyTo([team.location.latitude, team.location.longitude], 8, {
@@ -440,7 +600,7 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
         }
       });
     } catch (error) {
-      console.error("Error generating Voronoi map:", error);
+      console.error("Error generating territory map:", error);
     }
 
     return () => {
@@ -458,7 +618,7 @@ const More = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mapMode, setMapMode] = useState("basic"); // "basic" or "voronoi"
+  const [mapMode, setMapMode] = useState("voronoi"); // Default to voronoi for better looks
   const mapRef = useRef(null);
 
   // Fetch teams from the API
@@ -496,22 +656,33 @@ const More = () => {
   };
 
   if (loading) {
-    return <div>Loading FBS teams...</div>;
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading FBS teams...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div style={{ color: "red" }}>{error}</div>;
+    return (
+      <div className="error-container">
+        <div className="error-icon">⚠️</div>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
   }
 
   const validTeams = teams.filter((team) => team && team.id);
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
+    <div className="territory-map-container">
       <h1>College Football Team Territories</h1>
       
       {/* Map selection controls */}
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ marginRight: "20px" }}>
+      <div className="map-controls">
+        <label className={mapMode === "basic" ? "active" : ""}>
           <input
             type="radio"
             value="basic"
@@ -520,121 +691,264 @@ const More = () => {
           />
           Basic Map (Markers + Circles)
         </label>
-        <label style={{ marginRight: "20px" }}>
+        <label className={mapMode === "voronoi" ? "active" : ""}>
           <input
             type="radio"
             value="voronoi"
             checked={mapMode === "voronoi"}
             onChange={() => setMapMode("voronoi")}
           />
-          Voronoi Map (Team Territories)
+          Territory Map (Team Regions)
         </label>
       </div>
       
       {/* Map container */}
-      <MapContainer
-        center={[39.8283, -98.5795]}
-        zoom={4}
-        style={{ height: "700px", width: "100%" }}
-        whenCreated={(map) => {
-          mapRef.current = map;
-        }}
-        zoomControl={true}
-        dragging={true}
-        touchZoom={true}
-        scrollWheelZoom={true}
-        doubleClickZoom={true}
-        boxZoom={true}
-        keyboard={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org">OSM</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          opacity={0.3}
-        />
-        {validTeams.length > 0 && mapMode === "basic" && (
-          <USATerritorialMap teams={validTeams} />
-        )}
-        {validTeams.length > 0 && mapMode === "voronoi" && (
-          <AdvancedUSATerritorialMap teams={validTeams} />
-        )}
-      </MapContainer>
+      <div className="map-container">
+        <MapContainer
+          center={[39.8283, -98.5795]}
+          zoom={4}
+          style={{ height: "700px", width: "100%" }}
+          whenCreated={(map) => {
+            mapRef.current = map;
+          }}
+          zoomControl={true}
+          dragging={true}
+          touchZoom={true}
+          scrollWheelZoom={true}
+          doubleClickZoom={true}
+          boxZoom={true}
+          keyboard={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org">OSM</a> contributors'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            opacity={0.3}
+          />
+          {validTeams.length > 0 && mapMode === "basic" && (
+            <USATerritorialMap teams={validTeams} />
+          )}
+          {validTeams.length > 0 && mapMode === "voronoi" && (
+            <AdvancedUSATerritorialMap teams={validTeams} />
+          )}
+        </MapContainer>
+      </div>
 
       {/* Add a key/legend for the maps */}
-      {mapMode === "voronoi" && (
-        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
-          <p>Each colored region represents a team's territory based on proximity. Click on a territory or team logo to see details.</p>
-        </div>
-      )}
-      
-      {mapMode === "basic" && (
-        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+      <div className="map-legend">
+        {mapMode === "voronoi" && (
+          <p>Each colored region represents a team's territory. States with a single dominant team are filled with that team's color, while contested areas are divided based on proximity. Click on a territory or team logo to see details.</p>
+        )}
+        
+        {mapMode === "basic" && (
           <p>Each team is represented by its logo and a colored circle. Click on a logo to see team details.</p>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Team list */}
-      <div style={{ marginTop: "20px" }}>
+      <div className="team-list-section">
         <h2>Team List</h2>
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "10px",
-            maxHeight: "400px",
-            overflowY: "auto"
-          }}
-        >
+        <div className="team-list">
           {validTeams.map((team) => (
-            <li
+            <div
               key={team.id}
+              className="team-item"
               style={{
-                cursor: "pointer",
-                padding: "10px",
-                borderRadius: "5px",
                 backgroundColor:
-                  team.color && team.color !== "null" ? team.color : "#333",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                textShadow: "1px 1px 2px rgba(0,0,0,0.7)"
+                  team.color && team.color !== "null" ? team.color : "#333"
               }}
               onClick={() =>
                 flyToTeam(team.location.latitude, team.location.longitude)
               }
             >
               <div
+                className="team-logo"
                 style={{
-                  width: "25px",
-                  height: "25px",
-                  marginRight: "10px",
-                  backgroundImage: `url('${team.logos?.[0] || "/photos/default_team.png"}')`,
-                  backgroundSize: "contain",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat"
+                  backgroundImage: `url('${team.logos?.[0] || "/photos/default_team.png"}')`
                 }}
               />
-              <span>{team.school}</span>
-            </li>
+              <span className="team-name">{team.school}</span>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
-      {/* CSS for logo markers */}
+      {/* CSS for logo markers and other styling */}
       <style jsx global>{`
-        .team-logo-marker {
-          filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
-          transition: transform 0.2s ease;
+        .territory-map-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        .team-logo-marker:hover {
-          transform: scale(1.1);
-          z-index: 1000 !important;
+        
+        h1 {
+          text-align: center;
+          color: #333;
+          margin-bottom: 20px;
         }
-      `}</style>
-    </div>
-  );
-};
+        
+        .map-controls {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 20px;
+          gap: 20px;
+        }
+        
+        .map-controls label {
+          display: inline-flex;
+          align-items: center;
+          padding: 8px 16px;
+          background: #f0f0f0;
+          border-radius: 30px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .map-controls label.active {
+          background: #333;
+          color: white;
+        }
+        
+        .map-controls input {
+          margin-right: 8px;
+        }
+        
+        .map-container {
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .map-legend {
+          margin-top: 15px;
+          padding: 12px;
+          background: #f8f8f8;
+          border-radius: 8px;
+          font-size: 14px;
+          color: #555;
+          line-height: 1.5;
+        }
+        
+        .team-list-section {
+          margin-top: 30px;
+        }
+        
+        .team-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 12px;
+          max-height: 400px;
+          overflow-y: auto;
+          padding: 5px;
+        }
+        
+        .team-item {
+          display: flex;
+          align-items: center;
+          padding: 10px;
+          border-radius: 8px;
+          cursor: pointer;
+          color: white;
+          transition: all 0.2s ease;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+          box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        
+        .team-item:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        
+        .team-logo {
+          width: 28px;
+          height: 28px;
+          margin-right: 12px;
+          background-size: contain;
+          background-position: center;
+          background-repeat: no-repeat;
+          flex-shrink: 0;
+          border-radius: 50%;
+          background-color: white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .team-name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: 500;
+        }
+        
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 300px;
+        }
+        
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #333;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #d32f2f;
+}
+
+.error-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.error-container button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Custom popup styling */
+.custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Team logo marker styling */
+.team-logo-marker {
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.team-logo-marker:hover {
+  transform: scale(1.1) translateY(-3px);
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
+  z-index: 1000 !important;
+}
+        `}</style>
+        </div>
+    );
+    }
 
 export default More;
