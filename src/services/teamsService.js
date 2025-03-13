@@ -33,6 +33,13 @@ export const getTeams = async () => {
     return await fetchData(endpoint, params);
 };
 
+
+export const getFCSTeams = async (year = 2024) => {
+  const endpoint = "/teams/fcs";
+  const params = { year };
+  return await fetchData(endpoint, params);
+};
+
 // UPDATED: Added postseason support
 export const getGameMedia = async (year, query) => {
     const endpoint = "/games/media";
