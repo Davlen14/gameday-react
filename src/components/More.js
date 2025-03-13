@@ -77,7 +77,7 @@ const USATerritorialMap = ({ teams }) => {
           });
         });
         
-        // Add team logo marker
+        // Add team logo marker - Transparent background
         const size = 40;
         
         const teamIcon = L.divIcon({
@@ -90,8 +90,7 @@ const USATerritorialMap = ({ teams }) => {
                     width: ${size}px;
                     height: ${size}px;
                     border-radius: 50%;
-                    border: 3px solid white;
-                    background-color: white;
+                    background-color: transparent;
                     box-shadow: 0 0 8px rgba(0,0,0,0.6);">
                  </div>`,
           iconSize: [size, size],
@@ -140,57 +139,7 @@ const USATerritorialMap = ({ teams }) => {
   return null;
 };
 
-// Create a combined SVG path for US States
-const getUSStatesPath = () => {
-  // Convert GeoJSON to SVG path
-  const projection = (coord) => {
-    // Simple mercator projection
-    const lon = coord[0];
-    const lat = coord[1];
-    return [
-      (lon + 180) / 360, 
-      (0.5 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / (2 * Math.PI))
-    ];
-  };
-
-  // Create a canvas context for clipping
-  let path = '';
-  
-  try {
-    // Process main states outline
-    usStates.features.forEach(feature => {
-      if (feature.geometry.type === 'Polygon') {
-        feature.geometry.coordinates.forEach(ring => {
-          path += 'M ';
-          ring.forEach((coord, i) => {
-            const [x, y] = projection(coord);
-            path += `${x * 1000} ${y * 1000} `;
-            if (i === 0) path += 'L ';
-          });
-          path += 'Z ';
-        });
-      } else if (feature.geometry.type === 'MultiPolygon') {
-        feature.geometry.coordinates.forEach(polygon => {
-          polygon.forEach(ring => {
-            path += 'M ';
-            ring.forEach((coord, i) => {
-              const [x, y] = projection(coord);
-              path += `${x * 1000} ${y * 1000} `;
-              if (i === 0) path += 'L ';
-            });
-            path += 'Z ';
-          });
-        });
-      }
-    });
-  } catch (error) {
-    console.error("Error creating US states path:", error);
-  }
-  
-  return path;
-};
-
-// Advanced Voronoi Map
+// Advanced Voronoi Map clipped to US boundaries
 const AdvancedUSATerritorialMap = ({ teams }) => {
   const map = useMap();
   const layerRef = useRef(null);
@@ -215,7 +164,7 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
     layerRef.current = voronoiLayer;
 
     try {
-      // First, add US states outline with defined borders
+      // First, add US states outline
       const statesLayer = L.geoJSON(usStates, {
         style: {
           weight: 2,
@@ -227,22 +176,23 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
       }).addTo(voronoiLayer);
 
       // Define US continental bounds for Voronoi
+      const bounds = statesLayer.getBounds();
       const continentalBounds = L.latLngBounds(
-        L.latLng(24.396308, -125.000000), // Southwest - adjusted to include Alaska
-        L.latLng(49.384358, -66.934570)   // Northeast
+        L.latLng(bounds.getSouth() - 1, bounds.getWest() - 1),
+        L.latLng(bounds.getNorth() + 1, bounds.getEast() + 1)
       );
       
       // Adjust the map view to US continental bounds
       map.fitBounds(continentalBounds);
 
-      // Filter teams to only include those within continental US
+      // Filter teams to only include those within continental US with some padding
       const filteredTeams = teams.filter(team => {
         if (!team.location || !team.location.latitude || !team.location.longitude) {
           return false;
         }
         
         // Check if team is within expanded continental US bounds (with some margin)
-        const expanded = continentalBounds.pad(0.2); // 20% padding
+        const expanded = continentalBounds.pad(0.3); // 30% padding
         return expanded.contains(L.latLng(team.location.latitude, team.location.longitude));
       });
 
@@ -251,83 +201,153 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
         return;
       }
 
-      // Convert teams into points for Voronoi generation
-      const points = filteredTeams.map(team => [
-        team.location.longitude, 
-        team.location.latitude, 
-        team
-      ]);
+      // Create canvas for clipping
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const width = 1000;
+      const height = 600;
+      canvas.width = width;
+      canvas.height = height;
       
-      // Define an extended bounding box covering the continental US
-      const boundingBox = [
-        continentalBounds.getWest() - 5, 
-        continentalBounds.getSouth() - 3, 
-        continentalBounds.getEast() + 5, 
-        continentalBounds.getNorth() + 3
-      ];
+      // Function to convert lat/lng to canvas coordinates
+      const projectToCanvas = (latlng) => {
+        const boundWidth = continentalBounds.getEast() - continentalBounds.getWest();
+        const boundHeight = continentalBounds.getNorth() - continentalBounds.getSouth();
+        
+        const x = ((latlng[1] - continentalBounds.getWest()) / boundWidth) * width;
+        const y = ((continentalBounds.getNorth() - latlng[0]) / boundHeight) * height;
+        
+        return [x, y];
+      };
+      
+      // Draw US states on canvas for clipping
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#000000';
+      
+      usStates.features.forEach(feature => {
+        ctx.beginPath();
+        
+        if (feature.geometry.type === 'Polygon') {
+          feature.geometry.coordinates.forEach(ring => {
+            ring.forEach((coord, i) => {
+              const [x, y] = projectToCanvas([coord[1], coord[0]]);
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            });
+          });
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach(polygon => {
+            polygon.forEach(ring => {
+              ring.forEach((coord, i) => {
+                const [x, y] = projectToCanvas([coord[1], coord[0]]);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              });
+            });
+          });
+        }
+        
+        ctx.fill();
+      });
+      
+      // Convert teams into points for Voronoi generation
+      const points = filteredTeams.map(team => {
+        const [x, y] = projectToCanvas([team.location.latitude, team.location.longitude]);
+        return [x, y, team];
+      });
       
       // Create Delaunay triangulation and Voronoi diagram
-      const pointsArray = points.map(p => [p[0], p[1]]);
-      const delaunay = Delaunay.from(pointsArray);
-      const voronoi = delaunay.voronoi(boundingBox);
-
-      // Add the states for clipping
-      const statesFill = L.geoJSON(usStates, {
-        style: {
-          weight: 0,
-          opacity: 0,
-          fillOpacity: 0.05,
-          fillColor: "#f8f8f8"
-        }
-      }).addTo(voronoiLayer);
-
-      // Create an overlay for each state to enable clipping
-      usStates.features.forEach(feature => {
-        const stateName = feature.properties.name;
-        
-        L.geoJSON(feature, {
-          style: {
-            weight: 1,
-            opacity: 1,
-            color: "#555",
-            fillOpacity: 0
-          }
-        }).addTo(voronoiLayer);
-      });
-
-      // Draw Voronoi cells
+      const delaunay = Delaunay.from(points.map(p => [p[0], p[1]]));
+      const voronoi = delaunay.voronoi([0, 0, width, height]);
+      
+      // Generate GeoJSON-like structure for each Voronoi cell
+      const voronoiPolygons = [];
+      
       points.forEach((point, i) => {
         try {
           const cell = voronoi.cellPolygon(i);
-          if (!cell || cell.length < 4) {
-            return;
-          }
-
+          if (!cell) return;
+          
           const team = point[2];
           const teamColor = team.color && team.color !== "null" ? team.color : "#333";
-
-          // Convert Voronoi cell to Leaflet coordinates
-          const polygonPoints = cell.map(p => [p[1], p[0]]);
           
-          // Check if the cell is valid
-          const isValid = polygonPoints.every(point => 
-            !isNaN(point[0]) && !isNaN(point[1]) && 
-            Math.abs(point[0]) <= 90 && Math.abs(point[1]) <= 180
+          // Convert canvas coordinates back to lat/lng
+          const boundWidth = continentalBounds.getEast() - continentalBounds.getWest();
+          const boundHeight = continentalBounds.getNorth() - continentalBounds.getSouth();
+          
+          const latlngPolygon = cell.map(p => {
+            if (p[0] < 0 || p[0] > width || p[1] < 0 || p[1] > height) {
+              return null;
+            }
+            
+            const lng = (p[0] / width) * boundWidth + continentalBounds.getWest();
+            const lat = continentalBounds.getNorth() - (p[1] / height) * boundHeight;
+            
+            return [lat, lng];
+          }).filter(p => p !== null);
+          
+          if (latlngPolygon.length < 3) return;
+          
+          // Create the GeoJSON-like feature
+          voronoiPolygons.push({
+            type: "Feature",
+            properties: { team: team, color: teamColor },
+            geometry: {
+              type: "Polygon",
+              coordinates: [latlngPolygon]
+            }
+          });
+        } catch (e) {
+          console.warn(`Error processing Voronoi cell for team ${i}:`, e);
+        }
+      });
+      
+      // Create a combined GeoJSON object
+      const voronoiGeoJSON = {
+        type: "FeatureCollection",
+        features: voronoiPolygons
+      };
+      
+      // Clip the Voronoi cells to the US shape
+      const clippedVoronoi = {
+        type: "FeatureCollection",
+        features: []
+      };
+      
+      // Function to check if a point is inside US (using canvas)
+      const isPointInUS = (x, y) => {
+        const pixelData = ctx.getImageData(x, y, 1, 1).data;
+        // Black means inside the US
+        return pixelData[0] < 128;
+      };
+      
+      // Clip each Voronoi polygon to US shape
+      voronoiGeoJSON.features.forEach(feature => {
+        try {
+          const team = feature.properties.team;
+          const teamColor = feature.properties.color;
+          
+          // Check if most points of the polygon are within US
+          const coords = feature.geometry.coordinates[0];
+          const canvasCoords = coords.map(p => projectToCanvas(p));
+          
+          // Filter points to only those inside the US
+          const validPoints = canvasCoords.filter(p => 
+            p[0] >= 0 && p[0] < width && p[1] >= 0 && p[1] < height && isPointInUS(p[0], p[1])
           );
           
-          if (!isValid) {
-            return;
-          }
+          if (validPoints.length < 3) return;
           
-          // Create polygon and add to map
-          const polygon = L.polygon(polygonPoints, {
+          // Add the clipped polygon
+          const polygon = L.polygon(coords, {
             fillColor: teamColor,
             weight: 1.5,
             opacity: 0.8,
             color: "white",
-            fillOpacity: 0.5
+            fillOpacity: 0.7
           }).addTo(voronoiLayer);
-
+          
           // When clicking the polygon, fly to the team's location
           polygon.on("click", () => {
             map.flyTo([team.location.latitude, team.location.longitude], 8, {
@@ -350,16 +370,26 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
               </p>
             </div>
           `);
-        } catch (error) {
-          console.warn(`Error processing team at index ${i}:`, error);
+        } catch (e) {
+          console.warn("Error processing clipped polygon:", e);
         }
       });
-
-      // Add team logo markers on top
-      points.forEach((point, i) => {
+      
+      // Add state boundaries on top of Voronoi cells
+      L.geoJSON(usStates, {
+        style: {
+          weight: 1.5,
+          opacity: 0.8,
+          color: "#555",
+          fillOpacity: 0,
+          fillColor: "transparent"
+        }
+      }).addTo(voronoiLayer);
+      
+      // Add team logo markers on top with transparent background
+      filteredTeams.forEach(team => {
         try {
-          const team = point[2];
-          const size = 40; // Fixed size for simplicity
+          const size = 40;
           
           const teamIcon = L.divIcon({
             className: "team-logo-marker",
@@ -371,8 +401,7 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
                       width: ${size}px;
                       height: ${size}px;
                       border-radius: 50%;
-                      border: 3px solid white;
-                      background-color: white;
+                      background-color: transparent;
                       box-shadow: 0 0 8px rgba(0,0,0,0.6);">
                    </div>`,
             iconSize: [size, size],
@@ -401,9 +430,13 @@ const AdvancedUSATerritorialMap = ({ teams }) => {
                 </div>
               `)
               .openPopup();
+              
+            map.flyTo([team.location.latitude, team.location.longitude], 8, {
+              duration: 1.5
+            });
           });
         } catch (error) {
-          console.warn(`Error creating marker for team at index ${i}:`, error);
+          console.warn(`Error creating marker for team:`, error);
         }
       });
     } catch (error) {
@@ -442,10 +475,10 @@ const USAConferenceMap = ({ teams }) => {
     layerRef.current = conferenceLayer;
 
     try {
-      // Add US states with light coloring
+      // Add US states boundary
       const statesLayer = L.geoJSON(usStates, {
         style: {
-          weight: 1,
+          weight: 1.5,
           opacity: 1,
           color: "#666",
           fillOpacity: 0.1,
@@ -485,7 +518,46 @@ const USAConferenceMap = ({ teams }) => {
         colorIndex++;
       });
 
-      // Draw conference hulls
+      // Helper function to calculate convex hull
+      const getConvexHull = (points) => {
+        if (points.length <= 3) return points;
+        
+        // Find the lowest point
+        let lowestPoint = points[0];
+        for (let i = 1; i < points.length; i++) {
+          if (points[i][0] < lowestPoint[0] || (points[i][0] === lowestPoint[0] && points[i][1] < lowestPoint[1])) {
+            lowestPoint = points[i];
+          }
+        }
+        
+        // Sort points by polar angle
+        const sortedPoints = [...points].sort((a, b) => {
+          const angleA = Math.atan2(a[0] - lowestPoint[0], a[1] - lowestPoint[1]);
+          const angleB = Math.atan2(b[0] - lowestPoint[0], b[1] - lowestPoint[1]);
+          return angleA - angleB;
+        });
+        
+        // Graham scan algorithm
+        const hull = [sortedPoints[0], sortedPoints[1]];
+        for (let i = 2; i < sortedPoints.length; i++) {
+          while (hull.length > 1) {
+            const p1 = hull[hull.length - 2];
+            const p2 = hull[hull.length - 1];
+            const p3 = sortedPoints[i];
+            
+            // Calculate cross product
+            const cross = (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]);
+            
+            if (cross >= 0) break; // Convex turn
+            hull.pop(); // Remove point that makes a non-convex turn
+          }
+          hull.push(sortedPoints[i]);
+        }
+        
+        return hull;
+      };
+
+      // Draw conference hulls that follow US boundaries
       Object.entries(conferenceGroups).forEach(([conference, conferenceTeams]) => {
         // If conference has only one team, just show a circle
         if (conferenceTeams.length === 1) {
@@ -498,7 +570,7 @@ const USAConferenceMap = ({ teams }) => {
               weight: 2,
               opacity: 0.8,
               fillColor: conferenceColors[conference],
-              fillOpacity: 0.3
+              fillOpacity: 0.5
             }
           ).addTo(conferenceLayer);
           
@@ -508,20 +580,49 @@ const USAConferenceMap = ({ teams }) => {
             className: 'conference-label'
           });
         } 
-        // If conference has 2+ teams, try to create a convex hull
+        // If conference has 2+ teams, create a convex hull
         else if (conferenceTeams.length >= 2) {
           try {
-            // Show conference territory as a polygon connecting all team locations
+            // Get all team coordinates
             const points = conferenceTeams.map(team => 
               [team.location.latitude, team.location.longitude]
             );
             
-            const polygon = L.polygon(points, {
+            // Create a convex hull around the teams
+            const hullPoints = points.length > 3 ? getConvexHull(points) : points;
+            
+            // Create a polygon with padding
+            const paddedPoints = [];
+            const centerLat = hullPoints.reduce((sum, p) => sum + p[0], 0) / hullPoints.length;
+            const centerLng = hullPoints.reduce((sum, p) => sum + p[1], 0) / hullPoints.length;
+            
+            hullPoints.forEach(point => {
+              // Add padding by moving points outward from center
+              const lat = point[0];
+              const lng = point[1];
+              const dlat = lat - centerLat;
+              const dlng = lng - centerLng;
+              const dist = Math.sqrt(dlat * dlat + dlng * dlng);
+              
+              if (dist > 0) {
+                // Add 15% padding
+                const padFactor = 1.15;
+                paddedPoints.push([
+                  centerLat + dlat * padFactor,
+                  centerLng + dlng * padFactor
+                ]);
+              } else {
+                paddedPoints.push([lat, lng]);
+              }
+            });
+            
+            // Create the polygon
+            const polygon = L.polygon(paddedPoints, {
               color: conferenceColors[conference],
               weight: 2,
               opacity: 0.8,
               fillColor: conferenceColors[conference],
-              fillOpacity: 0.3
+              fillOpacity: 0.5
             }).addTo(conferenceLayer);
             
             // Add conference label at the center of the polygon
@@ -540,7 +641,7 @@ const USAConferenceMap = ({ teams }) => {
         }
       });
 
-      // Add team logo markers on top
+      // Add team logo markers on top with transparent backgrounds
       teams.forEach(team => {
         if (!team.location || !team.location.latitude || !team.location.longitude) {
           return;
@@ -558,9 +659,8 @@ const USAConferenceMap = ({ teams }) => {
                     width: ${size}px;
                     height: ${size}px;
                     border-radius: 50%;
-                    border: 3px solid white;
-                    background-color: white;
-                    box-shadow: 0 0 8px rgba(0,0,0,0.6);">
+                    background-color: transparent;
+                    box-shadow: 0 0 5px rgba(0,0,0,0.5);">
                  </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2]
