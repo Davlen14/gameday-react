@@ -23,17 +23,25 @@ const USATerritorialMap = ({ teams }) => {
   const map = useMap();
   const layerRef = useRef(null);
 
-  // Create a union of all US states from the GeoJSON file.
-  // This function reduces the FeatureCollection to one combined polygon.
+  // Function to generate a union of all US states from the GeoJSON file.
+  // We filter out features that lack valid geometry. If there's only one valid feature, we return it directly.
   const getUSBoundaryUnion = () => {
     if (!usStates || !usStates.features || usStates.features.length === 0) {
       return null;
     }
-    // Start with the first feature
-    let unionPoly = turf.feature(usStates.features[0].geometry);
-    for (let i = 1; i < usStates.features.length; i++) {
-      const currentFeature = turf.feature(usStates.features[i].geometry);
-      unionPoly = turf.union(unionPoly, currentFeature);
+    const validFeatures = usStates.features.filter(f => f.geometry);
+    if (validFeatures.length === 0) return null;
+    if (validFeatures.length === 1) {
+      return turf.feature(validFeatures[0].geometry);
+    }
+    let unionPoly = turf.feature(validFeatures[0].geometry);
+    for (let i = 1; i < validFeatures.length; i++) {
+      const currentFeature = turf.feature(validFeatures[i].geometry);
+      try {
+        unionPoly = turf.union(unionPoly, currentFeature);
+      } catch (error) {
+        console.error("Error unioning geometry at index", i, error);
+      }
     }
     return unionPoly;
   };
@@ -86,7 +94,7 @@ const USATerritorialMap = ({ teams }) => {
         const team = point[2];
         const teamColor = team.color && team.color !== "null" ? team.color : "#333";
 
-        // Build a Turf polygon from the Voronoi cell (note: cell is in [lng, lat])
+        // Build a Turf polygon from the Voronoi cell (cell is in [lng, lat])
         const cellPolygon = turf.polygon([cell]);
 
         // Clip the cell with the US union polygon
@@ -198,8 +206,6 @@ const USATerritorialMap = ({ teams }) => {
             .openPopup();
         });
       });
-
-      // (Optional) Handle Alaska and Hawaii teams separately if desired.
     };
 
     generateVoronoi();
@@ -220,7 +226,7 @@ const More = () => {
   const [error, setError] = useState(null);
   const mapRef = useRef(null);
 
-  // Fetch teams from the API
+  // Fetch teams from API
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -347,3 +353,4 @@ const More = () => {
 };
 
 export default More;
+
