@@ -34,6 +34,42 @@ const deg2rad = (deg) => {
   return deg * (Math.PI/180);
 };
 
+// Point in polygon test - returns true if the point is in the polygon
+const pointInPolygon = (point, polygon) => {
+  // Ray-casting algorithm
+  let inside = false;
+  const x = point[0], y = point[1];
+  
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  
+  return inside;
+};
+
+// Check if a point is within the US boundaries
+const isPointInUS = (point, states) => {
+  for (const state of states.features) {
+    if (state.geometry.type === 'Polygon') {
+      if (pointInPolygon([point[1], point[0]], state.geometry.coordinates[0])) {
+        return true;
+      }
+    } else if (state.geometry.type === 'MultiPolygon') {
+      for (const polygon of state.geometry.coordinates) {
+        if (pointInPolygon([point[1], point[0]], polygon[0])) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
 // Generate a grid-based territory map
 const CollegeFootballTerritoryMap = ({ teams }) => {
   const map = useMap();
@@ -69,29 +105,64 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
     const bounds = baseUSA.getBounds();
     map.fitBounds(bounds);
 
-    // Filter teams with valid coordinates
+    // Define continental US bounds more strictly
+    const continentalUS = {
+      south: 24.396308, // Southern tip of Florida
+      north: 49.384358, // Northern border with Canada
+      west: -125.0, // Western coast
+      east: -66.93457  // Eastern coast
+    };
+
+    // Filter teams with valid coordinates that are clearly within US bounds
     const filteredTeams = teams.filter(
-      (team) =>
-        team &&
-        team.location &&
-        team.location.latitude &&
-        team.location.longitude
+      (team) => {
+        if (!team || !team.location || !team.location.latitude || !team.location.longitude) {
+          return false;
+        }
+        
+        // Exclude teams outside the continental US
+        if (team.location.latitude < continentalUS.south || 
+            team.location.latitude > continentalUS.north ||
+            team.location.longitude < continentalUS.west || 
+            team.location.longitude > continentalUS.east) {
+          return false;
+        }
+        
+        return true;
+      }
     );
 
     try {
+      // Precompute the US border shape as a collection of boundary points
+      const usBorderPoints = [];
+      usStates.features.forEach(state => {
+        if (state.geometry.type === 'Polygon') {
+          usBorderPoints.push(...state.geometry.coordinates[0]);
+        } else if (state.geometry.type === 'MultiPolygon') {
+          state.geometry.coordinates.forEach(poly => {
+            usBorderPoints.push(...poly[0]);
+          });
+        }
+      });
+
       // Create a grid overlay to represent territories
-      const gridSize = 0.5; // Grid cell size in degrees
-      const minLat = bounds.getSouth() - 1;
-      const maxLat = bounds.getNorth() + 1;
-      const minLng = bounds.getWest() - 1;
-      const maxLng = bounds.getEast() + 1;
+      const gridSize = 0.3; // Grid cell size in degrees - smaller for better resolution
+      const minLat = continentalUS.south - 0.1;
+      const maxLat = continentalUS.north + 0.1;
+      const minLng = continentalUS.west - 0.1;
+      const maxLng = continentalUS.east + 0.1;
       
-      // Calculate centroids for each grid cell
+      // Calculate grid cells for the entire US
       const gridCells = [];
       
       for (let lat = minLat; lat <= maxLat; lat += gridSize) {
         for (let lng = minLng; lng <= maxLng; lng += gridSize) {
           const cellCenter = [lat + gridSize/2, lng + gridSize/2];
+          
+          // First check if this point is likely in the US
+          if (!isPointInUS([cellCenter[0], cellCenter[1]], usStates)) {
+            continue; // Skip points outside the US
+          }
           
           // Determine which team is closest to this cell
           let closestTeam = null;
@@ -114,7 +185,8 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
           if (closestTeam) {
             gridCells.push({
               bounds: [[lat, lng], [lat + gridSize, lng + gridSize]],
-              team: closestTeam
+              team: closestTeam,
+              center: cellCenter
             });
           }
         }
@@ -122,83 +194,57 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
       
       // Map to track territory size per team (for logo sizing)
       const teamTerritorySizes = {};
+      const teamCells = {};
       
       // Add grid cells to the map
       gridCells.forEach(cell => {
         const team = cell.team;
         const teamColor = team.color && team.color !== "null" ? team.color : "#333";
-        
-        // Check if point is in US (basic check)
-        const cellCenter = [
-          (cell.bounds[0][0] + cell.bounds[1][0]) / 2,
-          (cell.bounds[0][1] + cell.bounds[1][1]) / 2
-        ];
-        
-        let isInUS = false;
-        const point = L.latLng(cellCenter[0], cellCenter[1]);
-        
-        // Loop through all state polygons and check if the point is inside any of them
-        for (const state of usStates.features) {
-          const stateLayer = L.geoJSON(state);
-          if (leafletPip.pointInLayer(point, stateLayer, true).length > 0) {
-            isInUS = true;
-            break;
-          }
-        }
-        
-        // Only add cells that are within the US
-        if (isInUS) {
-          // Add to team territory size counter
-          if (!teamTerritorySizes[team.id]) {
-            teamTerritorySizes[team.id] = 0;
-          }
-          teamTerritorySizes[team.id]++;
           
-          // Create rectangle for the grid cell
-          L.rectangle(cell.bounds, {
-            color: "#333",
-            weight: 0.3,
-            fillColor: teamColor,
-            fillOpacity: 1
-          }).addTo(territoryLayer);
+        // Add to team territory counter
+        if (!teamTerritorySizes[team.id]) {
+          teamTerritorySizes[team.id] = 0;
+          teamCells[team.id] = [];
         }
-      });
-      
-      // Create a map of team territories for efficient lookup
-      const teamTerritories = {};
-      filteredTeams.forEach(team => {
-        teamTerritories[team.id] = {
-          team: team,
-          cells: gridCells.filter(cell => cell.team.id === team.id)
-        };
+        teamTerritorySizes[team.id]++;
+        teamCells[team.id].push(cell);
+        
+        // Create rectangle for the grid cell
+        L.rectangle(cell.bounds, {
+          color: "#222",
+          weight: 0.3,
+          fillColor: teamColor,
+          fillOpacity: 1
+        }).addTo(territoryLayer);
       });
       
       // Add team logos at the approximate center of each territory
-      Object.values(teamTerritories).forEach(territory => {
-        if (territory.cells.length === 0) return;
+      Object.keys(teamCells).forEach(teamId => {
+        const cells = teamCells[teamId];
+        if (cells.length === 0) return;
+        
+        const team = cells[0].team; // All cells have the same team
         
         // Find the average position of all cells as an approximation of territory center
         let totalLat = 0;
         let totalLng = 0;
-        territory.cells.forEach(cell => {
-          const centerLat = (cell.bounds[0][0] + cell.bounds[1][0]) / 2;
-          const centerLng = (cell.bounds[0][1] + cell.bounds[1][1]) / 2;
-          totalLat += centerLat;
-          totalLng += centerLng;
+        cells.forEach(cell => {
+          totalLat += cell.center[0];
+          totalLng += cell.center[1];
         });
         
-        const centerLat = totalLat / territory.cells.length;
-        const centerLng = totalLng / territory.cells.length;
+        const centerLat = totalLat / cells.length;
+        const centerLng = totalLng / cells.length;
         
         // Scale logo size based on territory size
-        const size = teamTerritorySizes[territory.team.id] || 1;
-        const baseSize = Math.max(25, Math.min(70, 20 + Math.sqrt(size) * 3));
+        const size = teamTerritorySizes[teamId];
+        const baseSize = Math.max(25, Math.min(65, 20 + Math.sqrt(size) * 2.5));
         
         // Create logo without background
         const teamIcon = L.divIcon({
           className: "team-logo-no-bg",
           html: `<div style="
-                    background-image: url('${territory.team.logos?.[0] || "/photos/default_team.png"}');
+                    background-image: url('${team.logos?.[0] || "/photos/default_team.png"}');
                     background-size: contain;
                     background-repeat: no-repeat;
                     background-position: center;
@@ -221,14 +267,14 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
             .bindPopup(`
               <div style="text-align: center">
                 <img
-                  src="${territory.team.logos?.[0] || "/photos/default_team.png"}"
-                  alt="${territory.team.school}"
+                  src="${team.logos?.[0] || "/photos/default_team.png"}"
+                  alt="${team.school}"
                   style="width: 60px; height: auto; margin-bottom: 5px"
                   onerror="this.onerror=null; this.src='/photos/default_team.png';"
                 />
-                <h3 style="margin: 5px 0">${territory.team.school}</h3>
+                <h3 style="margin: 5px 0">${team.school}</h3>
                 <p style="margin: 0">
-                  <strong>Conference:</strong> ${territory.team.conference || "Independent"}
+                  <strong>Conference:</strong> ${team.conference || "Independent"}
                 </p>
               </div>
             `, {
@@ -236,7 +282,7 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
             })
             .openPopup();
             
-          map.flyTo([territory.team.location.latitude, territory.team.location.longitude], 8, {
+          map.flyTo([team.location.latitude, team.location.longitude], 8, {
             duration: 1.5
           });
         });
@@ -275,16 +321,6 @@ const CollegeFootballTerritoryMap = ({ teams }) => {
   }, [teams, map]);
 
   return null;
-};
-
-// Simple polyfill for point in polygon checking (since Leaflet-PIP may not be available)
-// This will be used in the component
-const leafletPip = {
-  pointInLayer: function(point, layer) {
-    // Simple check - just return true for now
-    // In a real implementation, we'd check if the point is in the polygon
-    return [true];
-  }
 };
 
 // Main component
