@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import teamsService from "../services/teamsService";
-import { MapContainer, TileLayer, useMap, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Delaunay } from "d3-delaunay";
 import usStates from "../data/us-states.json";
 import * as turf from '@turf/turf';
 
@@ -18,184 +17,8 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
-// Basic Map Component - Just show states and markers
-const USATerritorialMap = ({ teams }) => {
-  const map = useMap();
-  const layerRef = useRef(null);
-
-  useEffect(() => {
-    if (!teams || teams.length === 0) return;
-
-    // Remove any existing layer
-    if (layerRef.current) {
-      map.removeLayer(layerRef.current);
-    }
-
-    // Set view to center of US
-    const usCenter = [39.8283, -98.5795];
-    map.setView(usCenter, 4);
-
-    // Create a new layer group for polygons and markers
-    const markerLayer = L.layerGroup().addTo(map);
-    layerRef.current = markerLayer;
-
-    try {
-      // Add US states with light coloring
-      const statesLayer = L.geoJSON(usStates, {
-        style: {
-          weight: 1,
-          opacity: 0.8,
-          color: "#555",
-          fillOpacity: 0.1,
-          fillColor: "#f8f8f8",
-          dashArray: "2"
-        }
-      }).addTo(markerLayer);
-
-      // Add circles for each team
-      teams.forEach(team => {
-        if (!team.location || !team.location.latitude || !team.location.longitude) {
-          return;
-        }
-
-        const teamColor = team.color && team.color !== "null" ? team.color : "#333";
-        
-        // Create a circle with team color
-        const circle = L.circle(
-          [team.location.latitude, team.location.longitude], 
-          {
-            radius: 100000, // 100km radius
-            color: teamColor,
-            weight: 3,
-            opacity: 0.8,
-            fillColor: teamColor,
-            fillOpacity: 0.4
-          }
-        ).addTo(markerLayer);
-        
-        circle.on("click", () => {
-          map.flyTo([team.location.latitude, team.location.longitude], 8, {
-            duration: 1.5
-          });
-        });
-        
-        // Add team logo marker with improved styling
-        const size = 40;
-        
-        const teamIcon = L.divIcon({
-          className: "team-logo-marker",
-          html: `<div style="
-                    background-image: url('${team.logos?.[0] || "/photos/default_team.png"}');
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: center;
-                    width: ${size}px;
-                    height: 30px;
-          animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        
-        .error-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 300px;
-          color: #d32f2f;
-        }
-        
-        .error-icon {
-          font-size: 36px;
-          margin-bottom: 12px;
-        }
-        
-        .error-container button {
-          margin-top: 16px;
-          padding: 8px 16px;
-          background: #333;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        
-        /* Custom popup styling */
-        .custom-popup .leaflet-popup-content-wrapper {
-          background: rgba(255, 255, 255, 0.95);
-          border-radius: 8px;
-          box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-        
-        .custom-popup .leaflet-popup-tip {
-          background: rgba(255, 255, 255, 0.95);
-        }
-        
-        /* Team logo marker styling */
-        .team-logo-marker {
-          filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
-          transition: transform 0.2s ease, filter 0.2s ease;
-        }
-        
-        .team-logo-marker:hover {
-          transform: scale(1.1) translateY(-3px);
-          filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
-          z-index: 1000 !important;
-        }: ${size}px;
-                    border-radius: 50%;
-                    background-color: white;
-                    box-shadow: 0 3px 14px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.4);">
-                 </div>`,
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2]
-        });
-
-        const marker = L.marker(
-          [team.location.latitude, team.location.longitude],
-          { icon: teamIcon, zIndexOffset: 1000 }
-        ).addTo(markerLayer);
-
-        marker.on("click", () => {
-          marker
-            .bindPopup(`
-              <div style="text-align: center">
-                <img
-                  src="${team.logos?.[0] || "/photos/default_team.png"}"
-                  alt="${team.school}"
-                  style="width: 60px; height: auto; margin-bottom: 5px"
-                  onerror="this.onerror=null; this.src='/photos/default_team.png';"
-                />
-                <h3 style="margin: 5px 0">${team.school}</h3>
-                <p style="margin: 0">
-                  <strong>Conference:</strong> ${team.conference || "Independent"}
-                </p>
-              </div>
-            `)
-            .openPopup();
-            
-          map.flyTo([team.location.latitude, team.location.longitude], 8, {
-            duration: 1.5
-          });
-        });
-      });
-    } catch (error) {
-      console.error("Error generating map:", error);
-    }
-
-    return () => {
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-      }
-    };
-  }, [teams, map]);
-
-  return null;
-};
-
-// Enhanced Voronoi Map strictly confined to US boundaries
-const AdvancedUSATerritorialMap = ({ teams }) => {
+// Advanced Voronoi Map strictly confined to US boundaries
+const CollegeFootballTerritoryMap = ({ teams }) => {
   const map = useMap();
   const layerRef = useRef(null);
 
@@ -618,7 +441,6 @@ const More = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mapMode, setMapMode] = useState("voronoi"); // Default to voronoi for better looks
   const mapRef = useRef(null);
 
   // Fetch teams from the API
@@ -648,13 +470,6 @@ const More = () => {
     fetchTeams();
   }, []);
 
-  // Helper function to fly to a team's location
-  const flyToTeam = (lat, lng) => {
-    if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 8, { duration: 1.5 });
-    }
-  };
-
   if (loading) {
     return (
       <div className="loading-container">
@@ -680,28 +495,6 @@ const More = () => {
     <div className="territory-map-container">
       <h1>College Football Team Territories</h1>
       
-      {/* Map selection controls */}
-      <div className="map-controls">
-        <label className={mapMode === "basic" ? "active" : ""}>
-          <input
-            type="radio"
-            value="basic"
-            checked={mapMode === "basic"}
-            onChange={() => setMapMode("basic")}
-          />
-          Basic Map (Markers + Circles)
-        </label>
-        <label className={mapMode === "voronoi" ? "active" : ""}>
-          <input
-            type="radio"
-            value="voronoi"
-            checked={mapMode === "voronoi"}
-            onChange={() => setMapMode("voronoi")}
-          />
-          Territory Map (Team Regions)
-        </label>
-      </div>
-      
       {/* Map container */}
       <div className="map-container">
         <MapContainer
@@ -724,55 +517,18 @@ const More = () => {
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             opacity={0.3}
           />
-          {validTeams.length > 0 && mapMode === "basic" && (
-            <USATerritorialMap teams={validTeams} />
-          )}
-          {validTeams.length > 0 && mapMode === "voronoi" && (
-            <AdvancedUSATerritorialMap teams={validTeams} />
+          {validTeams.length > 0 && (
+            <CollegeFootballTerritoryMap teams={validTeams} />
           )}
         </MapContainer>
       </div>
 
-      {/* Add a key/legend for the maps */}
+      {/* Map description */}
       <div className="map-legend">
-        {mapMode === "voronoi" && (
-          <p>Each colored region represents a team's territory. States with a single dominant team are filled with that team's color, while contested areas are divided based on proximity. Click on a territory or team logo to see details.</p>
-        )}
-        
-        {mapMode === "basic" && (
-          <p>Each team is represented by its logo and a colored circle. Click on a logo to see team details.</p>
-        )}
+        <p>Each colored region represents a team's territory. States with a single dominant team are filled with that team's color, while contested areas are divided based on proximity. Click on a territory or team logo to see details.</p>
       </div>
 
-      {/* Team list */}
-      <div className="team-list-section">
-        <h2>Team List</h2>
-        <div className="team-list">
-          {validTeams.map((team) => (
-            <div
-              key={team.id}
-              className="team-item"
-              style={{
-                backgroundColor:
-                  team.color && team.color !== "null" ? team.color : "#333"
-              }}
-              onClick={() =>
-                flyToTeam(team.location.latitude, team.location.longitude)
-              }
-            >
-              <div
-                className="team-logo"
-                style={{
-                  backgroundImage: `url('${team.logos?.[0] || "/photos/default_team.png"}')`
-                }}
-              />
-              <span className="team-name">{team.school}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CSS for logo markers and other styling */}
+      {/* CSS for styling */}
       <style jsx global>{`
         .territory-map-container {
           max-width: 1200px;
@@ -787,96 +543,20 @@ const More = () => {
           margin-bottom: 20px;
         }
         
-        .map-controls {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 20px;
-          gap: 20px;
-        }
-        
-        .map-controls label {
-          display: inline-flex;
-          align-items: center;
-          padding: 8px 16px;
-          background: #f0f0f0;
-          border-radius: 30px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        
-        .map-controls label.active {
-          background: #333;
-          color: white;
-        }
-        
-        .map-controls input {
-          margin-right: 8px;
-        }
-        
         .map-container {
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+          margin-bottom: 15px;
         }
         
         .map-legend {
-          margin-top: 15px;
           padding: 12px;
           background: #f8f8f8;
           border-radius: 8px;
           font-size: 14px;
           color: #555;
           line-height: 1.5;
-        }
-        
-        .team-list-section {
-          margin-top: 30px;
-        }
-        
-        .team-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 12px;
-          max-height: 400px;
-          overflow-y: auto;
-          padding: 5px;
-        }
-        
-        .team-item {
-          display: flex;
-          align-items: center;
-          padding: 10px;
-          border-radius: 8px;
-          cursor: pointer;
-          color: white;
-          transition: all 0.2s ease;
-          text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-        
-        .team-item:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-        }
-        
-        .team-logo {
-          width: 28px;
-          height: 28px;
-          margin-right: 12px;
-          background-size: contain;
-          background-position: center;
-          background-repeat: no-repeat;
-          flex-shrink: 0;
-          border-radius: 50%;
-          background-color: white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .team-name {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          font-weight: 500;
         }
         
         .loading-container {
@@ -887,68 +567,68 @@ const More = () => {
           height: 300px;
         }
         
-.loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #333;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  color: #d32f2f;
-}
-
-.error-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-
-.error-container button {
-  margin-top: 16px;
-  padding: 8px 16px;
-  background: #333;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Custom popup styling */
-.custom-popup .leaflet-popup-content-wrapper {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-}
-
-.custom-popup .leaflet-popup-tip {
-  background: rgba(255, 255, 255, 0.95);
-}
-
-/* Team logo marker styling */
-.team-logo-marker {
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-.team-logo-marker:hover {
-  transform: scale(1.1) translateY(-3px);
-  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
-  z-index: 1000 !important;
-}
-        `}</style>
-        </div>
-    );
-    }
+        .loading-spinner {
+          border: 4px solid rgba(0, 0, 0, 0.1);
+          border-left-color: #333;
+          border-radius: 50%;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 300px;
+          color: #d32f2f;
+        }
+        
+        .error-icon {
+          font-size: 36px;
+          margin-bottom: 12px;
+        }
+        
+        .error-container button {
+          margin-top: 16px;
+          padding: 8px 16px;
+          background: #333;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        /* Custom popup styling */
+        .custom-popup .leaflet-popup-content-wrapper {
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 8px;
+          box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+          background: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Team logo marker styling */
+        .team-logo-marker {
+          filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+          transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        
+        .team-logo-marker:hover {
+          transform: scale(1.1) translateY(-3px);
+          filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
+          z-index: 1000 !important;
+        }
+      `}</style>
+    </div>
+  );
+};
 
 export default More;
