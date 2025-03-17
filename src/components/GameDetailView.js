@@ -453,421 +453,422 @@ const GameDetailView = () => {
       </div>
 
       <style jsx>{`
-        .game-detail-container {
-          max-width: 1200px;
-          margin: 2rem auto;
-          padding: 20px;
-        }
+.game-detail-container {
+  max-width: 90%;
+  margin: 2rem auto;
+  padding: 20px;
+}
 
-        .field-container {
-          position: relative;
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-          margin-top: 20px;
-        }
+.field-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-top: 20px;
+}
 
-        .football-field {
-          position: relative;
-          display: flex;
-          width: 100%;
-          height: 65vh;
-          min-height: 500px;
-          border: 4px solid #5d4a36;
-        }
+.football-field {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 65vh;
+  min-height: 500px;
+  border: 4px solid #5d4a36;
+}
 
-        /* Glassy overlay for game info */
-        .game-info {
-          position: absolute;
-          top: 10px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 10;
-          background: rgba(255, 255, 255, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
-          padding: 10px 20px;
-          backdrop-filter: blur(10px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 5px;
-          color: white;
-        }
+/* Glassy overlay for game info - size kept as is */
+.game-info {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 20px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: white;
+}
 
-        .score-display {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          font-size: 1.5rem;
-        }
+.score-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.5rem;
+}
 
-        .team-score {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
+.team-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-        .score-team-logo {
-          width: 30px;
-          height: 30px;
-          object-fit: contain;
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-        }
+.score-team-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
 
-        .score-separator {
-          font-weight: bold;
-          color: #ffd700;
-        }
+.score-separator {
+  font-weight: bold;
+  color: #ffd700;
+}
 
-        .game-status {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          font-size: 0.9rem;
-          opacity: 0.9;
-        }
+.game-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
 
-        .endzone {
-          width: 8.33%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-transform: uppercase;
-          color: white;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-          padding: 5px;
-        }
+.endzone {
+  width: 8.33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 5px;
+}
 
-        .endzone-logo {
-          width: 80px;
-          height: 80px;
-          object-fit: contain;
-          filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
-        }
+.endzone-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
 
-        .endzone-label {
-          font-size: 0.6em;
-          margin-top: 8px;
-          text-align: center;
-        }
+.endzone-label {
+  font-size: 0.6em;
+  margin-top: 8px;
+  text-align: center;
+}
 
-        .playing-field {
-          position: relative;
-          width: 83.33%;
-          height: 100%;
-          background: linear-gradient(160deg, #1a472a, #2d5a27),
-            repeating-linear-gradient(
-              135deg,
-              rgba(0, 0, 0, 0.1),
-              rgba(0, 0, 0, 0.1) 10px,
-              transparent 10px,
-              transparent 20px
-            );
-        }
+.playing-field {
+  position: relative;
+  width: 83.33%;
+  height: 100%;
+  background: linear-gradient(160deg, #1a472a, #2d5a27),
+    repeating-linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.1),
+      rgba(0, 0, 0, 0.1) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+}
 
-        .yard-line {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          width: 2px;
-          background: rgba(255, 255, 255, 0.8);
-        }
+.yard-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.8);
+}
 
-        .yard-number {
-          position: absolute;
-          bottom: 10px;
-          color: white;
-          font-size: 18px;
-          font-weight: 700;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-          transform: translateX(-50%);
-        }
+.yard-number {
+  position: absolute;
+  bottom: 10px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+}
 
-        .center-logo {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 150px;
-          height: 150px;
-          background: rgba(255, 255, 255, 0.9);
-          border-radius: 50%;
-          padding: 15px;
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-          z-index: 2;
-        }
+.center-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
 
-        .center-logo img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
+.center-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-        .ball-marker {
-          position: absolute;
-          width: 24px;
-          height: 12px;
-          background: #8B4513;
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-          animation: pulse 1.5s infinite;
-          z-index: 3;
-          transition: left 0.5s ease-in-out;
-        }
+.ball-marker {
+  position: absolute;
+  width: 24px;
+  height: 12px;
+  background: #8B4513;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  animation: pulse 1.5s infinite;
+  z-index: 3;
+  transition: left 0.5s ease-in-out;
+}
 
-        .possession-indicator {
-          position: absolute;
-          width: 32px;
-          height: 32px;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.9);
-          border-radius: 50%;
-          padding: 4px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
+.possession-indicator {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
 
-        .possession-indicator img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
+.possession-indicator img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-        .ball-shadow {
-          position: absolute;
-          width: 40px;
-          height: 10px;
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: 50%;
-          bottom: -15px;
-          left: 50%;
-          transform: translateX(-50%);
-          filter: blur(2px);
-        }
+.ball-shadow {
+  position: absolute;
+  width: 40px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: blur(2px);
+}
 
-        @keyframes pulse {
-          0% {
-            transform: translate(-50%, -50%) scale(0.95);
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.1);
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(0.95);
-          }
-        }
-        
-        .playback-controls {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 16px 0;
-          padding: 12px;
-          background: rgba(0, 0, 0, 0.7);
-          border-radius: 8px;
-          gap: 16px;
-        }
-        
-        .control-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          border: none;
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-          font-size: 1.2rem;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        
-        .control-button:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.3);
-          transform: scale(1.05);
-        }
-        
-        .control-button:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-        
-        .speed-controls {
-          display: flex;
-          align-items: center;
-          margin-left: 8px;
-          gap: 8px;
-          color: white;
-        }
-        
-        .speed-controls span {
-          font-size: 0.9rem;
-        }
-        
-        .speed-select {
-          padding: 4px 8px;
-          border-radius: 4px;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          background: rgba(0, 0, 0, 0.3);
-          color: white;
-          font-size: 0.9rem;
-        }
-        
-        .progress-indicator {
-          margin-left: auto;
-          padding: 4px 10px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          font-size: 0.85rem;
-          color: white;
-        }
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
 
-        .game-details-panel {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2rem;
-          margin-top: 1rem;
-        }
+.playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  gap: 16px;
+  color: black;
+}
 
-        .last-play {
-          padding: 1.5rem;
-          background: rgba(0, 0, 0, 0.7);
-          border-radius: 8px;
-          color: white;
-        }
-        
-        .play-text {
-          font-size: 1.1rem;
-          line-height: 1.5;
-          margin-bottom: 20px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .play-stats {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        
-        .stat-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        
-        .stat-label {
-          font-weight: 600;
-          min-width: 100px;
-          color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .stat-value {
-          font-weight: 400;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .possession-logo {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          object-fit: contain;
-          background: rgba(255, 255, 255, 0.9);
-          padding: 2px;
-        }
-        
-        .probability-bars {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          width: 100%;
-        }
-        
-        .team-prob {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .team-prob span {
-          min-width: 80px;
-          font-size: 0.9rem;
-        }
-        
-        .team-prob span:last-child {
-          min-width: 50px;
-          text-align: right;
-        }
-        
-        .prob-bar-container {
-          flex: 1;
-          height: 12px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 6px;
-          overflow: hidden;
-        }
-        
-        .prob-bar {
-          height: 100%;
-          transition: width 0.5s ease-in-out;
-        }
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  color: black;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-        @media (max-width: 768px) {
-          .football-field {
-            flex-direction: column;
-            height: auto;
-          }
-          .endzone {
-            width: 100%;
-            flex-direction: row;
-            justify-content: center;
-            gap: 10px;
-          }
-          .playing-field {
-            width: 100%;
-            height: 50vh;
-            min-height: 400px;
-          }
-          .center-logo {
-            width: 100px;
-            height: 100px;
-          }
-          .endzone-logo {
-            width: 50px;
-            height: 50px;
-          }
-          .yard-number {
-            font-size: 14px;
-          }
-          .game-details-panel {
-            grid-template-columns: 1fr;
-          }
-          .playback-controls {
-            flex-wrap: wrap;
-          }
-          .progress-indicator {
-            margin: 8px 0 0;
-            width: 100%;
-            text-align: center;
-          }
-        }
+.control-button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
 
-        .loading-container,
-        .error-container {
-          text-align: center;
-          padding: 2rem;
-          font-size: 1.2rem;
-          color: white;
-        }
+.control-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.speed-controls {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  gap: 8px;
+  color: black;
+}
+
+.speed-controls span {
+  font-size: 0.9rem;
+}
+
+.speed-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.05);
+  color: black;
+  font-size: 0.9rem;
+}
+
+.progress-indicator {
+  margin-left: auto;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: black;
+}
+
+.game-details-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.last-play {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  color: black;
+}
+
+.play-text {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.play-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-label {
+  font-weight: 600;
+  min-width: 100px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.stat-value {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.possession-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px;
+}
+
+.probability-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.team-prob {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-prob span {
+  min-width: 80px;
+  font-size: 0.9rem;
+}
+
+.team-prob span:last-child {
+  min-width: 50px;
+  text-align: right;
+}
+
+.prob-bar-container {
+  flex: 1;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.prob-bar {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .football-field {
+    flex-direction: column;
+    height: auto;
+  }
+  .endzone {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+  }
+  .playing-field {
+    width: 100%;
+    height: 50vh;
+    min-height: 400px;
+  }
+  .center-logo {
+    width: 100px;
+    height: 100px;
+  }
+  .endzone-logo {
+    width: 50px;
+    height: 50px;
+  }
+  .yard-number {
+    font-size: 14px;
+  }
+  .game-details-panel {
+    grid-template-columns: 1fr;
+  }
+  .playback-controls {
+    flex-wrap: wrap;
+  }
+  .progress-indicator {
+    margin: 8px 0 0;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: white;
+}
       `}</style>
     </div>
   );
