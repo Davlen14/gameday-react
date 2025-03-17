@@ -445,45 +445,43 @@ const GameDetailView = () => {
   return (
     <div className="game-detail-container">
       <div className="field-container">
-        {/* Touchdown celebration effects */}
-        {showFireworks && (
-          <div 
-            className={`touchdown-celebration ${touchdownTeam}`}
-            style={{ 
-              left: touchdownTeam === "home" ? homeEndzonePosition : awayEndzonePosition,
-              top: "50%",
-              width: "300px",
-              height: "300px",
-              position: "absolute",
-              transform: "translate(-50%, -50%)",
-              zIndex: 100,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              overflow: "hidden",
-              pointerEvents: "none"
-            }}
-          >
-            <div className="fireworks">
-              <div className="firework"></div>
-              <div className="firework"></div>
-              <div className="firework"></div>
-              <div className="firework"></div>
-              <div className="firework"></div>
-            </div>
-            <div className="touchdown-text">
-              TOUCHDOWN!
-              <div className="touchdown-yards" style={{
-                fontSize: "1.5rem",
-                marginTop: "8px",
-                fontWeight: "normal",
-                opacity: 0.9
-              }}>
-                {touchdownYards.toFixed(0)} yard score
-              </div>
-            </div>
-          </div>
-        )}
+{/* Touchdown celebration effects */}
+  {showFireworks && (
+    <div 
+      className="touchdown-celebration"
+      style={{ 
+        position: "absolute",
+        zIndex: 100,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        top: 0,
+        left: 0,
+        pointerEvents: "none"
+      }}
+    >
+      <div className="fireworks">
+        <div className="firework"></div>
+        <div className="firework"></div>
+        <div className="firework"></div>
+        <div className="firework"></div>
+        <div className="firework"></div>
+      </div>
+      <div className="touchdown-text">
+        TOUCHDOWN!
+        <div className="touchdown-yards" style={{
+          fontSize: "1.5rem",
+          marginTop: "8px",
+          fontWeight: "normal",
+          opacity: 0.9
+        }}>
+          {touchdownYards.toFixed(0)} yard score
+        </div>
+      </div>
+    </div>
+  )}
         
         {/* RedZone Alert */}
         {isRedzone && (
@@ -1064,13 +1062,13 @@ const GameDetailView = () => {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   overflow: hidden;
   pointer-events: none;
 }
