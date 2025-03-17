@@ -35,7 +35,7 @@ export const getTeams = async () => {
 
 
 export const getFCSTeams = async () => {
-  const endpoint = "/teams/fcs";
+  const endpoint = "/teams";
   const params = { year: 2024 };
   return await fetchData(endpoint, params);
 };
