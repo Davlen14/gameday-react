@@ -37,7 +37,10 @@ export const getTeams = async () => {
 export const getFCSTeams = async () => {
   const endpoint = "/teams";
   const params = { year: 2024 };
-  return await fetchData(endpoint, params);
+  const allTeams = await fetchData(endpoint, params);
+  
+  // Filter for only FCS teams
+  return allTeams.filter(team => team.classification === "fcs");
 };
 
 // UPDATED: Added postseason support
