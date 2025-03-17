@@ -22,8 +22,6 @@ const GameDetailView = () => {
   // New enhancement states
   const [showFireworks, setShowFireworks] = useState(false);
   const [touchdownTeam, setTouchdownTeam] = useState(null);
-  const [touchdownPath, setTouchdownPath] = useState(null);
-  const [touchdownYards, setTouchdownYards] = useState(0);
   const [isRedzone, setIsRedzone] = useState(false);
   const [showQuarterSummary, setShowQuarterSummary] = useState(false);
   const [currentQuarter, setCurrentQuarter] = useState(1);
@@ -69,7 +67,7 @@ const GameDetailView = () => {
           });
           setPlays(uniquePlays);
           
-          // Set initial possession and quarter
+          // Set initial possession
           if (uniquePlays.length > 0) {
             setPossession(uniquePlays[0].homeBall ? "home" : "away");
             
@@ -77,9 +75,6 @@ const GameDetailView = () => {
             const initialYardLine = uniquePlays[0].yardLine;
             // Convert yard line to percentage (0-100) for field position
             setBallPosition(calculateBallPosition(initialYardLine, uniquePlays[0].homeBall));
-            
-            // Set initial quarter/period
-            setCurrentQuarter(uniquePlays[0].period || 1);
             
             // Check if the game is already completed
             if (uniquePlays[uniquePlays.length - 1].period >= 4) {
@@ -126,27 +121,7 @@ const GameDetailView = () => {
         nextPlay.homeScore - currentPlay.homeScore >= 6) {
       setTouchdownTeam("home");
       setShowFireworks(true);
-      
-      // Calculate touchdown distance (in yards)
-      const startYard = currentPlay.yardLine;
-      const scoringYards = 100 - startYard;
-      setTouchdownYards(scoringYards);
-      
-      // Set the path for animation
-      setTouchdownPath({
-        team: "home",
-        startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
-        endPosition: 100 // Home team endzone is at 100%
-      });
-      
-      // Animate the ball to the endzone
-      setBallPosition(100);
-      
-      // Clear effects after a delay
-      setTimeout(() => {
-        setShowFireworks(false);
-        setTouchdownPath(null);
-      }, 3000);
+      setTimeout(() => setShowFireworks(false), 3000);
       return true;
     }
     
@@ -155,27 +130,7 @@ const GameDetailView = () => {
         nextPlay.awayScore - currentPlay.awayScore >= 6) {
       setTouchdownTeam("away");
       setShowFireworks(true);
-      
-      // Calculate touchdown distance (in yards)
-      const startYard = currentPlay.yardLine;
-      const scoringYards = startYard; // For away team
-      setTouchdownYards(scoringYards);
-      
-      // Set the path for animation
-      setTouchdownPath({
-        team: "away",
-        startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
-        endPosition: 0 // Away team endzone is at 0%
-      });
-      
-      // Animate the ball to the endzone
-      setBallPosition(0);
-      
-      // Clear effects after a delay
-      setTimeout(() => {
-        setShowFireworks(false);
-        setTouchdownPath(null);
-      }, 3000);
+      setTimeout(() => setShowFireworks(false), 3000);
       return true;
     }
     
@@ -208,11 +163,10 @@ const GameDetailView = () => {
       if ((currentPlay.homeBall && nextYard - currentYard >= 20) || 
           (!currentPlay.homeBall && currentYard - nextYard >= 20)) {
         const team = currentPlay.homeBall ? "home" : "away";
-        const yards = Math.abs(nextYard - currentYard);
         setBigPlay({
           team,
-          yards,
-          text: `BIG PLAY! ${yards} yard gain!`
+          yards: 20, // Simplified for this example
+          text: "BIG PLAY! 20+ yard gain!"
         });
         setTimeout(() => setBigPlay(null), 3000);
       }
@@ -280,7 +234,6 @@ const GameDetailView = () => {
     setCurrentPlayIndex(0);
     setShowFireworks(false);
     setTouchdownTeam(null);
-    setTouchdownPath(null);
     setIsRedzone(false);
     setShowQuarterSummary(false);
     setGameCompleted(false);
@@ -291,7 +244,7 @@ const GameDetailView = () => {
       setPossession(plays[0].homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(plays[0].yardLine, plays[0].homeBall));
       checkForRedzone(plays[0].yardLine, plays[0].homeBall);
-      setCurrentQuarter(plays[0].period || 1);
+      setCurrentQuarter(plays[0].period);
     }
   };
   
@@ -358,7 +311,7 @@ const GameDetailView = () => {
       setPossession(play.homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(play.yardLine, play.homeBall));
       checkForRedzone(play.yardLine, play.homeBall);
-      setCurrentQuarter(play.period || 1);
+      setCurrentQuarter(play.period);
       
       // Check if this is the last play
       if (index === plays.length - 1) {
@@ -403,7 +356,7 @@ const GameDetailView = () => {
   
   // Format period as a string (1st, 2nd, 3rd, 4th Quarter, OT)
   const formatQuarter = (period) => {
-    if (period === undefined || period === null) return "N/A";
+    if (!period) return "N/A";
     
     switch (period) {
       case 1: return "1st Quarter";
@@ -438,23 +391,12 @@ const GameDetailView = () => {
   const firstDownPosition = firstDownYard !== null ? 
     (currentPlay.homeBall ? firstDownYard : 100 - firstDownYard) : null;
 
-  // Calculate endzone positions for home and away teams
-  const homeEndzonePosition = "calc(91.67% + 4px)"; // Right endzone position
-  const awayEndzonePosition = "calc(8.33% - 4px)"; // Left endzone position
-
   return (
     <div className="game-detail-container">
       <div className="field-container">
         {/* Touchdown celebration effects */}
         {showFireworks && (
-          <div 
-            className={`touchdown-celebration ${touchdownTeam}`}
-            style={{ 
-              left: touchdownTeam === "home" ? homeEndzonePosition : awayEndzonePosition,
-              top: "50%",
-              transform: "translate(-50%, -50%)"
-            }}
-          >
+          <div className={`touchdown-celebration ${touchdownTeam}`}>
             <div className="fireworks">
               <div className="firework"></div>
               <div className="firework"></div>
@@ -462,12 +404,7 @@ const GameDetailView = () => {
               <div className="firework"></div>
               <div className="firework"></div>
             </div>
-            <div className="touchdown-text">
-              TOUCHDOWN!
-              <div className="touchdown-yards">
-                {touchdownYards.toFixed(0)} yard score
-              </div>
-            </div>
+            <div className="touchdown-text">TOUCHDOWN!</div>
           </div>
         )}
         
@@ -550,7 +487,9 @@ const GameDetailView = () => {
             <div className="game-status">
               <span className="game-time">{formatGameTime(game.startDate)}</span>
               <span className="venue">{game.venue}</span>
-              <span className="current-quarter">{formatQuarter(currentPlay?.period || currentQuarter)}</span>
+              {currentPlay && (
+                <span className="current-quarter">{formatQuarter(currentPlay.period)}</span>
+              )}
             </div>
           </div>
 
@@ -596,18 +535,6 @@ const GameDetailView = () => {
               />
               <div className="field-overlay"></div>
             </div>
-
-            {/* Touchdown Path Visualization */}
-            {touchdownPath && (
-              <div 
-                className="touchdown-path"
-                style={{
-                  left: `${Math.min(touchdownPath.startPosition, touchdownPath.endPosition)}%`,
-                  width: `${Math.abs(touchdownPath.endPosition - touchdownPath.startPosition)}%`,
-                  backgroundColor: touchdownPath.team === "home" ? game.homeColor : game.awayColor
-                }}
-              ></div>
-            )}
 
             {/* First Down Marker */}
             {firstDownPosition && currentPlay && currentPlay.down < 4 && (
@@ -1038,47 +965,20 @@ const GameDetailView = () => {
   filter: blur(2px);
 }
 
-/* Touchdown celebration positioning */
+/* Touchdown celebration */
 .touchdown-celebration {
   position: absolute;
-  width: 300px;
-  height: 300px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
   pointer-events: none;
-}
-
-/* Touchdown yards display */
-.touchdown-yards {
-  font-size: 1.5rem;
-  margin-top: 8px;
-  font-weight: normal;
-  opacity: 0.9;
-}
-
-/* Touchdown scoring path visualization */
-.touchdown-path {
-  position: absolute;
-  height: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  opacity: 0.7;
-  animation: path-pulse 1s infinite alternate;
-}
-
-@keyframes path-pulse {
-  0% {
-    opacity: 0.5;
-    height: 3px;
-  }
-  100% {
-    opacity: 0.9;
-    height: 6px;
-  }
 }
 
 .fireworks {
