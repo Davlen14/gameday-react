@@ -38,10 +38,11 @@ const More = () => {
     const fetchFcsTeams = async () => {
       try {
         setIsLoading(true);
-        // Assumes teamsService.getFcsTeams returns a promise resolving to your FCS teams data.
-        const teamsData = await teamsService.getFcsTeams({ year: 2024 });
+        // Fix: Use getFCSTeams instead of getFcsTeams to match your service function name
+        const teamsData = await teamsService.getFCSTeams();
         setTeams(teamsData);
       } catch (err) {
+        console.error("Error fetching FCS teams:", err);
         setError("Failed to load FCS teams...");
       } finally {
         setIsLoading(false);
@@ -69,7 +70,7 @@ const More = () => {
         );
       }
     });
-    // Then add any remaining conferences that aren’t in our list.
+    // Then add any remaining conferences that aren't in our list.
     Object.keys(grouped).forEach((conf) => {
       if (!sortedConferences[conf]) {
         sortedConferences[conf] = grouped[conf].sort((a, b) =>
