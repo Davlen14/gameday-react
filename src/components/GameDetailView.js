@@ -527,7 +527,12 @@ const GameDetailView = () => {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.9rem;
-  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 20px;
+  backdrop-filter: blur(10px);
+  color: white;
 }
 
 .endzone {
