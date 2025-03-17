@@ -430,13 +430,12 @@ const GameDetailView = () => {
   
   // First down yardline calculation (simplified for this implementation)
   const firstDownYard = currentPlay && currentPlay.distance ? 
-    (currentPlay.homeBall ? 
-      Math.min(currentPlay.yardLine + currentPlay.distance, 100) : 
-      Math.max(currentPlay.yardLine - currentPlay.distance, 0)) : null;
-  
-  // Calculate first down marker position as percentage
-  const firstDownPosition = firstDownYard !== null ? 
-    (currentPlay.homeBall ? firstDownYard : 100 - firstDownYard) : null;
+  (currentPlay.homeBall ? 
+    Math.min(currentPlay.yardLine + currentPlay.distance, 100) : 
+    Math.max(currentPlay.yardLine - currentPlay.distance, 0)) : null;
+    
+const firstDownPosition = firstDownYard !== null ? 
+  (currentPlay.homeBall ? firstDownYard : 100 - firstDownYard) : null;
 
   // Calculate endzone positions for home and away teams
   const homeEndzonePosition = "calc(91.67% + 4px)"; // Right endzone position
@@ -630,14 +629,17 @@ const GameDetailView = () => {
 
             {/* First Down Marker */}
             {firstDownPosition && currentPlay && currentPlay.down < 4 && (
-              <div 
-                className="first-down-marker"
-                style={{ left: `${firstDownPosition}%` }}
-              >
-                <div className="marker-line"></div>
-                <div className="marker-arrow">1st</div>
-              </div>
-            )}
+      <div 
+        className="first-down-marker"
+        style={{ 
+          left: `${firstDownPosition}%`, 
+          zIndex: 10 // Much higher than center logo
+        }}
+      >
+        <div className="marker-line"></div>
+        <div className="marker-arrow">1st</div>
+      </div>
+    )}
 
             {/* Ball Marker - Updated to use simulated position and show possession team logo */}
             <div
@@ -988,7 +990,7 @@ const GameDetailView = () => {
   bottom: 0;
   width: 2px;
   background: rgba(255, 255, 0, 0.8);
-  z-index: 2;
+  z-index: 10; /* Higher than center logo */
   filter: drop-shadow(0 0 3px rgba(255, 255, 0, 0.8));
 }
 
