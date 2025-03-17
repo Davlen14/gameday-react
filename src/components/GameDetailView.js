@@ -14,12 +14,16 @@ const GameDetailView = () => {
   const [plays, setPlays] = useState([]);
   const [currentPlayIndex, setCurrentPlayIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playSpeed, setPlaySpeed] = useState(1000); // milliseconds between plays
+  const [playSpeed, setPlaySpeed] = useState(1000); // ms between plays
   const playIntervalRef = useRef(null);
-  const [ballPosition, setBallPosition] = useState(50); // Default to midfield (50%)
+  
+  // This “universal” yard line means:
+  //   0   = Home end zone (left side)
+  //   100 = Away end zone (right side)
+  const [ballPosition, setBallPosition] = useState(50); 
   const [possession, setPossession] = useState(null);
   
-  // New enhancement states
+  // Enhancement states
   const [showFireworks, setShowFireworks] = useState(false);
   const [touchdownTeam, setTouchdownTeam] = useState(null);
   const [touchdownPath, setTouchdownPath] = useState(null);
@@ -30,119 +34,170 @@ const GameDetailView = () => {
   const [gameCompleted, setGameCompleted] = useState(false);
   const [bigPlay, setBigPlay] = useState(null);
   
-  // NEW: Field position state
+  // Field position display
   const [fieldPosition, setFieldPosition] = useState("");
 
-  // Helper to calculate ball position percentage on the field
-  const calculateBallPosition = (yardLine, isHomeBall) => {
-    // Convert the yard line to a percentage position on the field (0-100)
-    if (isHomeBall) {
-      // If home has the ball, 0 is their own goal line, 100 is opponent's
-      return yardLine;
+  // Determine if a given teamName is the home or away team for this game
+  const getTeamSide = (teamName) => {
+    if (!game) return null;
+    const normalized = (teamName || "").toLowerCase().trim();
+    if (normalized === (game.homeTeam || "").toLowerCase()) return "home";
+    if (normalized === (game.awayTeam || "").toLowerCase()) return "away";
+    return null;
+  };
+
+  // Basic abbreviation function (expand if needed)
+  const abbreviateTeamName = (fullName) => {
+    if (!fullName) return "";
+    if (fullName.toLowerCase().includes("ohio state")) return "OSU";
+    if (fullName.toLowerCase().includes("indiana")) return "IU";
+    // Otherwise, take first word or something short
+    const firstWord = fullName.split(" ")[0];
+    return firstWord.length > 4 ? firstWord.slice(0, 4).toUpperCase() : firstWord.toUpperCase();
+  };
+
+  /**
+   * parseYardLine from play text:
+   *  If it says “to the [HomeTeam] 23” => universal yard line = 23
+   *  If it says “to the [AwayTeam] 23” => universal yard line = 100 - 23 = 77
+   */
+  const parseYardLine = (playText) => {
+    const regex = /to the\s+(.+?)\s+(\d+)\b/i;
+    const match = playText.match(regex);
+    if (!match) return null;
+    const teamNameRaw = match[1].trim();
+    const yardNumber = parseInt(match[2], 10);
+    if (isNaN(yardNumber)) return null;
+
+    const side = getTeamSide(teamNameRaw);
+    if (!side) return null; // couldn't identify
+    // If it's home’s yard line => universal = yardNumber
+    // If it's away’s yard line => universal = 100 - yardNumber
+    if (side === "home") {
+      return yardNumber;
     } else {
-      // If away has the ball, 100 is home's goal line, 0 is away's
-      return 100 - yardLine;
+      return 100 - yardNumber;
     }
   };
 
-  // NEW: Helper to extract yard line from play (fallback if yardLine is missing)
+  /**
+   * extractYardLine: return 0..100 for the given play
+   *   - prefer parseYardLine from text
+   *   - fallback to play.yardLine if available
+   *   - else 50
+   */
   const extractYardLine = (play) => {
+    const fromText = parseYardLine(play.playText || "");
+    if (fromText !== null) {
+      return Math.max(0, Math.min(100, fromText));
+    }
+    // If there's a numeric yardLine field:
     if (play.yardLine !== undefined && play.yardLine !== null) {
-      return play.yardLine;
+      // But we need to interpret it. If yardLine is from the home end zone, we can use yardLine directly.
+      // If the ball belongs to away, we do 100 - yardLine. 
+      if (play.homeBall) {
+        return Math.max(0, Math.min(100, play.yardLine));
+      } else {
+        return Math.max(0, Math.min(100, 100 - play.yardLine));
+      }
     }
-    // Attempt to extract yard line from playText (e.g., "to the IU 23" or "to the OSU 18")
-    const regex = /to the (IU|OSU)\s*(\d+)/i;
-    const match = play.playText.match(regex);
-    if (match && match[2]) {
-      return parseInt(match[2], 10);
-    }
-    // Fallback to midfield if not found
-    return 50;
+    return 50; // fallback
   };
 
-  // NEW: Helper to abbreviate team names
-  const abbreviateTeamName = (teamName) => {
-    if (!teamName) return "";
-    if (teamName.toLowerCase().includes("ohio state")) return "OSU";
-    if (teamName.toLowerCase().includes("indiana")) return "IU";
-    return teamName;
-  };
-
-  // NEW: Format field position (e.g., "OSU 35")
-  const formatFieldPosition = (yardLine, isHomeBall) => {
+  /**
+   * Format field position display
+   *  If yardLine = 35 and the home team has the ball => "HOME 35"
+   *  If yardLine = 65 and the away team has the ball => that means 100-65=35 from away end zone => "AWAY 35"
+   */
+  const formatFieldPosition = (universalYardLine, isHomeBall) => {
     if (!game) return "";
-    const teamAbbr = isHomeBall ? abbreviateTeamName(game.homeTeam) : abbreviateTeamName(game.awayTeam);
-    return `${teamAbbr} ${yardLine}`;
+    const teamName = isHomeBall ? game.homeTeam : game.awayTeam;
+    const teamAbbr = abbreviateTeamName(teamName);
+    let yardNumber = 0;
+    if (isHomeBall) {
+      yardNumber = universalYardLine; // 0..100 from home end zone
+    } else {
+      yardNumber = 100 - universalYardLine; // 0..100 from away end zone
+    }
+    return `${teamAbbr} ${yardNumber}`;
+  };
+
+  // Redzone check
+  const checkForRedzone = (universalYardLine, isHomeBall) => {
+    // Home has ball => yardLine >= 80 => inside away’s 20
+    // Away has ball => yardLine <= 20 => inside home’s 20
+    if (isHomeBall && universalYardLine >= 80) {
+      setIsRedzone(true);
+    } else if (!isHomeBall && universalYardLine <= 20) {
+      setIsRedzone(true);
+    } else {
+      setIsRedzone(false);
+    }
+  };
+
+  // Data fetching
+  const fetchGameData = async () => {
+    try {
+      console.log("Fetching game data for game:", gameId);
+      const [gameData, teamsData, playsData] = await Promise.all([
+        teamsService.getGameById(gameId),
+        teamsService.getTeams(),
+        teamsService.getMetricsWP(gameId)
+      ]);
+
+      if (!gameData) throw new Error("Game not found");
+
+      // Enhance game data with team colors
+      const enhancedGame = {
+        ...gameData,
+        homeColor:
+          teamsData.find((t) => t.school === gameData.homeTeam)?.color ||
+          "#002244",
+        awayColor:
+          teamsData.find((t) => t.school === gameData.awayTeam)?.color ||
+          "#008E97",
+      };
+
+      setGame(enhancedGame);
+      setTeams(teamsData);
+
+      if (playsData && playsData.length > 0) {
+        // Remove duplicates
+        const uniquePlays = [];
+        const playNumbersSeen = {};
+        playsData.forEach((p) => {
+          if (!playNumbersSeen[p.playNumber]) {
+            playNumbersSeen[p.playNumber] = true;
+            uniquePlays.push(p);
+          }
+        });
+        setPlays(uniquePlays);
+
+        // Initialize
+        if (uniquePlays.length > 0) {
+          const firstPlay = uniquePlays[0];
+          setPossession(firstPlay.homeBall ? "home" : "away");
+          const yard = extractYardLine(firstPlay);
+          setBallPosition(yard);
+          setFieldPosition(formatFieldPosition(yard, firstPlay.homeBall));
+          setCurrentQuarter(firstPlay.period || 1);
+
+          // If last play is 4th Q or beyond, game might be complete
+          if (uniquePlays[uniquePlays.length - 1].period >= 4) {
+            setGameCompleted(true);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching game data:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchGameData = async () => {
-      try {
-        console.log("Fetching game data for game:", gameId);
-        // Modified the third call to use teamsService.getMetricsWP(gameId)
-        const [gameData, teamsData, playsData] = await Promise.all([
-          teamsService.getGameById(gameId),
-          teamsService.getTeams(),
-          teamsService.getMetricsWP(gameId) // Previously used graphqlTeamsService.getMetricsWP(gameId)
-        ]);
-
-        if (!gameData) throw new Error("Game not found");
-
-        // Enhance game data with team colors
-        const enhancedGame = {
-          ...gameData,
-          homeColor:
-            teamsData.find((t) => t.school === gameData.homeTeam)?.color ||
-            "#002244",
-          awayColor:
-            teamsData.find((t) => t.school === gameData.awayTeam)?.color ||
-            "#008E97",
-        };
-
-        setGame(enhancedGame);
-        setTeams(teamsData);
-        
-        // Filter out duplicate play numbers for the play-by-play
-        if (playsData && playsData.length > 0) {
-          const uniquePlays = [];
-          const playNumbersSeen = {};
-          playsData.forEach(play => {
-            if (!playNumbersSeen[play.playNumber]) {
-              playNumbersSeen[play.playNumber] = true;
-              uniquePlays.push(play);
-            }
-          });
-          setPlays(uniquePlays);
-          
-          // Set initial possession and quarter
-          if (uniquePlays.length > 0) {
-            setPossession(uniquePlays[0].homeBall ? "home" : "away");
-            
-            // Calculate initial ball position using extractYardLine fallback
-            const initialYardLine = extractYardLine(uniquePlays[0]);
-            setBallPosition(calculateBallPosition(initialYardLine, uniquePlays[0].homeBall));
-            setFieldPosition(formatFieldPosition(initialYardLine, uniquePlays[0].homeBall));
-            
-            // Set initial quarter/period
-            setCurrentQuarter(uniquePlays[0].period || 1);
-            
-            // Check if the game is already completed
-            if (uniquePlays[uniquePlays.length - 1].period >= 4) {
-              setGameCompleted(true);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching game data:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGameData();
-    
-    // Cleanup
     return () => {
       if (playIntervalRef.current) {
         clearInterval(playIntervalRef.current);
@@ -150,165 +205,137 @@ const GameDetailView = () => {
     };
   }, [gameId]);
 
-// In your checkForTouchdown function:
-const checkForTouchdown = (currentPlay, nextPlay) => {
-  if (!currentPlay || !nextPlay) return false;
-  
-  // Check if home team scored touchdown
-  if (nextPlay.homeScore > currentPlay.homeScore && 
-      nextPlay.homeScore - currentPlay.homeScore >= 6) {
-    setTouchdownTeam("home");
-    setShowFireworks(true);
-    
-    // Calculate touchdown distance (in yards)
-    const startYard = extractYardLine(currentPlay);
-    const scoringYards = 100 - startYard;
-    setTouchdownYards(scoringYards);
-    
-    // Set the path for animation
-    setTouchdownPath({
-      team: "home",
-      startPosition: calculateBallPosition(startYard, currentPlay.homeBall),
-      endPosition: 100 // Home team scores in away team's endzone (100%)
-    });
-    
-    // Animate the ball to the AWAY team's endzone (since home team scored)
-    setBallPosition(100); // Away endzone is at 100%
-    
-    // Clear effects after a delay
-    setTimeout(() => {
-      setShowFireworks(false);
-      setTouchdownPath(null);
-    }, 3000);
-    return true;
-  }
-  
-  // Check if away team scored touchdown
-  if (nextPlay.awayScore > currentPlay.awayScore && 
-      nextPlay.awayScore - currentPlay.awayScore >= 6) {
-    setTouchdownTeam("away");
-    setShowFireworks(true);
-    
-    // Calculate touchdown distance (in yards)
-    const startYard = extractYardLine(currentPlay);
-    const scoringYards = startYard; // For away team
-    setTouchdownYards(scoringYards);
-    
-    // Set the path for animation
-    setTouchdownPath({
-      team: "away",
-      startPosition: calculateBallPosition(startYard, currentPlay.homeBall),
-      endPosition: 0 // Away team scores in home team's endzone (0%)
-    });
-    
-    // Animate the ball to the HOME team's endzone (since away team scored)
-    setBallPosition(0); // Home endzone is at 0%
-    
-    // Clear effects after a delay
-    setTimeout(() => {
-      setShowFireworks(false);
-      setTouchdownPath(null);
-    }, 3000);
-    return true;
-  }
-  
-  return false;
-};
-  
-  // Check for redzone
-  const checkForRedzone = (yardLine, isHomeBall) => {
-    if (isHomeBall && yardLine >= 80) {
-      // Home team in redzone (opponent's 20-yard line)
-      setIsRedzone(true);
-    } else if (!isHomeBall && yardLine <= 20) {
-      // Away team in redzone (opponent's 20-yard line)
-      setIsRedzone(true);
-    } else {
-      setIsRedzone(false);
+  // checkForTouchdown
+  const checkForTouchdown = (currentPlay, nextPlay) => {
+    if (!currentPlay || !nextPlay) return false;
+
+    // If home team just scored
+    if (nextPlay.homeScore > currentPlay.homeScore &&
+        nextPlay.homeScore - currentPlay.homeScore >= 6) {
+      setTouchdownTeam("home");
+      setShowFireworks(true);
+
+      const startYard = extractYardLine(currentPlay);
+      // If home scores => yard line goes to 100 if we were “home=0” ? Actually no. 
+      // We said home end zone=0, away end zone=100. 
+      // That means to score, the home team goes from e.g. 20 up to 100? 
+      // Wait, if home is 0, then to score a TD, they'd have to get to 100 (the away end zone). 
+      const scoringYards = 100 - startYard; 
+      setTouchdownYards(scoringYards);
+
+      setTouchdownPath({
+        team: "home",
+        startPosition: startYard,
+        endPosition: 100
+      });
+      setBallPosition(100);
+
+      setTimeout(() => {
+        setShowFireworks(false);
+        setTouchdownPath(null);
+      }, 3000);
+      return true;
     }
+
+    // If away team just scored
+    if (nextPlay.awayScore > currentPlay.awayScore &&
+        nextPlay.awayScore - currentPlay.awayScore >= 6) {
+      setTouchdownTeam("away");
+      setShowFireworks(true);
+
+      const startYard = extractYardLine(currentPlay);
+      // If away is at 100 and they drive to 0 to score
+      const scoringYards = startYard; 
+      setTouchdownYards(scoringYards);
+
+      setTouchdownPath({
+        team: "away",
+        startPosition: startYard,
+        endPosition: 0
+      });
+      setBallPosition(0);
+
+      setTimeout(() => {
+        setShowFireworks(false);
+        setTouchdownPath(null);
+      }, 3000);
+      return true;
+    }
+
+    return false;
   };
-  
-  // Check for big play (gain of 20+ yards)
+
+  // Big play
   const checkForBigPlay = (currentPlay, nextPlay) => {
     if (!currentPlay || !nextPlay) return;
-    
-    // This is a simple example - in real implementation, you'd compare actual yardage gained
     const currentYard = extractYardLine(currentPlay);
     const nextYard = extractYardLine(nextPlay);
-    
-    // If same team has possession and gained a lot of yards
     if (currentPlay.homeBall === nextPlay.homeBall) {
-      if ((currentPlay.homeBall && nextYard - currentYard >= 20) || 
-          (!currentPlay.homeBall && currentYard - nextYard >= 20)) {
+      const diff = Math.abs(nextYard - currentYard);
+      if (diff >= 20) {
         const team = currentPlay.homeBall ? "home" : "away";
-        const yards = Math.abs(nextYard - currentYard);
         setBigPlay({
           team,
-          yards,
-          text: `BIG PLAY! ${yards.toFixed(0)} yard gain!`
+          yards: diff,
+          text: `BIG PLAY! ${diff} yard gain!`
         });
         setTimeout(() => setBigPlay(null), 3000);
       }
     }
   };
-  
-  // Check for quarter change
+
+  // Quarter change
   const checkForQuarterChange = (currentPlay, nextPlay) => {
     if (!currentPlay || !nextPlay) return;
-    
     if (nextPlay.period !== currentPlay.period) {
       setCurrentQuarter(nextPlay.period);
-      
-      if (nextPlay.period <= 4) { // Don't show summary for overtime
+      if (nextPlay.period <= 4) {
         setShowQuarterSummary(true);
         setTimeout(() => setShowQuarterSummary(false), 5000);
       }
     }
   };
 
-  // Start or stop the play-by-play simulation
+  // Advance one play
+  const advancePlay = () => {
+    setCurrentPlayIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= plays.length) {
+        clearInterval(playIntervalRef.current);
+        setIsPlaying(false);
+        setGameCompleted(true);
+        return prevIndex;
+      }
+
+      const currentPlay = plays[prevIndex];
+      const nextPlay = plays[nextIndex];
+      setPossession(nextPlay.homeBall ? "home" : "away");
+
+      const yard = extractYardLine(nextPlay);
+      setBallPosition(yard);
+      setFieldPosition(formatFieldPosition(yard, nextPlay.homeBall));
+
+      checkForTouchdown(currentPlay, nextPlay);
+      checkForRedzone(yard, nextPlay.homeBall);
+      checkForBigPlay(currentPlay, nextPlay);
+      checkForQuarterChange(currentPlay, nextPlay);
+
+      return nextIndex;
+    });
+  };
+
+  // Start/Stop
   const togglePlaySimulation = () => {
     if (isPlaying) {
-      // Stop the simulation
       clearInterval(playIntervalRef.current);
       setIsPlaying(false);
     } else {
-      // Start or resume the simulation
       setIsPlaying(true);
-      playIntervalRef.current = setInterval(() => {
-        setCurrentPlayIndex(prevIndex => {
-          const nextIndex = prevIndex + 1;
-          if (nextIndex >= plays.length) {
-            // End of plays, stop the simulation
-            clearInterval(playIntervalRef.current);
-            setIsPlaying(false);
-            setGameCompleted(true);
-            return prevIndex; // Stay on last play
-          }
-          
-          const currentPlay = plays[prevIndex];
-          const nextPlay = plays[nextIndex];
-          
-          // Update ball position and possession for the next play using extractYardLine
-          setPossession(nextPlay.homeBall ? "home" : "away");
-          const nextYardLine = extractYardLine(nextPlay);
-          const newBallPosition = calculateBallPosition(nextYardLine, nextPlay.homeBall);
-          setBallPosition(newBallPosition);
-          setFieldPosition(formatFieldPosition(nextYardLine, nextPlay.homeBall));
-          
-          // Check for special events
-          checkForTouchdown(currentPlay, nextPlay);
-          checkForRedzone(nextYardLine, nextPlay.homeBall);
-          checkForBigPlay(currentPlay, nextPlay);
-          checkForQuarterChange(currentPlay, nextPlay);
-          
-          return nextIndex;
-        });
-      }, playSpeed);
+      playIntervalRef.current = setInterval(advancePlay, playSpeed);
     }
   };
-  
-  // Reset the simulation to the beginning
+
+  // Reset
   const resetSimulation = () => {
     clearInterval(playIntervalRef.current);
     setIsPlaying(false);
@@ -320,103 +347,70 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
     setShowQuarterSummary(false);
     setGameCompleted(false);
     setBigPlay(null);
-    
-    // Reset ball and possession to initial state
+
     if (plays.length > 0) {
-      setPossession(plays[0].homeBall ? "home" : "away");
-      const initialYard = extractYardLine(plays[0]);
-      setBallPosition(calculateBallPosition(initialYard, plays[0].homeBall));
-      setFieldPosition(formatFieldPosition(initialYard, plays[0].homeBall));
-      checkForRedzone(initialYard, plays[0].homeBall);
-      setCurrentQuarter(plays[0].period || 1);
-    }
-  };
-  
-  // Skip to the end of the simulation
-  const skipToEnd = () => {
-    clearInterval(playIntervalRef.current);
-    setIsPlaying(false);
-    
-    if (plays.length > 0) {
-      const lastIndex = plays.length - 1;
-      setCurrentPlayIndex(lastIndex);
-      
-      // Set final ball position and possession
-      setPossession(plays[lastIndex].homeBall ? "home" : "away");
-      const lastYard = extractYardLine(plays[lastIndex]);
-      setBallPosition(calculateBallPosition(lastYard, plays[lastIndex].homeBall));
-      setFieldPosition(formatFieldPosition(lastYard, plays[lastIndex].homeBall));
-      setGameCompleted(true);
-    }
-  };
-  
-  // Change the simulation speed
-  const changeSpeed = (newSpeed) => {
-    setPlaySpeed(newSpeed);
-    
-    // Restart the interval if currently playing
-    if (isPlaying) {
-      clearInterval(playIntervalRef.current);
-      playIntervalRef.current = setInterval(() => {
-        setCurrentPlayIndex(prevIndex => {
-          const nextIndex = prevIndex + 1;
-          if (nextIndex >= plays.length) {
-            clearInterval(playIntervalRef.current);
-            setIsPlaying(false);
-            setGameCompleted(true);
-            return prevIndex;
-          }
-          
-          const currentPlay = plays[prevIndex];
-          const nextPlay = plays[nextIndex];
-          
-          setPossession(nextPlay.homeBall ? "home" : "away");
-          const nextYardLine = extractYardLine(nextPlay);
-          const newBallPosition = calculateBallPosition(nextYardLine, nextPlay.homeBall);
-          setBallPosition(newBallPosition);
-          setFieldPosition(formatFieldPosition(nextYardLine, nextPlay.homeBall));
-          
-          // Check for special events
-          checkForTouchdown(currentPlay, nextPlay);
-          checkForRedzone(nextYardLine, nextPlay.homeBall);
-          checkForBigPlay(currentPlay, nextPlay);
-          checkForQuarterChange(currentPlay, nextPlay);
-          
-          return nextIndex;
-        });
-      }, newSpeed);
-    }
-  };
-  
-  // Skip to a specific play
-  const skipToPlay = (index) => {
-    if (index >= 0 && index < plays.length) {
-      clearInterval(playIntervalRef.current);
-      setIsPlaying(false);
-      setCurrentPlayIndex(index);
-      
-      const play = plays[index];
-      setPossession(play.homeBall ? "home" : "away");
-      const yardLine = extractYardLine(play);
-      setBallPosition(calculateBallPosition(yardLine, play.homeBall));
-      setFieldPosition(formatFieldPosition(yardLine, play.homeBall));
-      checkForRedzone(yardLine, play.homeBall);
-      setCurrentQuarter(play.period || 1);
-      
-      // Check if this is the last play
-      if (index === plays.length - 1) {
-        setGameCompleted(true);
-      } else {
-        setGameCompleted(false);
-      }
+      const firstPlay = plays[0];
+      setPossession(firstPlay.homeBall ? "home" : "away");
+      const yard = extractYardLine(firstPlay);
+      setBallPosition(yard);
+      setFieldPosition(formatFieldPosition(yard, firstPlay.homeBall));
+      checkForRedzone(yard, firstPlay.homeBall);
+      setCurrentQuarter(firstPlay.period || 1);
     }
   };
 
+  // Skip to end
+  const skipToEnd = () => {
+    clearInterval(playIntervalRef.current);
+    setIsPlaying(false);
+    if (plays.length > 0) {
+      const lastIndex = plays.length - 1;
+      setCurrentPlayIndex(lastIndex);
+
+      const lastPlay = plays[lastIndex];
+      setPossession(lastPlay.homeBall ? "home" : "away");
+      const yard = extractYardLine(lastPlay);
+      setBallPosition(yard);
+      setFieldPosition(formatFieldPosition(yard, lastPlay.homeBall));
+      setGameCompleted(true);
+    }
+  };
+
+  // Change speed
+  const changeSpeed = (newSpeed) => {
+    setPlaySpeed(newSpeed);
+    if (isPlaying) {
+      clearInterval(playIntervalRef.current);
+      playIntervalRef.current = setInterval(advancePlay, newSpeed);
+    }
+  };
+
+  // Skip to a specific play
+  const skipToPlay = (index) => {
+    if (index < 0 || index >= plays.length) return;
+    clearInterval(playIntervalRef.current);
+    setIsPlaying(false);
+    setCurrentPlayIndex(index);
+
+    const play = plays[index];
+    setPossession(play.homeBall ? "home" : "away");
+    const yard = extractYardLine(play);
+    setBallPosition(yard);
+    setFieldPosition(formatFieldPosition(yard, play.homeBall));
+    checkForRedzone(yard, play.homeBall);
+    setCurrentQuarter(play.period || 1);
+
+    if (index === plays.length - 1) {
+      setGameCompleted(true);
+    } else {
+      setGameCompleted(false);
+    }
+  };
+
+  // Utilities
   const getTeamLogo = (teamName) => {
-    const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.logos?.[0] || "/photos/default_team.png";
+    const t = teams.find((tt) => tt.school.toLowerCase() === (teamName||"").toLowerCase());
+    return t?.logos?.[0] || "/photos/default_team.png";
   };
 
   const formatGameTime = (dateString) => {
@@ -430,24 +424,19 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
     };
     return new Date(dateString).toLocaleString("en-US", options);
   };
-  
-  // Format down number as a string (1st, 2nd, 3rd, 4th)
+
   const formatDown = (down) => {
-    if (!down) return "N/A";
-    
     switch (down) {
       case 1: return "1st Down";
       case 2: return "2nd Down";
       case 3: return "3rd Down";
       case 4: return "4th Down";
-      default: return `${down}th Down`;
+      default: return "N/A";
     }
   };
-  
-  // Format period as a string (1st, 2nd, 3rd, 4th Quarter, OT)
+
   const formatQuarter = (period) => {
-    if (period === undefined || period === null) return "N/A";
-    
+    if (!period) return "N/A";
     switch (period) {
       case 1: return "1st Quarter";
       case 2: return "2nd Quarter";
@@ -457,41 +446,45 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
     }
   };
 
-  if (loading)
-    return (
-      <div className="loading-container">Loading game details...</div>
-    );
-  if (error) return <div className="error-container">Error: {error}</div>;
-  if (!game) return <div className="error-container">Game not found</div>;
+  if (loading) {
+    return <div className="loading-container">Loading game details...</div>;
+  }
+  if (error) {
+    return <div className="error-container">Error: {error}</div>;
+  }
+  if (!game) {
+    return <div className="error-container">Game not found</div>;
+  }
 
-  // Get current play details
-  const currentPlay = plays.length > 0 ? plays[currentPlayIndex] : null;
-  
-  // Calculate home and away scores for current play
+  // Current play
+  const currentPlay = plays[currentPlayIndex] || null;
+  // Current scores
   const homeScore = currentPlay ? currentPlay.homeScore : game.homePoints || 0;
   const awayScore = currentPlay ? currentPlay.awayScore : game.awayPoints || 0;
-  
-  // First down yardline calculation (simplified for this implementation)
-  const firstDownYard = currentPlay && currentPlay.distance ? 
-    (currentPlay.homeBall ? 
-      Math.min(extractYardLine(currentPlay) + currentPlay.distance, 100) : 
-      Math.max(extractYardLine(currentPlay) - currentPlay.distance, 0)) : null;
-    
-  const firstDownPosition = firstDownYard !== null ? 
-    (currentPlay.homeBall ? firstDownYard : 100 - firstDownYard) : null;
 
-  // Calculate endzone positions for home and away teams
-  const homeEndzonePosition = "calc(91.67% + 4px)"; // Right endzone position
-  const awayEndzonePosition = "calc(8.33% - 4px)"; // Left endzone position
+  // First down marker: if there's a distance, we find the universal yard line ± that distance
+  let firstDownPosition = null;
+  if (currentPlay && currentPlay.distance && currentPlay.down < 4) {
+    const currentYard = extractYardLine(currentPlay);
+    // If home has ball => yard = yard + distance, away => yard - distance
+    if (currentPlay.homeBall) {
+      firstDownPosition = Math.min(100, currentYard + currentPlay.distance);
+    } else {
+      firstDownPosition = Math.max(0, currentYard - currentPlay.distance);
+    }
+  }
+
+  const homeEndzonePosition = "calc(8.33% - 4px)";  // left side
+  const awayEndzonePosition = "calc(91.67% + 4px)"; // right side
 
   return (
     <div className="game-detail-container">
       <div className="field-container">
-        {/* Touchdown celebration effects */}
+        {/* Touchdown celebration */}
         {showFireworks && (
           <div 
             className="touchdown-celebration"
-            style={{ 
+            style={{
               position: "absolute",
               zIndex: 100,
               width: "100%",
@@ -504,27 +497,27 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
               pointerEvents: "none"
             }}
           >
-            {/* Position ball in correct endzone when touchdown occurs */}
             <div 
               className="scoring-position"
               style={{
                 position: "absolute",
-                left: touchdownTeam === "home" ? homeEndzonePosition : awayEndzonePosition,
+                left: touchdownTeam === "home" ? awayEndzonePosition : homeEndzonePosition,
                 top: "50%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 15
               }}
             >
-              {/* Ball appearance in endzone */}
-              <div className="ball-scored" style={{
-                width: "24px",
-                height: "12px",
-                background: "#8B4513",
-                borderRadius: "50%",
-                boxShadow: "0 0 15px rgba(255, 255, 0, 0.8)"
-              }}></div>
+              <div 
+                className="ball-scored"
+                style={{
+                  width: "24px",
+                  height: "12px",
+                  background: "#8B4513",
+                  borderRadius: "50%",
+                  boxShadow: "0 0 15px rgba(255, 255, 0, 0.8)"
+                }}
+              />
             </div>
-            
             <div className="fireworks">
               <div className="firework"></div>
               <div className="firework"></div>
@@ -540,8 +533,8 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
             </div>
           </div>
         )}
-        
-        {/* RedZone Alert */}
+
+        {/* Red zone alert */}
         {isRedzone && (
           <div className="redzone-alert">
             <div className="alert-icon">🔴</div>
@@ -551,8 +544,8 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
             </div>
           </div>
         )}
-        
-        {/* Big Play Alert */}
+
+        {/* Big play alert */}
         {bigPlay && (
           <div className="big-play-alert">
             <div className="big-play-text">{bigPlay.text}</div>
@@ -561,8 +554,8 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
             </div>
           </div>
         )}
-        
-        {/* Quarter Summary */}
+
+        {/* Quarter summary */}
         {showQuarterSummary && (
           <div className="quarter-summary">
             <div className="quarter-heading">
@@ -580,23 +573,23 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
             </div>
           </div>
         )}
-        
-        {/* Game Complete Banner */}
+
+        {/* Game complete banner */}
         {gameCompleted && (
           <div className="game-complete-banner">
             <div className="complete-text">FINAL</div>
             <div className="winner-text">
-              {homeScore > awayScore ? 
-                `${game.homeTeam} wins!` : 
-                homeScore < awayScore ? 
-                  `${game.awayTeam} wins!` : 
-                  "It's a tie!"}
+              {homeScore > awayScore
+                ? `${game.homeTeam} wins!`
+                : homeScore < awayScore
+                  ? `${game.awayTeam} wins!`
+                  : "It's a tie!"}
             </div>
           </div>
         )}
 
         <div className="football-field">
-          {/* Glassy overlay with game info */}
+          {/* Glassy overlay w/ game info */}
           <div className="game-info">
             <div className="score-display">
               <span className="team-score">
@@ -624,35 +617,35 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
             </div>
           </div>
 
-          {/* NEW: Field Position Indicator (top-right corner) */}
+          {/* Field position indicator */}
           <div className="field-position-indicator">
             {fieldPosition}
           </div>
 
-          {/* Left Endzone */}
+          {/* Left Endzone = Home */}
           <div 
-            className={`endzone left ${touchdownTeam === "away" && showFireworks ? "celebrating" : ""}`} 
-            style={{ background: game.awayColor }}
+            className={`endzone left ${touchdownTeam === "home" && showFireworks ? "celebrating" : ""}`}
+            style={{ background: game.homeColor }}
           >
             <img
-              src={getTeamLogo(game.awayTeam)}
-              alt={game.awayTeam}
+              src={getTeamLogo(game.homeTeam)}
+              alt={game.homeTeam}
               className="endzone-logo"
             />
-            <div className="endzone-label">{game.awayTeam}</div>
+            <div className="endzone-label">{game.homeTeam}</div>
           </div>
 
-          {/* Playing Field */}
+          {/* Playing field */}
           <div className={`playing-field ${isRedzone ? "redzone-active" : ""}`}>
-            {/* Yard Lines */}
+            {/* Yard lines */}
             {[...Array(11)].map((_, i) => (
               <div
                 key={i}
                 className="yard-line"
                 style={{ left: `${i * 10}%` }}
-              ></div>
+              />
             ))}
-            {/* Yard Numbers */}
+            {/* Yard numbers */}
             {[10, 20, 30, 40, 50, 40, 30, 20, 10].map((num, i) => (
               <div
                 key={i}
@@ -663,18 +656,15 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
               </div>
             ))}
 
-            {/* Center Logo */}
+            {/* Center logo */}
             <div className="center-logo">
-              <img
-                src={getTeamLogo(game.homeTeam)}
-                alt={game.homeTeam}
-              />
-              <div className="field-overlay"></div>
+              <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+              <div className="field-overlay" />
             </div>
 
-            {/* Touchdown Path Visualization */}
+            {/* Touchdown path */}
             {touchdownPath && (
-              <div 
+              <div
                 className="touchdown-path"
                 style={{
                   position: "absolute",
@@ -688,60 +678,60 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
                   opacity: 0.7,
                   animation: "path-pulse 1s infinite alternate"
                 }}
-              ></div>
+              />
             )}
 
-            {/* First Down Marker */}
-            {firstDownPosition && currentPlay && currentPlay.down < 4 && (
-              <div 
+            {/* First down marker */}
+            {firstDownPosition !== null && currentPlay && currentPlay.down < 4 && (
+              <div
                 className="first-down-marker"
-                style={{ 
-                  left: `${firstDownPosition}%`, 
-                  zIndex: 10 // Much higher than center logo
+                style={{
+                  left: `${firstDownPosition}%`,
+                  zIndex: 10
                 }}
               >
-                <div className="marker-line"></div>
+                <div className="marker-line" />
                 <div className="marker-arrow">1st</div>
               </div>
             )}
 
-            {/* Ball Marker - Updated to use simulated position and show possession team logo */}
+            {/* Ball marker */}
             <div
               className="ball-marker"
               style={{ left: `${ballPosition}%`, top: "50%" }}
             >
-              {/* Possession logo above ball */}
+              {/* Possession logo */}
               {possession && (
                 <div className="possession-indicator">
-                  <img 
-                    src={getTeamLogo(possession === "home" ? game.homeTeam : game.awayTeam)} 
-                    alt="Possession" 
+                  <img
+                    src={getTeamLogo(possession === "home" ? game.homeTeam : game.awayTeam)}
+                    alt="Possession"
                   />
                 </div>
               )}
-              {/* NEW: Direction Indicator */}
+              {/* Direction arrow */}
               <div className="direction-indicator">
                 {possession === "home" ? "→" : "←"}
               </div>
-              <div className="ball-shadow"></div>
+              <div className="ball-shadow" />
             </div>
           </div>
 
-          {/* Right Endzone */}
-          <div 
-            className={`endzone right ${touchdownTeam === "home" && showFireworks ? "celebrating" : ""}`} 
-            style={{ background: game.homeColor }}
+          {/* Right Endzone = Away */}
+          <div
+            className={`endzone right ${touchdownTeam === "away" && showFireworks ? "celebrating" : ""}`}
+            style={{ background: game.awayColor }}
           >
             <img
-              src={getTeamLogo(game.homeTeam)}
-              alt={game.homeTeam}
+              src={getTeamLogo(game.awayTeam)}
+              alt={game.awayTeam}
               className="endzone-logo"
             />
-            <div className="endzone-label">{game.homeTeam}</div>
+            <div className="endzone-label">{game.awayTeam}</div>
           </div>
         </div>
 
-        {/* Down & Distance Indicator */}
+        {/* Down & Distance */}
         {currentPlay && (
           <div className="down-distance-indicator">
             <div className="down">{formatDown(currentPlay.down)}</div>
@@ -749,26 +739,26 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
           </div>
         )}
 
-        {/* Playback Controls */}
+        {/* Playback controls */}
         <div className="playback-controls">
-          <button 
-            className="control-button" 
+          <button
+            className="control-button"
             onClick={resetSimulation}
             disabled={currentPlayIndex === 0 && !isPlaying}
             title="Restart"
           >
             ⏮
           </button>
-          <button 
-            className="control-button" 
+          <button
+            className="control-button"
             onClick={togglePlaySimulation}
             disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
             title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? "⏸" : "▶"}
           </button>
-          <button 
-            className="control-button" 
+          <button
+            className="control-button"
             onClick={skipToEnd}
             disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
             title="Skip to End"
@@ -777,8 +767,8 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
           </button>
           <div className="speed-controls">
             <span>Speed:</span>
-            <select 
-              value={playSpeed} 
+            <select
+              value={playSpeed}
               onChange={(e) => changeSpeed(Number(e.target.value))}
               className="speed-select"
             >
@@ -817,14 +807,13 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
                     <span className="stat-label">Possession:</span>
                     <span className="stat-value">
                       {currentPlay.homeBall ? game.homeTeam : game.awayTeam}
-                      <img 
-                        src={getTeamLogo(currentPlay.homeBall ? game.homeTeam : game.awayTeam)} 
-                        alt="Team" 
+                      <img
+                        src={getTeamLogo(currentPlay.homeBall ? game.homeTeam : game.awayTeam)}
+                        alt="Team"
                         className="possession-logo"
                       />
                     </span>
                   </div>
-                  {/* NEW: Field Position stat */}
                   <div className="stat-row">
                     <span className="stat-label">Field Position:</span>
                     <span className="stat-value">{fieldPosition}</span>
@@ -835,28 +824,40 @@ const checkForTouchdown = (currentPlay, nextPlay) => {
                       <div className="team-prob">
                         <span>{game.homeTeam}</span>
                         <div className="prob-bar-container">
-                          <div 
-                            className="prob-bar" 
-                            style={{ 
-                              width: `${(currentPlay.homeWinProbability * 100).toFixed(1)}%`,
+                          <div
+                            className="prob-bar"
+                            style={{
+                              width: currentPlay.homeWinProbability
+                                ? `${(currentPlay.homeWinProbability * 100).toFixed(1)}%`
+                                : "0%",
                               backgroundColor: game.homeColor
                             }}
-                          ></div>
+                          />
                         </div>
-                        <span>{(currentPlay.homeWinProbability * 100).toFixed(1)}%</span>
+                        <span>
+                          {currentPlay.homeWinProbability
+                            ? `${(currentPlay.homeWinProbability * 100).toFixed(1)}%`
+                            : "0%"}
+                        </span>
                       </div>
                       <div className="team-prob">
                         <span>{game.awayTeam}</span>
                         <div className="prob-bar-container">
-                          <div 
-                            className="prob-bar" 
-                            style={{ 
-                              width: `${(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%`,
+                          <div
+                            className="prob-bar"
+                            style={{
+                              width: currentPlay.homeWinProbability
+                                ? `${(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%`
+                                : "0%",
                               backgroundColor: game.awayColor
                             }}
-                          ></div>
+                          />
                         </div>
-                        <span>{(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%</span>
+                        <span>
+                          {currentPlay.homeWinProbability
+                            ? `${(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%`
+                            : "100%"}
+                        </span>
                       </div>
                     </div>
                   </div>
