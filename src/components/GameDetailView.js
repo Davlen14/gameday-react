@@ -18,6 +18,15 @@ const GameDetailView = () => {
   const playIntervalRef = useRef(null);
   const [ballPosition, setBallPosition] = useState(50); // Default to midfield (50%)
   const [possession, setPossession] = useState(null);
+  
+  // New enhancement states
+  const [showFireworks, setShowFireworks] = useState(false);
+  const [touchdownTeam, setTouchdownTeam] = useState(null);
+  const [isRedzone, setIsRedzone] = useState(false);
+  const [showQuarterSummary, setShowQuarterSummary] = useState(false);
+  const [currentQuarter, setCurrentQuarter] = useState(1);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [bigPlay, setBigPlay] = useState(null);
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -66,6 +75,11 @@ const GameDetailView = () => {
             const initialYardLine = uniquePlays[0].yardLine;
             // Convert yard line to percentage (0-100) for field position
             setBallPosition(calculateBallPosition(initialYardLine, uniquePlays[0].homeBall));
+            
+            // Check if the game is already completed
+            if (uniquePlays[uniquePlays.length - 1].period >= 4) {
+              setGameCompleted(true);
+            }
           }
         }
       } catch (err) {
@@ -98,6 +112,81 @@ const GameDetailView = () => {
     }
   };
 
+  // Check for touchdown
+  const checkForTouchdown = (currentPlay, nextPlay) => {
+    if (!currentPlay || !nextPlay) return false;
+    
+    // Check if home team scored touchdown
+    if (nextPlay.homeScore > currentPlay.homeScore && 
+        nextPlay.homeScore - currentPlay.homeScore >= 6) {
+      setTouchdownTeam("home");
+      setShowFireworks(true);
+      setTimeout(() => setShowFireworks(false), 3000);
+      return true;
+    }
+    
+    // Check if away team scored touchdown
+    if (nextPlay.awayScore > currentPlay.awayScore && 
+        nextPlay.awayScore - currentPlay.awayScore >= 6) {
+      setTouchdownTeam("away");
+      setShowFireworks(true);
+      setTimeout(() => setShowFireworks(false), 3000);
+      return true;
+    }
+    
+    return false;
+  };
+  
+  // Check for redzone
+  const checkForRedzone = (yardLine, isHomeBall) => {
+    if (isHomeBall && yardLine >= 80) {
+      // Home team in redzone (opponent's 20-yard line)
+      setIsRedzone(true);
+    } else if (!isHomeBall && yardLine <= 20) {
+      // Away team in redzone (opponent's 20-yard line)
+      setIsRedzone(true);
+    } else {
+      setIsRedzone(false);
+    }
+  };
+  
+  // Check for big play (gain of 20+ yards)
+  const checkForBigPlay = (currentPlay, nextPlay) => {
+    if (!currentPlay || !nextPlay) return;
+    
+    // This is a simple example - in real implementation, you'd compare actual yardage gained
+    const currentYard = currentPlay.yardLine;
+    const nextYard = nextPlay.yardLine;
+    
+    // If same team has possession and gained a lot of yards
+    if (currentPlay.homeBall === nextPlay.homeBall) {
+      if ((currentPlay.homeBall && nextYard - currentYard >= 20) || 
+          (!currentPlay.homeBall && currentYard - nextYard >= 20)) {
+        const team = currentPlay.homeBall ? "home" : "away";
+        setBigPlay({
+          team,
+          yards: 20, // Simplified for this example
+          text: "BIG PLAY! 20+ yard gain!"
+        });
+        setTimeout(() => setBigPlay(null), 3000);
+      }
+    }
+  };
+  
+  // Check for quarter change
+  const checkForQuarterChange = (currentPlay, nextPlay) => {
+    if (!currentPlay || !nextPlay) return;
+    
+    if (nextPlay.period !== currentPlay.period) {
+      setCurrentQuarter(nextPlay.period);
+      
+      if (nextPlay.period <= 4) { // Don't show summary for overtime
+        setShowQuarterSummary(true);
+        setTimeout(() => setShowQuarterSummary(false), 5000);
+      }
+    }
+  };
+
   // Start or stop the play-by-play simulation
   const togglePlaySimulation = () => {
     if (isPlaying) {
@@ -114,13 +203,23 @@ const GameDetailView = () => {
             // End of plays, stop the simulation
             clearInterval(playIntervalRef.current);
             setIsPlaying(false);
+            setGameCompleted(true);
             return prevIndex; // Stay on last play
           }
           
-          // Update ball position and possession for the next play
+          const currentPlay = plays[prevIndex];
           const nextPlay = plays[nextIndex];
+          
+          // Update ball position and possession for the next play
           setPossession(nextPlay.homeBall ? "home" : "away");
-          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          const newBallPosition = calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall);
+          setBallPosition(newBallPosition);
+          
+          // Check for special events
+          checkForTouchdown(currentPlay, nextPlay);
+          checkForRedzone(nextPlay.yardLine, nextPlay.homeBall);
+          checkForBigPlay(currentPlay, nextPlay);
+          checkForQuarterChange(currentPlay, nextPlay);
           
           return nextIndex;
         });
@@ -133,11 +232,19 @@ const GameDetailView = () => {
     clearInterval(playIntervalRef.current);
     setIsPlaying(false);
     setCurrentPlayIndex(0);
+    setShowFireworks(false);
+    setTouchdownTeam(null);
+    setIsRedzone(false);
+    setShowQuarterSummary(false);
+    setGameCompleted(false);
+    setBigPlay(null);
     
     // Reset ball and possession to initial state
     if (plays.length > 0) {
       setPossession(plays[0].homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(plays[0].yardLine, plays[0].homeBall));
+      checkForRedzone(plays[0].yardLine, plays[0].homeBall);
+      setCurrentQuarter(plays[0].period);
     }
   };
   
@@ -153,6 +260,7 @@ const GameDetailView = () => {
       // Set final ball position and possession
       setPossession(plays[lastIndex].homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(plays[lastIndex].yardLine, plays[lastIndex].homeBall));
+      setGameCompleted(true);
     }
   };
   
@@ -169,12 +277,22 @@ const GameDetailView = () => {
           if (nextIndex >= plays.length) {
             clearInterval(playIntervalRef.current);
             setIsPlaying(false);
+            setGameCompleted(true);
             return prevIndex;
           }
           
+          const currentPlay = plays[prevIndex];
           const nextPlay = plays[nextIndex];
+          
           setPossession(nextPlay.homeBall ? "home" : "away");
-          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          const newBallPosition = calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall);
+          setBallPosition(newBallPosition);
+          
+          // Check for special events
+          checkForTouchdown(currentPlay, nextPlay);
+          checkForRedzone(nextPlay.yardLine, nextPlay.homeBall);
+          checkForBigPlay(currentPlay, nextPlay);
+          checkForQuarterChange(currentPlay, nextPlay);
           
           return nextIndex;
         });
@@ -192,6 +310,15 @@ const GameDetailView = () => {
       const play = plays[index];
       setPossession(play.homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(play.yardLine, play.homeBall));
+      checkForRedzone(play.yardLine, play.homeBall);
+      setCurrentQuarter(play.period);
+      
+      // Check if this is the last play
+      if (index === plays.length - 1) {
+        setGameCompleted(true);
+      } else {
+        setGameCompleted(false);
+      }
     }
   };
 
@@ -226,6 +353,19 @@ const GameDetailView = () => {
       default: return `${down}th Down`;
     }
   };
+  
+  // Format period as a string (1st, 2nd, 3rd, 4th Quarter, OT)
+  const formatQuarter = (period) => {
+    if (!period) return "N/A";
+    
+    switch (period) {
+      case 1: return "1st Quarter";
+      case 2: return "2nd Quarter";
+      case 3: return "3rd Quarter";
+      case 4: return "4th Quarter";
+      default: return `Overtime ${period - 4}`;
+    }
+  };
 
   if (loading)
     return (
@@ -240,10 +380,88 @@ const GameDetailView = () => {
   // Calculate home and away scores for current play
   const homeScore = currentPlay ? currentPlay.homeScore : game.homePoints || 0;
   const awayScore = currentPlay ? currentPlay.awayScore : game.awayPoints || 0;
+  
+  // First down yardline calculation (simplified for this implementation)
+  const firstDownYard = currentPlay && currentPlay.distance ? 
+    (currentPlay.homeBall ? 
+      Math.min(currentPlay.yardLine + currentPlay.distance, 100) : 
+      Math.max(currentPlay.yardLine - currentPlay.distance, 0)) : null;
+  
+  // Calculate first down marker position as percentage
+  const firstDownPosition = firstDownYard !== null ? 
+    (currentPlay.homeBall ? firstDownYard : 100 - firstDownYard) : null;
 
   return (
     <div className="game-detail-container">
       <div className="field-container">
+        {/* Touchdown celebration effects */}
+        {showFireworks && (
+          <div className={`touchdown-celebration ${touchdownTeam}`}>
+            <div className="fireworks">
+              <div className="firework"></div>
+              <div className="firework"></div>
+              <div className="firework"></div>
+              <div className="firework"></div>
+              <div className="firework"></div>
+            </div>
+            <div className="touchdown-text">TOUCHDOWN!</div>
+          </div>
+        )}
+        
+        {/* RedZone Alert */}
+        {isRedzone && (
+          <div className="redzone-alert">
+            <div className="alert-icon">🔴</div>
+            <div className="alert-text">RED ZONE</div>
+            <div className="alert-team">
+              {possession === "home" ? game.homeTeam : game.awayTeam}
+            </div>
+          </div>
+        )}
+        
+        {/* Big Play Alert */}
+        {bigPlay && (
+          <div className="big-play-alert">
+            <div className="big-play-text">{bigPlay.text}</div>
+            <div className="big-play-team">
+              {bigPlay.team === "home" ? game.homeTeam : game.awayTeam}
+            </div>
+          </div>
+        )}
+        
+        {/* Quarter Summary */}
+        {showQuarterSummary && (
+          <div className="quarter-summary">
+            <div className="quarter-heading">
+              End of {formatQuarter(currentQuarter - 1)}
+            </div>
+            <div className="quarter-scores">
+              <div className="quarter-team home">
+                <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
+                <span>{game.homeTeam}: {homeScore}</span>
+              </div>
+              <div className="quarter-team away">
+                <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
+                <span>{game.awayTeam}: {awayScore}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Game Complete Banner */}
+        {gameCompleted && (
+          <div className="game-complete-banner">
+            <div className="complete-text">FINAL</div>
+            <div className="winner-text">
+              {homeScore > awayScore ? 
+                `${game.homeTeam} wins!` : 
+                homeScore < awayScore ? 
+                  `${game.awayTeam} wins!` : 
+                  "It's a tie!"}
+            </div>
+          </div>
+        )}
+        
         <div className="football-field">
           {/* Glassy overlay with game info */}
           <div className="game-info">
@@ -269,11 +487,17 @@ const GameDetailView = () => {
             <div className="game-status">
               <span className="game-time">{formatGameTime(game.startDate)}</span>
               <span className="venue">{game.venue}</span>
+              {currentPlay && (
+                <span className="current-quarter">{formatQuarter(currentPlay.period)}</span>
+              )}
             </div>
           </div>
 
           {/* Left Endzone */}
-          <div className="endzone left" style={{ background: game.awayColor }}>
+          <div 
+            className={`endzone left ${touchdownTeam === "away" && showFireworks ? "celebrating" : ""}`} 
+            style={{ background: game.awayColor }}
+          >
             <img
               src={getTeamLogo(game.awayTeam)}
               alt={game.awayTeam}
@@ -283,7 +507,7 @@ const GameDetailView = () => {
           </div>
 
           {/* Playing Field */}
-          <div className="playing-field">
+          <div className={`playing-field ${isRedzone ? "redzone-active" : ""}`}>
             {/* Yard Lines */}
             {[...Array(11)].map((_, i) => (
               <div
@@ -312,6 +536,17 @@ const GameDetailView = () => {
               <div className="field-overlay"></div>
             </div>
 
+            {/* First Down Marker */}
+            {firstDownPosition && currentPlay && currentPlay.down < 4 && (
+              <div 
+                className="first-down-marker"
+                style={{ left: `${firstDownPosition}%` }}
+              >
+                <div className="marker-line"></div>
+                <div className="marker-arrow">1st</div>
+              </div>
+            )}
+
             {/* Ball Marker - Updated to use simulated position and show possession team logo */}
             <div
               className="ball-marker"
@@ -331,7 +566,10 @@ const GameDetailView = () => {
           </div>
 
           {/* Right Endzone */}
-          <div className="endzone right" style={{ background: game.homeColor }}>
+          <div 
+            className={`endzone right ${touchdownTeam === "home" && showFireworks ? "celebrating" : ""}`} 
+            style={{ background: game.homeColor }}
+          >
             <img
               src={getTeamLogo(game.homeTeam)}
               alt={game.homeTeam}
@@ -340,6 +578,14 @@ const GameDetailView = () => {
             <div className="endzone-label">{game.homeTeam}</div>
           </div>
         </div>
+
+        {/* Down & Distance Indicator */}
+        {currentPlay && (
+          <div className="down-distance-indicator">
+            <div className="down">{formatDown(currentPlay.down)}</div>
+            <div className="distance">& {currentPlay.distance} yards to go</div>
+          </div>
+        )}
 
         {/* Playback Controls */}
         <div className="playback-controls">
@@ -400,6 +646,10 @@ const GameDetailView = () => {
                   <div className="stat-row">
                     <span className="stat-label">Distance:</span>
                     <span className="stat-value">{currentPlay.distance} yards</span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Quarter:</span>
+                    <span className="stat-value">{formatQuarter(currentPlay.period)}</span>
                   </div>
                   <div className="stat-row">
                     <span className="stat-label">Possession:</span>
@@ -545,6 +795,21 @@ const GameDetailView = () => {
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   padding: 5px;
+  transition: all 0.3s ease;
+}
+
+.endzone.celebrating {
+  animation: celebrate 1.5s infinite alternate;
+}
+
+@keyframes celebrate {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
 }
 
 .endzone-logo {
@@ -572,6 +837,19 @@ const GameDetailView = () => {
       transparent 10px,
       transparent 20px
     );
+  transition: all 0.3s ease;
+}
+
+.playing-field.redzone-active {
+  background: linear-gradient(160deg, #1a472a, #2d5a27),
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 0, 0, 0.1),
+      rgba(255, 0, 0, 0.1) 10px,
+      rgba(255, 0, 0, 0.05) 10px,
+      rgba(255, 0, 0, 0.05) 20px
+    );
+  box-shadow: inset 0 0 30px rgba(255, 0, 0, 0.2);
 }
 
 .yard-line {
@@ -610,6 +888,37 @@ const GameDetailView = () => {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.first-down-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 0, 0.8);
+  z-index: 2;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 0, 0.8));
+}
+
+.marker-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: rgba(255, 255, 0, 0.8);
+}
+
+.marker-arrow {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffd700;
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 3px;
 }
 
 .ball-marker {
@@ -654,6 +963,330 @@ const GameDetailView = () => {
   left: 50%;
   transform: translateX(-50%);
   filter: blur(2px);
+}
+
+/* Touchdown celebration */
+.touchdown-celebration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fireworks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.firework {
+  position: absolute;
+  border-radius: 50%;
+  animation: firework 1.5s ease-out infinite;
+}
+
+.firework:nth-child(1) {
+  top: 30%;
+  left: 20%;
+  width: 100px;
+  height: 100px;
+  animation-delay: 0s;
+  background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+}
+
+.firework:nth-child(2) {
+  top: 40%;
+  left: 70%;
+  width: 120px;
+  height: 120px;
+  animation-delay: 0.2s;
+  background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
+}
+
+.firework:nth-child(3) {
+  top: 60%;
+  left: 30%;
+  width: 80px;
+  height: 80px;
+  animation-delay: 0.4s;
+  background: radial-gradient(circle, rgba(0,255,255,0.8) 0%, rgba(0,255,255,0) 70%);
+}
+
+.firework:nth-child(4) {
+  top: 20%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  animation-delay: 0.6s;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+}
+
+.firework:nth-child(5) {
+  top: 70%;
+  left: 60%;
+  width: 90px;
+  height: 90px;
+  animation-delay: 0.8s;
+  background: radial-gradient(circle, rgba(0,255,0,0.8) 0%, rgba(0,255,0,0) 70%);
+}
+
+@keyframes firework {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.touchdown-text {
+  font-size: 4rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  animation: touchdown-pulse 0.5s infinite alternate;
+}
+
+@keyframes touchdown-pulse {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  }
+  100% {
+    transform: scale(1.1);
+    text-shadow: 0 0 30px rgba(255, 215, 0, 1);
+  }
+}
+
+/* RedZone Alert */
+.redzone-alert {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: rgba(255, 0, 0, 0.8);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+  animation: pulse-redzone 1s infinite alternate;
+}
+
+.alert-icon {
+  font-size: 1.5rem;
+}
+
+.alert-text {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.alert-team {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+@keyframes pulse-redzone {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  100% {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  }
+}
+
+/* Big Play Alert */
+.big-play-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 15px 25px;
+  color: white;
+  text-align: center;
+  z-index: 50;
+  animation: fade-in-out 3s forwards;
+}
+
+.big-play-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #ffd700;
+}
+
+.big-play-team {
+  font-size: 1.2rem;
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* Quarter Summary */
+.quarter-summary {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  width: 80%;
+  max-width: 500px;
+  color: white;
+  z-index: 100;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  animation: slide-in 0.5s ease-out;
+}
+
+.quarter-heading {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 15px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.quarter-scores {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+}
+
+.quarter-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.quarter-team img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 5px;
+}
+
+.quarter-team span {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -70%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Game Complete Banner */
+.game-complete-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #ffd700;
+  border-radius: 16px;
+  padding: 20px 40px;
+  color: white;
+  text-align: center;
+  z-index: 50;
+  animation: game-complete 0.5s ease-out;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.complete-text {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.winner-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+@keyframes game-complete {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Down & Distance Indicator */
+.down-distance-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 15px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  z-index: 10;
+}
+
+.down {
+  font-weight: bold;
+  color: #ffd700;
 }
 
 @keyframes pulse {
@@ -864,6 +1497,12 @@ const GameDetailView = () => {
     margin: 8px 0 0;
     width: 100%;
     text-align: center;
+  }
+  .touchdown-text {
+    font-size: 2.5rem;
+  }
+  .quarter-summary {
+    width: 90%;
   }
 }
 
