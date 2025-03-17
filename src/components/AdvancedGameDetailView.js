@@ -386,10 +386,40 @@ const AdvancedGameDetailView = () => {
   const { id } = useParams();
   const [gameData, setGameData] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [fcsTeams, setFcsTeams] = useState([]);
   const [lines, setLines] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Helper to find a team from either FBS or FCS
+  const findTeam = (teamName) => {
+    return (
+      teams.find(
+        (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
+      ) ||
+      fcsTeams.find(
+        (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
+      ) ||
+      {}
+    );
+  };
+
+  const getTeamLogo = (teamName) => {
+    const team = findTeam(teamName);
+    return team && team.logos && team.logos.length > 0
+      ? team.logos[0]
+      : "/photos/default_team.png";
+  };
+
+  const getTeamDetails = (teamName) => {
+    return findTeam(teamName);
+  };
+
+  const getTeamColor = (teamName) => {
+    const team = findTeam(teamName);
+    return team && team.color ? `#${team.color}` : "#666666";
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -397,6 +427,9 @@ const AdvancedGameDetailView = () => {
         setIsLoading(true);
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
+        // Load FCS teams as well for logos, colors, etc.
+        const fcsTeamsData = await teamsService.getFCSTeams();
+        setFcsTeams(fcsTeamsData);
         const restGameData = await teamsService.getGameById(id);
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
@@ -416,29 +449,6 @@ const AdvancedGameDetailView = () => {
     };
     fetchData();
   }, [id]);
-
-  const getTeamLogo = (teamName) => {
-    const team = teams.find(
-      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return team && team.logos && team.logos.length > 0
-      ? team.logos[0]
-      : "/photos/default_team.png";
-  };
-
-  const getTeamDetails = (teamName) => {
-    const team = teams.find(
-      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return team || {};
-  };
-
-  const getTeamColor = (teamName) => {
-    const team = teams.find(
-      (t) => t.school && t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return team && team.color ? `#${team.color}` : "#666666";
-  };
 
   if (isLoading)
     return (
@@ -1162,6 +1172,3 @@ const AdvancedGameDetailView = () => {
 };
 
 export default AdvancedGameDetailView;
-
-
-
