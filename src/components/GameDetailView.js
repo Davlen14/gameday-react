@@ -117,70 +117,70 @@ const GameDetailView = () => {
     }
   };
 
-  // Check for touchdown
-  const checkForTouchdown = (currentPlay, nextPlay) => {
-    if (!currentPlay || !nextPlay) return false;
+// In your checkForTouchdown function:
+const checkForTouchdown = (currentPlay, nextPlay) => {
+  if (!currentPlay || !nextPlay) return false;
+  
+  // Check if home team scored touchdown
+  if (nextPlay.homeScore > currentPlay.homeScore && 
+      nextPlay.homeScore - currentPlay.homeScore >= 6) {
+    setTouchdownTeam("home");
+    setShowFireworks(true);
     
-    // Check if home team scored touchdown
-    if (nextPlay.homeScore > currentPlay.homeScore && 
-        nextPlay.homeScore - currentPlay.homeScore >= 6) {
-      setTouchdownTeam("home");
-      setShowFireworks(true);
-      
-      // Calculate touchdown distance (in yards)
-      const startYard = currentPlay.yardLine;
-      const scoringYards = 100 - startYard;
-      setTouchdownYards(scoringYards);
-      
-      // Set the path for animation
-      setTouchdownPath({
-        team: "home",
-        startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
-        endPosition: 100 // Home team endzone is at 100%
-      });
-      
-      // Animate the ball to the endzone
-      setBallPosition(100);
-      
-      // Clear effects after a delay
-      setTimeout(() => {
-        setShowFireworks(false);
-        setTouchdownPath(null);
-      }, 3000);
-      return true;
-    }
+    // Calculate touchdown distance (in yards)
+    const startYard = currentPlay.yardLine;
+    const scoringYards = 100 - startYard;
+    setTouchdownYards(scoringYards);
     
-    // Check if away team scored touchdown
-    if (nextPlay.awayScore > currentPlay.awayScore && 
-        nextPlay.awayScore - currentPlay.awayScore >= 6) {
-      setTouchdownTeam("away");
-      setShowFireworks(true);
-      
-      // Calculate touchdown distance (in yards)
-      const startYard = currentPlay.yardLine;
-      const scoringYards = startYard; // For away team
-      setTouchdownYards(scoringYards);
-      
-      // Set the path for animation
-      setTouchdownPath({
-        team: "away",
-        startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
-        endPosition: 0 // Away team endzone is at 0%
-      });
-      
-      // Animate the ball to the endzone
-      setBallPosition(0);
-      
-      // Clear effects after a delay
-      setTimeout(() => {
-        setShowFireworks(false);
-        setTouchdownPath(null);
-      }, 3000);
-      return true;
-    }
+    // Set the path for animation
+    setTouchdownPath({
+      team: "home",
+      startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
+      endPosition: 100 // Home team scores in away team's endzone (100%)
+    });
     
-    return false;
-  };
+    // Animate the ball to the AWAY team's endzone (since home team scored)
+    setBallPosition(100); // Away endzone is at 100%
+    
+    // Clear effects after a delay
+    setTimeout(() => {
+      setShowFireworks(false);
+      setTouchdownPath(null);
+    }, 3000);
+    return true;
+  }
+  
+  // Check if away team scored touchdown
+  if (nextPlay.awayScore > currentPlay.awayScore && 
+      nextPlay.awayScore - currentPlay.awayScore >= 6) {
+    setTouchdownTeam("away");
+    setShowFireworks(true);
+    
+    // Calculate touchdown distance (in yards)
+    const startYard = currentPlay.yardLine;
+    const scoringYards = startYard; // For away team
+    setTouchdownYards(scoringYards);
+    
+    // Set the path for animation
+    setTouchdownPath({
+      team: "away",
+      startPosition: calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall),
+      endPosition: 0 // Away team scores in home team's endzone (0%)
+    });
+    
+    // Animate the ball to the HOME team's endzone (since away team scored)
+    setBallPosition(0); // Home endzone is at 0%
+    
+    // Clear effects after a delay
+    setTimeout(() => {
+      setShowFireworks(false);
+      setTouchdownPath(null);
+    }, 3000);
+    return true;
+  }
+  
+  return false;
+};
   
   // Check for redzone
   const checkForRedzone = (yardLine, isHomeBall) => {
