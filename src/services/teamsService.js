@@ -697,6 +697,7 @@ const teamsService = {
     getRatingsSPConferences,
     getRatingsSRS,
     getRatingsElo,
+    getFCSTeams,
     getRatingsFPI,
     getPPAPredicted,
     getTeamGameStats,
