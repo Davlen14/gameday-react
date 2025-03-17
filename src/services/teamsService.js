@@ -28,11 +28,13 @@ export const getGameById = async (gameId) => {
 };
 
 export const getTeams = async () => {
-    const endpoint = "/teams/fbs";
-    const params = { year: 2024 };
-    return await fetchData(endpoint, params);
+  const endpoint = "/teams";
+  const params = { year: 2024 };
+  const allTeams = await fetchData(endpoint, params);
+  
+  // Filter for only FBS teams
+  return allTeams.filter(team => team.classification === "fbs");
 };
-
 
 export const getFCSTeams = async () => {
   const endpoint = "/teams";
