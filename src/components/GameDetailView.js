@@ -1,40 +1,53 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
+import graphqlTeamsService from "../services/graphqlTeamsService";
 
 const GameDetailView = () => {
+  const { gameId } = useParams();
+  const [game, setGame] = useState(null);
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Play-by-play simulation states
+  const [plays, setPlays] = useState([]);
+  const [currentPlayIndex, setCurrentPlayIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playSpeed, setPlaySpeed] = useState(1000); // milliseconds between plays
+  const playIntervalRef = useRef(null);
+  const [ballPosition, setBallPosition] = useState(50); // Default to midfield (50%)
+  const [possession, setPossession] = useState(null);
+
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        // fetch the play-by-play data just like in WinProb component
-        console.log("Fetching win probability data for game:", gameId);
-        let playsData;
-        try {
-          playsData = await teamsService.getMetricsWP(gameId);
-        } catch (error) {
-          console.error("Error fetching win probability metrics:", error);
-          playsData = [];
-        }
+        console.log("Fetching game data for game:", gameId);
+        // Modified the third call to use teamsService.getMetricsWP(gameId)
+        const [gameData, teamsData, playsData] = await Promise.all([
+          teamsService.getGameById(gameId),
+          teamsService.getTeams(),
+          teamsService.getMetricsWP(gameId) // Previously used graphqlTeamsService.getMetricsWP(gameId)
+        ]);
 
-        if (!playsData) throw new Error("Game not found");
-        
+        if (!gameData) throw new Error("Game not found");
+
         // Enhance game data with team colors
         const enhancedGame = {
           ...gameData,
-          homeColor: 
+          homeColor:
             teamsData.find((t) => t.school === gameData.homeTeam)?.color ||
             "#002244",
           awayColor:
             teamsData.find((t) => t.school === gameData.awayTeam)?.color ||
             "#008E97",
         };
-        
+
         setGame(enhancedGame);
         setTeams(teamsData);
         
-        // Filter out duplicate play numbers for the play-by-play - mirror WinProb logic
+        // Filter out duplicate play numbers for the play-by-play
         if (playsData && playsData.length > 0) {
-          // Filter out duplicate play numbers
           const uniquePlays = [];
           const playNumbersSeen = {};
           playsData.forEach(play => {
@@ -43,10 +56,7 @@ const GameDetailView = () => {
               uniquePlays.push(play);
             }
           });
-          
-          setWpData(uniquePlays);
-          setVisibleData([uniquePlays[0]]);
-          setCurrentPlayIndex(0);
+          setPlays(uniquePlays);
           
           // Set initial possession
           if (uniquePlays.length > 0) {
@@ -68,9 +78,10 @@ const GameDetailView = () => {
 
     fetchGameData();
     
+    // Cleanup
     return () => {
       if (playIntervalRef.current) {
-        clearTimeout(playIntervalRef.current);
+        clearInterval(playIntervalRef.current);
       }
     };
   }, [gameId]);
@@ -87,115 +98,98 @@ const GameDetailView = () => {
     }
   };
 
-  // useEffect for animation, similar to WinProb
-  useEffect(() => {
-    if (wpData.length > 0 && isPlaying) {
-      startAnimation();
-    } else if (!isPlaying && playIntervalRef.current) {
-      clearInterval(playIntervalRef.current);
-    }
-    
-    return () => {
-      if (playIntervalRef.current) {
-        clearInterval(playIntervalRef.current);
-      }
-    };
-  }, [wpData, isPlaying, playSpeed]);
-
-  // Animation function similar to WinProb
-  const startAnimation = () => {
-    let currentIndex = visibleData.length;
-    let lastUpdateTime = Date.now();
-    
-    const animate = () => {
-      if (currentIndex < wpData.length) {
-        // Update the visible data
-        setVisibleData(prev => [...prev, wpData[currentIndex]]);
-        
-        // Update ball position and possession
-        const currentPlay = wpData[currentIndex];
-        setPossession(currentPlay.homeBall ? "home" : "away");
-        setBallPosition(calculateBallPosition(currentPlay.yardLine, currentPlay.homeBall));
-        
-        setCurrentPlayIndex(currentIndex);
-        currentIndex++;
-        
-        // Schedule next update
-        playIntervalRef.current = setTimeout(animate, playSpeed);
-        
-        if (currentIndex >= wpData.length) {
-          setIsPlaying(false);
-        }
-      }
-    };
-    
-    // Start the animation
-    playIntervalRef.current = setTimeout(animate, playSpeed);
-  };
-  
-  // Toggle play/pause
+  // Start or stop the play-by-play simulation
   const togglePlaySimulation = () => {
-    if (!isPlaying && visibleData.length < wpData.length) {
-      setIsPlaying(true);
-    } else {
+    if (isPlaying) {
+      // Stop the simulation
+      clearInterval(playIntervalRef.current);
       setIsPlaying(false);
-      if (playIntervalRef.current) {
-        clearTimeout(playIntervalRef.current);
-      }
+    } else {
+      // Start or resume the simulation
+      setIsPlaying(true);
+      playIntervalRef.current = setInterval(() => {
+        setCurrentPlayIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex >= plays.length) {
+            // End of plays, stop the simulation
+            clearInterval(playIntervalRef.current);
+            setIsPlaying(false);
+            return prevIndex; // Stay on last play
+          }
+          
+          // Update ball position and possession for the next play
+          const nextPlay = plays[nextIndex];
+          setPossession(nextPlay.homeBall ? "home" : "away");
+          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          
+          return nextIndex;
+        });
+      }, playSpeed);
     }
   };
   
-  // Reset the simulation to the beginning - like in WinProb
+  // Reset the simulation to the beginning
   const resetSimulation = () => {
-    if (playIntervalRef.current) {
-      clearTimeout(playIntervalRef.current);
-    }
-    setVisibleData([wpData[0]]);
+    clearInterval(playIntervalRef.current);
+    setIsPlaying(false);
     setCurrentPlayIndex(0);
-    setIsPlaying(true);
     
     // Reset ball and possession to initial state
-    if (wpData.length > 0) {
-      setPossession(wpData[0].homeBall ? "home" : "away");
-      setBallPosition(calculateBallPosition(wpData[0].yardLine, wpData[0].homeBall));
+    if (plays.length > 0) {
+      setPossession(plays[0].homeBall ? "home" : "away");
+      setBallPosition(calculateBallPosition(plays[0].yardLine, plays[0].homeBall));
     }
   };
   
-  // Skip to the end of the simulation - like in WinProb
+  // Skip to the end of the simulation
   const skipToEnd = () => {
-    if (playIntervalRef.current) {
-      clearTimeout(playIntervalRef.current);
-    }
-    setVisibleData(wpData);
-    setCurrentPlayIndex(wpData.length - 1);
+    clearInterval(playIntervalRef.current);
     setIsPlaying(false);
     
-    if (wpData.length > 0) {
-      const lastIndex = wpData.length - 1;
-      const lastPlay = wpData[lastIndex];
-      setPossession(lastPlay.homeBall ? "home" : "away");
-      setBallPosition(calculateBallPosition(lastPlay.yardLine, lastPlay.homeBall));
+    if (plays.length > 0) {
+      const lastIndex = plays.length - 1;
+      setCurrentPlayIndex(lastIndex);
+      
+      // Set final ball position and possession
+      setPossession(plays[lastIndex].homeBall ? "home" : "away");
+      setBallPosition(calculateBallPosition(plays[lastIndex].yardLine, plays[lastIndex].homeBall));
     }
   };
   
-  // Change the simulation speed - like in WinProb
+  // Change the simulation speed
   const changeSpeed = (newSpeed) => {
     setPlaySpeed(newSpeed);
+    
+    // Restart the interval if currently playing
+    if (isPlaying) {
+      clearInterval(playIntervalRef.current);
+      playIntervalRef.current = setInterval(() => {
+        setCurrentPlayIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex >= plays.length) {
+            clearInterval(playIntervalRef.current);
+            setIsPlaying(false);
+            return prevIndex;
+          }
+          
+          const nextPlay = plays[nextIndex];
+          setPossession(nextPlay.homeBall ? "home" : "away");
+          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          
+          return nextIndex;
+        });
+      }, newSpeed);
+    }
   };
   
   // Skip to a specific play
   const skipToPlay = (index) => {
-    if (index >= 0 && index < wpData.length) {
-      if (playIntervalRef.current) {
-        clearTimeout(playIntervalRef.current);
-      }
+    if (index >= 0 && index < plays.length) {
+      clearInterval(playIntervalRef.current);
       setIsPlaying(false);
-      
-      // Update visible data to include all plays up to this index
-      setVisibleData(wpData.slice(0, index + 1));
       setCurrentPlayIndex(index);
       
-      const play = wpData[index];
+      const play = plays[index];
       setPossession(play.homeBall ? "home" : "away");
       setBallPosition(calculateBallPosition(play.yardLine, play.homeBall));
     }
@@ -220,25 +214,16 @@ const GameDetailView = () => {
     return new Date(dateString).toLocaleString("en-US", options);
   };
   
-  // Format down number as a string (1st, 2nd, 3rd, 4th) - matching WinProb
-  const getDownString = (down) => {
+  // Format down number as a string (1st, 2nd, 3rd, 4th)
+  const formatDown = (down) => {
+    if (!down) return "N/A";
+    
     switch (down) {
       case 1: return "1st Down";
       case 2: return "2nd Down";
       case 3: return "3rd Down";
       case 4: return "4th Down";
-      default: return "";
-    }
-  };
-  
-  // Format yard line like in WinProb
-  const formatYardLine = (yardLine, homeBall) => {
-    if (!game) return "";
-    
-    if (yardLine <= 50) {
-      return `${homeBall ? game.homeTeam : game.awayTeam} ${yardLine}`;
-    } else {
-      return `${!homeBall ? game.homeTeam : game.awayTeam} ${100 - yardLine}`;
+      default: return `${down}th Down`;
     }
   };
 
@@ -249,8 +234,8 @@ const GameDetailView = () => {
   if (error) return <div className="error-container">Error: {error}</div>;
   if (!game) return <div className="error-container">Game not found</div>;
 
-  // Get current play details - from visibleData like WinProb uses
-  const currentPlay = visibleData.length > 0 ? visibleData[visibleData.length - 1] : null;
+  // Get current play details
+  const currentPlay = plays.length > 0 ? plays[currentPlayIndex] : null;
   
   // Calculate home and away scores for current play
   const homeScore = currentPlay ? currentPlay.homeScore : game.homePoints || 0;
@@ -361,7 +346,7 @@ const GameDetailView = () => {
           <button 
             className="control-button" 
             onClick={resetSimulation}
-            disabled={visibleData.length === 1 && !isPlaying}
+            disabled={currentPlayIndex === 0 && !isPlaying}
             title="Restart"
           >
             ⏮
@@ -369,7 +354,7 @@ const GameDetailView = () => {
           <button 
             className="control-button" 
             onClick={togglePlaySimulation}
-            disabled={wpData.length === 0 || visibleData.length >= wpData.length}
+            disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
             title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? "⏸" : "▶"}
@@ -377,7 +362,7 @@ const GameDetailView = () => {
           <button 
             className="control-button" 
             onClick={skipToEnd}
-            disabled={wpData.length === 0 || visibleData.length >= wpData.length}
+            disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
             title="Skip to End"
           >
             ⏭
@@ -396,7 +381,7 @@ const GameDetailView = () => {
             </select>
           </div>
           <div className="progress-indicator">
-            Play: {visibleData.length} / {wpData.length}
+            Play: {currentPlayIndex + 1} / {plays.length}
           </div>
         </div>
 
@@ -410,7 +395,7 @@ const GameDetailView = () => {
                 <div className="play-stats">
                   <div className="stat-row">
                     <span className="stat-label">Down:</span>
-                    <span className="stat-value">{getDownString(currentPlay.down)}</span>
+                    <span className="stat-value">{formatDown(currentPlay.down)}</span>
                   </div>
                   <div className="stat-row">
                     <span className="stat-label">Distance:</span>
@@ -427,14 +412,6 @@ const GameDetailView = () => {
                       />
                     </span>
                   </div>
-                  {currentPlay.down > 0 && (
-                    <div className="stat-row">
-                      <span className="stat-label">Field Position:</span>
-                      <span className="stat-value">
-                        {formatYardLine(currentPlay.yardLine, currentPlay.homeBall)}
-                      </span>
-                    </div>
-                  )}
                   <div className="stat-row">
                     <span className="stat-label">Win Probability:</span>
                     <div className="probability-bars">
@@ -633,8 +610,8 @@ const GameDetailView = () => {
         .ball-marker {
           position: absolute;
           width: 24px;
-          height: 12px;  /* Football shape - oval */
-          background: #8B4513;  /* Brown color for football */
+          height: 12px;
+          background: #8B4513;
           border-radius: 50%;
           transform: translate(-50%, -50%);
           box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
@@ -642,8 +619,7 @@ const GameDetailView = () => {
           z-index: 3;
           transition: left 0.5s ease-in-out;
         }
-        
-        /* Possession indicator (small logo above the ball) */
+
         .possession-indicator {
           position: absolute;
           width: 32px;
@@ -656,7 +632,7 @@ const GameDetailView = () => {
           padding: 4px;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
-        
+
         .possession-indicator img {
           width: 100%;
           height: 100%;
@@ -687,7 +663,6 @@ const GameDetailView = () => {
           }
         }
         
-        /* Playback Controls - Similar to WinProb component styling */
         .playback-controls {
           display: flex;
           align-items: center;
@@ -810,7 +785,6 @@ const GameDetailView = () => {
           padding: 2px;
         }
         
-        /* Win probability bars */
         .probability-bars {
           display: flex;
           flex-direction: column;
