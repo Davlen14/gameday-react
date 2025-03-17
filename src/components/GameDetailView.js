@@ -445,42 +445,58 @@ const firstDownPosition = firstDownYard !== null ?
     <div className="game-detail-container">
       <div className="field-container">
 {/* Touchdown celebration effects */}
-  {showFireworks && (
+{showFireworks && (
+  <div 
+    className="touchdown-celebration"
+    style={{ 
+      position: "absolute",
+      zIndex: 100,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      top: 0,
+      left: 0,
+      pointerEvents: "none"
+    }}
+  >
+    {/* Position ball in correct endzone when touchdown occurs */}
     <div 
-      className="touchdown-celebration"
-      style={{ 
+      className="scoring-position"
+      style={{
         position: "absolute",
-        zIndex: 100,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        top: 0,
-        left: 0,
-        pointerEvents: "none"
+        left: touchdownTeam === "home" ? homeEndzonePosition : awayEndzonePosition,
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 15
       }}
     >
-      <div className="fireworks">
-        <div className="firework"></div>
-        <div className="firework"></div>
-        <div className="firework"></div>
-        <div className="firework"></div>
-        <div className="firework"></div>
-      </div>
-      <div className="touchdown-text">
-        TOUCHDOWN!
-        <div className="touchdown-yards" style={{
-          fontSize: "1.5rem",
-          marginTop: "8px",
-          fontWeight: "normal",
-          opacity: 0.9
-        }}>
-          {touchdownYards.toFixed(0)} yard score
-        </div>
+      {/* Ball appearance in endzone */}
+      <div className="ball-scored" style={{
+        width: "24px",
+        height: "12px",
+        background: "#8B4513",
+        borderRadius: "50%",
+        boxShadow: "0 0 15px rgba(255, 255, 0, 0.8)"
+      }}></div>
+    </div>
+    
+    <div className="fireworks">
+      <div className="firework"></div>
+      <div className="firework"></div>
+      <div className="firework"></div>
+      <div className="firework"></div>
+      <div className="firework"></div>
+    </div>
+    <div className="touchdown-text">
+      TOUCHDOWN!
+      <div className="touchdown-yards">
+        {touchdownYards.toFixed(0)} yard score
       </div>
     </div>
-  )}
+  </div>
+)}
         
         {/* RedZone Alert */}
         {isRedzone && (
