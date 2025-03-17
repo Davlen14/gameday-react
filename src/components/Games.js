@@ -6,6 +6,7 @@ import "../styles/GamesAndTeams.css";
 const Games = () => {
     const [games, setGames] = useState([]);
     const [teams, setTeams] = useState([]);
+    const [fcsTeams, setFcsTeams] = useState([]); // New state for FCS teams
     const [weather, setWeather] = useState([]);
     const [media, setMedia] = useState([]);
     const [lines, setLines] = useState([]);
@@ -19,15 +20,21 @@ const Games = () => {
             try {
                 setIsLoading(true);
                 
+                // Load both FBS and FCS teams
                 if (teams.length === 0) {
                     const teamsData = await teamsService.getTeams();
                     setTeams(teamsData);
+                    
+                    // Also load FCS teams for logos
+                    const fcsTeamsData = await teamsService.getFCSTeams();
+                    setFcsTeams(fcsTeamsData);
                 }
 
                 const gamesData = await teamsService.getGames(week);
+                // We want to include games where at least one team is FBS
                 const fbsGames = gamesData.filter(
                     (game) =>
-                        game.homeClassification === "fbs" &&
+                        game.homeClassification === "fbs" ||
                         game.awayClassification === "fbs"
                 );
                 setGames(fbsGames);
@@ -59,10 +66,26 @@ const Games = () => {
     };
 
     const getTeamLogo = (teamName) => {
-        const team = teams.find(
+        // First check FBS teams
+        const fbsTeam = teams.find(
             (t) => t.school.toLowerCase() === teamName.toLowerCase()
         );
-        return team?.logos ? team.logos[0] : "/photos/default_team.png";
+        
+        if (fbsTeam?.logos) {
+            return fbsTeam.logos[0];
+        }
+        
+        // If not found in FBS teams, check FCS teams
+        const fcsTeam = fcsTeams.find(
+            (t) => t.school.toLowerCase() === teamName.toLowerCase()
+        );
+        
+        if (fcsTeam?.logos) {
+            return fcsTeam.logos[0];
+        }
+        
+        // Default logo if not found in either
+        return "/photos/default_team.png";
     };
 
     const getSportsbookLogo = (provider) => {
@@ -207,6 +230,15 @@ const Games = () => {
         </svg>
     );
 
+    // Helper function to determine if a team is FCS
+    const isTeamFCS = (teamName) => {
+        const fbsTeam = teams.find(
+            (t) => t.school.toLowerCase() === teamName.toLowerCase()
+        );
+        
+        return !fbsTeam; // If not found in FBS teams, assume it's FCS
+    };
+
     if (isLoading) return <div className="loading">Loading games...</div>;
     if (error) return <div className="error">Error: {error}</div>;
 
@@ -230,6 +262,10 @@ const Games = () => {
                     const gameMedia = getMediaForGame(game.id);
                     const gameLines = getLinesForGame(game.id);
                     const tvNetwork = gameMedia?.network || gameMedia?.outlet || 'TBD';
+                    
+                    // Check if either team is FCS
+                    const homeIsFCS = isTeamFCS(game.homeTeam);
+                    const awayIsFCS = isTeamFCS(game.awayTeam);
 
                     return (
                         <article key={game.id} className="game-card">
@@ -238,6 +274,7 @@ const Games = () => {
                                     <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
                                     <div className="team-details">
                                         <h3>{game.homeTeam}</h3>
+                                        {homeIsFCS && <span className="team-division">FCS</span>}
                                         <span className="score">{game.homePoints}</span>
                                     </div>
                                 </div>
@@ -250,6 +287,7 @@ const Games = () => {
                                     <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
                                     <div className="team-details">
                                         <h3>{game.awayTeam}</h3>
+                                        {awayIsFCS && <span className="team-division">FCS</span>}
                                         <span className="score">{game.awayPoints}</span>
                                     </div>
                                 </div>
