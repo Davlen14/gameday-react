@@ -596,11 +596,11 @@ const Teams = () => {
   };
 
   return (
-    <div className="tcd-teams-comparison-container">
+    <div className="tcd-teams-comparison-container" style={{ fontFamily: "Obriton, sans-serif" }}>
       {/* Division tabs for switching between FBS and FCS */}
       <DivisionTabs activeTab={activeDivision} setActiveTab={setActiveDivision} />
 
-      {/* Teams Section: Displaying all teams (now centered at the top) */}
+      {/* Teams Section: Displaying all teams */}
       <div className="tcd-teams-list-section">
         <div className="tcd-teams-container">
           <div className="tcd-conferences-list">
@@ -622,91 +622,45 @@ const Teams = () => {
                   </div>
                   <h3 className="tcd-conference-title">{conference}</h3>
                 </div>
-                <div className={activeDivision === "fbs" ? "tcd-teams-table" : "tcd-teams-grid"}>
+                <div className="tcd-teams-table">
                   {confTeams.map((team) => (
-                    <div key={team.id} className={activeDivision === "fbs" ? "tcd-team-card-container" : "tcd-team-card"}>
-                      {activeDivision === "fbs" ? (
-                        <div className="tcd-team-card">
-                          <div className="tcd-team-content">
-                            <div className="tcd-team-logo-container">
-                              <Link to={`/teams/${team.id}`}>
-                                <img
-                                  src={team.logos?.[0] || "/photos/default_team.png"}
-                                  alt={team.school}
-                                  className="tcd-team-logo"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "/photos/default_team.png";
-                                  }}
-                                />
-                              </Link>
-                            </div>
-                            <h4 className="tcd-team-name">
-                              {getTeamAbbreviation(team.school)}
-                            </h4>
-                          </div>
-                          <button
-                            className={`tcd-compare-button ${selectedTeams.find((t) => t.id === team.id) ? "selected" : ""}`}
-                            onClick={() => handleTeamSelect(team)}
-                          >
-                            {selectedTeams.find((t) => t.id === team.id) ? (
-                              <>
-                                <FaMinus size={12} />
-                                Remove
-                              </>
-                            ) : (
-                              <>
-                                <FaPlus size={12} />
-                                Compare
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      ) : (
-                        <>
+                    <div key={team.id} className="tcd-team-card-container">
+                      <div className="tcd-team-card">
+                        <div className="tcd-team-content">
                           <div className="tcd-team-logo-container">
-                            <img
-                              src={team.logos?.[0] || "/photos/default_team.png"}
-                              alt={team.school}
-                              className="tcd-team-logo"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/photos/default_team.png";
-                              }}
-                            />
-                          </div>
-                          
-                          <p className="tcd-team-name">{team.school}</p>
-                          
-                          <div className="tcd-team-location">
-                            <FaMapMarkerAlt size={12} />
-                            {team.location?.city}, {team.location?.state}
-                          </div>
-                          
-                          <div className="tcd-team-links">
-                            <Link to={`/teams/${team.id}`} className="tcd-view-link">
-                              <FaEye size={14} /> View Team
+                            <Link to={`/teams/${team.id}`}>
+                              <img
+                                src={team.logos?.[0] || "/photos/default_team.png"}
+                                alt={team.school}
+                                className="tcd-team-logo"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "/photos/default_team.png";
+                                }}
+                              />
                             </Link>
                           </div>
-                          
-                          <button
-                            className={`tcd-select-button ${
-                              selectedTeams.find((t) => t.id === team.id) ? "tcd-selected" : ""
-                            }`}
-                            onClick={() => handleTeamSelect(team)}
-                          >
-                            {selectedTeams.find((t) => t.id === team.id) ? (
-                              <>
-                                <FaMinus size={14} /> Remove
-                              </>
-                            ) : (
-                              <>
-                                <FaPlus size={14} /> Compare
-                              </>
-                            )}
-                          </button>
-                        </>
-                      )}
+                          <h4 className="tcd-team-name">
+                            {getTeamAbbreviation(team.school)}
+                          </h4>
+                        </div>
+                        <button
+                          className={`tcd-compare-button ${selectedTeams.find((t) => t.id === team.id) ? "selected" : ""}`}
+                          onClick={() => handleTeamSelect(team)}
+                        >
+                          {selectedTeams.find((t) => t.id === team.id) ? (
+                            <>
+                              <FaMinus size={12} />
+                              Remove
+                            </>
+                          ) : (
+                            <>
+                              <FaPlus size={12} />
+                              Compare
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -722,7 +676,12 @@ const Teams = () => {
           <FaExchangeAlt style={{ marginRight: "10px" }} />
           Team Comparison
         </h2>
-        
+
+        {/* Move the Chart Tabs to the top of the comparison section */}
+        {selectedTeams.length > 0 && (
+          <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
+        )}
+
         {selectedTeams.length === 0 ? (
           <div className="tcd-no-teams-selected">
             <div className="tcd-empty-state-icon">
@@ -739,9 +698,6 @@ const Teams = () => {
               <FaTrashAlt /> Clear All
             </button>
 
-            {/* Chart Selection Tabs */}
-            <ChartTabs activeTab={activeChart} setActiveTab={setActiveChart} />
-            
             {/* Define gradients for chart elements */}
             <svg style={{ width: 0, height: 0, position: "absolute" }} aria-hidden="true" focusable="false">
               <defs>
