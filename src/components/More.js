@@ -120,15 +120,24 @@ const More = () => {
 
   return (
     <div className="fcs-container">
-      {/* Modern CSS for FCS teams page */}
+      {/* Modern CSS for FCS teams page with custom color scheme */}
       <style>{`
+        :root {
+          --primary-color: #ffffff;
+          --accent-color: #D4001C;
+          --text-color: #333333;
+          --background-color: #ffffff;
+          --border-color: #dddddd;
+        }
+        
         .fcs-container {
-          max-width: 1400px;
+          width: 100%;
+          max-width: 100%;
           margin: 0 auto;
           padding: 2rem;
           font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
-          color: #222;
-          background-color: #f9fafb;
+          color: var(--text-color);
+          background-color: var(--background-color);
         }
         
         .fcs-header {
@@ -136,17 +145,18 @@ const More = () => {
           margin-bottom: 3rem;
           font-size: 2.5rem;
           font-weight: 700;
-          color: #111827;
+          color: var(--text-color);
           letter-spacing: -0.5px;
         }
         
         .fcs-conference-section {
           margin-bottom: 3.5rem;
-          background: white;
-          border-radius: 16px;
+          background: var(--primary-color);
+          border-radius: 12px;
           padding: 2rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
           transition: transform 0.2s;
+          border: 1px solid var(--border-color);
         }
         
         .fcs-conference-section:hover {
@@ -158,7 +168,7 @@ const More = () => {
           align-items: center;
           margin-bottom: 1.5rem;
           padding-bottom: 1rem;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          border-bottom: 1px solid var(--border-color);
         }
         
         .fcs-conference-logo {
@@ -174,26 +184,23 @@ const More = () => {
           font-size: 1.8rem;
           font-weight: 700;
           margin: 0;
-          background-image: linear-gradient(135deg, #2563eb, #4f46e5);
-          background-clip: text;
-          -webkit-background-clip: text;
-          color: transparent;
+          color: var(--accent-color);
         }
         
         .fcs-teams-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
           gap: 1.5rem;
         }
         
         .fcs-team-card {
-          background: white;
-          border-radius: 14px;
+          background: var(--primary-color);
+          border-radius: 10px;
           box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
           padding: 1.5rem 1rem;
           text-align: center;
           transition: all 0.3s ease;
-          border: 1px solid rgba(0, 0, 0, 0.03);
+          border: 1px solid var(--border-color);
           display: flex;
           flex-direction: column;
           height: 100%;
@@ -202,12 +209,12 @@ const More = () => {
         .fcs-team-card:hover {
           transform: translateY(-8px);
           box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-          border: 1px solid rgba(79, 70, 229, 0.2);
+          border: 1px solid var(--accent-color);
         }
         
         .fcs-team-logo-container {
           width: 100%;
-          height: 140px;
+          height: 150px;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -231,15 +238,15 @@ const More = () => {
           font-size: 1.2rem;
           font-weight: 600;
           margin: 0 0 0.5rem;
-          color: #111827;
+          color: var(--text-color);
         }
         
         .fcs-select-button {
-          background: #3b82f6;
+          background: var(--accent-color);
           border: none;
           color: white;
           padding: 0.5rem 1rem;
-          border-radius: 8px;
+          border-radius: 6px;
           margin-top: 1rem;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -252,18 +259,18 @@ const More = () => {
         }
         
         .fcs-select-button:hover {
-          background: #2563eb;
+          background: #b3001a;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          box-shadow: 0 4px 12px rgba(212, 0, 28, 0.3);
         }
         
         .fcs-selected {
-          background: #ef4444;
+          background: #333333;
         }
         
         .fcs-selected:hover {
-          background: #dc2626;
-          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+          background: #222222;
+          box-shadow: 0 4px 12px rgba(51, 51, 51, 0.3);
         }
         
         .fcs-team-location {
@@ -283,7 +290,7 @@ const More = () => {
         }
         
         .fcs-view-link {
-          color: #3b82f6;
+          color: var(--accent-color);
           text-decoration: none;
           font-size: 0.9rem;
           font-weight: 500;
@@ -296,8 +303,8 @@ const More = () => {
         }
         
         .fcs-view-link:hover {
-          color: #1d4ed8;
-          background: rgba(59, 130, 246, 0.1);
+          color: #b3001a;
+          background: rgba(212, 0, 28, 0.1);
           transform: translateY(-2px);
         }
         
@@ -309,19 +316,19 @@ const More = () => {
           align-items: center;
           height: 60vh;
           text-align: center;
-          color: #4b5563;
+          color: var(--text-color);
           font-size: 1.2rem;
         }
         
         .fcs-error {
-          color: #ef4444;
+          color: var(--accent-color);
         }
         
         .fcs-spinner {
           animation: spin 1s linear infinite;
           font-size: 2rem;
           margin-bottom: 1rem;
-          color: #3b82f6;
+          color: var(--accent-color);
         }
         
         @keyframes spin {
@@ -329,11 +336,24 @@ const More = () => {
           100% { transform: rotate(360deg); }
         }
         
-        /* Responsive adjustments */
+        /* Responsive adjustments to fill screen */
+        @media (max-width: 1440px) {
+          .fcs-teams-grid {
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 1rem;
+          }
+        }
+        
+        @media (max-width: 1024px) {
+          .fcs-teams-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          }
+        }
+        
         @media (max-width: 768px) {
           .fcs-teams-grid {
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.8rem;
           }
           
           .fcs-conference-section {
