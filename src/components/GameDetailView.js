@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
+import graphqlTeamsService from "../services/graphqlTeamsService";
 
 const GameDetailView = () => {
   const { gameId } = useParams();
@@ -8,13 +9,24 @@ const GameDetailView = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Play-by-play simulation states
+  const [plays, setPlays] = useState([]);
+  const [currentPlayIndex, setCurrentPlayIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playSpeed, setPlaySpeed] = useState(1000); // milliseconds between plays
+  const playIntervalRef = useRef(null);
+  const [ballPosition, setBallPosition] = useState(50); // Default to midfield (50%)
+  const [possession, setPossession] = useState(null);
 
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        const [gameData, teamsData] = await Promise.all([
+        console.log("Fetching game data for game:", gameId);
+        const [gameData, teamsData, playsData] = await Promise.all([
           teamsService.getGameById(gameId),
           teamsService.getTeams(),
+          graphqlTeamsService.getMetricsWP(gameId), // Fetch the play-by-play data
         ]);
 
         if (!gameData) throw new Error("Game not found");
@@ -32,7 +44,31 @@ const GameDetailView = () => {
 
         setGame(enhancedGame);
         setTeams(teamsData);
+        
+        // Filter out duplicate play numbers for the play-by-play
+        if (playsData && playsData.length > 0) {
+          const uniquePlays = [];
+          const playNumbersSeen = {};
+          playsData.forEach(play => {
+            if (!playNumbersSeen[play.playNumber]) {
+              playNumbersSeen[play.playNumber] = true;
+              uniquePlays.push(play);
+            }
+          });
+          setPlays(uniquePlays);
+          
+          // Set initial possession
+          if (uniquePlays.length > 0) {
+            setPossession(uniquePlays[0].homeBall ? "home" : "away");
+            
+            // Calculate initial ball position from yardLine
+            const initialYardLine = uniquePlays[0].yardLine;
+            // Convert yard line to percentage (0-100) for field position
+            setBallPosition(calculateBallPosition(initialYardLine, uniquePlays[0].homeBall));
+          }
+        }
       } catch (err) {
+        console.error("Error fetching game data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -40,7 +76,123 @@ const GameDetailView = () => {
     };
 
     fetchGameData();
+    
+    // Cleanup
+    return () => {
+      if (playIntervalRef.current) {
+        clearInterval(playIntervalRef.current);
+      }
+    };
   }, [gameId]);
+  
+  // Helper to calculate ball position percentage on the field
+  const calculateBallPosition = (yardLine, isHomeBall) => {
+    // Convert the yard line to a percentage position on the field (0-100)
+    if (isHomeBall) {
+      // If home has the ball, 0 is their own goal line, 100 is opponent's
+      return yardLine;
+    } else {
+      // If away has the ball, 100 is home's goal line, 0 is away's
+      return 100 - yardLine;
+    }
+  };
+
+  // Start or stop the play-by-play simulation
+  const togglePlaySimulation = () => {
+    if (isPlaying) {
+      // Stop the simulation
+      clearInterval(playIntervalRef.current);
+      setIsPlaying(false);
+    } else {
+      // Start or resume the simulation
+      setIsPlaying(true);
+      playIntervalRef.current = setInterval(() => {
+        setCurrentPlayIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex >= plays.length) {
+            // End of plays, stop the simulation
+            clearInterval(playIntervalRef.current);
+            setIsPlaying(false);
+            return prevIndex; // Stay on last play
+          }
+          
+          // Update ball position and possession for the next play
+          const nextPlay = plays[nextIndex];
+          setPossession(nextPlay.homeBall ? "home" : "away");
+          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          
+          return nextIndex;
+        });
+      }, playSpeed);
+    }
+  };
+  
+  // Reset the simulation to the beginning
+  const resetSimulation = () => {
+    clearInterval(playIntervalRef.current);
+    setIsPlaying(false);
+    setCurrentPlayIndex(0);
+    
+    // Reset ball and possession to initial state
+    if (plays.length > 0) {
+      setPossession(plays[0].homeBall ? "home" : "away");
+      setBallPosition(calculateBallPosition(plays[0].yardLine, plays[0].homeBall));
+    }
+  };
+  
+  // Skip to the end of the simulation
+  const skipToEnd = () => {
+    clearInterval(playIntervalRef.current);
+    setIsPlaying(false);
+    
+    if (plays.length > 0) {
+      const lastIndex = plays.length - 1;
+      setCurrentPlayIndex(lastIndex);
+      
+      // Set final ball position and possession
+      setPossession(plays[lastIndex].homeBall ? "home" : "away");
+      setBallPosition(calculateBallPosition(plays[lastIndex].yardLine, plays[lastIndex].homeBall));
+    }
+  };
+  
+  // Change the simulation speed
+  const changeSpeed = (newSpeed) => {
+    setPlaySpeed(newSpeed);
+    
+    // Restart the interval if currently playing
+    if (isPlaying) {
+      clearInterval(playIntervalRef.current);
+      playIntervalRef.current = setInterval(() => {
+        setCurrentPlayIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex >= plays.length) {
+            clearInterval(playIntervalRef.current);
+            setIsPlaying(false);
+            return prevIndex;
+          }
+          
+          const nextPlay = plays[nextIndex];
+          setPossession(nextPlay.homeBall ? "home" : "away");
+          setBallPosition(calculateBallPosition(nextPlay.yardLine, nextPlay.homeBall));
+          
+          return nextIndex;
+        });
+      }, newSpeed);
+    }
+  };
+  
+  // Skip to a specific play
+  const skipToPlay = (index) => {
+    if (index >= 0 && index < plays.length) {
+      clearInterval(playIntervalRef.current);
+      setIsPlaying(false);
+      setCurrentPlayIndex(index);
+      
+      const play = plays[index];
+      setPossession(play.homeBall ? "home" : "away");
+      setBallPosition(calculateBallPosition(play.yardLine, play.homeBall));
+    }
+  };
 
   const getTeamLogo = (teamName) => {
     const team = teams.find(
@@ -60,6 +212,19 @@ const GameDetailView = () => {
     };
     return new Date(dateString).toLocaleString("en-US", options);
   };
+  
+  // Format down number as a string (1st, 2nd, 3rd, 4th)
+  const formatDown = (down) => {
+    if (!down) return "N/A";
+    
+    switch (down) {
+      case 1: return "1st Down";
+      case 2: return "2nd Down";
+      case 3: return "3rd Down";
+      case 4: return "4th Down";
+      default: return `${down}th Down`;
+    }
+  };
 
   if (loading)
     return (
@@ -68,11 +233,12 @@ const GameDetailView = () => {
   if (error) return <div className="error-container">Error: {error}</div>;
   if (!game) return <div className="error-container">Game not found</div>;
 
-  // Determine the last play (if any)
-  const lastPlay =
-    Array.isArray(game.plays) && game.plays.length > 0
-      ? game.plays[game.plays.length - 1]
-      : null;
+  // Get current play details
+  const currentPlay = plays.length > 0 ? plays[currentPlayIndex] : null;
+  
+  // Calculate home and away scores for current play
+  const homeScore = currentPlay ? currentPlay.homeScore : game.homePoints || 0;
+  const awayScore = currentPlay ? currentPlay.awayScore : game.awayPoints || 0;
 
   return (
     <div className="game-detail-container">
@@ -87,7 +253,7 @@ const GameDetailView = () => {
                   alt={game.awayTeam}
                   className="score-team-logo"
                 />
-                {game.awayTeam} <strong>{game.awayPoints}</strong>
+                {game.awayTeam} <strong>{awayScore}</strong>
               </span>
               <span className="score-separator">–</span>
               <span className="team-score">
@@ -96,7 +262,7 @@ const GameDetailView = () => {
                   alt={game.homeTeam}
                   className="score-team-logo"
                 />
-                {game.homeTeam} <strong>{game.homePoints}</strong>
+                {game.homeTeam} <strong>{homeScore}</strong>
               </span>
             </div>
             <div className="game-status">
@@ -106,13 +272,13 @@ const GameDetailView = () => {
           </div>
 
           {/* Left Endzone */}
-          <div className="endzone left" style={{ background: game.homeColor }}>
+          <div className="endzone left" style={{ background: game.awayColor }}>
             <img
-              src={getTeamLogo(game.homeTeam)}
-              alt={game.homeTeam}
+              src={getTeamLogo(game.awayTeam)}
+              alt={game.awayTeam}
               className="endzone-logo"
             />
-            <div className="endzone-label">{game.homeTeam}</div>
+            <div className="endzone-label">{game.awayTeam}</div>
           </div>
 
           {/* Playing Field */}
@@ -145,11 +311,20 @@ const GameDetailView = () => {
               <div className="field-overlay"></div>
             </div>
 
-            {/* Ball Marker */}
+            {/* Ball Marker - Updated to use simulated position and show possession team logo */}
             <div
               className="ball-marker"
-              style={{ left: `${game.currentYardLine || 34}%`, top: "50%" }}
+              style={{ left: `${ballPosition}%`, top: "50%" }}
             >
+              {/* Possession logo above ball */}
+              {possession && (
+                <div className="possession-indicator">
+                  <img 
+                    src={getTeamLogo(possession === "home" ? game.homeTeam : game.awayTeam)} 
+                    alt="Possession" 
+                  />
+                </div>
+              )}
               <div className="ball-shadow"></div>
             </div>
           </div>
@@ -165,17 +340,108 @@ const GameDetailView = () => {
           </div>
         </div>
 
+        {/* Playback Controls */}
+        <div className="playback-controls">
+          <button 
+            className="control-button" 
+            onClick={resetSimulation}
+            disabled={currentPlayIndex === 0 && !isPlaying}
+            title="Restart"
+          >
+            ⏮
+          </button>
+          <button 
+            className="control-button" 
+            onClick={togglePlaySimulation}
+            disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
+            title={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? "⏸" : "▶"}
+          </button>
+          <button 
+            className="control-button" 
+            onClick={skipToEnd}
+            disabled={plays.length === 0 || currentPlayIndex >= plays.length - 1}
+            title="Skip to End"
+          >
+            ⏭
+          </button>
+          <div className="speed-controls">
+            <span>Speed:</span>
+            <select 
+              value={playSpeed} 
+              onChange={(e) => changeSpeed(Number(e.target.value))}
+              className="speed-select"
+            >
+              <option value="2000">Slow</option>
+              <option value="1000">Normal</option>
+              <option value="500">Fast</option>
+              <option value="100">Very Fast</option>
+            </select>
+          </div>
+          <div className="progress-indicator">
+            Play: {currentPlayIndex + 1} / {plays.length}
+          </div>
+        </div>
+
         {/* Game Details Panel */}
         <div className="game-details-panel">
           <div className="last-play">
-            <h3>Last Play Details</h3>
-            {lastPlay ? (
+            <h3>Current Play Details</h3>
+            {currentPlay ? (
               <>
-                <p>{lastPlay.playText}</p>
-                <div className="last-play-stats">
-                  <span>Down: {lastPlay.down}</span>
-                  <span>Yards to Go: {lastPlay.yardsToGoal}</span>
-                  <span>Possession: {game.possession || "N/A"}</span>
+                <p className="play-text">{currentPlay.playText}</p>
+                <div className="play-stats">
+                  <div className="stat-row">
+                    <span className="stat-label">Down:</span>
+                    <span className="stat-value">{formatDown(currentPlay.down)}</span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Distance:</span>
+                    <span className="stat-value">{currentPlay.distance} yards</span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Possession:</span>
+                    <span className="stat-value">
+                      {currentPlay.homeBall ? game.homeTeam : game.awayTeam}
+                      <img 
+                        src={getTeamLogo(currentPlay.homeBall ? game.homeTeam : game.awayTeam)} 
+                        alt="Team" 
+                        className="possession-logo"
+                      />
+                    </span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Win Probability:</span>
+                    <div className="probability-bars">
+                      <div className="team-prob">
+                        <span>{game.homeTeam}</span>
+                        <div className="prob-bar-container">
+                          <div 
+                            className="prob-bar" 
+                            style={{ 
+                              width: `${(currentPlay.homeWinProbability * 100).toFixed(1)}%`,
+                              backgroundColor: game.homeColor
+                            }}
+                          ></div>
+                        </div>
+                        <span>{(currentPlay.homeWinProbability * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="team-prob">
+                        <span>{game.awayTeam}</span>
+                        <div className="prob-bar-container">
+                          <div 
+                            className="prob-bar" 
+                            style={{ 
+                              width: `${(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%`,
+                              backgroundColor: game.awayColor
+                            }}
+                          ></div>
+                        </div>
+                        <span>{(100 - currentPlay.homeWinProbability * 100).toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (
@@ -342,14 +608,35 @@ const GameDetailView = () => {
 
         .ball-marker {
           position: absolute;
-          width: 20px;
-          height: 20px;
-          background: #ffd700;
+          width: 24px;
+          height: 12px;  /* Football shape - oval */
+          background: #8B4513;  /* Brown color for football */
           border-radius: 50%;
           transform: translate(-50%, -50%);
-          box-shadow: 0 0 15px #ffd700;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
           animation: pulse 1.5s infinite;
           z-index: 3;
+          transition: left 0.5s ease-in-out;
+        }
+        
+        /* Possession indicator (small logo above the ball) */
+        .possession-indicator {
+          position: absolute;
+          width: 32px;
+          height: 32px;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 50%;
+          padding: 4px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .possession-indicator img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
 
         .ball-shadow {
@@ -375,12 +662,79 @@ const GameDetailView = () => {
             transform: translate(-50%, -50%) scale(0.95);
           }
         }
+        
+        /* Playback Controls - Similar to WinProb component styling */
+        .playback-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 16px 0;
+          padding: 12px;
+          background: rgba(0, 0, 0, 0.7);
+          border-radius: 8px;
+          gap: 16px;
+        }
+        
+        .control-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          font-size: 1.2rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .control-button:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(1.05);
+        }
+        
+        .control-button:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        
+        .speed-controls {
+          display: flex;
+          align-items: center;
+          margin-left: 8px;
+          gap: 8px;
+          color: white;
+        }
+        
+        .speed-controls span {
+          font-size: 0.9rem;
+        }
+        
+        .speed-select {
+          padding: 4px 8px;
+          border-radius: 4px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(0, 0, 0, 0.3);
+          color: white;
+          font-size: 0.9rem;
+        }
+        
+        .progress-indicator {
+          margin-left: auto;
+          padding: 4px 10px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          font-size: 0.85rem;
+          color: white;
+        }
 
         .game-details-panel {
           display: grid;
           grid-template-columns: 1fr;
           gap: 2rem;
-          margin-top: 2rem;
+          margin-top: 1rem;
         }
 
         .last-play {
@@ -389,12 +743,84 @@ const GameDetailView = () => {
           border-radius: 8px;
           color: white;
         }
-
-        .last-play-stats {
-          margin-top: 0.5rem;
+        
+        .play-text {
+          font-size: 1.1rem;
+          line-height: 1.5;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .play-stats {
           display: flex;
-          gap: 1rem;
-          font-weight: bold;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .stat-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        
+        .stat-label {
+          font-weight: 600;
+          min-width: 100px;
+          color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .stat-value {
+          font-weight: 400;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .possession-logo {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          object-fit: contain;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 2px;
+        }
+        
+        /* Win probability bars */
+        .probability-bars {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+        }
+        
+        .team-prob {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .team-prob span {
+          min-width: 80px;
+          font-size: 0.9rem;
+        }
+        
+        .team-prob span:last-child {
+          min-width: 50px;
+          text-align: right;
+        }
+        
+        .prob-bar-container {
+          flex: 1;
+          height: 12px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        
+        .prob-bar {
+          height: 100%;
+          transition: width 0.5s ease-in-out;
         }
 
         @media (max-width: 768px) {
@@ -426,6 +852,14 @@ const GameDetailView = () => {
           }
           .game-details-panel {
             grid-template-columns: 1fr;
+          }
+          .playback-controls {
+            flex-wrap: wrap;
+          }
+          .progress-indicator {
+            margin: 8px 0 0;
+            width: 100%;
+            text-align: center;
           }
         }
 
