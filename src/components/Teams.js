@@ -240,6 +240,11 @@ const Teams = () => {
     Independent: "/photos/FBS Independents.png"
   };
 
+  // Helper: Get a standardized team identifier (trimmed team name)
+  const getTeamIdentifier = (team) => {
+    return team.school ? team.school.trim() : "";
+  };
+
   // Fetch FBS teams on mount
   useEffect(() => {
     const fetchFbsTeams = async () => {
@@ -298,7 +303,6 @@ const Teams = () => {
         : defaultRating;
     
     // Process defense rating - using specifically spDefense
-    // For spDefense, lower values are better, so we may need to adjust the scale
     const defenseRating = data.spDefense !== undefined && data.spDefense !== null
         ? parseFloat(data.spDefense)
         : defaultRating;
@@ -330,22 +334,23 @@ const Teams = () => {
       }
 
       for (const team of selectedTeams) {
+        const teamIdentifier = getTeamIdentifier(team);
         try {
           if (newRatings[team.id]) continue; // Use team.id as key
           
-          // First try to get detailed ratings from GraphQL
-          console.log(`Fetching detailed ratings for ${team.school} via GraphQL...`);
-          const graphqlData = await graphqlTeamsService.getTeamDetailedRatings(team.school, currentYear);
+          // First try to get detailed ratings from GraphQL using a trimmed team identifier
+          console.log(`Fetching detailed ratings for ${teamIdentifier} via GraphQL...`);
+          const graphqlData = await graphqlTeamsService.getTeamDetailedRatings(teamIdentifier, currentYear);
           
           if (graphqlData) {
-            console.log(`GraphQL data for ${team.school}:`, graphqlData);
+            console.log(`GraphQL data for ${teamIdentifier}:`, graphqlData);
             const processedRatings = extractRatingsFromGraphQL(graphqlData);
             newRatings[team.id] = processedRatings;
-            console.log(`Processed ratings for ${team.school}:`, processedRatings);
+            console.log(`Processed ratings for ${teamIdentifier}:`, processedRatings);
           } else {
             // Fallback to regular API if GraphQL fails or returns empty
-            console.log(`Fallback to regular API for ${team.school}...`);
-            const apiData = await teamsService.getTeamRatings(team.school, currentYear);
+            console.log(`Fallback to regular API for ${teamIdentifier}...`);
+            const apiData = await teamsService.getTeamRatings(teamIdentifier, currentYear);
             
             // Create a properly structured rating object for consistency
             newRatings[team.id] = {
@@ -353,10 +358,10 @@ const Teams = () => {
               defense: { rating: apiData?.defense?.rating || 25 },
               rating: apiData?.rating || 25
             };
-            console.log(`API fallback ratings for ${team.school}:`, newRatings[team.id]);
+            console.log(`API fallback ratings for ${teamIdentifier}:`, newRatings[team.id]);
           }
         } catch (err) {
-          console.error(`Error fetching ratings for team ${team.school}:`, err);
+          console.error(`Error fetching ratings for team ${teamIdentifier}:`, err);
           // Provide default values when fetch fails
           newRatings[team.id] = {
             offense: { rating: 25 },

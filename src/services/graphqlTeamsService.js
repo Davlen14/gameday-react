@@ -87,7 +87,7 @@ export const getTeamDetailedRatings = async (team, year = 2024) => {
   
   const variables = {
     where: {
-      team: { _eq: team },
+      team: { _eq: team.trim() }, // Trim the team identifier here
       year: { _eq: year }
     }
   };
@@ -95,6 +95,7 @@ export const getTeamDetailedRatings = async (team, year = 2024) => {
   const data = await fetchData(query, variables);
   return data?.ratings?.[0] || null;
 };
+
 
 // Basic team information (needed for TeamDetail.js)
 export const getTeams = async () => {
