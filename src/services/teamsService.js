@@ -700,6 +700,7 @@ const teamsService = {
     getRatingsFPI,
     getPPAPredicted,
     getTeamGameStats,
+    getFCSTeams,
     getPPATeams,
     getPPAGames,
     getPPAPlayersGames,
