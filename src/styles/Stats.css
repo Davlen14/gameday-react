@@ -1,49 +1,103 @@
 :root {
+  /* Modern color scheme with subtle variations */
   --primary-color: #ffffff;
   --accent-color: #D4001C;
+  --accent-hover: #F5001F;
+  --accent-soft: rgba(212, 0, 28, 0.1);
   --text-color: #333333;
-  /* Changed background color to pure white */
+  --text-secondary: #666666;
+  --text-muted: #888888;
   --background-color: #ffffff;
-  --border-color: #ffffff;
   --secondary-bg-color: #ffffff;
-  --transition-speed: 0.3s;
-  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --card-bg: #ffffff;
+  --border-color: #f0f0f0;
+  
+  /* Shadows and effects */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.1);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  /* Animations */
+  --transition-speed: 0.25s;
+  --transition-function: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Radiuses */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  /* Typography */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-/* Ensure HTML and body allow scrolling */
+/* Ensure HTML and body allow smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
   height: auto;
   overflow-x: hidden;
-  overflow-y: auto;
   background: var(--background-color);
   color: var(--text-color);
   font-family: var(--font-family-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Stats Container */
+/* Stats Container with subtle animation */
 .stats-container {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
   box-sizing: border-box;
+  animation: fadeIn 0.5s var(--transition-function);
 }
 
-/* Header */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modern Header with gradient text */
 .stats-header {
   font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
   text-align: center;
+  background: linear-gradient(135deg, var(--accent-color), #ff4d4d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
 }
 
-/* Toggle Buttons */
+.stats-header::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color), #ff4d4d);
+  border-radius: var(--radius-full);
+}
+
+/* Toggle Buttons with modern design */
 .view-toggle {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .toggle-btn {
@@ -52,105 +106,242 @@ html, body {
   color: var(--accent-color);
   font-size: 1rem;
   font-weight: 600;
-  margin: 0 1rem;
-  padding: 0.5rem 1.5rem;
-  border-radius: 30px;
-  transition: background var(--transition-speed), color var(--transition-speed);
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-speed) var(--transition-function);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-.toggle-btn:hover,
+.toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.7s var(--transition-function);
+}
+
+.toggle-btn:hover::before {
+  left: 100%;
+}
+
+.toggle-btn:hover {
+  background: var(--accent-soft);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 .toggle-btn.active {
   background: var(--accent-color);
   color: var(--primary-color);
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Leaders Layout */
+/* Leaders Layout with improved spacing */
 .leaders-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2.5rem;
+  animation: staggerIn 0.6s var(--transition-function);
+}
+
+@keyframes staggerIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .leaders-column {
-  flex: 1;
-  min-width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .leaders-header {
   font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-color);
-  margin-bottom: 0.5rem;
-  border-bottom: 3px solid var(--accent-color);
-  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  position: relative;
 }
 
-/* Leaders Card */
+.leaders-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--accent-color);
+  border-radius: var(--radius-sm);
+}
+
+/* Leaders Card with enhanced effects */
 .leaders-card {
-  background: var(--secondary-bg-color);
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.25rem;
-  transition: box-shadow var(--transition-speed);
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  transition: all var(--transition-speed) var(--transition-function);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border-color);
 }
 
 .leaders-card:hover {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-5px);
+}
+
+.leaders-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color), #ff4d4d);
 }
 
 .leaders-card h3 {
   font-size: 1.25rem;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.25rem 0;
   color: var(--accent-color);
+  font-weight: 700;
 }
 
-/* Leader Row */
+/* Modern Leader Row with interactive hover */
 .leader-row {
   display: flex;
   align-items: center;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: background var(--transition-speed);
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-speed) var(--transition-function);
+  position: relative;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.01);
 }
 
 .leader-row:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.03);
+  transform: translateX(5px);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Logo Styles - Not rounded */
-.stats-player-logo,
-.team-stat-logo {
-  width: 40px;
-  height: 40px;
-  /* Removed border-radius to display the logo as-is */
-  background: transparent;
+.leader-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Logo Styles with modern 3D effect */
+.stats-player-logo, .team-stat-logo {
+  width: 48px;
+  height: 48px;
   object-fit: contain;
-  margin-right: 0.75rem;
+  margin-right: 1rem;
+  transition: transform var(--transition-speed) var(--transition-function);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateY(5deg);
 }
 
-/* Leader Name and Stat */
+.leader-row:hover .stats-player-logo,
+.leader-row:hover .team-stat-logo {
+  transform: perspective(800px) rotateY(-5deg) scale(1.1);
+}
+
+/* Leader Name and Stat with improved typography */
 .leader-name {
   flex: 1;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.05rem;
+  transition: color var(--transition-speed) var(--transition-function);
 }
 
-.leader-stat {
-  font-weight: bold;
-  font-size: 1rem;
-  margin-left: 1rem;
+.leader-row:hover .leader-name {
   color: var(--accent-color);
 }
 
-/* Placeholder / Error Message */
+.leader-stat {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-left: 1.5rem;
+  color: var(--accent-color);
+  background: var(--accent-soft);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-speed) var(--transition-function);
+}
+
+.leader-row:hover .leader-stat {
+  background: var(--accent-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Modern placeholder with gradient */
 .stat-placeholder {
   font-size: 1rem;
-  color: var(--border-color);
   font-style: italic;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, #f5f5f5, #ececec);
+  border-radius: var(--radius-md);
+  border: 1px dashed #ddd;
+  color: var(--text-muted);
+}
+
+/* Media queries for better responsiveness */
+@media screen and (max-width: 768px) {
+  .stats-container {
+    padding: 1.5rem;
+  }
+  
+  .stats-header {
+    font-size: 2rem;
+  }
+  
+  .leaders-wrapper {
+    gap: 1.5rem;
+  }
+  
+  .leaders-card {
+    padding: 1.25rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .stats-header {
+    font-size: 1.75rem;
+  }
+  
+  .toggle-btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+  }
+  
+  .leader-row {
+    padding: 0.5rem;
+  }
+  
+  .stats-player-logo, .team-stat-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .leader-name {
+    font-size: 0.95rem;
+  }
+  
+  .leader-stat {
+    font-size: 1rem;
+    margin-left: 0.75rem;
+    padding: 0.25rem 0.6rem;
+  }
 }
