@@ -20,26 +20,27 @@
     --transition-speed: 0.3s;
   }
   
-  /* Global styles for the container */
-  .coach-overview-container {
-    font-family: 'Orbitron', 'Titillium Web', sans-serif;
-    max-width: 1400px;
-    margin: 0 auto;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    padding-bottom: 3rem;
-  }
-  
-  /* ===== HERO SECTION ===== */
-  .coach-hero {
-    background: linear-gradient(135deg, #D4001C 0%, #930014 100%);
-    color: white;
-    padding: 3rem 0;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-  }
+/* Global styles for the container */
+.coach-overview-container {
+  font-family: 'Orbitron', 'Titillium Web', sans-serif;
+  width: 100%; /* Change from max-width to width */
+  margin: 0; /* Remove auto margin */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding-bottom: 3rem;
+}
+
+/* ===== HERO SECTION ===== */
+.coach-hero {
+  background: linear-gradient(135deg, #D4001C 0%, #930014 100%);
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  position: relative;
+  width: 100%; /* Ensure full width */
+  overflow: hidden;
+  text-align: center;
+}
   
   .coach-hero::before {
     content: '';
