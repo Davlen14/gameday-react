@@ -378,11 +378,19 @@ const Stats = () => {
         }
         
         .tab-button.active {
-          background: var(--tab-color); /* Already using tab-color */
-          color: white;
+          background: var(--tab-color); /* Red background */
+          color: #ffffff; /* Pure white text */
           transform: translateY(0);
-          box-shadow: var(--shadow-sm);
+          box-shadow: none; /* Remove the shadow completely */
           font-weight: 700;
+          border: none; /* Remove any border */
+          text-shadow: none; /* Remove any text shadow */
+        }
+
+        /* You might also need to add this to ensure no grayish effect */
+        .tab-button.active:hover {
+          color: #ffffff;
+          box-shadow: none;
         }
 
         /* Cards Layout - Full Width Row */
