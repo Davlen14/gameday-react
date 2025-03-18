@@ -255,7 +255,7 @@ const Stats = () => {
           /* Tab Colors - Keep this red for tabs only */
           --tab-color: #D4001C;
           --tab-hover: #F5001F;
-          --tab-soft: rgba(212, 0, 28, 0.08);
+          --tab-soft: rgb(255, 255, 255);
         }
 
         /* Base styles and animations */
@@ -431,8 +431,7 @@ const Stats = () => {
           padding: 1.25rem;
           color: var(--text-color);
           border-bottom: 1px solid var(--border-color);
-          background: rgba(0, 0, 0, 0.01);
-        }
+          background:  #D4001C;
 
         /* Featured Player (Rank #1) */
         .featured-player {
