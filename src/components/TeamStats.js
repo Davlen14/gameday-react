@@ -134,8 +134,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   }, [teamName, year]);
 
   // Process stats into categories
-// Process stats into categories
-const processStats = () => {
+  const processStats = () => {
     // First check if stats is an array
     if (!Array.isArray(stats) || stats.length === 0) {
       console.log("Stats is not an array or is empty:", stats);
@@ -216,6 +215,56 @@ const processStats = () => {
       console.error("Error creating misc category:", err);
     }
     
+    // Add derived metrics
+    try {
+      const getStatValue = (name) => {
+        const stat = stats.find(s => s && s.statName === name);
+        return stat ? stat.statValue : 0;
+      };
+      
+      // Calculate passing efficiency
+      const passCompletions = getStatValue("passCompletions");
+      const passAttempts = getStatValue("passAttempts");
+      const completionPercentage = passAttempts > 0 ? (passCompletions / passAttempts * 100).toFixed(1) : 0;
+      
+      // Calculate yards per attempt
+      const netPassingYards = getStatValue("netPassingYards");
+      const yardsPerAttempt = passAttempts > 0 ? (netPassingYards / passAttempts).toFixed(1) : 0;
+      
+      // Calculate rushing efficiency
+      const rushingYards = getStatValue("rushingYards");
+      const rushingAttempts = getStatValue("rushingAttempts");
+      const yardsPerCarry = rushingAttempts > 0 ? (rushingYards / rushingAttempts).toFixed(1) : 0;
+      
+      // Add to offense category
+      if (categories.offense && categories.offense.statList) {
+        categories.offense.statList.push(
+          { statName: "completionPercentage", statValue: completionPercentage, derived: true },
+          { statName: "yardsPerAttempt", statValue: yardsPerAttempt, derived: true },
+          { statName: "yardsPerCarry", statValue: yardsPerCarry, derived: true }
+        );
+      }
+      
+      // Add special teams efficiency
+      const kickReturns = getStatValue("kickReturns");
+      const kickReturnYards = getStatValue("kickReturnYards");
+      const kickReturnAverage = kickReturns > 0 ? (kickReturnYards / kickReturns).toFixed(1) : 0;
+      
+      const puntReturns = getStatValue("puntReturns");
+      const puntReturnYards = getStatValue("puntReturnYards");
+      const puntReturnAverage = puntReturns > 0 ? (puntReturnYards / puntReturns).toFixed(1) : 0;
+      
+      if (categories.specialTeams && categories.specialTeams.statList) {
+        categories.specialTeams.statList.push(
+          { statName: "kickReturnAverage", statValue: kickReturnAverage, derived: true },
+          { statName: "puntReturnAverage", statValue: puntReturnAverage, derived: true }
+        );
+      }
+      
+    } catch (err) {
+      console.error("Error adding derived metrics:", err);
+    }
+    
     return categories;
   };
   
@@ -249,7 +298,13 @@ const processStats = () => {
       "fumblesLost": "Fumbles Lost",
       "totalYards": "Total Yards",
       "firstDowns": "First Downs",
-      "penaltyYards": "Penalty Yards"
+      "penaltyYards": "Penalty Yards",
+      // Derived stats
+      "completionPercentage": "Completion %",
+      "yardsPerAttempt": "Yards per Attempt",
+      "yardsPerCarry": "Yards per Carry",
+      "kickReturnAverage": "Kick Return Average",
+      "puntReturnAverage": "Punt Return Average"
     };
     
     if (specialCases[name]) {
@@ -278,6 +333,11 @@ const processStats = () => {
       }
     }
     
+    // Add percentage sign for derived percentage metrics
+    if (name === "completionPercentage") {
+      return `${value}%`;
+    }
+    
     // Default: just return the value
     return value;
   };
@@ -302,6 +362,9 @@ const processStats = () => {
       "rushingYards": <FaRunning className="stat-icon" />,
       "rushingAttempts": <FaRunning className="stat-icon" />,
       "rushingTDs": <FaRunning className="stat-icon" />,
+      "completionPercentage": <IoMdFootball className="stat-icon" />,
+      "yardsPerAttempt": <IoMdFootball className="stat-icon" />,
+      "yardsPerCarry": <FaRunning className="stat-icon" />,
       
       // Defense
       "sacks": <GiWalkingBoot className="stat-icon" />,
@@ -318,6 +381,8 @@ const processStats = () => {
       "puntReturns": <FaExchangeAlt className="stat-icon" />,
       "puntReturnYards": <FaExchangeAlt className="stat-icon" />,
       "puntReturnTDs": <FaExchangeAlt className="stat-icon" />,
+      "kickReturnAverage": <FaExchangeAlt className="stat-icon" />,
+      "puntReturnAverage": <FaExchangeAlt className="stat-icon" />,
       
       // Situational
       "thirdDowns": <BiDownArrow className="stat-icon" />,
@@ -347,7 +412,8 @@ const processStats = () => {
       "thirdDownConversions", "fourthDownConversions", "interceptions",
       "sacks", "interceptionYards", "interceptionTDs", "tacklesForLoss",
       "fumblesRecovered", "kickReturnYards", "puntReturnYards",
-      "kickReturnTDs", "puntReturnTDs"
+      "kickReturnTDs", "puntReturnTDs", "completionPercentage",
+      "yardsPerAttempt", "yardsPerCarry", "kickReturnAverage", "puntReturnAverage"
     ];
     
     const lowIsGood = [
@@ -370,6 +436,9 @@ const processStats = () => {
       if (statName === "totalYards" && value > 6000) return "excellent-value";
       if (statName === "sacks" && value > 40) return "excellent-value";
       if (statName === "interceptions" && value > 15) return "excellent-value";
+      if (statName === "completionPercentage" && value > 65) return "excellent-value";
+      if (statName === "yardsPerAttempt" && value > 8) return "excellent-value";
+      if (statName === "yardsPerCarry" && value > 5) return "excellent-value";
       
       // Default high-value rating
       if (value > 0) return "good-value";
@@ -457,6 +526,7 @@ const processStats = () => {
       const secondValue = secondStat.statValue;
       const totalValue = firstValue + secondValue;
       
+      // Calculate percentages (match screenshot)
       const firstPercentage = Math.round((firstValue / totalValue) * 100);
       const secondPercentage = 100 - firstPercentage;
       
@@ -619,7 +689,7 @@ const processStats = () => {
                 <h4 style={{ color: accentColor }}>
                   <FaChartBar className="stat-icon" /> Offensive Stats
                 </h4>
-                <p>Passing and rushing statistics show how the team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
+                <p>Passing and rushing statistics show howthe team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
               </div>
               <div className="stat-definition">
                 <h4 style={{ color: accentColor }}>
