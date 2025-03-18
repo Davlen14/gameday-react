@@ -378,8 +378,8 @@ const Stats = () => {
         }
         
         .tab-button.active {
-          background: var(--tab-color);
-          color: var(--primary-color);
+          background: var(--tab-color); /* Already using tab-color */
+          color: white;
           transform: translateY(0);
           box-shadow: var(--shadow-sm);
           font-weight: 700;
@@ -420,7 +420,7 @@ const Stats = () => {
           left: 0;
           right: 0;
           height: 4px;
-          background: var(--accent-gradient);
+          background: #D4001C; /* Solid red instead of gray gradient */
         }
         
         .leaders-card h3 {
