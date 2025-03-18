@@ -68,7 +68,9 @@
 body {
   font-family: 'Poppins', 'Inter', sans-serif;
   background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
-  border-radius: 12px;
+  margin: 0; /* Add this to ensure no margin */
+  padding: 0; /* Add this to ensure no padding */
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 .coming-soon-icon {
@@ -356,9 +358,14 @@ body {
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  width: 100%; 
-  margin: 0; 
+  width: 100vw; /* Use viewport width instead of percentage */
+  margin: 0;
   padding: 0;
+  overflow-x: hidden; /* Prevent any horizontal overflow */
+  position: absolute; /* Position absolutely */
+  left: 0; /* Align to left edge */
+  right: 0; /* Align to right edge */
+  top: 0; /* Start from the very top */
 }
 
 /* Top Navigation Bar - Solid color */
@@ -376,7 +383,10 @@ body {
   border-radius: 0;
   width: 100%;
   margin: 0;
+  left: 0; /* Ensure left alignment */
+  right: 0; /* Ensure right alignment */
 }
+
 
 .back-button {
   /* Color will be set dynamically in JS based on team color */
