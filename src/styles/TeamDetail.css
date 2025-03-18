@@ -350,35 +350,32 @@ body {
   100% { left: 150%; }
 }
 
-/* Team Dashboard Layout */
 .team-dashboard {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  width: 100%; /* Ensure full width */
-  margin: 0; /* Remove any margin */
-  padding: 0; /* Remove any padding */
+  width: 100%; 
+  margin: 0; 
+  padding: 0;
 }
 
 /* Top Navigation Bar - Solid color */
 .team-top-bar {
-  background: var(--accent-color); /* Solid team color */
-  color: var(--contrast-text); /* Text color that contrasts with team color */
+  background: var(--accent-color);
+  color: var(--contrast-text);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 100;
-  /* Remove rounded edges */
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  width: 100%; /* Ensure full width */
-  margin: 0; /* Remove any margin */
+  border-radius: 0;
+  width: 100%;
+  margin: 0;
 }
 
 .back-button {
