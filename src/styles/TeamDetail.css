@@ -452,10 +452,11 @@ body {
 
 .team-logo-container {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: 150px;  /* Increased from 130px */
+  height: 150px; /* Increased from 130px */
   margin-right: 2.5rem;
   border-radius: 50%;
+  /* Using conic gradient for base effect */
   background: conic-gradient(
     from 180deg at 50% 50%,
     #ffffff 0deg,
@@ -465,10 +466,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 3D Effect with improved Neumorphism shadow */
   box-shadow: 
     -8px -8px 16px rgba(255, 255, 255, 0.8),
     8px 8px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  /* Adding 3D perspective */
+  perspective: 800px;
 }
 
 .team-logo-container::before {
@@ -483,12 +487,56 @@ body {
   z-index: 1;
 }
 
+/* Adding the shining effect like coach-team-logo */
+.team-logo-container::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.4) 48%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0) 70%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: shine 4s infinite ease-in-out;
+}
+
+/* Adjusting the team logo image */
 .team-logo-large {
-  width: 85px;
-  height: 85px;
+  width: 100px; /* Increased from 85px */
+  height: 100px; /* Increased from 85px */
   object-fit: contain;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
   z-index: 2;
+  transform-style: preserve-3d;
+  transform: rotateY(3deg) rotateX(3deg);
+  transition: all 0.3s ease;
+}
+
+/* Adding hover effect */
+.team-logo-container:hover .team-logo-large {
+  transform: rotateY(-3deg) rotateX(-3deg) scale(1.05);
+}
+
+/* Ensuring shine animation is available */
+@keyframes shine {
+  0%, 100% {
+    top: -150%;
+    left: -50%;
+  }
+  50% {
+    top: 100%;
+    left: 100%;
+  }
 }
 
 .team-info {
