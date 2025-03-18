@@ -54,6 +54,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('general');
   const [showInfoCard, setShowInfoCard] = useState(false);
+  const [categories, setCategories] = useState({});
+  const [kpis, setKpis] = useState(null);
   
   // Default to red if no team color is provided
   const accentColor = teamColor || "#D4001C";
@@ -99,6 +101,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
+  // Helper function to safely get stat value
+  const getStatValue = (name) => {
+    const stat = stats.find(s => s && s.statName === name);
+    return stat ? stat.statValue : 0;
+  };
+
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
@@ -109,6 +117,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         // Make sure data is an array before setting it to state
         if (Array.isArray(data)) {
           setStats(data);
+          console.log("Stats fetched successfully:", data);
         } else if (data && typeof data === 'object') {
           // If it's an object but not an array, convert it to an array
           const statsArray = Object.keys(data).map(key => ({
@@ -116,12 +125,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             statValue: data[key]
           }));
           setStats(statsArray);
+          console.log("Stats converted to array:", statsArray);
         } else {
           // If it's neither an array nor an object, set to empty array
           console.error('Unexpected data format:', data);
           setStats([]);
         }
       } catch (err) {
+        console.error("Error fetching team stats:", err);
         setError(err.message || "Error fetching team stats.");
       } finally {
         setLoading(false);
@@ -133,16 +144,63 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [teamName, year]);
 
+  // Calculate key performance indicators
+  useEffect(() => {
+    if (!stats || stats.length === 0) return;
+    
+    // Calculate yards per game
+    const games = getStatValue("games");
+    const totalYards = getStatValue("totalYards");
+    const yardsPerGame = games ? Math.round(totalYards / games) : 0;
+    
+    // Calculate points per game (if we have the data)
+    // Usually this would be in the stats, but we can approximate
+    const passingTDs = getStatValue("passingTDs");
+    const rushingTDs = getStatValue("rushingTDs");
+    const kickReturnTDs = getStatValue("kickReturnTDs");
+    const puntReturnTDs = getStatValue("puntReturnTDs");
+    const interceptionTDs = getStatValue("interceptionTDs");
+    
+    const specialTeamsTDs = kickReturnTDs + puntReturnTDs + interceptionTDs;
+    const totalTDs = passingTDs + rushingTDs + specialTeamsTDs;
+    const approximatePoints = totalTDs * 7; // Rough estimate, assuming PAT after each TD
+    const pointsPerGame = games ? Math.round(approximatePoints / games) : 0;
+    
+    // Calculate 3rd down efficiency
+    const thirdDowns = getStatValue("thirdDowns");
+    const thirdDownConversions = getStatValue("thirdDownConversions");
+    const thirdDownPercentage = thirdDowns ? Math.round((thirdDownConversions / thirdDowns) * 100) : 0;
+    
+    // Calculate turnover margin
+    const turnovers = getStatValue("turnovers");
+    const interceptions = getStatValue("interceptions");
+    const fumblesRecovered = getStatValue("fumblesRecovered");
+    const takeaways = interceptions + fumblesRecovered;
+    const turnoverMargin = takeaways - turnovers;
+    
+    setKpis({
+      yardsPerGame,
+      pointsPerGame,
+      thirdDownPercentage,
+      turnoverMargin
+    });
+    
+    console.log("KPIs calculated:", {
+      yardsPerGame,
+      pointsPerGame,
+      thirdDownPercentage,
+      turnoverMargin
+    });
+  }, [stats]);
+
   // Process stats into categories
-  const processStats = () => {
-    // First check if stats is an array
-    if (!Array.isArray(stats) || stats.length === 0) {
-      console.log("Stats is not an array or is empty:", stats);
-      return {};
-    }
+  useEffect(() => {
+    if (!stats || stats.length === 0) return;
+    
+    console.log("Processing stats into categories...");
     
     // Create categories object
-    const categories = {
+    const categoriesObj = {
       general: {
         name: "General",
         icon: <IoMdStats />,
@@ -184,8 +242,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     const processedStats = new Set();
     
     // Process explicitly categorized stats
-    Object.keys(categories).forEach(categoryKey => {
-      const category = categories[categoryKey];
+    Object.keys(categoriesObj).forEach(categoryKey => {
+      const category = categoriesObj[categoryKey];
       category.statList = [];
       
       category.stats.forEach(statName => {
@@ -205,7 +263,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       // Create a misc category for any uncategorized stats
       const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
       if (miscStats.length > 0) {
-        categories.misc = {
+        categoriesObj.misc = {
           name: "Miscellaneous",
           icon: <FaRegChartBar />,
           statList: miscStats
@@ -217,11 +275,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     
     // Add derived metrics
     try {
-      const getStatValue = (name) => {
-        const stat = stats.find(s => s && s.statName === name);
-        return stat ? stat.statValue : 0;
-      };
-      
       // Calculate passing efficiency
       const passCompletions = getStatValue("passCompletions");
       const passAttempts = getStatValue("passAttempts");
@@ -237,8 +290,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const yardsPerCarry = rushingAttempts > 0 ? (rushingYards / rushingAttempts).toFixed(1) : 0;
       
       // Add to offense category
-      if (categories.offense && categories.offense.statList) {
-        categories.offense.statList.push(
+      if (categoriesObj.offense && categoriesObj.offense.statList) {
+        categoriesObj.offense.statList.push(
           { statName: "completionPercentage", statValue: completionPercentage, derived: true },
           { statName: "yardsPerAttempt", statValue: yardsPerAttempt, derived: true },
           { statName: "yardsPerCarry", statValue: yardsPerCarry, derived: true }
@@ -254,8 +307,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const puntReturnYards = getStatValue("puntReturnYards");
       const puntReturnAverage = puntReturns > 0 ? (puntReturnYards / puntReturns).toFixed(1) : 0;
       
-      if (categories.specialTeams && categories.specialTeams.statList) {
-        categories.specialTeams.statList.push(
+      if (categoriesObj.specialTeams && categoriesObj.specialTeams.statList) {
+        categoriesObj.specialTeams.statList.push(
           { statName: "kickReturnAverage", statValue: kickReturnAverage, derived: true },
           { statName: "puntReturnAverage", statValue: puntReturnAverage, derived: true }
         );
@@ -265,8 +318,9 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       console.error("Error adding derived metrics:", err);
     }
     
-    return categories;
-  };
+    setCategories(categoriesObj);
+    console.log("Categories processed:", categoriesObj);
+  }, [stats]);
   
   // Format stat name for display
   const formatStatName = (name) => {
@@ -522,8 +576,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       if (!firstStat || !secondStat) return null;
       
-      const firstValue = firstStat.statValue;
-      const secondValue = secondStat.statValue;
+      const firstValue = parseInt(firstStat.statValue, 10);
+      const secondValue = parseInt(secondStat.statValue, 10);
       const totalValue = firstValue + secondValue;
       
       // Calculate percentages (match screenshot)
@@ -566,51 +620,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       );
     });
   };
-  
-  // Calculate key performance indicators
-  const calculateKPIs = () => {
-    if (!stats || stats.length === 0) return null;
-    
-    // Helper function to get stat value
-    const getStatValue = (name) => {
-      const stat = stats.find(s => s.statName === name);
-      return stat ? stat.statValue : 0;
-    };
-    
-    // Calculate yards per game
-    const games = getStatValue("games");
-    const totalYards = getStatValue("totalYards");
-    const yardsPerGame = games ? Math.round(totalYards / games) : 0;
-    
-    // Calculate points per game (if we have the data)
-    // Usually this would be in the stats, but we can approximate
-    const passingTDs = getStatValue("passingTDs");
-    const rushingTDs = getStatValue("rushingTDs");
-    const specialTeamsTDs = getStatValue("kickReturnTDs") + getStatValue("puntReturnTDs") + getStatValue("interceptionTDs");
-    const totalTDs = passingTDs + rushingTDs + specialTeamsTDs;
-    const approximatePoints = totalTDs * 7; // Rough estimate, assuming PAT after each TD
-    const pointsPerGame = games ? Math.round(approximatePoints / games) : 0;
-    
-    // Calculate 3rd down efficiency
-    const thirdDowns = getStatValue("thirdDowns");
-    const thirdDownConversions = getStatValue("thirdDownConversions");
-    const thirdDownPercentage = thirdDowns ? Math.round((thirdDownConversions / thirdDowns) * 100) : 0;
-    
-    // Calculate turnover margin
-    const turnovers = getStatValue("turnovers");
-    const takeaways = getStatValue("interceptions") + getStatValue("fumblesRecovered");
-    const turnoverMargin = takeaways - turnovers;
-    
-    return {
-      yardsPerGame,
-      pointsPerGame,
-      thirdDownPercentage,
-      turnoverMargin
-    };
-  };
-  
-  const categories = processStats();
-  const kpis = calculateKPIs();
 
   if (loading) {
     return (
@@ -654,6 +663,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     );
   }
 
+  // Debug output for KPIs
+  console.log("Rendering with KPIs:", kpis);
+  console.log("Rendering with categories:", categories);
+
   return (
     <div className="team-stats">
       <div className="stats-header">
@@ -689,7 +702,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 <h4 style={{ color: accentColor }}>
                   <FaChartBar className="stat-icon" /> Offensive Stats
                 </h4>
-                <p>Passing and rushing statistics show howthe team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
+                <p>Passing and rushing statistics show how the team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
               </div>
               <div className="stat-definition">
                 <h4 style={{ color: accentColor }}>
