@@ -217,9 +217,11 @@ const Stats = () => {
     <div className="stats-container">
       {/* Title */}
       <div className="stats-header">
-        <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
-        <h1>COLLEGE FOOTBALL STATISTICS</h1>
-      </div>
+      <h1>
+        <img src="/photos/ncaaf.png" alt="NCAAF Logo" className="ncaaf-logo" />
+        COLLEGE FOOTBALL STATISTICS
+      </h1>
+    </div>
 
       {/* Tabs */}
       <div className="view-toggle">
