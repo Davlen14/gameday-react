@@ -169,6 +169,7 @@ const Stats = () => {
               alt={getTeamAbbreviation(top.team)}
               className="featured-logo"
             />
+            <div className="shine-effect"></div>
           </div>
           <div className="featured-info">
             <div className="featured-name">{top.playerName}</div>
@@ -220,10 +221,10 @@ const Stats = () => {
         :root {
           /* Modern color scheme with subtle variations */
           --primary-color: #ffffff;
-          --accent-color: #D4001C;
-          --accent-hover: #F5001F;
-          --accent-soft: rgba(212, 0, 28, 0.08);
-          --accent-gradient: linear-gradient(135deg, var(--accent-color), #ff4d4d);
+          --accent-color: #555555; /* Changed from red to gray */
+          --accent-hover: #777777;
+          --accent-soft: rgba(85, 85, 85, 0.08); /* Changed from red to gray */
+          --accent-gradient: linear-gradient(135deg, #333333, #666666); /* Changed from red to gray */
           --text-color: #333333;
           --text-secondary: #666666;
           --text-muted: #888888;
@@ -250,6 +251,11 @@ const Stats = () => {
           /* Typography */
           --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           --font-family-display: 'Orbitron', sans-serif;
+          
+          /* Tab Colors - Keep this red for tabs only */
+          --tab-color: #D4001C;
+          --tab-hover: #F5001F;
+          --tab-soft: rgba(212, 0, 28, 0.08);
         }
 
         /* Base styles and animations */
@@ -270,19 +276,20 @@ const Stats = () => {
         }
         
         @keyframes shine {
-          0% { left: -100%; }
-          100% { left: 100%; }
+          0% { transform: translateX(-100%) rotate(25deg); }
+          100% { transform: translateX(100%) rotate(25deg); }
         }
 
-        /* Stats Container */
+        /* Stats Container - Full Width */
         .stats-container {
           padding: 2rem;
-          max-width: 1400px;
-          margin: 0 auto;
+          width: 100%;
+          margin: 0;
           font-family: var(--font-family-sans);
           color: var(--text-color);
           background: var(--background-color);
           animation: fadeIn 0.5s var(--transition-function);
+          box-sizing: border-box;
         }
 
         /* Page Header */
@@ -307,10 +314,7 @@ const Stats = () => {
           font-size: 2.4rem;
           font-weight: 700;
           margin: 0;
-          background: var(--accent-gradient);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+          color: #333333; /* Black text for title */
           text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
           position: relative;
         }
@@ -326,7 +330,7 @@ const Stats = () => {
           border-radius: var(--radius-full);
         }
 
-        /* Tabs Navigation */
+        /* Tabs Navigation - Keep red for tabs */
         .view-toggle {
           display: flex;
           justify-content: center;
@@ -339,8 +343,8 @@ const Stats = () => {
         
         .tab-button {
           background: transparent;
-          border: 2px solid var(--accent-color);
-          color: var(--accent-color);
+          border: 2px solid var(--tab-color);
+          color: var(--tab-color);
           font-family: var(--font-family-display);
           font-size: 1rem;
           font-weight: 600;
@@ -368,25 +372,26 @@ const Stats = () => {
         }
         
         .tab-button:hover {
-          background: var(--accent-soft);
+          background: var(--tab-soft);
           transform: translateY(-2px);
           box-shadow: var(--shadow-md);
         }
         
         .tab-button.active {
-          background: var(--accent-color);
+          background: var(--tab-color);
           color: var(--primary-color);
           transform: translateY(0);
           box-shadow: var(--shadow-sm);
           font-weight: 700;
         }
 
-        /* Cards Layout */
+        /* Cards Layout - Full Width Row */
         .cards-container {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-          gap: 2rem;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1.5rem;
           animation: fadeIn 0.5s var(--transition-function);
+          width: 100%;
         }
 
         /* Leader Card */
@@ -398,6 +403,9 @@ const Stats = () => {
           transition: all var(--transition-speed) var(--transition-function);
           position: relative;
           border: 1px solid var(--border-color);
+          height: 100%;
+          display: flex;
+          flex-direction: column;
         }
         
         .leaders-card:hover {
@@ -440,25 +448,52 @@ const Stats = () => {
         .featured-rank {
           font-size: 1.8rem;
           font-weight: 800;
-          color: var(--accent-color);
+          color: var(--accent-color); /* Gray instead of red */
           width: 30px;
           text-align: center;
           text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
           font-family: var(--font-family-display);
         }
         
+        /* Enhanced glassy logo container with shine effect */
         .featured-logo-container {
           width: 60px;
           height: 60px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: var(--radius-md);
-          background: white;
-          box-shadow: var(--shadow-sm);
+          border-radius: 50%; /* Made circular */
+          background: rgba(255, 255, 255, 0.7);
+          box-shadow: 
+            0 8px 20px rgba(0, 0, 0, 0.1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+          position: relative;
+          overflow: hidden;
+          backdrop-filter: blur(5px);
           transform-style: preserve-3d;
           perspective: 800px;
           transition: transform var(--transition-speed) var(--transition-function);
+        }
+        
+        /* Shine effect for logo */
+        .shine-effect {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.1) 30%,
+            rgba(255, 255, 255, 0.8) 50%,
+            rgba(255, 255, 255, 0.1) 70%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          pointer-events: none;
+          z-index: 2;
+          transform: translateX(-100%) rotate(25deg);
+          animation: shine 3s infinite;
         }
         
         .featured-player:hover .featured-logo-container {
@@ -470,6 +505,7 @@ const Stats = () => {
           height: 75%;
           object-fit: contain;
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+          z-index: 1;
         }
         
         .featured-info {
@@ -497,7 +533,7 @@ const Stats = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          background: var(--accent-soft);
+          background: rgba(0, 0, 0, 0.05); /* Gray background */
           padding: 0.5rem 1rem;
           border-radius: var(--radius-md);
           transition: all var(--transition-speed) var(--transition-function);
@@ -512,7 +548,7 @@ const Stats = () => {
         .stat-value {
           font-size: 1.4rem;
           font-weight: 800;
-          color: var(--accent-color);
+          color: var(--accent-color); /* Gray instead of red */
           line-height: 1.2;
           transition: color var(--transition-speed) var(--transition-function);
         }
@@ -536,6 +572,8 @@ const Stats = () => {
         /* Leaders List */
         .leaders-list {
           padding: 0.75rem 1rem;
+          flex: 1;
+          overflow-y: auto;
         }
         
         .leader-row {
@@ -556,7 +594,7 @@ const Stats = () => {
         .leader-rank {
           font-size: 1rem;
           font-weight: 700;
-          color: var(--accent-color);
+          color: var(--accent-color); /* Gray instead of red */
           width: 20px;
           text-align: center;
         }
@@ -566,6 +604,10 @@ const Stats = () => {
           height: 32px;
           object-fit: contain;
           transition: transform var(--transition-speed) var(--transition-function);
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         
         .leader-row:hover .leader-logo {
@@ -582,7 +624,7 @@ const Stats = () => {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 200px;
+          max-width: 140px;
           transition: color var(--transition-speed) var(--transition-function);
         }
         
@@ -614,6 +656,7 @@ const Stats = () => {
           padding: 1rem;
           text-align: center;
           border-top: 1px solid var(--border-color);
+          margin-top: auto;
         }
         
         .view-all-btn {
@@ -634,8 +677,8 @@ const Stats = () => {
         }
         
         .view-all-btn:hover {
-          color: var(--accent-color);
-          background: var(--accent-soft);
+          color: var(--tab-color); /* Keep red for button hover */
+          background: var(--tab-soft);
         }
         
         .view-all-btn svg {
@@ -654,12 +697,13 @@ const Stats = () => {
           justify-content: center;
           padding: 3rem 0;
           gap: 1rem;
+          flex: 1;
         }
         
         .loading-spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid rgba(212, 0, 28, 0.1);
+          border: 3px solid rgba(85, 85, 85, 0.1); /* Gray instead of red */
           border-radius: 50%;
           border-top-color: var(--accent-color);
           animation: rotate 1s linear infinite;
@@ -680,6 +724,7 @@ const Stats = () => {
           border-radius: var(--radius-md);
           margin: 1rem;
           border: 1px dashed var(--border-color);
+          flex: 1;
         }
         
         .coming-soon {
@@ -692,10 +737,6 @@ const Stats = () => {
           font-family: var(--font-family-display);
           font-size: 2rem;
           color: var(--text-color);
-          background: var(--accent-gradient);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
           display: inline-block;
           position: relative;
         }
@@ -714,11 +755,11 @@ const Stats = () => {
         /* Error Message */
         .error-message {
           background: rgba(212, 0, 28, 0.08);
-          border-left: 4px solid var(--accent-color);
+          border-left: 4px solid var(--tab-color); /* Keep red for error */
           padding: 1rem 1.5rem;
           margin-bottom: 2rem;
           border-radius: var(--radius-sm);
-          color: var(--accent-color);
+          color: var(--tab-color);
           font-weight: 500;
           animation: fadeIn 0.5s var(--transition-function);
           display: flex;
@@ -731,6 +772,12 @@ const Stats = () => {
         }
 
         /* Responsive Styles */
+        @media (max-width: 1400px) {
+          .cards-container {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        
         @media (max-width: 992px) {
           .stats-container {
             padding: 1.5rem;
@@ -741,6 +788,7 @@ const Stats = () => {
           }
           
           .cards-container {
+            grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
           }
         }
@@ -816,7 +864,7 @@ const Stats = () => {
           }
           
           .leader-name {
-            max-width: 150px;
+            max-width: 120px;
           }
         }
       `}</style>
