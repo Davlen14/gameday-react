@@ -105,22 +105,42 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         setLoading(true);
         // Fetch team stats for the given team and year
         const data = await teamsService.getTeamStats(teamName, year);
-        setStats(data);
+        
+        // Make sure data is an array before setting it to state
+        if (Array.isArray(data)) {
+          setStats(data);
+        } else if (data && typeof data === 'object') {
+          // If it's an object but not an array, convert it to an array
+          const statsArray = Object.keys(data).map(key => ({
+            statName: key,
+            statValue: data[key]
+          }));
+          setStats(statsArray);
+        } else {
+          // If it's neither an array nor an object, set to empty array
+          console.error('Unexpected data format:', data);
+          setStats([]);
+        }
       } catch (err) {
         setError(err.message || "Error fetching team stats.");
       } finally {
         setLoading(false);
       }
     };
-
+  
     if (teamName) {
       fetchTeamStats();
     }
   }, [teamName, year]);
 
   // Process stats into categories
-  const processStats = () => {
-    if (!stats || stats.length === 0) return {};
+// Process stats into categories
+const processStats = () => {
+    // First check if stats is an array
+    if (!Array.isArray(stats) || stats.length === 0) {
+      console.log("Stats is not an array or is empty:", stats);
+      return {};
+    }
     
     // Create categories object
     const categories = {
@@ -170,22 +190,30 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       category.statList = [];
       
       category.stats.forEach(statName => {
-        const statObj = stats.find(s => s.statName === statName);
-        if (statObj) {
-          category.statList.push(statObj);
-          processedStats.add(statName);
+        try {
+          const statObj = stats.find(s => s && s.statName === statName);
+          if (statObj) {
+            category.statList.push(statObj);
+            processedStats.add(statName);
+          }
+        } catch (err) {
+          console.error(`Error finding stat ${statName}:`, err);
         }
       });
     });
     
-    // Create a misc category for any uncategorized stats
-    const miscStats = stats.filter(s => !processedStats.has(s.statName));
-    if (miscStats.length > 0) {
-      categories.misc = {
-        name: "Miscellaneous",
-        icon: <FaRegChartBar />,
-        statList: miscStats
-      };
+    try {
+      // Create a misc category for any uncategorized stats
+      const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
+      if (miscStats.length > 0) {
+        categories.misc = {
+          name: "Miscellaneous",
+          icon: <FaRegChartBar />,
+          statList: miscStats
+        };
+      }
+    } catch (err) {
+      console.error("Error creating misc category:", err);
     }
     
     return categories;
