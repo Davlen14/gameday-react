@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import TeamPlayerStats from "./TeamPlayerStats"; // Import the Player Stats component
+import TeamStats from "./TeamStats"; // Import the Team Stats component
 
 import { 
   FaMapMarkerAlt, 
@@ -567,18 +568,22 @@ const TeamDetail = () => {
           </div>
         );
         
-      case 'teamStats':
-        return (
-          <div className="dashboard-card full-width-card">
-            <div className="card-header">
-              <FaChartBar style={{ marginRight: "12px" }} />
-              Team Statistics
+        case 'teamStats':
+          return (
+            <div className="dashboard-card full-width-card">
+              <div className="card-header">
+                <FaChartBar style={{ marginRight: "12px" }} />
+                Team Statistics
+              </div>
+              <div className="card-body">
+                <TeamStats 
+                  teamName={team.school} 
+                  year={2024} 
+                  teamColor={team.color} 
+                />
+              </div>
             </div>
-            <div className="card-body">
-              <ComingSoon title="Team Statistics" />
-            </div>
-          </div>
-        );
+          );
         
         case 'playerStats':
           return (
