@@ -130,352 +130,705 @@ const Stats = () => {
     fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
 
-  // Render card
-  const renderStatCard = (title, data, loading) => {
+  // Render leader card
+  const renderStatCard = (title, data, loading, statAbbr = "YDS") => {
     if (loading) {
       return (
-        <div className="stat-card">
-          <h3 className="card-title">{title}</h3>
-          <div className="loading-text">Loading...</div>
+        <div className="leaders-card">
+          <h3>{title}</h3>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading stats...</div>
+          </div>
         </div>
       );
     }
+    
     if (!data.length) {
       return (
-        <div className="stat-card">
-          <h3 className="card-title">{title}</h3>
-          <div className="loading-text">No data found.</div>
+        <div className="leaders-card">
+          <h3>{title}</h3>
+          <div className="stat-placeholder">No data available</div>
         </div>
       );
     }
+    
     const top = data[0];
     const rest = data.slice(1);
 
     return (
-      <div className="stat-card">
-        <h3 className="card-title">{title}</h3>
+      <div className="leaders-card">
+        <h3>{title}</h3>
 
-        {/* Top player row */}
-        <div className="top-row-section">
-          <span className="top-rank">1</span>
-          <img
-            src={getTeamLogo(top.team)}
-            alt={getTeamAbbreviation(top.team)}
-            className="top-logo"
-          />
-          <div className="top-info">
-            <div className="top-player-name">{top.playerName}</div>
-            <div className="top-sub">
-              {getTeamAbbreviation(top.team)}
-            </div>
+        {/* Featured player (top ranked) */}
+        <div className="featured-player">
+          <div className="featured-rank">1</div>
+          <div className="featured-logo-container">
+            <img
+              src={getTeamLogo(top.team)}
+              alt={getTeamAbbreviation(top.team)}
+              className="featured-logo"
+            />
           </div>
-          <div className="top-yds">{top.statValue}</div>
+          <div className="featured-info">
+            <div className="featured-name">{top.playerName}</div>
+            <div className="featured-team">{getTeamAbbreviation(top.team)}</div>
+          </div>
+          <div className="featured-stat">
+            <span className="stat-value">{top.statValue}</span>
+            <span className="stat-label">{statAbbr}</span>
+          </div>
         </div>
 
-        {/* Next 9 in table format */}
-        <div className="table-header">
-          <span className="col-rank">RANK</span>
-          <span className="col-team">TEAM</span>
-          <span className="col-player">PLAYER</span>
-          <span className="col-yds">YDS</span>
-        </div>
-        <div className="table-body">
-          {rest.map((p, idx) => {
-            const rank = idx + 2; // since top is #1
-            return (
-              <div className="table-row" key={idx}>
-                <span className="col-rank">{rank}</span>
-                <span className="col-team">
-                  <img
-                    src={getTeamLogo(p.team)}
-                    alt={getTeamAbbreviation(p.team)}
-                    className="table-logo"
-                  />
-                  {getTeamAbbreviation(p.team)}
-                </span>
-                <span className="col-player">{p.playerName}</span>
-                <span className="col-yds">{p.statValue}</span>
+        {/* Rest of the leaders */}
+        <div className="leaders-list">
+          {rest.map((player, idx) => (
+            <div className="leader-row" key={idx}>
+              <div className="leader-rank">{idx + 2}</div>
+              <img
+                src={getTeamLogo(player.team)}
+                alt={getTeamAbbreviation(player.team)}
+                className="leader-logo"
+              />
+              <div className="leader-info">
+                <div className="leader-name">{player.playerName}</div>
+                <div className="leader-team">{getTeamAbbreviation(player.team)}</div>
               </div>
-            );
-          })}
+              <div className="leader-stat">{player.statValue}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="complete-link">
-          Complete {title} Leaders
+        <div className="view-all">
+          <button className="view-all-btn">
+            View Complete {title} Leaders
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
       </div>
     );
-  };
-
-  // Render 3 on top row, 1 on bottom row
-  const renderPlayerLeaders = () => {
-    return (
-      <div className="cards-container">
-        <div className="row top-row">
-          {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
-          {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
-          {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
-        </div>
-        <div className="row bottom-row">
-          {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
-        </div>
-      </div>
-    );
-  };
-
-  // Content
-  const renderContent = () => {
-    if (activeTab === "playerLeaders") {
-      return renderPlayerLeaders();
-    } else {
-      return (
-        <div className="coming-soon">
-          <h2>Coming Soon...</h2>
-        </div>
-      );
-    }
   };
 
   return (
     <div className="stats-container">
       <style>{`
-        /* Import new fonts for specific selectors */
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron&family=Titillium+Web&display=swap');
-        /* Existing font import for rest of page (if needed) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
+        /* Import fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&display=swap');
+        
         :root {
-          --bg-color: #ffffff;
-          --text-color: #222222;
-          --highlight-color: #333333; /* Subtle highlight instead of red */
-          --border-color: #ddd;
-          --shadow-color: rgba(0, 0, 0, 0.08);
-          --card-bg: #f9f9f9;
-          --primary-font: 'Inter', sans-serif;
-          --heading-font-size: 1rem;
-          --sub-font-size: 0.85rem;
+          /* Modern color scheme with subtle variations */
+          --primary-color: #ffffff;
+          --accent-color: #D4001C;
+          --accent-hover: #F5001F;
+          --accent-soft: rgba(212, 0, 28, 0.08);
+          --accent-gradient: linear-gradient(135deg, var(--accent-color), #ff4d4d);
+          --text-color: #333333;
+          --text-secondary: #666666;
+          --text-muted: #888888;
+          --background-color: #ffffff;
+          --card-bg: #ffffff;
+          --card-hover-bg: #fafafa;
+          --border-color: #f0f0f0;
+          
+          /* Shadows and effects */
+          --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+          --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.07);
+          --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.1);
+          
+          /* Animations */
+          --transition-speed: 0.25s;
+          --transition-function: cubic-bezier(0.4, 0, 0.2, 1);
+          
+          /* Radiuses */
+          --radius-sm: 8px;
+          --radius-md: 12px;
+          --radius-lg: 16px;
+          --radius-full: 9999px;
+          
+          /* Typography */
+          --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --font-family-display: 'Orbitron', sans-serif;
         }
 
+        /* Base styles and animations */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(0.95); opacity: 0.7; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @keyframes shine {
+          0% { left: -100%; }
+          100% { left: 100%; }
+        }
+
+        /* Stats Container */
         .stats-container {
-          background: var(--bg-color);
+          padding: 2rem;
+          max-width: 1400px;
+          margin: 0 auto;
+          font-family: var(--font-family-sans);
           color: var(--text-color);
-          font-family: var(--primary-font);
-          margin: 2rem;
+          background: var(--background-color);
+          animation: fadeIn 0.5s var(--transition-function);
         }
 
-        /* Page Title */
-        .page-title {
+        /* Page Header */
+        .stats-header {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 1rem;
+          margin-bottom: 2.5rem;
+          position: relative;
         }
-        .page-title img {
-          width: 50px;
-          height: 50px;
-          margin-right: 1rem;
+        
+        .stats-header img {
+          width: 60px;
+          height: 60px;
+          margin-right: 1.5rem;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+          animation: pulse 3s infinite var(--transition-function);
         }
-        .page-title h1 {
-          font-style: italic;
-          font-size: 2rem;
+        
+        .stats-header h1 {
+          font-family: var(--font-family-display);
+          font-size: 2.4rem;
+          font-weight: 700;
           margin: 0;
-          color: var(--highlight-color);
-          /* Use new fonts for the title */
-          font-family: "Orbitron", "Titillium Web", sans-serif;
+          background: var(--accent-gradient);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+          position: relative;
+        }
+        
+        .stats-header h1::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: var(--accent-gradient);
+          border-radius: var(--radius-full);
         }
 
-        /* Tabs */
-        .tabs {
+        /* Tabs Navigation */
+        .view-toggle {
           display: flex;
           justify-content: center;
-          margin-bottom: 2rem;
+          margin-bottom: 2.5rem;
+          gap: 1rem;
+          position: relative;
+          z-index: 1;
+          flex-wrap: wrap;
         }
+        
         .tab-button {
-          border: none;
-          background: none;
+          background: transparent;
+          border: 2px solid var(--accent-color);
+          color: var(--accent-color);
+          font-family: var(--font-family-display);
           font-size: 1rem;
-          padding: 0.75rem 1.5rem;
-          margin: 0 0.5rem;
-          cursor: pointer;
-          border-bottom: 2px solid transparent;
-          transition: color 0.3s ease, border-bottom 0.3s ease;
-          /* Use new fonts for tab buttons */
-          font-family: "Orbitron", "Titillium Web", sans-serif;
-        }
-        .tab-button:hover {
-          color: var(--highlight-color);
-        }
-        .tab-button.active {
-          border-bottom: 2px solid var(--highlight-color);
-          color: var(--highlight-color);
           font-weight: 600;
+          padding: 0.75rem 1.75rem;
+          border-radius: var(--radius-full);
+          transition: all var(--transition-speed) var(--transition-function);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
         }
-
-        .coming-soon {
-          text-align: center;
-          margin-top: 2rem;
-          font-size: 1.3rem;
-          color: var(--highlight-color);
+        
+        .tab-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: all 0.7s var(--transition-function);
+        }
+        
+        .tab-button:hover::before {
+          left: 100%;
+        }
+        
+        .tab-button:hover {
+          background: var(--accent-soft);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+        }
+        
+        .tab-button.active {
+          background: var(--accent-color);
+          color: var(--primary-color);
+          transform: translateY(0);
+          box-shadow: var(--shadow-sm);
+          font-weight: 700;
         }
 
         /* Cards Layout */
         .cards-container {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-        .row {
           display: grid;
-          gap: 1.5rem;
-        }
-        .top-row {
-          grid-template-columns: repeat(3, 1fr);
-        }
-        .bottom-row {
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 2rem;
+          animation: fadeIn 0.5s var(--transition-function);
         }
 
-        /* Stat Card */
-        .stat-card {
+        /* Leader Card */
+        .leaders-card {
           background: var(--card-bg);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-md);
+          overflow: hidden;
+          transition: all var(--transition-speed) var(--transition-function);
+          position: relative;
           border: 1px solid var(--border-color);
-          box-shadow: 0 2px 4px var(--shadow-color);
-          border-radius: 6px;
-          padding: 1rem;
-          transition: transform 0.2s ease;
-          display: flex;
-          flex-direction: column;
         }
-        .stat-card:hover {
-          transform: translateY(-2px);
+        
+        .leaders-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--shadow-lg);
         }
-        .card-title {
-          font-size: 1rem;
-          font-weight: 600;
-          color: var(--highlight-color);
-          margin-bottom: 1rem;
+        
+        .leaders-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: var(--accent-gradient);
+        }
+        
+        .leaders-card h3 {
+          font-family: var(--font-family-display);
+          font-size: 1.2rem;
+          font-weight: 700;
+          margin: 0;
+          padding: 1.25rem;
+          color: var(--text-color);
           border-bottom: 1px solid var(--border-color);
-          padding-bottom: 0.5rem;
-          /* Use new fonts for card titles */
-          font-family: "Orbitron", "Titillium Web", sans-serif;
-        }
-        .loading-text {
-          font-style: italic;
-          color: #666;
+          background: rgba(0, 0, 0, 0.01);
         }
 
-        /* Top Row Section (Rank #1) */
-        .top-row-section {
+        /* Featured Player (Rank #1) */
+        .featured-player {
           display: flex;
           align-items: center;
-          margin-bottom: 1rem;
+          padding: 1.5rem;
+          gap: 1rem;
+          background: var(--card-hover-bg);
+          position: relative;
+          border-bottom: 1px solid var(--border-color);
+        }
+        
+        .featured-rank {
+          font-size: 1.8rem;
+          font-weight: 800;
+          color: var(--accent-color);
+          width: 30px;
+          text-align: center;
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+          font-family: var(--font-family-display);
+        }
+        
+        .featured-logo-container {
+          width: 60px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--radius-md);
+          background: white;
+          box-shadow: var(--shadow-sm);
+          transform-style: preserve-3d;
+          perspective: 800px;
+          transition: transform var(--transition-speed) var(--transition-function);
+        }
+        
+        .featured-player:hover .featured-logo-container {
+          transform: perspective(800px) rotateY(10deg);
+        }
+        
+        .featured-logo {
+          width: 75%;
+          height: 75%;
+          object-fit: contain;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        
+        .featured-info {
+          flex: 1;
+        }
+        
+        .featured-name {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin-bottom: 0.25rem;
+          transition: color var(--transition-speed) var(--transition-function);
+        }
+        
+        .featured-player:hover .featured-name {
+          color: var(--accent-color);
+        }
+        
+        .featured-team {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+        
+        .featured-stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: var(--accent-soft);
+          padding: 0.5rem 1rem;
+          border-radius: var(--radius-md);
+          transition: all var(--transition-speed) var(--transition-function);
+        }
+        
+        .featured-player:hover .featured-stat {
+          background: var(--accent-color);
+          transform: scale(1.05);
+          box-shadow: var(--shadow-sm);
+        }
+        
+        .stat-value {
+          font-size: 1.4rem;
+          font-weight: 800;
+          color: var(--accent-color);
+          line-height: 1.2;
+          transition: color var(--transition-speed) var(--transition-function);
+        }
+        
+        .featured-player:hover .stat-value {
+          color: white;
+        }
+        
+        .stat-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          transition: color var(--transition-speed) var(--transition-function);
+        }
+        
+        .featured-player:hover .stat-label {
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Leaders List */
+        .leaders-list {
+          padding: 0.75rem 1rem;
+        }
+        
+        .leader-row {
+          display: flex;
+          align-items: center;
+          padding: 0.75rem;
+          border-radius: var(--radius-md);
+          margin-bottom: 0.5rem;
+          transition: all var(--transition-speed) var(--transition-function);
           gap: 0.75rem;
         }
-        .top-rank {
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: var(--highlight-color);
+        
+        .leader-row:hover {
+          background: var(--accent-soft);
+          transform: translateX(5px);
         }
-        .top-logo {
+        
+        .leader-rank {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--accent-color);
+          width: 20px;
+          text-align: center;
+        }
+        
+        .leader-logo {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+          transition: transform var(--transition-speed) var(--transition-function);
+        }
+        
+        .leader-row:hover .leader-logo {
+          transform: scale(1.1) rotate(5deg);
+        }
+        
+        .leader-info {
+          flex: 1;
+        }
+        
+        .leader-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 200px;
+          transition: color var(--transition-speed) var(--transition-function);
+        }
+        
+        .leader-row:hover .leader-name {
+          color: var(--accent-color);
+        }
+        
+        .leader-team {
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+        }
+        
+        .leader-stat {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--text-color);
+          min-width: 40px;
+          text-align: right;
+          transition: all var(--transition-speed) var(--transition-function);
+        }
+        
+        .leader-row:hover .leader-stat {
+          color: var(--accent-color);
+          transform: scale(1.05);
+        }
+
+        /* View All Button */
+        .view-all {
+          padding: 1rem;
+          text-align: center;
+          border-top: 1px solid var(--border-color);
+        }
+        
+        .view-all-btn {
+          font-family: var(--font-family-sans);
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          font-weight: 500;
+          padding: 0.5rem 1rem;
+          cursor: pointer;
+          border-radius: var(--radius-full);
+          transition: all var(--transition-speed) var(--transition-function);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 0 auto;
+        }
+        
+        .view-all-btn:hover {
+          color: var(--accent-color);
+          background: var(--accent-soft);
+        }
+        
+        .view-all-btn svg {
+          transition: transform var(--transition-speed) var(--transition-function);
+        }
+        
+        .view-all-btn:hover svg {
+          transform: translateX(3px);
+        }
+
+        /* Loading States */
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 3rem 0;
+          gap: 1rem;
+        }
+        
+        .loading-spinner {
           width: 40px;
           height: 40px;
-          object-fit: contain;
+          border: 3px solid rgba(212, 0, 28, 0.1);
+          border-radius: 50%;
+          border-top-color: var(--accent-color);
+          animation: rotate 1s linear infinite;
         }
-        .top-info {
-          display: flex;
-          flex-direction: column;
-          margin-right: auto;
-        }
-        .top-player-name {
-          font-size: 1rem;
-          font-weight: 500;
-          margin-bottom: 0.25rem;
-        }
-        .top-sub {
-          font-size: var(--sub-font-size);
-          color: #777;
-        }
-        .top-yds {
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: var(--text-color);
+        
+        .loading-text {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
         }
 
-        /* Table for next 9 */
-        .table-header {
-          display: grid;
-          /* Adjusted grid-template-columns to add extra space between Rank and Team */
-          grid-template-columns: 40px 140px 1fr 60px;
-          font-size: 0.8rem;
-          color: #888;
-          font-weight: 600;
-          padding: 0.5rem 0;
-          border-top: 1px solid var(--border-color);
-          border-bottom: 1px solid var(--border-color);
-          /* Use new fonts for table headers */
-          font-family: "Orbitron", "Titillium Web", sans-serif;
-        }
-        .table-body {
-          display: flex;
-          flex-direction: column;
-        }
-        .table-row {
-          display: grid;
-          /* Match the header columns here too */
-          grid-template-columns: 40px 140px 1fr 60px;
-          align-items: center;
-          font-size: 0.85rem;
-          padding: 0.5rem 0;
-          border-bottom: 1px solid var(--border-color);
-        }
-        .table-row:last-child {
-          border-bottom: none;
-        }
-        .col-rank {
-          color: var(--highlight-color);
-          font-weight: 600;
-        }
-        .table-logo {
-          width: 18px;
-          height: 18px;
-          object-fit: contain;
-          margin-right: 4px;
-          vertical-align: middle;
-        }
-        .col-team {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-weight: 500;
-        }
-        .col-player {
-          font-weight: 400;
-        }
-        .col-yds {
-          text-align: right;
-          font-weight: 600;
-        }
-
-        .complete-link {
+        /* Placeholder Styles */
+        .stat-placeholder {
           text-align: center;
-          margin-top: 0.75rem;
-          font-size: 0.8rem;
-          color: #666;
-          cursor: pointer;
+          padding: 3rem 1.5rem;
+          color: var(--text-muted);
+          font-style: italic;
+          background: rgba(0, 0, 0, 0.02);
+          border-radius: var(--radius-md);
+          margin: 1rem;
+          border: 1px dashed var(--border-color);
         }
-        .complete-link:hover {
-          text-decoration: underline;
+        
+        .coming-soon {
+          text-align: center;
+          padding: 5rem 2rem;
+          animation: fadeIn 0.5s var(--transition-function);
+        }
+        
+        .coming-soon h2 {
+          font-family: var(--font-family-display);
+          font-size: 2rem;
+          color: var(--text-color);
+          background: var(--accent-gradient);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          display: inline-block;
+          position: relative;
+        }
+        
+        .coming-soon h2::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 25%;
+          width: 50%;
+          height: 3px;
+          background: var(--accent-gradient);
+          border-radius: var(--radius-full);
+        }
+
+        /* Error Message */
+        .error-message {
+          background: rgba(212, 0, 28, 0.08);
+          border-left: 4px solid var(--accent-color);
+          padding: 1rem 1.5rem;
+          margin-bottom: 2rem;
+          border-radius: var(--radius-sm);
+          color: var(--accent-color);
+          font-weight: 500;
+          animation: fadeIn 0.5s var(--transition-function);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        
+        .error-message svg {
+          flex-shrink: 0;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+          .stats-container {
+            padding: 1.5rem;
+          }
+          
+          .stats-header h1 {
+            font-size: 2rem;
+          }
+          
+          .cards-container {
+            gap: 1.5rem;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .view-toggle {
+            gap: 0.5rem;
+          }
+          
+          .tab-button {
+            padding: 0.6rem 1.25rem;
+            font-size: 0.9rem;
+          }
+          
+          .stats-header img {
+            width: 50px;
+            height: 50px;
+          }
+          
+          .cards-container {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .stats-container {
+            padding: 1rem;
+          }
+          
+          .stats-header {
+            flex-direction: column;
+            gap: 1rem;
+          }
+          
+          .stats-header img {
+            margin-right: 0;
+          }
+          
+          .stats-header h1 {
+            font-size: 1.6rem;
+            text-align: center;
+          }
+          
+          .view-toggle {
+            flex-direction: column;
+            width: 100%;
+          }
+          
+          .tab-button {
+            width: 100%;
+          }
+          
+          .featured-player {
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+            gap: 0.75rem;
+          }
+          
+          .featured-rank {
+            width: 100%;
+          }
+          
+          .featured-info {
+            text-align: center;
+            width: 100%;
+            order: 3;
+          }
+          
+          .featured-stat {
+            order: 4;
+            width: 100%;
+          }
+          
+          .leader-name {
+            max-width: 150px;
+          }
         }
       `}</style>
 
       {/* Title */}
-      <div className="page-title">
+      <div className="stats-header">
         <img src="/photos/ncaaf.png" alt="NCAAF Logo" />
         <h1>COLLEGE FOOTBALL STATISTICS</h1>
       </div>
 
       {/* Tabs */}
-      <div className="tabs">
+      <div className="view-toggle">
         <button
           className={`tab-button ${activeTab === "playerLeaders" ? "active" : ""}`}
           onClick={() => setActiveTab("playerLeaders")}
@@ -502,19 +855,24 @@ const Stats = () => {
         </button>
       </div>
 
-      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+      {error && (
+        <div className="error-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 16H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
 
       {/* Content */}
       {activeTab === "playerLeaders" ? (
         <div className="cards-container">
-          <div className="row top-row">
-            {renderStatCard("Passing Yards", playerStats.passing, loadingPassing)}
-            {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing)}
-            {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving)}
-          </div>
-          <div className="row bottom-row">
-            {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions)}
-          </div>
+          {renderStatCard("Passing Yards", playerStats.passing, loadingPassing, "YDS")}
+          {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing, "YDS")}
+          {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving, "YDS")}
+          {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions, "INT")}
         </div>
       ) : (
         <div className="coming-soon">
