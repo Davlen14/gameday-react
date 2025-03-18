@@ -357,6 +357,9 @@ body {
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
+  width: 100%; /* Ensure full width */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
 }
 
 /* Top Navigation Bar - Solid color */
@@ -371,10 +374,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  /* Remove backdrop-filter for glass effect */
-  /* backdrop-filter: var(--glass-blur); */
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
+  /* Remove rounded edges */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  width: 100%; /* Ensure full width */
+  margin: 0; /* Remove any margin */
 }
 
 .back-button {
