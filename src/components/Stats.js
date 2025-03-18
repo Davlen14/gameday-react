@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
-import "../styles/Stats.css";
+import "../styles/Stat.css";
 
 // Allowed FBS conferences
 const allowedConferences = [
