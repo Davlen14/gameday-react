@@ -511,6 +511,35 @@
     box-shadow: 0 8px 15px rgba(0,0,0,0.2);
     filter: brightness(1.1);
   }
+
+  /* All Stats Section Styles */
+.all-stats-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #e9ecef;
+  }
+  
+  .all-stats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Slightly smaller cards */
+    gap: 15px; /* Smaller gap for more dense layout */
+  }
+  
+  .all-stats-grid .stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .all-stats-grid .stat-card:hover {
+    transform: translateY(-3px); /* Smaller hover effect */
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  
+  /* Optional: Add this if you want the "All Stats" section to stand out */
+  .all-stats-section .section-title {
+    background: rgba(0,0,0,0.02);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+  }
   
   /* Animations */
   @keyframes spin {
