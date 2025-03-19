@@ -38,6 +38,45 @@ const aggregatePlayerStats = (data, desiredStatType) => {
   return aggregated.slice(0, 10);
 };
 
+// Filter top 10 teams by stat category
+const aggregateTeamStats = (data, statName) => {
+  const rawData = Array.isArray(data) ? data : [];
+  
+  // Group stats by team
+  const teamStats = {};
+  
+  // Process each stat
+  rawData.forEach(item => {
+    if (!item.team || !item.conference || !allowedConferences.includes(item.conference.trim().toUpperCase())) {
+      return;
+    }
+    
+    if (!teamStats[item.team]) {
+      teamStats[item.team] = {
+        team: item.team,
+        conference: item.conference,
+        stats: {}
+      };
+    }
+    
+    if (item.statName === statName) {
+      teamStats[item.team].stats[statName] = Number(item.statValue);
+    }
+  });
+  
+  // Convert to array and sort by the specific stat
+  const teamsArray = Object.values(teamStats)
+    .filter(team => team.stats[statName] !== undefined)
+    .sort((a, b) => b.stats[statName] - a.stats[statName]);
+  
+  // Format for display
+  return teamsArray.slice(0, 10).map(team => ({
+    team: team.team,
+    conference: team.conference, 
+    statValue: team.stats[statName]
+  }));
+};
+
 const Stats = () => {
   const [playerStats, setPlayerStats] = useState({
     passing: [],
@@ -45,15 +84,27 @@ const Stats = () => {
     receiving: [],
     interceptions: [],
   });
+  
+  const [teamStats, setTeamStats] = useState({
+    totalOffense: [],
+    scoringOffense: [],
+    rushingOffense: [],
+    passingOffense: [],
+    totalDefense: [],
+    scoringDefense: [],
+  });
 
   // For fetching team logos and abbreviations
   const [teams, setTeams] = useState([]);
 
-  // Loading states
+  // Loading states - players
   const [loadingPassing, setLoadingPassing] = useState(true);
   const [loadingRushing, setLoadingRushing] = useState(true);
   const [loadingReceiving, setLoadingReceiving] = useState(true);
   const [loadingInterceptions, setLoadingInterceptions] = useState(true);
+  
+  // Loading states - teams
+  const [loadingTeamStats, setLoadingTeamStats] = useState(true);
 
   // Error
   const [error, setError] = useState(null);
@@ -92,7 +143,7 @@ const Stats = () => {
       : teamName?.toUpperCase() || "";
   };
 
-  // Helper for fetch
+  // Helper for fetch player stats
   const fetchCategory = async (year, category, statType, setLoading, key) => {
     const controller = new AbortController();
     try {
@@ -116,8 +167,46 @@ const Stats = () => {
     }
     return () => controller.abort();
   };
+  
+  // Helper for fetch team stats
+  const fetchTeamStats = async (year) => {
+    const controller = new AbortController();
+    try {
+      setLoadingTeamStats(true);
+      const rawData = await teamsService.getAllTeamStats(year, controller.signal);
+      
+      // Process each stat category
+      const totalOffense = aggregateTeamStats(rawData, "totalYards");
+      const scoringOffense = aggregateTeamStats(rawData, "pointsFor");
+      const rushingOffense = aggregateTeamStats(rawData, "rushingYards");
+      const passingOffense = aggregateTeamStats(rawData, "netPassingYards");
+      const totalDefense = aggregateTeamStats(rawData, "yardsAllowed");
+      const scoringDefense = aggregateTeamStats(rawData, "pointsAllowed");
+      
+      // For categories like scoring defense, sort differently (low is good)
+      const sortedScoringDefense = [...scoringDefense].sort((a, b) => a.statValue - b.statValue);
+      const sortedTotalDefense = [...totalDefense].sort((a, b) => a.statValue - b.statValue);
+      
+      setTeamStats({
+        totalOffense,
+        scoringOffense,
+        rushingOffense,
+        passingOffense,
+        totalDefense: sortedTotalDefense,
+        scoringDefense: sortedScoringDefense
+      });
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        console.error(`Error fetching team stats:`, error);
+        setError("Failed to load team stats.");
+      }
+    } finally {
+      setLoadingTeamStats(false);
+    }
+    return () => controller.abort();
+  };
 
-  // Fetch data
+  // Fetch player data
   useEffect(() => {
     fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing");
   }, []);
@@ -130,9 +219,16 @@ const Stats = () => {
   useEffect(() => {
     fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
   }, []);
+  
+  // Fetch team data
+  useEffect(() => {
+    if (activeTab === "teamLeaders") {
+      fetchTeamStats(2024);
+    }
+  }, [activeTab]);
 
-  // Render leader card
-  const renderStatCard = (title, data, loading, statAbbr = "YDS") => {
+  // Render player stat card
+  const renderPlayerStatCard = (title, data, loading, statAbbr = "YDS") => {
     if (loading) {
       return (
         <div className="leaders-card">
@@ -212,6 +308,91 @@ const Stats = () => {
       </div>
     );
   };
+  
+  // Render team stat card
+  const renderTeamStatCard = (title, data, loading, statAbbr = "YDS", isDefense = false) => {
+    if (loading) {
+      return (
+        <div className="leaders-card">
+          <h3>{title}</h3>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading stats...</div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (!data.length) {
+      return (
+        <div className="leaders-card">
+          <h3>{title}</h3>
+          <div className="stat-placeholder">No data available</div>
+        </div>
+      );
+    }
+    
+    const top = data[0];
+    const rest = data.slice(1);
+    
+    // For defense stats, indicate that lower is better
+    const defenseLabel = isDefense ? "(lower is better)" : "";
+
+    return (
+      <div className="leaders-card">
+        <h3>{title} {defenseLabel}</h3>
+
+        {/* Featured team (top ranked) */}
+        <div className="featured-player">
+          <div className="featured-rank">1</div>
+          <div className="featured-logo-container">
+            <img
+              src={getTeamLogo(top.team)}
+              alt={getTeamAbbreviation(top.team)}
+              className="featured-logo"
+            />
+            <div className="shine-effect"></div>
+          </div>
+          <div className="featured-info">
+            <div className="featured-name">{top.team}</div>
+            <div className="featured-team">{top.conference}</div>
+          </div>
+          <div className="featured-stat">
+            <span className="stat-value">{top.statValue}</span>
+            <span className="stat-label">{statAbbr}</span>
+          </div>
+        </div>
+
+        {/* Rest of the leaders */}
+        <div className="leaders-list">
+          {rest.map((team, idx) => (
+            <div className="leader-row" key={idx}>
+              <div className="leader-rank">{idx + 2}</div>
+              <img
+                src={getTeamLogo(team.team)}
+                alt={getTeamAbbreviation(team.team)}
+                className="leader-logo"
+              />
+              <div className="leader-info">
+                <div className="leader-name">{team.team}</div>
+                <div className="leader-team">{team.conference}</div>
+              </div>
+              <div className="leader-stat">{team.statValue}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="view-all">
+          <button className="view-all-btn">
+            View Complete {title} Leaders
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="stats-container">
@@ -263,14 +444,27 @@ const Stats = () => {
       )}
 
       {/* Content */}
-      {activeTab === "playerLeaders" ? (
+      {activeTab === "playerLeaders" && (
         <div className="cards-container">
-          {renderStatCard("Passing Yards", playerStats.passing, loadingPassing, "YDS")}
-          {renderStatCard("Rushing Yards", playerStats.rushing, loadingRushing, "YDS")}
-          {renderStatCard("Receiving Yards", playerStats.receiving, loadingReceiving, "YDS")}
-          {renderStatCard("Interceptions", playerStats.interceptions, loadingInterceptions, "INT")}
+          {renderPlayerStatCard("Passing Yards", playerStats.passing, loadingPassing, "YDS")}
+          {renderPlayerStatCard("Rushing Yards", playerStats.rushing, loadingRushing, "YDS")}
+          {renderPlayerStatCard("Receiving Yards", playerStats.receiving, loadingReceiving, "YDS")}
+          {renderPlayerStatCard("Interceptions", playerStats.interceptions, loadingInterceptions, "INT")}
         </div>
-      ) : (
+      )}
+      
+      {activeTab === "teamLeaders" && (
+        <div className="cards-container">
+          {renderTeamStatCard("Total Offense", teamStats.totalOffense, loadingTeamStats, "YPG")}
+          {renderTeamStatCard("Scoring Offense", teamStats.scoringOffense, loadingTeamStats, "PPG")}
+          {renderTeamStatCard("Rushing Offense", teamStats.rushingOffense, loadingTeamStats, "YPG")}
+          {renderTeamStatCard("Passing Offense", teamStats.passingOffense, loadingTeamStats, "YPG")}
+          {renderTeamStatCard("Total Defense", teamStats.totalDefense, loadingTeamStats, "YPG", true)}
+          {renderTeamStatCard("Scoring Defense", teamStats.scoringDefense, loadingTeamStats, "PPG", true)}
+        </div>
+      )}
+      
+      {(activeTab === "playerStats" || activeTab === "teamStats") && (
         <div className="coming-soon">
           <h2>Coming Soon...</h2>
         </div>
