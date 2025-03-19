@@ -300,17 +300,36 @@ const TeamDetail = () => {
     color: darkenColor(teamColor, 20)
   };
 
-  // Style for active tabs
+  // UPDATED: Style for active tabs - white background with team-colored elements and subtle gray shadow
   const activeTabStyle = {
-    background: teamColor,
-    color: getContrastColor(teamColor),
+    background: '#ffffff',
+    color: darkenColor(teamColor, 20),
     borderColor: teamColor,
-    boxShadow: `0 2px 4px ${teamColor}40`
+    boxShadow: `0 2px 8px rgba(0, 0, 0, 0.15)`,
+    borderBottom: `3px solid ${teamColor}`
+  };
+
+  // UPDATED: Style for active tab icons
+  const activeTabIconStyle = {
+    color: teamColor
   };
 
   // Style for tab icons
   const tabIconStyle = {
-    color: teamColor
+    color: darkenColor(teamColor, 10)
+  };
+
+  // UPDATED: Style for player icons in roster - using team color
+  const playerIconStyle = {
+    color: teamColor,
+    backgroundColor: `${teamColor}10`,
+    padding: '8px',
+    borderRadius: '50%',
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   };
 
   // Render the active tab content
@@ -362,9 +381,9 @@ const TeamDetail = () => {
                   </p>
                   <p>
                     <strong>Color zones indicate performance relative to national average:</strong><br />
-                    <span style={{ color: "#ff4d4d" }}><strong>Red:</strong> Below Average</span> | 
-                    <span style={{ color: "#ffc700" }}><strong>Yellow:</strong> Average</span> | 
-                    <span style={{ color: "#04aa6d" }}><strong>Green:</strong> Above Average</span>
+                    <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> | 
+                    <span style={{ color: "#ffc700" }}><strong>Average</strong></span> | 
+                    <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
                   </p>
                   <p>
                     <strong>National Averages (2024):</strong><br />
@@ -558,7 +577,8 @@ const TeamDetail = () => {
                       <tr key={index} style={{ borderBottom: `1px solid ${teamColor}10` }}>
                         <td>
                           <div className="player-info">
-                            <div className="player-icon" style={{ color: teamColor }}>
+                            {/* UPDATED: Fixed player icon to use team color instead of red */}
+                            <div className="player-icon" style={playerIconStyle}>
                               <FaUser />
                             </div>
                             <div className="player-name">{player.fullName}</div>
@@ -705,7 +725,7 @@ const TeamDetail = () => {
         </div>
       </div>
 
-      {/* Dashboard Navigation Tabs */}
+      {/* UPDATED: Dashboard Navigation Tabs with white background for active tabs */}
       <div className="dashboard-tabs" style={{ borderBottom: `2px solid ${teamColor}30` }}>
         {[
           { id: 'overview', label: 'Overview', icon: <FaInfoCircle /> },
@@ -724,7 +744,8 @@ const TeamDetail = () => {
               '--hover-color': teamColor, // CSS variable for hover effects in stylesheets
             }}
           >
-            <span className="tab-icon" style={activeTab === tab.id ? {} : tabIconStyle}>
+            {/* UPDATED: Team-colored icons in active tabs */}
+            <span className="tab-icon" style={activeTab === tab.id ? activeTabIconStyle : tabIconStyle}>
               {tab.icon}
             </span>
             <span className="tab-label">{tab.label}</span>
@@ -737,7 +758,7 @@ const TeamDetail = () => {
         {renderTabContent()}
       </div>
 
-      {/* Custom CSS to override default hover styles */}
+      {/* UPDATED: Custom CSS to override default hover styles */}
       <style>{`
         .tab-item:hover {
           background-color: ${teamColor}15 !important; 
@@ -752,6 +773,26 @@ const TeamDetail = () => {
         .schedule-winner {
           color: ${teamColor} !important;
           font-weight: bold;
+        }
+        
+        /* UPDATED: Make player icons use team colors */
+        .player-icon {
+          background-color: ${teamColor}10 !important;
+          color: ${teamColor} !important;
+        }
+        
+        /* UPDATED: Style active tab */
+        .tab-item.active {
+          background-color: #ffffff !important;
+          color: ${darkenColor(teamColor, 20)} !important;
+          border-color: ${teamColor} !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+          border-bottom: 3px solid ${teamColor} !important;
+        }
+        
+        /* UPDATED: Style active tab icon */
+        .tab-item.active .tab-icon {
+          color: ${teamColor} !important;
         }
       `}</style>
     </div>
