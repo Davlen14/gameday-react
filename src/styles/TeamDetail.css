@@ -588,7 +588,8 @@ body {
   justify-content: space-between;
   background: var(--glass-primary);
   backdrop-filter: var(--glass-blur);
-  margin: 0 1rem;
+  margin: 0 1%; /* Match the 98% width of dashboard content */
+  width: 98%; /* Make it consistent with dashboard content width */
   margin-top: -1rem;
   border-radius: 12px;
   padding: 0.5rem;
@@ -665,11 +666,14 @@ body {
 .dashboard-content {
   position: relative;
   margin-top: 1rem; /* Adjusted for tabs */
+  margin-left: 1%; /* Add small margin on left */
+  margin-right: 1%; /* Add small margin on right */
+  width: 98%; /* Make it 98% of screen width */
   padding: 2rem;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1.8rem;
-
+  
   /* Rounded corners & subtle shadow to look like a cohesive "dashboard" */
   background: var(--bg-secondary);
   border-radius: 20px;
@@ -691,12 +695,14 @@ body {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeIn 0.6s ease-out;
+  width: 100%; /* Ensure cards take full width */
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
+
 
 .card-header {
   padding: 1.2rem 1.5rem;
