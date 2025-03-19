@@ -744,7 +744,6 @@ const TeamDetail = () => {
           color: ${teamColor} !important;
           border-color: ${teamColor}50 !important;
         }
-        
         .dashboard-card {
           box-shadow: 0 2px 8px ${teamColor}10 !important;
           border: 1px solid ${teamColor}15 !important;
