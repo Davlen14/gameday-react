@@ -77,46 +77,6 @@ const aggregateTeamStats = (data, statName) => {
   }));
 };
 
-// Fixed team stats data - based on realistic values for top programs
-const fixedTeamStats = [
-  // Realistic top tier programs typically in the top 10 of various categories
-  { team: "Ohio State", conference: "Big Ten", totalYards: 6873, pointsFor: 38, rushingYards: 2665, netPassingYards: 4208, yardsAllowed: 3105, pointsAllowed: 14 },
-  { team: "Oregon", conference: "Pac-12", totalYards: 6740, pointsFor: 42, rushingYards: 2340, netPassingYards: 4400, yardsAllowed: 3310, pointsAllowed: 16 },
-  { team: "Georgia", conference: "SEC", totalYards: 6580, pointsFor: 39, rushingYards: 2450, netPassingYards: 4130, yardsAllowed: 3250, pointsAllowed: 15 },
-  { team: "Alabama", conference: "SEC", totalYards: 6490, pointsFor: 37, rushingYards: 2520, netPassingYards: 3970, yardsAllowed: 3480, pointsAllowed: 18 },
-  { team: "Michigan", conference: "Big Ten", totalYards: 6350, pointsFor: 35, rushingYards: 3050, netPassingYards: 3300, yardsAllowed: 3020, pointsAllowed: 13 },
-  { team: "Texas", conference: "Big 12", totalYards: 6240, pointsFor: 36, rushingYards: 2380, netPassingYards: 3860, yardsAllowed: 3580, pointsAllowed: 19 },
-  { team: "Florida State", conference: "ACC", totalYards: 6180, pointsFor: 35, rushingYards: 2580, netPassingYards: 3600, yardsAllowed: 3640, pointsAllowed: 20 },
-  { team: "LSU", conference: "SEC", totalYards: 6090, pointsFor: 36, rushingYards: 2180, netPassingYards: 3910, yardsAllowed: 3750, pointsAllowed: 21 },
-  { team: "Tennessee", conference: "SEC", totalYards: 5950, pointsFor: 34, rushingYards: 2760, netPassingYards: 3190, yardsAllowed: 3480, pointsAllowed: 19 },
-  { team: "USC", conference: "Pac-12", totalYards: 5860, pointsFor: 37, rushingYards: 1980, netPassingYards: 3880, yardsAllowed: 3820, pointsAllowed: 24 },
-  
-  // Next tier of programs 
-  { team: "Oklahoma", conference: "Big 12", totalYards: 5780, pointsFor: 33, rushingYards: 2420, netPassingYards: 3360, yardsAllowed: 3540, pointsAllowed: 20 },
-  { team: "Clemson", conference: "ACC", totalYards: 5720, pointsFor: 32, rushingYards: 2670, netPassingYards: 3050, yardsAllowed: 3360, pointsAllowed: 18 },
-  { team: "Penn State", conference: "Big Ten", totalYards: 5640, pointsFor: 31, rushingYards: 2520, netPassingYards: 3120, yardsAllowed: 3280, pointsAllowed: 17 },
-  { team: "Notre Dame", conference: "FBS Independents", totalYards: 5580, pointsFor: 30, rushingYards: 2730, netPassingYards: 2850, yardsAllowed: 3420, pointsAllowed: 19 },
-  { team: "Utah", conference: "Pac-12", totalYards: 5510, pointsFor: 29, rushingYards: 2980, netPassingYards: 2530, yardsAllowed: 3250, pointsAllowed: 17 },
-  
-  // Better defensive teams with less offense
-  { team: "Iowa", conference: "Big Ten", totalYards: 4820, pointsFor: 24, rushingYards: 2270, netPassingYards: 2550, yardsAllowed: 2980, pointsAllowed: 12 },
-  { team: "Wisconsin", conference: "Big Ten", totalYards: 4950, pointsFor: 26, rushingYards: 2850, netPassingYards: 2100, yardsAllowed: 3050, pointsAllowed: 14 },
-  { team: "Cincinnati", conference: "American Athletic", totalYards: 5120, pointsFor: 28, rushingYards: 2540, netPassingYards: 2580, yardsAllowed: 3130, pointsAllowed: 16 },
-  
-  // Additional teams to ensure we have enough for the mock data
-  { team: "Washington", conference: "Pac-12", totalYards: 5370, pointsFor: 31, rushingYards: 2150, netPassingYards: 3220, yardsAllowed: 3650, pointsAllowed: 22 },
-  { team: "Ole Miss", conference: "SEC", totalYards: 5430, pointsFor: 32, rushingYards: 2490, netPassingYards: 2940, yardsAllowed: 3710, pointsAllowed: 23 },
-  { team: "Miami", conference: "ACC", totalYards: 5280, pointsFor: 29, rushingYards: 2380, netPassingYards: 2900, yardsAllowed: 3590, pointsAllowed: 21 },
-  { team: "Texas A&M", conference: "SEC", totalYards: 5150, pointsFor: 28, rushingYards: 2420, netPassingYards: 2730, yardsAllowed: 3470, pointsAllowed: 20 },
-  { team: "Auburn", conference: "SEC", totalYards: 5080, pointsFor: 27, rushingYards: 2570, netPassingYards: 2510, yardsAllowed: 3520, pointsAllowed: 22 },
-  { team: "Baylor", conference: "Big 12", totalYards: 5020, pointsFor: 28, rushingYards: 2360, netPassingYards: 2660, yardsAllowed: 3580, pointsAllowed: 23 },
-  { team: "Pittsburgh", conference: "ACC", totalYards: 4980, pointsFor: 27, rushingYards: 2290, netPassingYards: 2690, yardsAllowed: 3490, pointsAllowed: 21 },
-  { team: "UCF", conference: "American Athletic", totalYards: 5250, pointsFor: 30, rushingYards: 2620, netPassingYards: 2630, yardsAllowed: 3560, pointsAllowed: 22 },
-  { team: "Boise State", conference: "Mountain West", totalYards: 5180, pointsFor: 29, rushingYards: 2540, netPassingYards: 2640, yardsAllowed: 3380, pointsAllowed: 20 },
-  { team: "Houston", conference: "American Athletic", totalYards: 5050, pointsFor: 28, rushingYards: 2320, netPassingYards: 2730, yardsAllowed: 3640, pointsAllowed: 24 },
-  { team: "Indiana", conference: "Big Ten", totalYards: 5558, pointsFor: 34, rushingYards: 2161, netPassingYards: 3397, yardsAllowed: 3530, pointsAllowed: 21 }
-];
-
 const Stats = () => {
   const [playerStats, setPlayerStats] = useState({
     passing: [],
@@ -208,86 +168,103 @@ const Stats = () => {
     return () => controller.abort();
   };
   
-  // Helper for fetch team stats - Now uses fixed data to ensure consistency
+  // Updated helper for fetch team stats - Now fetching actual data
   const fetchTeamStats = async (year) => {
+    const controller = new AbortController();
     try {
       setLoadingTeamStats(true);
       
-      // Convert fixed data to the format expected by aggregateTeamStats
-      const mockTeamStats = [];
+      // Fetch actual team stats for each category
+      const totalOffenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "totalOffense",
+        "regular",
+        100,
+        controller.signal
+      );
       
-      // Use the fixed stats data to ensure consistent results
-      fixedTeamStats.forEach(team => {
-        // Add stats with the same structure expected by aggregateTeamStats
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "totalYards",
-          statValue: team.totalYards
-        });
-        
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "pointsFor",
-          statValue: team.pointsFor
-        });
-        
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "rushingYards",
-          statValue: team.rushingYards
-        });
-        
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "netPassingYards",
-          statValue: team.netPassingYards
-        });
-        
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "yardsAllowed",
-          statValue: team.yardsAllowed
-        });
-        
-        mockTeamStats.push({
-          team: team.team,
-          conference: team.conference,
-          statName: "pointsAllowed",
-          statValue: team.pointsAllowed
-        });
-      });
+      const scoringOffenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "scoringOffense",
+        "regular",
+        100,
+        controller.signal
+      );
       
-      // Process each stat category with the mock data
-      const totalOffense = aggregateTeamStats(mockTeamStats, "totalYards");
-      const scoringOffense = aggregateTeamStats(mockTeamStats, "pointsFor");
-      const rushingOffense = aggregateTeamStats(mockTeamStats, "rushingYards");
-      const passingOffense = aggregateTeamStats(mockTeamStats, "netPassingYards");
-      const totalDefense = aggregateTeamStats(mockTeamStats, "yardsAllowed");
-      const scoringDefense = aggregateTeamStats(mockTeamStats, "pointsAllowed");
+      const rushingOffenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "rushingOffense",
+        "regular",
+        100,
+        controller.signal
+      );
       
-      // For categories like scoring defense, sort differently (low is good)
-      const sortedScoringDefense = [...scoringDefense].sort((a, b) => a.statValue - b.statValue);
-      const sortedTotalDefense = [...totalDefense].sort((a, b) => a.statValue - b.statValue);
+      const passingOffenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "passingOffense",
+        "regular",
+        100,
+        controller.signal
+      );
+      
+      const totalDefenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "totalDefense",
+        "regular",
+        100,
+        controller.signal
+      );
+      
+      const scoringDefenseData = await teamsService.getTeamSeasonStats(
+        year,
+        "scoringDefense",
+        "regular",
+        100,
+        controller.signal
+      );
+      
+      // Format the raw data for each category
+      const formatTeamStats = (data, statName) => {
+        // Handle different API response structures
+        const rawData = Array.isArray(data) ? data : data?.data || [];
+        
+        return rawData
+          .filter(item => 
+            item.conference && 
+            allowedConferences.includes(item.conference.trim().toUpperCase())
+          )
+          .map(item => ({
+            team: item.team,
+            conference: item.conference,
+            statValue: parseFloat(item.stat || item.statValue || 0)
+          }))
+          .sort((a, b) => b.statValue - a.statValue)
+          .slice(0, 10);
+      };
+      
+      // For defense stats, lower is better
+      const formatDefenseStats = (data) => {
+        const formattedData = formatTeamStats(data);
+        return formattedData.sort((a, b) => a.statValue - b.statValue);
+      };
       
       setTeamStats({
-        totalOffense,
-        scoringOffense,
-        rushingOffense,
-        passingOffense,
-        totalDefense: sortedTotalDefense,
-        scoringDefense: sortedScoringDefense
+        totalOffense: formatTeamStats(totalOffenseData, "totalYards"),
+        scoringOffense: formatTeamStats(scoringOffenseData, "pointsFor"),
+        rushingOffense: formatTeamStats(rushingOffenseData, "rushingYards"),
+        passingOffense: formatTeamStats(passingOffenseData, "netPassingYards"),
+        totalDefense: formatDefenseStats(totalDefenseData),
+        scoringDefense: formatDefenseStats(scoringDefenseData)
       });
     } catch (error) {
-      console.error(`Error processing team stats:`, error);
-      setError("Failed to load team stats.");
+      if (!controller.signal.aborted) {
+        console.error(`Error fetching team stats:`, error);
+        setError("Failed to load team stats.");
+      }
     } finally {
       setLoadingTeamStats(false);
     }
+    return () => controller.abort();
   };
 
   // Fetch player data
