@@ -941,172 +941,243 @@ body {
 }
 
 /* UPDATED: Schedule Styling - More modern & eye-catching */
+/* Modern Schedule Styling - Fox Sports inspired */
 .schedule-container {
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.schedule-table-header {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 10px 0;
+  grid-template-columns: 100px 1fr 80px 1fr 100px 40px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6c757d;
+  border-radius: 8px 8px 0 0;
 }
 
 .schedule-item {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 8px 8px;
 }
 
 .schedule-item:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  background-color: #f8f9fa;
 }
 
-.schedule-header {
+.schedule-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px 1fr 100px 40px;
   padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 600;
-  color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.schedule-teams {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  position: relative;
+  cursor: pointer;
 }
 
-.schedule-teams::after {
-  content: 'VS';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--accent-primary);
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
-}
-
-.schedule-team {
+.game-date {
   display: flex;
   flex-direction: column;
+}
+
+.label-text {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.date-value {
+  font-weight: 600;
+}
+
+.team {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  width: 45%;
+  gap: 12px;
+}
+
+.home-team {
+  justify-content: flex-end;
+}
+
+.away-team {
+  justify-content: flex-start;
 }
 
 .schedule-team-logo-container {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: white;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  border: 3px solid white;
-  position: relative;
-}
-
-.schedule-team-logo-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%);
-  z-index: 2;
 }
 
 .schedule-team-logo {
-  width: 60px;
-  height: 60px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  position: relative;
-  z-index: 1;
 }
 
 .schedule-team-name {
   font-weight: 600;
-  font-size: 0.9rem;
-  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
-.schedule-score {
-  background: var(--accent-primary);
-  color: white;
-  text-align: center;
-  padding: 15px;
+.game-score {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  gap: 8px;
   font-weight: 700;
-  font-size: 1.4rem;
-  font-family: 'Inter', sans-serif;
+  font-size: 18px;
 }
 
-.schedule-score-home, .schedule-score-away {
-  min-width: 40px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
+.team-score {
+  min-width: 24px;
+  text-align: center;
 }
 
 .schedule-winner {
-  transform: scale(1.2);
-  background: rgba(255, 255, 255, 0.4);
+  font-weight: 800;
 }
 
-.schedule-details {
-  padding: 12px 15px;
+.score-divider {
+  color: #999;
+}
+
+.game-time {
+  font-size: 14px;
+  color: #666;
+}
+
+.game-venue {
   display: flex;
-  justify-content: space-between;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  align-items: center;
+  flex-direction: column;
 }
 
-.schedule-venue {
+.game-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Expanded Game Details */
+.game-details {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.impact-players {
+  width: 100%;
+}
+
+.section-title {
   display: flex;
   align-items: center;
-  gap: 5px;
-}
-
-.schedule-date {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.upcoming-game-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--accent-primary);
-  color: white;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.7rem;
   font-weight: 600;
-  text-transform: uppercase;
-  box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+.impact-container {
+  display: flex;
+  gap: 24px;
+}
+
+.impact-team {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.impact-team-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.mini-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mini-logo img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.impact-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.impact-player {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "name position"
+    "stat stat";
+  gap: 4px;
+}
+
+.player-name {
+  grid-area: name;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.player-position {
+  grid-area: position;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.player-stat {
+  grid-area: stat;
+  font-size: 13px;
+  color: #555;
 }
 
 /* Loading and error states */

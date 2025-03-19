@@ -19,7 +19,10 @@ import {
   FaExclamationTriangle,
   FaUser,
   FaMapMarkerAlt as FaVenue,
-  FaClock
+  FaClock,
+  FaStar,
+  FaChevronDown,
+  FaChevronUp
 } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
 import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
@@ -98,6 +101,8 @@ const TeamDetail = () => {
   const [ratings, setRatings] = useState({});
   const [roster, setRoster] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [expandedGames, setExpandedGames] = useState({});
+  const [gameStats, setGameStats] = useState({});
   const [isLoading, setIsLoading] = useState({
     team: false,
     ratings: false,
@@ -147,6 +152,32 @@ const TeamDetail = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+  };
+
+  // Function to fetch game stats for expanded rows
+  const fetchGameStats = async (gameId) => {
+    try {
+      const data = await teamsService.getAdvancedBoxScore(gameId);
+      setGameStats(prev => ({
+        ...prev,
+        [gameId]: data
+      }));
+    } catch (err) {
+      console.error("Error fetching game stats:", err.message);
+    }
+  };
+
+  // Function to toggle expanded game rows
+  const toggleGameExpanded = (gameId) => {
+    // Fetch stats if we haven't already
+    if (!gameStats[gameId]) {
+      fetchGameStats(gameId);
+    }
+    
+    setExpandedGames(prev => ({
+      ...prev,
+      [gameId]: !prev[gameId]
+    }));
   };
 
   useEffect(() => {
@@ -455,35 +486,49 @@ const TeamDetail = () => {
                 </div>
               ) : (
                 <div className="schedule-container">
+                  <div className="schedule-table-header">
+                    <div className="header-date">Date</div>
+                    <div className="header-home">Home</div>
+                    <div className="header-score">Score</div>
+                    <div className="header-away">Away</div>
+                    <div className="header-venue">Venue</div>
+                    <div className="header-toggle"></div>
+                  </div>
+                  
                   {schedule.map((game, index) => {
                     const isCompleted = game.homePoints !== null && game.homePoints !== undefined && 
                                         game.awayPoints !== null && game.awayPoints !== undefined;
                     
                     let homeWinner = false;
                     let awayWinner = false;
-                    let isTie = false;
                     
                     if (isCompleted) {
                       homeWinner = game.homePoints > game.awayPoints;
                       awayWinner = game.homePoints < game.awayPoints;
-                      isTie = game.homePoints === game.awayPoints;
                     }
                     
-                    const gameDate = game.date ? new Date(game.date).toLocaleDateString() : "TBD";
+                    const gameDate = game.date ? new Date(game.date).toLocaleDateString(undefined, {
+                      month: 'numeric',
+                      day: 'numeric'
+                    }) : "TBD";
+
+                    const isExpanded = expandedGames[game.id] || false;
+                    const gameData = gameStats[game.id];
                     
                     return (
-                      <div key={index} className="schedule-item" style={{ borderLeft: `3px solid ${teamColor}40` }}>
-                        {!isCompleted && <div className="upcoming-game-badge" style={{ background: teamColor, color: getContrastColor(teamColor) }}>Upcoming</div>}
-                        
-                        <div className="schedule-header" style={{ borderBottom: `1px solid ${teamColor}20` }}>
-                          Game {index + 1} - {gameDate}
-                        </div>
-                        
-                        <div className="schedule-teams">
-                          <div className="schedule-team">
+                      <div key={index} className="schedule-item">
+                        <div className="schedule-row" onClick={() => toggleGameExpanded(game.id)}>
+                          {/* Game date/index */}
+                          <div className="game-date">
+                            <div className="label-text">Game {index + 1}</div>
+                            <div className="date-value">{gameDate}</div>
+                          </div>
+                          
+                          {/* Home team */}
+                          <div className="team home-team">
                             <div className="schedule-team-logo-container">
-                              <img
-                                src={game.homeLogo || getTeamLogo(game.homeTeam)}
+                              <img 
+                                src={game.homeLogo || getTeamLogo(game.homeTeam)} 
                                 alt={game.homeTeam}
                                 className="schedule-team-logo"
                                 onError={(e) => {
@@ -495,10 +540,28 @@ const TeamDetail = () => {
                             <div className="schedule-team-name">{game.homeTeam}</div>
                           </div>
                           
-                          <div className="schedule-team">
+                          {/* Score */}
+                          <div className="game-score">
+                            {isCompleted ? (
+                              <>
+                                <div className={`team-score ${homeWinner ? 'schedule-winner' : ''}`} style={homeWinner ? { color: teamColor } : {}}>
+                                  {game.homePoints}
+                                </div>
+                                <div className="score-divider">-</div>
+                                <div className={`team-score ${awayWinner ? 'schedule-winner' : ''}`} style={awayWinner ? { color: teamColor } : {}}>
+                                  {game.awayPoints}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="game-time">{game.time || "TBD"}</div>
+                            )}
+                          </div>
+                          
+                          {/* Away team */}
+                          <div className="team away-team">
                             <div className="schedule-team-logo-container">
-                              <img
-                                src={game.awayLogo || getTeamLogo(game.awayTeam)}
+                              <img 
+                                src={game.awayLogo || getTeamLogo(game.awayTeam)} 
                                 alt={game.awayTeam}
                                 className="schedule-team-logo"
                                 onError={(e) => {
@@ -509,32 +572,103 @@ const TeamDetail = () => {
                             </div>
                             <div className="schedule-team-name">{game.awayTeam}</div>
                           </div>
+                          
+                          {/* Venue */}
+                          <div className="game-venue">
+                            <div className="label-text">Venue</div>
+                            <div>{game.venue || "TBD"}</div>
+                          </div>
+                          
+                          {/* Toggle button */}
+                          <div className="game-toggle">
+                            {isExpanded ? <FaChevronUp color={teamColor} /> : <FaChevronDown color="#999" />}
+                          </div>
                         </div>
                         
-                        {isCompleted && (
-                          <div className="schedule-score">
-                            <div className={`schedule-score-home ${homeWinner ? 'schedule-winner' : ''}`}
-                                 style={homeWinner ? { color: teamColor, fontWeight: 'bold' } : {}}>
-                              {game.homePoints}
-                            </div>
-                            -
-                            <div className={`schedule-score-away ${awayWinner ? 'schedule-winner' : ''}`}
-                                 style={awayWinner ? { color: teamColor, fontWeight: 'bold' } : {}}>
-                              {game.awayPoints}
+                        {/* Expandable section with impact players */}
+                        {isExpanded && (
+                          <div className="game-details">
+                            <div className="impact-players">
+                              <div className="section-title">
+                                <FaStar style={{ color: teamColor, marginRight: '6px' }} />
+                                <span>Impact Players</span>
+                              </div>
+                              
+                              {gameData ? (
+                                <div className="impact-container">
+                                  <div className="impact-team">
+                                    <div className="impact-team-header" style={{ color: teamColor }}>
+                                      <div className="mini-logo">
+                                        <img 
+                                          src={game.homeLogo || getTeamLogo(game.homeTeam)} 
+                                          alt={game.homeTeam}
+                                        />
+                                      </div>
+                                      <span>{game.homeTeam}</span>
+                                    </div>
+                                    <div className="impact-players-list">
+                                      {gameData.players?.usage
+                                        ?.filter(p => p.team === game.homeTeam)
+                                        ?.sort((a, b) => b.total - a.total)
+                                        ?.slice(0, 2)
+                                        ?.map((player, i) => {
+                                          const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
+                                          const stat = playerPPA ? 
+                                            `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
+                                            `${Math.round(player.total * 100)}% usage`;
+                                          
+                                          return (
+                                            <div key={i} className="impact-player">
+                                              <div className="player-name">{player.player}</div>
+                                              <div className="player-position">{player.position}</div>
+                                              <div className="player-stat">{stat}</div>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="impact-team">
+                                    <div className="impact-team-header" style={{ color: teamColor }}>
+                                      <div className="mini-logo">
+                                        <img 
+                                          src={game.awayLogo || getTeamLogo(game.awayTeam)} 
+                                          alt={game.awayTeam}
+                                        />
+                                      </div>
+                                      <span>{game.awayTeam}</span>
+                                    </div>
+                                    <div className="impact-players-list">
+                                      {gameData.players?.usage
+                                        ?.filter(p => p.team === game.awayTeam)
+                                        ?.sort((a, b) => b.total - a.total)
+                                        ?.slice(0, 2)
+                                        ?.map((player, i) => {
+                                          const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
+                                          const stat = playerPPA ? 
+                                            `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
+                                            `${Math.round(player.total * 100)}% usage`;
+                                          
+                                          return (
+                                            <div key={i} className="impact-player">
+                                              <div className="player-name">{player.player}</div>
+                                              <div className="player-position">{player.position}</div>
+                                              <div className="player-stat">{stat}</div>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="loading-indicator">
+                                  <LoadingSpinner color={teamColor} />
+                                  <p>Loading player stats...</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
-                        
-                        <div className="schedule-details">
-                          <div className="schedule-venue">
-                            <FaVenue size={14} style={{ opacity: 0.7, color: teamColor }} />
-                            {game.venue || "TBD"}
-                          </div>
-                          <div className="schedule-date">
-                            <FaClock size={14} style={{ opacity: 0.7, color: teamColor }} />
-                            {game.time || "TBD"}
-                          </div>
-                        </div>
                       </div>
                     );
                   })}
