@@ -161,105 +161,27 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     if (!stats || stats.length === 0) return;
     
     try {
-      // Get all the raw stat values needed for calculations
-      const games = getStatValue("games");
-      const totalYards = getStatValue("totalYards");
-      const netPassingYards = getStatValue("netPassingYards");
-      const rushingYards = getStatValue("rushingYards");
-      const passingTDs = getStatValue("passingTDs");
-      const rushingTDs = getStatValue("rushingTDs");
-      const kickReturnTDs = getStatValue("kickReturnTDs");
-      const puntReturnTDs = getStatValue("puntReturnTDs");
-      const interceptionTDs = getStatValue("interceptionTDs");
-      const thirdDowns = getStatValue("thirdDowns");
-      const thirdDownConversions = getStatValue("thirdDownConversions");
-      const fourthDowns = getStatValue("fourthDowns");
-      const fourthDownConversions = getStatValue("fourthDownConversions");
-      const turnovers = getStatValue("turnovers");
-      const interceptions = getStatValue("interceptions");
-      const fumblesRecovered = getStatValue("fumblesRecovered");
-      const passCompletions = getStatValue("passCompletions");
-      const passAttempts = getStatValue("passAttempts");
-      const rushingAttempts = getStatValue("rushingAttempts");
-      const kickReturns = getStatValue("kickReturns");
-      const kickReturnYards = getStatValue("kickReturnYards");
-      const puntReturns = getStatValue("puntReturns");
-      const puntReturnYards = getStatValue("puntReturnYards");
-      const yardsAllowed = getStatValue("yardsAllowed") || 0;
-      const pointsAllowed = getStatValue("pointsAllowed") || 0;
-      
-      // Debug log the raw values to verify data
-      console.log("Raw stat values for calculations:", {
-        games, totalYards, netPassingYards, rushingYards, passingTDs, rushingTDs,
-        kickReturnTDs, puntReturnTDs, interceptionTDs, thirdDowns, thirdDownConversions,
-        fourthDowns, fourthDownConversions, turnovers, interceptions, fumblesRecovered,
-        passCompletions, passAttempts, rushingAttempts, kickReturns, kickReturnYards,
-        puntReturns, puntReturnYards
-      });
-      
-      // Perform all the calculations now
-      // These are all explicit Number conversions to ensure type safety
-      const yardsPerGame = games ? Number(Math.round(totalYards / games)) : 0;
-      const passingYardPercentage = totalYards ? Number(Math.round((netPassingYards / totalYards) * 100)) : 0;
-      const rushingYardPercentage = totalYards ? Number(Math.round((rushingYards / totalYards) * 100)) : 0;
-      
-      const totalTDs = Number(passingTDs + rushingTDs + kickReturnTDs + puntReturnTDs + interceptionTDs);
-      const estimatedPoints = Number(totalTDs * 7);
-      const estimatedPointsPerGame = games ? Number(Math.round(estimatedPoints / games)) : 0;
-      
-      const thirdDownConversionPercentage = Number(calculatePercentage(thirdDownConversions, thirdDowns));
-      const fourthDownConversionPercentage = Number(calculatePercentage(fourthDownConversions, fourthDowns));
-      
-      const takeaways = Number(interceptions + fumblesRecovered);
-      const turnoverMargin = Number(takeaways - turnovers);
-      
-      const completionPercentage = Number(calculatePercentage(passCompletions, passAttempts));
-      const yardsPerAttempt = Number(calculateRatio(netPassingYards, passAttempts));
-      const yardsPerCarry = Number(calculateRatio(rushingYards, rushingAttempts));
-      const kickReturnAverage = Number(calculateRatio(kickReturnYards, kickReturns));
-      const puntReturnAverage = Number(calculateRatio(puntReturnYards, puntReturns));
-      
-      const totalOffensiveTDs = Number(passingTDs + rushingTDs);
-      const passingTDPercentage = totalOffensiveTDs ? Number(Math.round((passingTDs / totalOffensiveTDs) * 100)) : 0;
-      const rushingTDPercentage = totalOffensiveTDs ? Number(Math.round((rushingTDs / totalOffensiveTDs) * 100)) : 0;
-      
-      const yardsAllowedPerGame = games ? Number(Math.round(yardsAllowed / games)) : 0;
-      const pointsAllowedPerGame = games ? Number(Math.round(pointsAllowed / games)) : 0;
-      
-      // Log the actual calculated values to verify calculations
-      console.log("Calculated KPIs:", {
-        completionPercentage,
-        yardsPerAttempt,
-        yardsPerCarry,
-        kickReturnAverage,
-        puntReturnAverage,
-        thirdDownConversionPercentage,
-        fourthDownConversionPercentage,
-        yardsPerGame,
-        estimatedPointsPerGame,
-        turnoverMargin
-      });
-      
+      // Set all KPIs to 0 as requested while keeping the structure
       const calculatedKpis = {
-        yardsPerGame,
-        estimatedPointsPerGame,
-        thirdDownConversionPercentage,
-        fourthDownConversionPercentage,
-        turnoverMargin,
-        passingYardPercentage,
-        rushingYardPercentage,
-        completionPercentage,
-        yardsPerAttempt,
-        yardsPerCarry,
-        kickReturnAverage,
-        puntReturnAverage,
-        passingTDPercentage,
-        rushingTDPercentage,
-        totalTDs,
-        estimatedPoints,
-        takeaways,
-        yardsAllowedPerGame,
-        pointsAllowedPerGame
+        yardsPerGame: 0,
+        estimatedPointsPerGame: 0,
+        thirdDownConversionPercentage: 0,
+        fourthDownConversionPercentage: 0,
+        turnoverMargin: 0,
+        passingYardPercentage: 0,
+        rushingYardPercentage: 0,
+        completionPercentage: 0,
+        yardsPerAttempt: 0,
+        yardsPerCarry: 0,
+        kickReturnAverage: 0,
+        puntReturnAverage: 0,
+        passingTDPercentage: 0,
+        rushingTDPercentage: 0,
+        totalTDs: 0,
+        estimatedPoints: 0,
+        takeaways: 0,
+        yardsAllowedPerGame: 0,
+        pointsAllowedPerGame: 0
       };
       
       setKpis(calculatedKpis);
@@ -273,8 +195,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     if (!stats || stats.length === 0 || !kpis) return;
     
     try {
-      console.log("Processing stats into categories with KPIs:", kpis);
+      console.log("Processing stats into categories for display...");
       
+      // Get list of all available stat names
+      const availableStats = stats.map(stat => stat.statName);
+      console.log("Available stats:", availableStats);
+      
+      // Define categories with assignment rules
       const categoriesObj = {
         general: {
           name: "General",
@@ -289,7 +216,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         defense: {
           name: "Defense",
           icon: <FaShieldAlt />,
-          stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered", "yardsAllowed", "pointsAllowed"]
+          stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered", "yardsAllowed", "pointsAllowed", "passesIntercepted"]
         },
         specialTeams: {
           name: "Special Teams",
@@ -347,46 +274,40 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         }));
       }
       
-      // Add derived metrics to the proper categories
-      // FIXED: Use explicit Number() conversions for all derived metrics
+      // Add derived metrics to the proper categories but with values of 0
       if (categoriesObj.offense && categoriesObj.offense.statList) {
         categoriesObj.offense.statList.push(
-          { statName: "completionPercentage", statValue: Number(kpis.completionPercentage), derived: true },
-          { statName: "yardsPerAttempt", statValue: Number(kpis.yardsPerAttempt), derived: true },
-          { statName: "yardsPerCarry", statValue: Number(kpis.yardsPerCarry), derived: true }
+          { statName: "completionPercentage", statValue: 0, derived: true },
+          { statName: "yardsPerAttempt", statValue: 0, derived: true },
+          { statName: "yardsPerCarry", statValue: 0, derived: true }
         );
       }
       
       if (categoriesObj.specialTeams && categoriesObj.specialTeams.statList) {
         categoriesObj.specialTeams.statList.push(
-          { statName: "kickReturnAverage", statValue: Number(kpis.kickReturnAverage), derived: true },
-          { statName: "puntReturnAverage", statValue: Number(kpis.puntReturnAverage), derived: true }
+          { statName: "kickReturnAverage", statValue: 0, derived: true },
+          { statName: "puntReturnAverage", statValue: 0, derived: true }
         );
       }
       
       if (categoriesObj.situational && categoriesObj.situational.statList) {
         categoriesObj.situational.statList.push(
-          { statName: "thirdDownConversionPercentage", statValue: Number(kpis.thirdDownConversionPercentage), derived: true },
-          { statName: "fourthDownConversionPercentage", statValue: Number(kpis.fourthDownConversionPercentage), derived: true }
+          { statName: "thirdDownConversionPercentage", statValue: 0, derived: true },
+          { statName: "fourthDownConversionPercentage", statValue: 0, derived: true }
         );
       }
       
       // Add efficiency metrics to the efficiency category
       categoriesObj.efficiency.statList = [
-        { statName: "yardsPerGame", statValue: Number(kpis.yardsPerGame), derived: true },
-        { statName: "pointsPerGame", statValue: Number(kpis.estimatedPointsPerGame), derived: true },
-        { statName: "turnoverEfficiency", statValue: Number(kpis.turnoverMargin), derived: true },
-        { statName: "yardsAllowedPerGame", statValue: Number(kpis.yardsAllowedPerGame), derived: true },
-        { statName: "pointsAllowedPerGame", statValue: Number(kpis.pointsAllowedPerGame), derived: true }
+        { statName: "yardsPerGame", statValue: 0, derived: true },
+        { statName: "pointsPerGame", statValue: 0, derived: true },
+        { statName: "turnoverEfficiency", statValue: 0, derived: true },
+        { statName: "yardsAllowedPerGame", statValue: 0, derived: true },
+        { statName: "pointsAllowedPerGame", statValue: 0, derived: true }
       ];
       
-      // Debug log to verify derived stats are added with correct values
-      console.log("Offense derived stats:", categoriesObj.offense.statList.filter(s => s.derived));
-      console.log("Situational derived stats:", categoriesObj.situational.statList.filter(s => s.derived));
-      console.log("Special Teams derived stats:", categoriesObj.specialTeams.statList.filter(s => s.derived));
-      console.log("Efficiency stats:", categoriesObj.efficiency.statList);
-      
       setCategories(categoriesObj);
+      console.log("Categories processed:", categoriesObj);
     } catch (err) {
       console.error("Error processing categories:", err);
     }
@@ -834,7 +755,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon">
               <FaChartBar />
             </div>
-            <div className="kpi-value">{kpis.yardsPerGame}</div>
+            <div className="kpi-value">0</div>
             <div className="kpi-label">Yards per Game</div>
           </div>
           
@@ -842,7 +763,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon">
               <FaTrophy />
             </div>
-            <div className="kpi-value">{kpis.estimatedPointsPerGame}</div>
+            <div className="kpi-value">0</div>
             <div className="kpi-label">Est. Points per Game</div>
           </div>
           
@@ -850,7 +771,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon">
               <FaPercentage />
             </div>
-            <div className="kpi-value">{kpis.thirdDownConversionPercentage}%</div>
+            <div className="kpi-value">0%</div>
             <div className="kpi-label">3rd Down Conversion</div>
           </div>
           
@@ -858,9 +779,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon">
               <FaExchangeAlt />
             </div>
-            <div className="kpi-value" style={{ color: kpis.turnoverMargin > 0 ? '#16a34a' : '#dc2626' }}>
-              {kpis.turnoverMargin > 0 ? '+' : ''}{kpis.turnoverMargin}
-            </div>
+            <div className="kpi-value">0</div>
             <div className="kpi-label">Turnover Margin</div>
           </div>
         </div>
@@ -870,7 +789,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       <div className="comparison-section">
         <h2 className="section-title">
           <IoMdTrendingUp className="section-icon" style={{ color: accentColor }} />
-          Key Metrics Comparison
+          Key Metrics
         </h2>
         <div className="comparison-grid">
           {renderComparisonCards()}
@@ -879,26 +798,63 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
 
       {/* Category Navigation */}
       <div className="category-tabs">
-        {Object.keys(categories).map((categoryKey) => (
-          <button
-            key={categoryKey}
-            className={`category-tab ${activeCategory === categoryKey ? 'active' : ''}`}
-            onClick={() => setActiveCategory(categoryKey)}
-            style={activeCategory === categoryKey ? { 
-              background: accentColor, 
-              color: contrastColor,
-              borderColor: accentColor
-            } : {}}
-          >
-            <span className="tab-icon">{categories[categoryKey].icon}</span>
-            <span className="tab-text">{categories[categoryKey].name}</span>
-          </button>
-        ))}
+        {Object.keys(categories).map((categoryKey) => {
+          // Only show categories that have stats
+          if (categories[categoryKey].statList && categories[categoryKey].statList.length > 0) {
+            return (
+              <button
+                key={categoryKey}
+                className={`category-tab ${activeCategory === categoryKey ? 'active' : ''}`}
+                onClick={() => setActiveCategory(categoryKey)}
+                style={activeCategory === categoryKey ? { 
+                  background: accentColor, 
+                  color: contrastColor,
+                  borderColor: accentColor
+                } : {}}
+              >
+                <span className="tab-icon">{categories[categoryKey].icon}</span>
+                <span className="tab-text">{categories[categoryKey].name}</span>
+              </button>
+            );
+          }
+          return null;
+        }).filter(Boolean)}
       </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
         {categories[activeCategory] && renderCategoryCards(categories[activeCategory])}
+      </div>
+      
+      {/* All Stats View */}
+      <div className="all-stats-section">
+        <h2 className="section-title">
+          <IoMdStats className="section-icon" style={{ color: accentColor }} />
+          All Team Statistics
+        </h2>
+        <div className="stats-grid all-stats-grid">
+          {stats.map((stat, index) => {
+            const statName = stat.statName;
+            const statValue = typeof stat.statValue === 'string' ? Number(stat.statValue) : stat.statValue;
+            const displayName = formatStatName(statName);
+            const displayValue = formatStatValue(statName, statValue);
+            const ratingClass = getRatingClass(statName, statValue);
+            
+            return (
+              <div className="stat-card" key={`all-${statName}-${index}`}>
+                <div className="stat-card-inner">
+                  <div className="stat-name">
+                    {getStatIcon(statName)}
+                    <span>{displayName}</span>
+                  </div>
+                  <div className={`stat-value ${ratingClass}`}>
+                    {displayValue}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
