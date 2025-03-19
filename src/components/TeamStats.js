@@ -161,7 +161,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     if (!stats || stats.length === 0) return;
     
     try {
-      // Get all the raw stat values needed for calculations
       const games = getStatValue("games");
       const totalYards = getStatValue("totalYards");
       const netPassingYards = getStatValue("netPassingYards");
@@ -181,22 +180,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const passCompletions = getStatValue("passCompletions");
       const passAttempts = getStatValue("passAttempts");
       const rushingAttempts = getStatValue("rushingAttempts");
-      const kickReturns = getStatValue("kickReturns");
-      const kickReturnYards = getStatValue("kickReturnYards");
-      const puntReturns = getStatValue("puntReturns");
-      const puntReturnYards = getStatValue("puntReturnYards");
-      const yardsAllowed = getStatValue("yardsAllowed") || 0; // Add default value for new stats
-      const pointsAllowed = getStatValue("pointsAllowed") || 0;
       
       console.log("Raw stat values:", {
         games, totalYards, netPassingYards, rushingYards, passingTDs, rushingTDs,
         kickReturnTDs, puntReturnTDs, interceptionTDs, thirdDowns, thirdDownConversions,
         fourthDowns, fourthDownConversions, turnovers, interceptions, fumblesRecovered,
-        passCompletions, passAttempts, rushingAttempts, kickReturns, kickReturnYards,
-        puntReturns, puntReturnYards, yardsAllowed, pointsAllowed
+        passCompletions, passAttempts, rushingAttempts
       });
       
-      // Calculate derived metrics
       const yardsPerGame = games ? Math.round(totalYards / games) : 0;
       const passingYardPercentage = totalYards ? Math.round((netPassingYards / totalYards) * 100) : 0;
       const rushingYardPercentage = totalYards ? Math.round((rushingYards / totalYards) * 100) : 0;
@@ -216,16 +207,17 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const yardsPerCarry = calculateRatio(rushingYards, rushingAttempts);
       
+      const kickReturns = getStatValue("kickReturns");
+      const kickReturnYards = getStatValue("kickReturnYards");
       const kickReturnAverage = calculateRatio(kickReturnYards, kickReturns);
       
+      const puntReturns = getStatValue("puntReturns");
+      const puntReturnYards = getStatValue("puntReturnYards");
       const puntReturnAverage = calculateRatio(puntReturnYards, puntReturns);
       
       const totalOffensiveTDs = passingTDs + rushingTDs;
       const passingTDPercentage = totalOffensiveTDs ? Math.round((passingTDs / totalOffensiveTDs) * 100) : 0;
       const rushingTDPercentage = totalOffensiveTDs ? Math.round((rushingTDs / totalOffensiveTDs) * 100) : 0;
-      
-      const yardsAllowedPerGame = games ? Math.round(yardsAllowed / games) : 0;
-      const pointsAllowedPerGame = games ? Math.round(pointsAllowed / games) : 0;
       
       const calculatedKpis = {
         yardsPerGame,
@@ -244,9 +236,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         rushingTDPercentage,
         totalTDs,
         estimatedPoints,
-        takeaways,
-        yardsAllowedPerGame,
-        pointsAllowedPerGame
+        takeaways
       };
       
       console.log("KPIs calculated:", calculatedKpis);
@@ -277,7 +267,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         defense: {
           name: "Defense",
           icon: <FaShieldAlt />,
-          stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered", "yardsAllowed", "pointsAllowed"]
+          stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered"]
         },
         specialTeams: {
           name: "Special Teams",
@@ -289,11 +279,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           icon: <FaPercentage />,
           stats: ["thirdDowns", "thirdDownConversions", "fourthDowns", "fourthDownConversions", "fumblesLost", "passesIntercepted"]
         },
-        efficiency: {
-          name: "Efficiency",
-          icon: <FaChartLine />,
-          stats: []
-        },
         misc: {
           name: "Miscellaneous",
           icon: <FaRegChartBar />,
@@ -303,7 +288,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const processedStats = new Set();
       
-      // Process each category and assign stats to them
       Object.keys(categoriesObj).forEach(categoryKey => {
         const category = categoriesObj[categoryKey];
         category.statList = [];
@@ -314,19 +298,11 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               const statValue = isNaN(Number(statObj.statValue)) ? statObj.statValue : Number(statObj.statValue);
               category.statList.push({ ...statObj, statValue });
               processedStats.add(statName);
-            } else if (statName === "yardsAllowed" || statName === "pointsAllowed") {
-              // Create placeholder stats for missing defensive stats
-              category.statList.push({ 
-                statName: statName, 
-                statValue: 0, 
-                derived: true 
-              });
             }
           });
         }
       });
       
-      // Add remaining unprocessed stats to misc category
       const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
       if (miscStats.length > 0) {
         categoriesObj.misc.statList = miscStats.map(stat => ({
@@ -338,34 +314,25 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       // Add derived metrics to the proper categories
       if (categoriesObj.offense && categoriesObj.offense.statList) {
         categoriesObj.offense.statList.push(
-          { statName: "completionPercentage", statValue: kpis.completionPercentage, derived: true },
-          { statName: "yardsPerAttempt", statValue: kpis.yardsPerAttempt, derived: true },
-          { statName: "yardsPerCarry", statValue: kpis.yardsPerCarry, derived: true }
+          { statName: "completionPercentage", statValue: Number(kpis.completionPercentage), derived: true },
+          { statName: "yardsPerAttempt", statValue: Number(kpis.yardsPerAttempt), derived: true },
+          { statName: "yardsPerCarry", statValue: Number(kpis.yardsPerCarry), derived: true }
         );
       }
       
       if (categoriesObj.specialTeams && categoriesObj.specialTeams.statList) {
         categoriesObj.specialTeams.statList.push(
-          { statName: "kickReturnAverage", statValue: kpis.kickReturnAverage, derived: true },
-          { statName: "puntReturnAverage", statValue: kpis.puntReturnAverage, derived: true }
+          { statName: "kickReturnAverage", statValue: Number(kpis.kickReturnAverage), derived: true },
+          { statName: "puntReturnAverage", statValue: Number(kpis.puntReturnAverage), derived: true }
         );
       }
       
       if (categoriesObj.situational && categoriesObj.situational.statList) {
         categoriesObj.situational.statList.push(
-          { statName: "thirdDownConversionPercentage", statValue: kpis.thirdDownConversionPercentage, derived: true },
-          { statName: "fourthDownConversionPercentage", statValue: kpis.fourthDownConversionPercentage, derived: true }
+          { statName: "thirdDownConversionPercentage", statValue: Number(kpis.thirdDownConversionPercentage), derived: true },
+          { statName: "fourthDownConversionPercentage", statValue: Number(kpis.fourthDownConversionPercentage), derived: true }
         );
       }
-      
-      // Add efficiency metrics to the efficiency category
-      categoriesObj.efficiency.statList = [
-        { statName: "yardsPerGame", statValue: kpis.yardsPerGame, derived: true },
-        { statName: "pointsPerGame", statValue: kpis.estimatedPointsPerGame, derived: true },
-        { statName: "turnoverEfficiency", statValue: kpis.turnoverMargin, derived: true },
-        { statName: "yardsAllowedPerGame", statValue: kpis.yardsAllowedPerGame, derived: true },
-        { statName: "pointsAllowedPerGame", statValue: kpis.pointsAllowedPerGame, derived: true }
-      ];
       
       setCategories(categoriesObj);
       console.log("Categories processed:", categoriesObj);
@@ -406,19 +373,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "totalYards": "Total Yards",
       "firstDowns": "First Downs",
       "penaltyYards": "Penalty Yards",
-      "yardsAllowed": "Yards Allowed",
-      "pointsAllowed": "Points Allowed",
       // Derived stats
       "completionPercentage": "Completion %",
       "yardsPerAttempt": "Yards per Attempt",
       "yardsPerCarry": "Yards per Carry",
       "kickReturnAverage": "Kick Return Average",
-      "puntReturnAverage": "Punt Return Average",
-      "yardsPerGame": "Yards per Game",
-      "pointsPerGame": "Points per Game",
-      "turnoverEfficiency": "Turnover Margin",
-      "yardsAllowedPerGame": "Yards Allowed per Game",
-      "pointsAllowedPerGame": "Points Allowed per Game"
+      "puntReturnAverage": "Punt Return Average"
     };
     
     return specialCases[name] || name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -436,9 +396,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
     if (name.includes("Percentage") || name.endsWith("Percent") || name.endsWith("%")) {
       return `${value}%`;
-    }
-    if (name === "turnoverEfficiency" && value > 0) {
-      return `+${value}`;
     }
     if (typeof value === 'number' && !isNaN(value)) {
       if (value % 1 !== 0) return value.toFixed(1);
@@ -488,14 +445,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "fourthDownConversions": <BiDownArrow className="stat-icon" />,
       "fourthDownConversionPercentage": <FaPercentage className="stat-icon" />,
       "fumblesLost": <FaExchangeAlt className="stat-icon" />,
-      "passesIntercepted": <FaExchangeAlt className="stat-icon" />,
-      "yardsPerGame": <FaChartLine className="stat-icon" />,
-      "pointsPerGame": <FaTrophy className="stat-icon" />,
-      "turnoverEfficiency": <FaExchangeAlt className="stat-icon" />,
-      "yardsAllowed": <FaShieldAlt className="stat-icon" />,
-      "pointsAllowed": <FaShieldAlt className="stat-icon" />,
-      "yardsAllowedPerGame": <FaShieldAlt className="stat-icon" />,
-      "pointsAllowedPerGame": <FaShieldAlt className="stat-icon" />
+      "passesIntercepted": <FaExchangeAlt className="stat-icon" />
     };
     return iconMap[statName] || <IoMdStats className="stat-icon" />;
   };
@@ -510,14 +460,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "fumblesRecovered", "kickReturnYards", "puntReturnYards",
       "kickReturnTDs", "puntReturnTDs", "completionPercentage",
       "yardsPerAttempt", "yardsPerCarry", "kickReturnAverage", "puntReturnAverage",
-      "thirdDownConversionPercentage", "fourthDownConversionPercentage", "turnoverEfficiency",
-      "yardsPerGame", "pointsPerGame"
+      "thirdDownConversionPercentage", "fourthDownConversionPercentage"
     ];
     
     const lowIsGood = [
       "penalties", "penaltyYards", "turnovers", "fumblesLost",
-      "passesIntercepted", "yardsAllowed", "pointsAllowed", 
-      "yardsAllowedPerGame", "pointsAllowedPerGame"
+      "passesIntercepted"
     ];
     
     const neutralStats = [
@@ -528,19 +476,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     if (neutralStats.includes(statName)) return "";
     
     if (highIsGood.includes(statName)) {
-      if (statName === "netPassingYards" && value > 3000) return "excellent-value";
-      if (statName === "rushingYards" && value > 2000) return "excellent-value";
-      if (statName === "totalYards" && value > 5000) return "excellent-value";
-      if (statName === "yardsPerGame" && value > 400) return "excellent-value";
-      if (statName === "pointsPerGame" && value > 30) return "excellent-value";
-      if (statName === "sacks" && value > 35) return "excellent-value";
-      if (statName === "interceptions" && value > 12) return "excellent-value";
+      if (statName === "netPassingYards" && value > 3500) return "excellent-value";
+      if (statName === "rushingYards" && value > 2500) return "excellent-value";
+      if (statName === "totalYards" && value > 6000) return "excellent-value";
+      if (statName === "sacks" && value > 40) return "excellent-value";
+      if (statName === "interceptions" && value > 15) return "excellent-value";
       if (statName === "completionPercentage" && value > 65) return "excellent-value";
-      if (statName === "yardsPerAttempt" && value > 7.5) return "excellent-value";
-      if (statName === "yardsPerCarry" && value > 4.5) return "excellent-value";
-      if (statName === "thirdDownConversionPercentage" && value > 45) return "excellent-value";
+      if (statName === "yardsPerAttempt" && value > 8) return "excellent-value";
+      if (statName === "yardsPerCarry" && value > 5) return "excellent-value";
+      if (statName === "thirdDownConversionPercentage" && value > 50) return "excellent-value";
       if (statName === "fourthDownConversionPercentage" && value > 60) return "excellent-value";
-      if (statName === "turnoverEfficiency" && value > 10) return "excellent-value";
       if (value > 0) return "good-value";
     }
     
@@ -548,8 +493,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       if (statName === "turnovers" && value < 15) return "excellent-value";
       if (statName === "penalties" && value < 60) return "excellent-value";
       if (statName === "penaltyYards" && value < 500) return "excellent-value";
-      if (statName === "yardsAllowedPerGame" && value < 300) return "excellent-value";
-      if (statName === "pointsAllowedPerGame" && value < 20) return "excellent-value";
       return value < 20 ? "good-value" : "poor-value";
     }
     
