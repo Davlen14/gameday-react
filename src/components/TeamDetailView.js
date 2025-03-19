@@ -26,7 +26,7 @@ import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponen
 import "../styles/TeamDetail.css";
 
 // Loading animation component
-const LoadingSpinner = () => (
+const LoadingSpinner = ({ color = "#9e9e9e" }) => (
   <div className="loading-spinner">
     <svg width="50" height="50" viewBox="0 0 50 50">
       <circle 
@@ -34,7 +34,7 @@ const LoadingSpinner = () => (
         cy="25" 
         r="20" 
         fill="none" 
-        stroke="currentColor" 
+        stroke={color} 
         strokeWidth="5"
         strokeDasharray="31.4 31.4"
       >
@@ -51,12 +51,12 @@ const LoadingSpinner = () => (
 );
 
 // Coming Soon Component
-const ComingSoon = ({ title }) => (
-  <div className="coming-soon-container">
-    <FaExclamationTriangle size={40} className="coming-soon-icon" />
+const ComingSoon = ({ title, color = "#9e9e9e" }) => (
+  <div className="coming-soon-container" style={{ borderColor: color + "30" }}>
+    <FaExclamationTriangle size={40} className="coming-soon-icon" style={{ color }} />
     <h3>{title} Feature</h3>
     <p>We're currently working on this exciting new feature!</p>
-    <div className="coming-soon-label">Coming Soon</div>
+    <div className="coming-soon-label" style={{ background: color }}>Coming Soon</div>
   </div>
 );
 
@@ -213,23 +213,27 @@ const TeamDetail = () => {
     fetchData();
   }, [teamId]);
 
+  // Default color if team color is not available
+  const defaultColor = "#9e9e9e";
+  const teamColor = team?.color || defaultColor;
+
   if (isLoading.team) return (
     <div className="loading-screen">
-      <LoadingSpinner />
+      <LoadingSpinner color={teamColor} />
       <div>Loading team information...</div>
     </div>
   );
   
   if (error) return (
     <div className="error-screen">
-      <FaInfoCircle size={40} />
+      <FaInfoCircle size={40} style={{ color: teamColor }} />
       <div>{error}</div>
     </div>
   );
   
   if (!team) return (
     <div className="not-found-screen">
-      <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke={teamColor} strokeWidth="2">
         <circle cx="12" cy="12" r="10" />
         <line x1="8" y1="12" x2="16" y2="12" />
       </svg>
@@ -270,11 +274,43 @@ const TeamDetail = () => {
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
 
+  // Helper function to darken a color
+  const darkenColor = (color, percent) => {
+    const num = parseInt(color.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) - amt,
+          G = (num >> 8 & 0x00FF) - amt,
+          B = (num & 0x0000FF) - amt;
+    return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+                  (G > 0 ? G : 0) * 0x100 +
+                  (B > 0 ? B : 0)).toString(16).slice(1);
+  };
+
   // Top bar style using team color with glass effect
   const topBarStyle = {
-    background: getTeamColorGradient(team.color || "#1a1a1a"),
-    color: getContrastColor(team.color || "#1a1a1a"),
-    boxShadow: `0 4px 20px ${team.color ? team.color + '50' : 'rgba(0, 0, 0, 0.2)'}`
+    background: getTeamColorGradient(teamColor),
+    color: getContrastColor(teamColor),
+    boxShadow: `0 4px 20px ${teamColor}50`
+  };
+
+  // Style for card headers
+  const cardHeaderStyle = {
+    background: lightenColor(teamColor, 90),
+    borderBottom: `2px solid ${teamColor}`,
+    color: darkenColor(teamColor, 20)
+  };
+
+  // Style for active tabs
+  const activeTabStyle = {
+    background: teamColor,
+    color: getContrastColor(teamColor),
+    borderColor: teamColor,
+    boxShadow: `0 2px 4px ${teamColor}40`
+  };
+
+  // Style for tab icons
+  const tabIconStyle = {
+    color: teamColor
   };
 
   // Render the active tab content
@@ -285,8 +321,8 @@ const TeamDetail = () => {
           <>
             {/* SP+ Ratings Card */}
             <div className="dashboard-card team-ratings-card">
-              <div className="card-header">
-                <FaChartLine style={{ marginRight: "12px" }} /> 
+              <div className="card-header" style={cardHeaderStyle}>
+                <FaChartLine style={{ marginRight: "12px", color: teamColor }} /> 
                 SP+ Ratings
               </div>
               <div className="card-body">
@@ -296,22 +332,25 @@ const TeamDetail = () => {
                     metricType="overall" 
                     teamName={team.school}
                     year={2024}
+                    teamColor={teamColor}
                   />
                   <GaugeComponent 
                     label="Offense" 
                     metricType="offense" 
                     teamName={team.school}
                     year={2024}
+                    teamColor={teamColor}
                   />
                   <GaugeComponent 
                     label="Defense" 
                     metricType="defense" 
                     teamName={team.school}
                     year={2024}
+                    teamColor={teamColor}
                   />
                 </div>
                 <div className="ratings-explanation">
-                  <h3>How SP+ Ratings Work</h3>
+                  <h3 style={{ color: teamColor }}>How SP+ Ratings Work</h3>
                   <p>
                     The SP+ ratings combine multiple aspects of team performance into a single composite metric.
                     <br />
@@ -337,8 +376,8 @@ const TeamDetail = () => {
 
             {/* Team Info Card */}
             <div className="dashboard-card team-info-card">
-              <div className="card-header">
-                <FaInfoCircle style={{ marginRight: "12px" }} />
+              <div className="card-header" style={cardHeaderStyle}>
+                <FaInfoCircle style={{ marginRight: "12px", color: teamColor }} />
                 About {team.school} {team.mascot}
               </div>
               <div className="card-body">
@@ -368,10 +407,10 @@ const TeamDetail = () => {
                             width: '20px',
                             height: '20px',
                             borderRadius: '50%',
-                            background: team.color || "#1a1a1a",
+                            background: teamColor,
                             border: '1px solid rgba(0,0,0,0.1)'
                           }}></div>
-                          <strong>{team.color || "Not available"}</strong>
+                          <strong>{teamColor}</strong>
                         </div>
                       </td>
                     </tr>
@@ -385,14 +424,14 @@ const TeamDetail = () => {
       case 'schedule':
         return (
           <div className="dashboard-card full-width-card">
-            <div className="card-header">
-              <FaCalendarAlt style={{ marginRight: "12px" }} />
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaCalendarAlt style={{ marginRight: "12px", color: teamColor }} />
               Team Schedule
             </div>
             <div className="card-body">
               {isLoading.schedule ? (
                 <div className="loading-indicator">
-                  <LoadingSpinner />
+                  <LoadingSpinner color={teamColor} />
                   <p>Loading schedule...</p>
                 </div>
               ) : (
@@ -414,10 +453,10 @@ const TeamDetail = () => {
                     const gameDate = game.date ? new Date(game.date).toLocaleDateString() : "TBD";
                     
                     return (
-                      <div key={index} className="schedule-item">
-                        {!isCompleted && <div className="upcoming-game-badge">Upcoming</div>}
+                      <div key={index} className="schedule-item" style={{ borderLeft: `3px solid ${teamColor}40` }}>
+                        {!isCompleted && <div className="upcoming-game-badge" style={{ background: teamColor, color: getContrastColor(teamColor) }}>Upcoming</div>}
                         
-                        <div className="schedule-header">
+                        <div className="schedule-header" style={{ borderBottom: `1px solid ${teamColor}20` }}>
                           Game {index + 1} - {gameDate}
                         </div>
                         
@@ -455,11 +494,13 @@ const TeamDetail = () => {
                         
                         {isCompleted && (
                           <div className="schedule-score">
-                            <div className={`schedule-score-home ${homeWinner ? 'schedule-winner' : ''}`}>
+                            <div className={`schedule-score-home ${homeWinner ? 'schedule-winner' : ''}`}
+                                 style={homeWinner ? { color: teamColor, fontWeight: 'bold' } : {}}>
                               {game.homePoints}
                             </div>
                             -
-                            <div className={`schedule-score-away ${awayWinner ? 'schedule-winner' : ''}`}>
+                            <div className={`schedule-score-away ${awayWinner ? 'schedule-winner' : ''}`}
+                                 style={awayWinner ? { color: teamColor, fontWeight: 'bold' } : {}}>
                               {game.awayPoints}
                             </div>
                           </div>
@@ -467,11 +508,11 @@ const TeamDetail = () => {
                         
                         <div className="schedule-details">
                           <div className="schedule-venue">
-                            <FaVenue size={14} style={{ opacity: 0.7 }} />
+                            <FaVenue size={14} style={{ opacity: 0.7, color: teamColor }} />
                             {game.venue || "TBD"}
                           </div>
                           <div className="schedule-date">
-                            <FaClock size={14} style={{ opacity: 0.7 }} />
+                            <FaClock size={14} style={{ opacity: 0.7, color: teamColor }} />
                             {game.time || "TBD"}
                           </div>
                         </div>
@@ -492,20 +533,20 @@ const TeamDetail = () => {
       case 'roster':
         return (
           <div className="dashboard-card full-width-card">
-            <div className="card-header">
-              <FaUserFriends style={{ marginRight: "12px" }} />
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaUserFriends style={{ marginRight: "12px", color: teamColor }} />
               Team Roster
             </div>
             <div className="card-body">
               {isLoading.roster ? (
                 <div className="loading-indicator">
-                  <LoadingSpinner />
+                  <LoadingSpinner color={teamColor} />
                   <p>Loading roster...</p>
                 </div>
               ) : (
                 <table className="roster-table">
                   <thead>
-                    <tr>
+                    <tr style={{ borderBottom: `2px solid ${teamColor}30` }}>
                       <th>Player</th>
                       <th>Position</th>
                       <th>Height</th>
@@ -514,10 +555,10 @@ const TeamDetail = () => {
                   </thead>
                   <tbody>
                     {roster.map((player, index) => (
-                      <tr key={index}>
+                      <tr key={index} style={{ borderBottom: `1px solid ${teamColor}10` }}>
                         <td>
                           <div className="player-info">
-                            <div className="player-icon">
+                            <div className="player-icon" style={{ color: teamColor }}>
                               <FaUser />
                             </div>
                             <div className="player-name">{player.fullName}</div>
@@ -551,18 +592,18 @@ const TeamDetail = () => {
       case 'ratings':
         return (
           <div className="dashboard-card full-width-card">
-            <div className="card-header">
-              <FaChartLine style={{ marginRight: "12px" }} />
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaChartLine style={{ marginRight: "12px", color: teamColor }} />
               Detailed Team Ratings
             </div>
             <div className="card-body">
               {isLoading.ratings ? (
                 <div className="loading-indicator">
-                  <LoadingSpinner />
+                  <LoadingSpinner color={teamColor} />
                   <p>Loading detailed ratings...</p>
                 </div>
               ) : (
-                <RatingsComponent teamName={team.school} year={2024} />
+                <RatingsComponent teamName={team.school} year={2024} teamColor={teamColor} />
               )}
             </div>
           </div>
@@ -571,15 +612,15 @@ const TeamDetail = () => {
         case 'teamStats':
           return (
             <div className="dashboard-card full-width-card">
-              <div className="card-header">
-                <FaChartBar style={{ marginRight: "12px" }} />
+              <div className="card-header" style={cardHeaderStyle}>
+                <FaChartBar style={{ marginRight: "12px", color: teamColor }} />
                 Team Statistics
               </div>
               <div className="card-body">
                 <TeamStats 
                   teamName={team.school} 
                   year={2024} 
-                  teamColor={team.color} 
+                  teamColor={teamColor}
                 />
               </div>
             </div>
@@ -588,8 +629,8 @@ const TeamDetail = () => {
         case 'playerStats':
           return (
             <div className="dashboard-card full-width-card">
-              <div className="card-header">
-                <FaFootballBall style={{ marginRight: "12px" }} />
+              <div className="card-header" style={cardHeaderStyle}>
+                <FaFootballBall style={{ marginRight: "12px", color: teamColor }} />
                 Player Statistics
               </div>
               <div className="card-body">
@@ -597,7 +638,7 @@ const TeamDetail = () => {
                 <TeamPlayerStats 
                   teamName={team.school} 
                   year={2024} 
-                  teamColor={team.color} 
+                  teamColor={teamColor}
                 />
               </div>
             </div>
@@ -612,7 +653,7 @@ const TeamDetail = () => {
     <div className="team-dashboard">
       {/* Top Bar */}
       <div className="team-top-bar" style={topBarStyle}>
-        <Link to="/teams" className="back-button" style={{ color: getContrastColor(team.color || "#1a1a1a") }}>
+        <Link to="/teams" className="back-button" style={{ color: getContrastColor(teamColor) }}>
           <FaArrowLeft style={{ marginRight: "8px" }} /> Back
         </Link>
         <div className="team-selector">
@@ -621,6 +662,7 @@ const TeamDetail = () => {
             className="team-select" 
             value={teamId} 
             onChange={handleTeamChange}
+            style={{ borderColor: `${teamColor}50` }}
           >
             {allTeams.map((t) => (
               <option key={t.id} value={t.id}>
@@ -632,7 +674,7 @@ const TeamDetail = () => {
       </div>
 
       {/* Team Header with animation */}
-      <div className="team-header" ref={headerRef}>
+      <div className="team-header" ref={headerRef} style={{ borderBottom: `1px solid ${teamColor}20` }}>
         <div className="team-logo-container">
           <img
             src={getTeamLogo(team.school)}
@@ -648,15 +690,15 @@ const TeamDetail = () => {
           <h1 className="team-name">{team.school} {team.mascot}</h1>
           <div className="team-meta">
             <div className="meta-item">
-              <FaMapMarkerAlt size={18} />
+              <FaMapMarkerAlt size={18} style={{ color: teamColor }} />
               <span>{team.location?.city}, {team.location?.state}</span>
             </div>
             <div className="meta-item">
-              <FaTrophy size={18} />
+              <FaTrophy size={18} style={{ color: teamColor }} />
               <span>{teamConference}</span>
             </div>
             <div className="meta-item">
-              <FaUsers size={18} />
+              <FaUsers size={18} style={{ color: teamColor }} />
               <span>Division I ({team.classification})</span>
             </div>
           </div>
@@ -664,55 +706,55 @@ const TeamDetail = () => {
       </div>
 
       {/* Dashboard Navigation Tabs */}
-      <div className="dashboard-tabs">
-        <div 
-          className={`tab-item ${activeTab === 'overview' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('overview')}
-        >
-          <FaInfoCircle className="tab-icon" />
-          <span className="tab-label">Overview</span>
-        </div>
-        <div 
-          className={`tab-item ${activeTab === 'schedule' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('schedule')}
-        >
-          <FaCalendarAlt className="tab-icon" />
-          <span className="tab-label">Schedule</span>
-        </div>
-        <div 
-          className={`tab-item ${activeTab === 'roster' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('roster')}
-        >
-          <FaUserFriends className="tab-icon" />
-          <span className="tab-label">Roster</span>
-        </div>
-        <div 
-          className={`tab-item ${activeTab === 'ratings' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('ratings')}
-        >
-          <FaChartLine className="tab-icon" />
-          <span className="tab-label">Ratings</span>
-        </div>
-        <div 
-          className={`tab-item ${activeTab === 'teamStats' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('teamStats')}
-        >
-          <FaChartBar className="tab-icon" />
-          <span className="tab-label">Team Stats</span>
-        </div>
-        <div 
-          className={`tab-item ${activeTab === 'playerStats' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('playerStats')}
-        >
-          <FaFootballBall className="tab-icon" />
-          <span className="tab-label">Player Stats</span>
-        </div>
+      <div className="dashboard-tabs" style={{ borderBottom: `2px solid ${teamColor}30` }}>
+        {[
+          { id: 'overview', label: 'Overview', icon: <FaInfoCircle /> },
+          { id: 'schedule', label: 'Schedule', icon: <FaCalendarAlt /> },
+          { id: 'roster', label: 'Roster', icon: <FaUserFriends /> },
+          { id: 'ratings', label: 'Ratings', icon: <FaChartLine /> },
+          { id: 'teamStats', label: 'Team Stats', icon: <FaChartBar /> },
+          { id: 'playerStats', label: 'Player Stats', icon: <FaFootballBall /> }
+        ].map(tab => (
+          <div 
+            key={tab.id}
+            className={`tab-item ${activeTab === tab.id ? 'active' : ''}`} 
+            onClick={() => handleTabChange(tab.id)}
+            style={{
+              ...activeTab === tab.id ? activeTabStyle : {},
+              '--hover-color': teamColor, // CSS variable for hover effects in stylesheets
+            }}
+          >
+            <span className="tab-icon" style={activeTab === tab.id ? {} : tabIconStyle}>
+              {tab.icon}
+            </span>
+            <span className="tab-label">{tab.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* Dashboard Content with animation */}
       <div className="dashboard-content" ref={contentRef}>
         {renderTabContent()}
       </div>
+
+      {/* Custom CSS to override default hover styles */}
+      <style>{`
+        .tab-item:hover {
+          background-color: ${teamColor}15 !important; 
+          color: ${teamColor} !important;
+          border-color: ${teamColor}50 !important;
+        }
+        
+        .dashboard-card {
+          box-shadow: 0 2px 8px ${teamColor}10 !important;
+          border: 1px solid ${teamColor}15 !important;
+        }
+        
+        .schedule-winner {
+          color: ${teamColor} !important;
+          font-weight: bold;
+        }
+      `}</style>
     </div>
   );
 };
