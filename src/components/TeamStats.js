@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import teamsService from "../services/teamsService";
 // Import react-icons
 import { 
@@ -101,10 +101,21 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
-  // Helper function to safely get stat value
-  const getStatValue = (name) => {
+  // Helper function to safely get stat value - memoized to avoid recalculations
+  const getStatValue = useCallback((name) => {
     const stat = stats.find(s => s && s.statName === name);
     return stat ? Number(stat.statValue) : 0;
+  }, [stats]);
+
+  // Force floating point calculations to be more precise
+  const calculatePercentage = (numerator, denominator) => {
+    if (!denominator || denominator === 0) return 0;
+    return Number(((numerator / denominator) * 100).toFixed(1));
+  };
+
+  const calculateRatio = (numerator, denominator) => {
+    if (!denominator || denominator === 0) return 0;
+    return Number((numerator / denominator).toFixed(1));
   };
 
   useEffect(() => {
@@ -116,6 +127,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         
         // Make sure data is an array before setting it to state
         if (Array.isArray(data)) {
+          // Ensure all values are properly converted to numbers where possible
           const statsWithParsedValues = data.map(stat => ({
             ...stat,
             statValue: isNaN(Number(stat.statValue)) ? stat.statValue : Number(stat.statValue)
@@ -181,7 +193,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         passCompletions, passAttempts, rushingAttempts
       });
       
-      // Calculate all the required metrics
+      // Calculate all the required metrics with proper precision
       const yardsPerGame = games ? Math.round(totalYards / games) : 0;
       const passingYardPercentage = totalYards ? Math.round((netPassingYards / totalYards) * 100) : 0;
       const rushingYardPercentage = totalYards ? Math.round((rushingYards / totalYards) * 100) : 0;
@@ -191,29 +203,29 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const estimatedPoints = totalTDs * 7;
       const estimatedPointsPerGame = games ? Math.round(estimatedPoints / games) : 0;
       
-      // Conversion rates
-      const thirdDownConversionPercentage = thirdDowns ? Math.round((thirdDownConversions / thirdDowns) * 100) : 0;
-      const fourthDownConversionPercentage = fourthDowns ? Math.round((fourthDownConversions / fourthDowns) * 100) : 0;
+      // Conversion rates - ensure we use fixed-point precision
+      const thirdDownConversionPercentage = calculatePercentage(thirdDownConversions, thirdDowns);
+      const fourthDownConversionPercentage = calculatePercentage(fourthDownConversions, fourthDowns);
       
       // Turnover margin calculation
       const takeaways = interceptions + fumblesRecovered;
       const turnoverMargin = takeaways - turnovers;
       
-      // Passing efficiency metrics
-      const completionPercentage = passAttempts ? parseFloat((passCompletions / passAttempts * 100).toFixed(1)) : 0;
-      const yardsPerAttempt = passAttempts ? parseFloat((netPassingYards / passAttempts).toFixed(1)) : 0;
+      // Passing efficiency metrics - ensure we use fixed-point precision
+      const completionPercentage = calculatePercentage(passCompletions, passAttempts);
+      const yardsPerAttempt = calculateRatio(netPassingYards, passAttempts);
       
-      // Rushing efficiency
-      const yardsPerCarry = rushingAttempts ? parseFloat((rushingYards / rushingAttempts).toFixed(1)) : 0;
+      // Rushing efficiency - ensure we use fixed-point precision
+      const yardsPerCarry = calculateRatio(rushingYards, rushingAttempts);
       
-      // Return averages
+      // Return averages - ensure we use fixed-point precision
       const kickReturns = getStatValue("kickReturns");
       const kickReturnYards = getStatValue("kickReturnYards");
-      const kickReturnAverage = kickReturns ? parseFloat((kickReturnYards / kickReturns).toFixed(1)) : 0;
+      const kickReturnAverage = calculateRatio(kickReturnYards, kickReturns);
       
       const puntReturns = getStatValue("puntReturns");
       const puntReturnYards = getStatValue("puntReturnYards");
-      const puntReturnAverage = puntReturns ? parseFloat((puntReturnYards / puntReturns).toFixed(1)) : 0;
+      const puntReturnAverage = calculateRatio(puntReturnYards, puntReturns);
       
       // TD distributions
       const totalOffensiveTDs = passingTDs + rushingTDs;
@@ -246,7 +258,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     } catch (err) {
       console.error("Error calculating KPIs:", err);
     }
-  }, [stats]);
+  }, [stats, getStatValue]);
 
   // Process stats into categories
   useEffect(() => {
@@ -291,6 +303,11 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             "fourthDowns", "fourthDownConversions",
             "fumblesLost", "passesIntercepted"
           ]
+        },
+        misc: {
+          name: "Miscellaneous",
+          icon: <FaRegChartBar />,
+          stats: []
         }
       };
       
@@ -302,39 +319,37 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         const category = categoriesObj[categoryKey];
         category.statList = [];
         
-        category.stats.forEach(statName => {
-          try {
-            const statObj = stats.find(s => s && s.statName === statName);
-            if (statObj) {
-              // Ensure the value is a number if possible
-              const statValue = isNaN(Number(statObj.statValue)) ? 
-                statObj.statValue : 
-                Number(statObj.statValue);
-              
-              category.statList.push({
-                ...statObj,
-                statValue
-              });
-              processedStats.add(statName);
+        if (category.stats) {
+          category.stats.forEach(statName => {
+            try {
+              const statObj = stats.find(s => s && s.statName === statName);
+              if (statObj) {
+                // Ensure the value is a number if possible
+                const statValue = isNaN(Number(statObj.statValue)) ? 
+                  statObj.statValue : 
+                  Number(statObj.statValue);
+                
+                category.statList.push({
+                  ...statObj,
+                  statValue
+                });
+                processedStats.add(statName);
+              }
+            } catch (err) {
+              console.error(`Error finding stat ${statName}:`, err);
             }
-          } catch (err) {
-            console.error(`Error finding stat ${statName}:`, err);
-          }
-        });
+          });
+        }
       });
       
       // Create a misc category for any uncategorized stats
       try {
         const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
         if (miscStats.length > 0) {
-          categoriesObj.misc = {
-            name: "Miscellaneous",
-            icon: <FaRegChartBar />,
-            statList: miscStats.map(stat => ({
-              ...stat,
-              statValue: isNaN(Number(stat.statValue)) ? stat.statValue : Number(stat.statValue)
-            }))
-          };
+          categoriesObj.misc.statList = miscStats.map(stat => ({
+            ...stat,
+            statValue: isNaN(Number(stat.statValue)) ? stat.statValue : Number(stat.statValue)
+          }));
         }
       } catch (err) {
         console.error("Error creating misc category:", err);
@@ -344,26 +359,37 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       try {
         // Add offense derived metrics
         if (categoriesObj.offense && categoriesObj.offense.statList) {
+          // Double-check that these are valid numbers
+          const completionPercentage = Number(kpis.completionPercentage);
+          const yardsPerAttempt = Number(kpis.yardsPerAttempt);
+          const yardsPerCarry = Number(kpis.yardsPerCarry);
+          
           categoriesObj.offense.statList.push(
-            { statName: "completionPercentage", statValue: kpis.completionPercentage, derived: true },
-            { statName: "yardsPerAttempt", statValue: kpis.yardsPerAttempt, derived: true },
-            { statName: "yardsPerCarry", statValue: kpis.yardsPerCarry, derived: true }
+            { statName: "completionPercentage", statValue: completionPercentage, derived: true },
+            { statName: "yardsPerAttempt", statValue: yardsPerAttempt, derived: true },
+            { statName: "yardsPerCarry", statValue: yardsPerCarry, derived: true }
           );
         }
         
         // Add special teams derived metrics
         if (categoriesObj.specialTeams && categoriesObj.specialTeams.statList) {
+          const kickReturnAverage = Number(kpis.kickReturnAverage);
+          const puntReturnAverage = Number(kpis.puntReturnAverage);
+          
           categoriesObj.specialTeams.statList.push(
-            { statName: "kickReturnAverage", statValue: kpis.kickReturnAverage, derived: true },
-            { statName: "puntReturnAverage", statValue: kpis.puntReturnAverage, derived: true }
+            { statName: "kickReturnAverage", statValue: kickReturnAverage, derived: true },
+            { statName: "puntReturnAverage", statValue: puntReturnAverage, derived: true }
           );
         }
   
         // Add situational derived metrics
         if (categoriesObj.situational && categoriesObj.situational.statList) {
+          const thirdDownConversionPercentage = Number(kpis.thirdDownConversionPercentage);
+          const fourthDownConversionPercentage = Number(kpis.fourthDownConversionPercentage);
+          
           categoriesObj.situational.statList.push(
-            { statName: "thirdDownConversionPercentage", statValue: kpis.thirdDownConversionPercentage, derived: true },
-            { statName: "fourthDownConversionPercentage", statValue: kpis.fourthDownConversionPercentage, derived: true }
+            { statName: "thirdDownConversionPercentage", statValue: thirdDownConversionPercentage, derived: true },
+            { statName: "fourthDownConversionPercentage", statValue: fourthDownConversionPercentage, derived: true }
           );
         }
       } catch (err) {
@@ -375,7 +401,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     } catch (err) {
       console.error("Error in processing categories:", err);
     }
-  }, [stats, kpis]);
+  }, [stats, kpis, getStatValue]);
   
   // Format stat name for display
   const formatStatName = (name) => {
@@ -589,7 +615,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       if (!stat) return null;
       
       const statName = stat.statName;
-      const statValue = stat.statValue;
+      // Force convert to number to avoid string issues
+      const statValue = typeof stat.statValue === 'string' ? Number(stat.statValue) : stat.statValue;
       const displayName = formatStatName(statName);
       const displayValue = formatStatValue(statName, statValue);
       const ratingClass = getRatingClass(statName, statValue);
