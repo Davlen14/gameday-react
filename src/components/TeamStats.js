@@ -18,13 +18,17 @@ import {
   FaPercentage,
   FaSortAmountUp,
   FaRegChartBar,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaArrowRight
 } from "react-icons/fa";
 import { 
   GiAmericanFootballHelmet, 
   GiFootprint, 
   GiWhistle, 
-  GiWalkingBoot 
+  GiWalkingBoot,
+  GiStrength
 } from "react-icons/gi";
 import { 
   IoMdStats, 
@@ -44,7 +48,8 @@ import {
   BsArrowRepeat, 
   BsChevronDown, 
   BsChevronUp,
-  BsDot
+  BsDot,
+  BsLightningChargeFill
 } from "react-icons/bs";
 import "../styles/TeamStats.css";
 
@@ -58,11 +63,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [kpis, setKpis] = useState(null);
   const [rawData, setRawData] = useState(null);
   const [showDebug, setShowDebug] = useState(false);
+  const [teamStrengths, setTeamStrengths] = useState([]);
+  const [teamWeaknesses, setTeamWeaknesses] = useState([]);
 
-  // Default to a neutral blue if no team color is provided
-  const accentColor = teamColor || "#9e9e9e";
+  // Default to a neutral gray if no team color is provided
+  const accentColor = teamColor || "#555555";
   
-  // Generate a lighter variation of the team color for gradients
+  // Generate a lighter variation of the team color for gradients - more subtle
   const lightenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16);
     const amt = Math.round(2.55 * percent);
@@ -86,9 +93,18 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                   (B > 0 ? B : 0)).toString(16).slice(1);
   };
 
-  // Color for gradient effects
-  const accentColorLight = lightenColor(accentColor, 20);
-  const accentColorDark = darkenColor(accentColor, 20);
+  // Modern color palette - using team color more subtly
+  const primaryColor = accentColor;
+  const secondaryColor = lightenColor(accentColor, 45); // Very light version of team color
+  const accentLight = lightenColor(accentColor, 20);
+  const accentDark = darkenColor(accentColor, 20);
+  
+  // Modern stat indicators
+  const excellentColor = "#38c172"; // Green
+  const goodColor = "#ffbb33";      // Yellow/Amber
+  const poorColor = "#ff4d4d";      // Red
+  const neutralColor = "#667788";   // Slate gray
+  const textColor = "#444444";      // Dark gray for text
   
   // Get contrast color for text
   const getContrastColor = (hexColor) => {
@@ -97,20 +113,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     const g = parseInt(hexColor.substr(2, 2), 16);
     const b = parseInt(hexColor.substr(4, 2), 16);
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    return (yiq >= 128) ? '#000000' : '#ffffff';
+    return (yiq >= 128) ? '#444444' : '#ffffff';
   };
   
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
-  // FIXED: Helper function to safely get stat value - improved to better find stats
+  // Helper function to safely get stat value
   const getStatValue = useCallback((name) => {
-    // Debug log for troubleshooting
-    // console.log(`Looking for stat: "${name}"`);
-    
     const stat = stats.find(s => s && s.statName === name);
     if (!stat) {
-      // console.log(`Stat "${name}" not found in data`);
       return 0;
     }
     
@@ -118,11 +130,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       parseFloat(stat.statValue) || 0 : 
       (typeof stat.statValue === 'number' ? stat.statValue : 0);
     
-    // console.log(`Found stat "${name}" with value:`, value);
     return value;
   }, [stats]);
 
-  // Utility functions for precise calculations with better error handling
+  // Utility functions for precise calculations
   const calculatePercentage = (numerator, denominator) => {
     if (!denominator || denominator === 0 || isNaN(numerator) || isNaN(denominator)) return 0;
     const result = (numerator / denominator) * 100;
@@ -135,7 +146,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return isNaN(result) ? 0 : Number(result.toFixed(1));
   };
 
-  // FIXED: Fetch team stats from the API with better error handling and debugging
+  // Fetch team stats from the API
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
@@ -144,7 +155,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         
         // Store raw data for debugging
         setRawData(data);
-        console.log("Raw API response:", data);
         
         if (Array.isArray(data) && data.length > 0) {
           // Convert all string numeric values to actual numbers
@@ -166,14 +176,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           });
           
           setStats(statsWithParsedValues);
-          console.log("Stats parsed successfully:", statsWithParsedValues);
-          
-          // Debug log for special teams stats specifically
-          const specialTeamsStats = statsWithParsedValues.filter(
-            s => ['kickReturns', 'kickReturnYards', 'kickReturnTDs', 
-                  'puntReturns', 'puntReturnYards', 'puntReturnTDs'].includes(s.statName)
-          );
-          console.log("Special Teams Stats:", specialTeamsStats);
           
         } else if (data && typeof data === 'object') {
           const statsArray = Object.keys(data).map(key => {
@@ -194,9 +196,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           });
           
           setStats(statsArray);
-          console.log("Stats converted to array:", statsArray);
         } else {
-          console.error('Unexpected data format or empty data:', data);
           if (!data || data.length === 0) {
             setError("No statistics data available for this team.");
           } else {
@@ -205,7 +205,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           setStats([]);
         }
       } catch (err) {
-        console.error("Error fetching team stats:", err);
         setError(err.message || "Error fetching team stats.");
         setStats([]);
       } finally {
@@ -218,7 +217,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [teamName, year]);
 
-  // Calculate key performance indicators (KPIs) with better logging
+  // Calculate key performance indicators (KPIs)
   useEffect(() => {
     if (!stats || stats.length === 0) return;
     
@@ -248,15 +247,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const passCompletions = getNumberStat("passCompletions");
       const passAttempts = getNumberStat("passAttempts");
       const rushingAttempts = getNumberStat("rushingAttempts");
-      
-      // Debug log key stats for troubleshooting
-      console.log("Key stats for calculation:", {
-        games, totalYards, netPassingYards, rushingYards,
-        kickReturns: getNumberStat("kickReturns"),
-        kickReturnYards: getNumberStat("kickReturnYards"),
-        puntReturns: getNumberStat("puntReturns"),
-        puntReturnYards: getNumberStat("puntReturnYards")
-      });
+      const sacks = getNumberStat("sacks");
+      const tacklesForLoss = getNumberStat("tacklesForLoss");
       
       // Calculate derived metrics
       const yardsPerGame = Math.round(totalYards / games);
@@ -307,23 +299,41 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         rushingTDPercentage,
         totalTDs,
         estimatedPoints,
-        takeaways
+        takeaways,
+        sacks,
+        tacklesForLoss
       };
       
-      // Debug log return averages specifically
-      console.log("Return averages:", {
-        kickReturns, 
-        kickReturnYards, 
-        kickReturnAverage,
-        puntReturns,
-        puntReturnYards,
-        puntReturnAverage
-      });
-      
-      console.log("KPIs calculated:", calculatedKpis);
       setKpis(calculatedKpis);
+      
+      // Calculate team strengths and weaknesses
+      const strengths = [];
+      const weaknesses = [];
+      
+      // Passing offense
+      if (netPassingYards > 3500) strengths.push({ name: "Elite Passing Attack", value: netPassingYards, icon: <IoMdFootball /> });
+      else if (netPassingYards < 2500 && netPassingYards > 0) weaknesses.push({ name: "Weak Passing Game", value: netPassingYards, icon: <IoMdFootball /> });
+      
+      // Rushing offense
+      if (rushingYards > 2000) strengths.push({ name: "Strong Ground Game", value: rushingYards, icon: <FaRunning /> });
+      else if (rushingYards < 1500 && rushingYards > 0) weaknesses.push({ name: "Ineffective Running Game", value: rushingYards, icon: <FaRunning /> });
+      
+      // Defensive strength
+      if (sacks > 35) strengths.push({ name: "Dominant Pass Rush", value: sacks, icon: <GiWalkingBoot /> });
+      if (tacklesForLoss > 85) strengths.push({ name: "Disruptive Defense", value: tacklesForLoss, icon: <FaShieldAlt /> });
+      
+      // Efficiency
+      if (thirdDownConversionPercentage > 43) strengths.push({ name: "Efficient on 3rd Down", value: `${thirdDownConversionPercentage}%`, icon: <FaPercentage /> });
+      else if (thirdDownConversionPercentage < 33 && thirdDownConversionPercentage > 0) weaknesses.push({ name: "Struggles on 3rd Down", value: `${thirdDownConversionPercentage}%`, icon: <FaPercentage /> });
+      
+      // Turnover margin
+      if (turnoverMargin > 5) strengths.push({ name: "Positive Turnover Margin", value: `+${turnoverMargin}`, icon: <FaExchangeAlt /> });
+      else if (turnoverMargin < -3) weaknesses.push({ name: "Negative Turnover Margin", value: turnoverMargin, icon: <FaExchangeAlt /> });
+      
+      setTeamStrengths(strengths);
+      setTeamWeaknesses(weaknesses);
+      
     } catch (err) {
-      console.error("Error calculating KPIs:", err);
       // Set some default KPIs to prevent rendering errors
       setKpis({
         yardsPerGame: 0,
@@ -347,42 +357,40 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [stats, getStatValue]);
 
-  // FIXED: Improved process stats into categories with better stat finding and debugging
+  // Process stats into categories for display
   useEffect(() => {
     if (!stats || stats.length === 0 || !kpis) return;
     
     try {
-      console.log("Processing stats into categories...");
-      
       const categoriesObj = {
         general: {
           name: "General",
-          icon: <IoMdStats style={{ color: accentColor }} />,
+          icon: <IoMdStats style={{ color: primaryColor }} />,
           stats: ["games", "firstDowns", "totalYards", "penalties", "penaltyYards", "turnovers", "possessionTime"]
         },
         offense: {
           name: "Offense",
-          icon: <FaFootballBall style={{ color: accentColor }} />,
+          icon: <FaFootballBall style={{ color: primaryColor }} />,
           stats: ["netPassingYards", "passAttempts", "passCompletions", "passingTDs", "rushingYards", "rushingAttempts", "rushingTDs"]
         },
         defense: {
           name: "Defense",
-          icon: <FaShieldAlt style={{ color: accentColor }} />,
+          icon: <FaShieldAlt style={{ color: primaryColor }} />,
           stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered"]
         },
         specialTeams: {
           name: "Special Teams",
-          icon: <FaTrophy style={{ color: accentColor }} />,
+          icon: <FaTrophy style={{ color: primaryColor }} />,
           stats: ["kickReturns", "kickReturnYards", "kickReturnTDs", "puntReturns", "puntReturnYards", "puntReturnTDs"]
         },
         situational: {
           name: "Situational",
-          icon: <FaPercentage style={{ color: accentColor }} />,
+          icon: <FaPercentage style={{ color: primaryColor }} />,
           stats: ["thirdDowns", "thirdDownConversions", "fourthDowns", "fourthDownConversions", "fumblesLost", "passesIntercepted"]
         },
         misc: {
           name: "Miscellaneous",
-          icon: <FaRegChartBar style={{ color: accentColor }} />,
+          icon: <FaRegChartBar style={{ color: primaryColor }} />,
           stats: []
         }
       };
@@ -395,21 +403,11 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         category.statList = [];
         
         if (category.stats) {
-          // For debugging: print the available stats for this category
-          if (categoryKey === 'specialTeams') {
-            const specialTeamsStatsInData = stats.filter(s => 
-              s.statName.includes('kick') || 
-              s.statName.includes('punt')
-            );
-            console.log("Available special teams stats in data:", specialTeamsStatsInData);
-          }
-          
           category.stats.forEach(statName => {
             // Look for the stat in our data
             const statObj = stats.find(s => s && s.statName === statName);
             
             if (statObj) {
-              // We found this stat in our data
               let statValue = statObj.statValue;
               if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
                 statValue = parseFloat(statValue);
@@ -417,10 +415,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               
               category.statList.push({ ...statObj, statValue });
               processedStats.add(statName);
-              
-              if (categoryKey === 'specialTeams') {
-                console.log(`Found ${statName} with value ${statValue}`);
-              }
             } else {
               // We didn't find this stat - check if it might be under a different name
               const altStatName = statName.toLowerCase();
@@ -434,21 +428,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 
                 category.statList.push({ ...altStatObj, statName, statValue });
                 processedStats.add(altStatObj.statName);
-                
-                if (categoryKey === 'specialTeams') {
-                  console.log(`Found ${statName} (as ${altStatObj.statName}) with value ${statValue}`);
-                }
               } else {
                 // Still not found - add an empty placeholder
                 category.statList.push({ 
                   statName, 
                   statValue: 0, 
-                  empty: false // Changed from true to false to show the values properly
+                  empty: false
                 });
-                
-                if (categoryKey === 'specialTeams') {
-                  console.log(`Could not find ${statName} in data`);
-                }
               }
             }
           });
@@ -491,11 +477,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       }
       
       setCategories(categoriesObj);
-      console.log("Categories processed:", categoriesObj);
     } catch (err) {
       console.error("Error processing categories:", err);
     }
-  }, [stats, kpis, getStatValue, accentColor]);
+  }, [stats, kpis, getStatValue, primaryColor]);
   
   // Format stat names for display
   const formatStatName = (name) => {
@@ -573,52 +558,52 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Get icon for a specific stat
   const getStatIcon = (statName) => {
     const iconMap = {
-      "games": <FaFootballBall className="stat-icon" style={{ color: accentColor }} />,
-      "totalYards": <FaChartBar className="stat-icon" style={{ color: accentColor }} />,
-      "firstDowns": <FaArrowCircleRight className="stat-icon" style={{ color: accentColor }} />,
-      "penalties": <FaFlag className="stat-icon" style={{ color: accentColor }} />,
-      "penaltyYards": <FaFlag className="stat-icon" style={{ color: accentColor }} />,
-      "turnovers": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "possessionTime": <FaClock className="stat-icon" style={{ color: accentColor }} />,
-      "netPassingYards": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "passAttempts": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "passCompletions": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "passingTDs": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "rushingYards": <FaRunning className="stat-icon" style={{ color: accentColor }} />,
-      "rushingAttempts": <FaRunning className="stat-icon" style={{ color: accentColor }} />,
-      "rushingTDs": <FaRunning className="stat-icon" style={{ color: accentColor }} />,
-      "completionPercentage": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "yardsPerAttempt": <IoMdFootball className="stat-icon" style={{ color: accentColor }} />,
-      "yardsPerCarry": <FaRunning className="stat-icon" style={{ color: accentColor }} />,
-      "sacks": <GiWalkingBoot className="stat-icon" style={{ color: accentColor }} />,
-      "interceptions": <FaShieldAlt className="stat-icon" style={{ color: accentColor }} />,
-      "interceptionYards": <FaShieldAlt className="stat-icon" style={{ color: accentColor }} />,
-      "interceptionTDs": <FaShieldAlt className="stat-icon" style={{ color: accentColor }} />,
-      "tacklesForLoss": <GiFootprint className="stat-icon" style={{ color: accentColor }} />,
-      "fumblesRecovered": <FaShieldAlt className="stat-icon" style={{ color: accentColor }} />,
-      "kickReturns": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "kickReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "kickReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "puntReturns": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "puntReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "puntReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "kickReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "puntReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "thirdDowns": <BiDownArrow className="stat-icon" style={{ color: accentColor }} />,
-      "thirdDownConversions": <BiDownArrow className="stat-icon" style={{ color: accentColor }} />,
-      "thirdDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: accentColor }} />,
-      "fourthDowns": <BiDownArrow className="stat-icon" style={{ color: accentColor }} />,
-      "fourthDownConversions": <BiDownArrow className="stat-icon" style={{ color: accentColor }} />,
-      "fourthDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: accentColor }} />,
-      "fumblesLost": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />,
-      "passesIntercepted": <FaExchangeAlt className="stat-icon" style={{ color: accentColor }} />
+      "games": <FaFootballBall className="stat-icon" style={{ color: neutralColor }} />,
+      "totalYards": <FaChartBar className="stat-icon" style={{ color: neutralColor }} />,
+      "firstDowns": <FaArrowCircleRight className="stat-icon" style={{ color: neutralColor }} />,
+      "penalties": <FaFlag className="stat-icon" style={{ color: neutralColor }} />,
+      "penaltyYards": <FaFlag className="stat-icon" style={{ color: neutralColor }} />,
+      "turnovers": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "possessionTime": <FaClock className="stat-icon" style={{ color: neutralColor }} />,
+      "netPassingYards": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "passAttempts": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "passCompletions": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "passingTDs": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "rushingYards": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
+      "rushingAttempts": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
+      "rushingTDs": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
+      "completionPercentage": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "yardsPerAttempt": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
+      "yardsPerCarry": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
+      "sacks": <GiWalkingBoot className="stat-icon" style={{ color: neutralColor }} />,
+      "interceptions": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "interceptionYards": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "interceptionTDs": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "tacklesForLoss": <GiFootprint className="stat-icon" style={{ color: neutralColor }} />,
+      "fumblesRecovered": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "kickReturns": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "kickReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "kickReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "puntReturns": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "puntReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "puntReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "kickReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "puntReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "thirdDowns": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
+      "thirdDownConversions": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
+      "thirdDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: neutralColor }} />,
+      "fourthDowns": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
+      "fourthDownConversions": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
+      "fourthDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: neutralColor }} />,
+      "fumblesLost": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
+      "passesIntercepted": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />
     };
-    return iconMap[statName] || <IoMdStats className="stat-icon" style={{ color: accentColor }} />;
+    return iconMap[statName] || <IoMdStats className="stat-icon" style={{ color: neutralColor }} />;
   };
   
-  // Determine color rating for a stat value
-  const getRatingClass = (statName, value) => {
-    if (value === 0 || isNaN(value)) return "";
+  // Determine color rating for a stat value - modernized for better visual feedback
+  const getRatingInfo = (statName, value) => {
+    if (value === 0 || isNaN(value)) return { class: "", color: textColor, icon: null };
     
     const highIsGood = [
       "netPassingYards", "passCompletions", "passingTDs", 
@@ -641,45 +626,40 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "thirdDowns", "fourthDowns", "kickReturns", "puntReturns"
     ];
     
-    if (neutralStats.includes(statName)) return "";
+    if (neutralStats.includes(statName)) return { class: "", color: textColor, icon: null };
     
     if (highIsGood.includes(statName)) {
-      if (statName === "netPassingYards" && value > 3500) return "excellent-value";
-      if (statName === "rushingYards" && value > 2500) return "excellent-value";
-      if (statName === "totalYards" && value > 6000) return "excellent-value";
-      if (statName === "sacks" && value > 40) return "excellent-value";
-      if (statName === "interceptions" && value > 15) return "excellent-value";
-      if (statName === "completionPercentage" && value > 65) return "excellent-value";
-      if (statName === "yardsPerAttempt" && value > 8) return "excellent-value";
-      if (statName === "yardsPerCarry" && value > 5) return "excellent-value";
-      if (statName === "thirdDownConversionPercentage" && value > 50) return "excellent-value";
-      if (statName === "fourthDownConversionPercentage" && value > 60) return "excellent-value";
-      if (value > 0) return "good-value";
+      // Percentage stats have different thresholds
+      if (statName.includes("Percentage")) {
+        if (value > 60) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+        if (value > 45) return { class: "good-value", color: goodColor, icon: null };
+        return { class: "poor-value", color: poorColor, icon: <FaTimesCircle /> };
+      }
+      
+      // Special thresholds for particular stats
+      if (statName === "netPassingYards" && value > 3500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "rushingYards" && value > 2500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "totalYards" && value > 6000) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "sacks" && value > 40) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "interceptions" && value > 15) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "yardsPerAttempt" && value > 8) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "yardsPerCarry" && value > 5) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      
+      // Default for high-is-good stats
+      if (value > 0) return { class: "good-value", color: goodColor, icon: null };
     }
     
     if (lowIsGood.includes(statName)) {
-      if (statName === "turnovers" && value < 15) return "excellent-value";
-      if (statName === "penalties" && value < 60) return "excellent-value";
-      if (statName === "penaltyYards" && value < 500) return "excellent-value";
-      return value < 20 ? "good-value" : "poor-value";
+      if (statName === "turnovers" && value < 15) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "penalties" && value < 60) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      if (statName === "penaltyYards" && value < 500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
+      return value < 20 ? { class: "good-value", color: goodColor, icon: null } : { class: "poor-value", color: poorColor, icon: <FaTimesCircle /> };
     }
     
-    return "";
+    return { class: "", color: textColor, icon: null };
   };
   
-  // Custom color styles for value ratings
-  const getRatingStyle = (ratingClass) => {
-    if (ratingClass === "excellent-value") {
-      return { color: "#04aa6d" }; // Green for excellent
-    } else if (ratingClass === "good-value") {
-      return { color: "#2196F3" }; // Blue for good
-    } else if (ratingClass === "poor-value") {
-      return { color: "#f44336" }; // Red for poor
-    }
-    return {}; // Default style
-  };
-  
-  // FIXED: Render cards for each category with better handling of values
+  // Render cards for each category with modern visual indicators
   const renderCategoryCards = (category) => {
     if (!category || !category.statList) return null;
     
@@ -688,11 +668,6 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const statName = stat.statName;
       
-      // Check if this is a special teams stat for debugging
-      const isSpecialTeamsStat = ['kickReturns', 'kickReturnYards', 'kickReturnTDs', 
-                   'puntReturns', 'puntReturnYards', 'puntReturnTDs',
-                   'kickReturnAverage', 'puntReturnAverage'].includes(statName);
-      
       // Make sure we have valid numeric values for statistics
       const statValue = typeof stat.statValue === 'string' && !isNaN(parseFloat(stat.statValue))
         ? parseFloat(stat.statValue)
@@ -700,34 +675,40 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         
       const displayName = formatStatName(statName);
       const displayValue = formatStatValue(statName, statValue);
-      const ratingClass = getRatingClass(statName, statValue);
-      const valueStyle = getRatingStyle(ratingClass);
+      const ratingInfo = getRatingInfo(statName, statValue);
       
-      // For debugging special teams stats
-      if (isSpecialTeamsStat) {
-        // console.log(`Rendering ${statName} with value: ${statValue}, empty: ${stat.empty}`);
-      }
-      
+      // Create modern stat card with value indicator
       return (
         <div className="stat-card" key={`${statName}-${index}`}>
-          <div className="stat-card-inner" style={{ borderLeft: `3px solid ${accentColor}` }}>
+          <div className="stat-card-inner">
             <div className="stat-name">
               {getStatIcon(statName)}
               <span>{displayName}</span>
             </div>
-            <div className={`stat-value ${ratingClass}`} style={valueStyle}>
-              {stat.empty ? "N/A" : displayValue}
+            <div className={`stat-value ${ratingInfo.class}`} style={{ color: ratingInfo.color }}>
+              <div className="value-display">
+                {stat.empty ? "N/A" : displayValue}
+                {ratingInfo.icon && <span className="rating-icon">{ratingInfo.icon}</span>}
+              </div>
+              
+              {/* Add percentage bars for conversion stats */}
               {(statName === "thirdDownConversions" || statName === "fourthDownConversions") && kpis && (
                 <div className="stat-percentage">
-                  <div 
-                    className="percentage-bar"
-                    style={{ 
-                      width: `${statName === "thirdDownConversions" 
-                        ? kpis.thirdDownConversionPercentage 
-                        : kpis.fourthDownConversionPercentage}%`, 
-                      background: accentColor 
-                    }}
-                  ></div>
+                  <div className="percentage-track">
+                    <div 
+                      className="percentage-bar"
+                      style={{ 
+                        width: `${statName === "thirdDownConversions" 
+                          ? kpis.thirdDownConversionPercentage 
+                          : kpis.fourthDownConversionPercentage}%`, 
+                        background: getPercentageColor(
+                          statName === "thirdDownConversions" 
+                            ? kpis.thirdDownConversionPercentage 
+                            : kpis.fourthDownConversionPercentage
+                        )
+                      }}
+                    ></div>
+                  </div>
                   <span className="percentage-text">
                     {statName === "thirdDownConversions" 
                       ? kpis.thirdDownConversionPercentage 
@@ -742,7 +723,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     });
   };
   
-  // Render comparison cards with better handling
+  // Get color for percentage bars
+  const getPercentageColor = (percentage) => {
+    if (percentage >= 60) return excellentColor;
+    if (percentage >= 40) return goodColor;
+    return poorColor;
+  };
+  
+  // Render comparison cards with modern design
   const renderComparisonCards = () => {
     if (!kpis) return null;
     
@@ -778,9 +766,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const pct1 = isNaN(metric.percentages[0]) ? 0 : metric.percentages[0];
       const pct2 = isNaN(metric.percentages[1]) ? 0 : metric.percentages[1];
       
+      // Use modern colors for the comparison bars
+      const color1 = primaryColor;
+      const color2 = neutralColor;
+      
       return (
-        <div className="comparison-card" key={index} style={{ borderLeft: `3px solid ${accentColor}` }}>
-          <div className="comparison-title" style={{ color: accentColor, fontWeight: 'bold' }}>{metric.title}</div>
+        <div className="comparison-card" key={index}>
+          <div className="comparison-title">
+            <span>{metric.title}</span>
+            <div className="total-value">{metric.values[0] + metric.values[1]}</div>
+          </div>
           <div className="comparison-bars">
             <div className="comparison-bar-container">
               <div className="comparison-label">
@@ -788,12 +783,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 <span className="comparison-value">{metric.values[0]}</span>
               </div>
               <div className="comparison-bar-wrapper">
-                <div 
-                  className="comparison-bar first-bar"
-                  style={{ width: `${pct1}%`, background: accentColor }}
-                ></div>
+                <div className="bar-track">
+                  <div 
+                    className="comparison-bar first-bar"
+                    style={{ width: `${pct1}%`, background: color1 }}
+                  >
+                    {pct1 > 15 && <span className="bar-value">{pct1}%</span>}
+                  </div>
+                </div>
+                {pct1 <= 15 && <div className="percentage-small" style={{ color: color1 }}>{pct1}%</div>}
               </div>
-              <div className="comparison-percentage" style={{ color: accentColor }}>{pct1}%</div>
             </div>
             
             <div className="comparison-bar-container">
@@ -802,17 +801,77 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 <span className="comparison-value">{metric.values[1]}</span>
               </div>
               <div className="comparison-bar-wrapper">
-                <div 
-                  className="comparison-bar second-bar"
-                  style={{ width: `${pct2}%`, background: accentColorDark }}
-                ></div>
+                <div className="bar-track">
+                  <div 
+                    className="comparison-bar second-bar"
+                    style={{ width: `${pct2}%`, background: color2 }}
+                  >
+                    {pct2 > 15 && <span className="bar-value">{pct2}%</span>}
+                  </div>
+                </div>
+                {pct2 <= 15 && <div className="percentage-small" style={{ color: color2 }}>{pct2}%</div>}
               </div>
-              <div className="comparison-percentage" style={{ color: accentColorDark }}>{pct2}%</div>
             </div>
           </div>
         </div>
       );
     }).filter(Boolean);
+  };
+
+  // Render team strengths and weaknesses section
+  const renderTeamStrengthsWeaknesses = () => {
+    if (teamStrengths.length === 0 && teamWeaknesses.length === 0) return null;
+    
+    return (
+      <div className="team-analysis-section">
+        <h2 className="section-title">
+          <GiStrength className="section-icon" />
+          Team Analysis
+        </h2>
+        
+        <div className="analysis-grid">
+          {teamStrengths.length > 0 && (
+            <div className="strengths-card">
+              <div className="analysis-header">
+                <BsLightningChargeFill className="strength-icon" />
+                <h3>Team Strengths</h3>
+              </div>
+              <div className="analysis-items">
+                {teamStrengths.map((strength, index) => (
+                  <div className="analysis-item" key={index}>
+                    <div className="analysis-item-icon">{strength.icon}</div>
+                    <div className="analysis-item-text">
+                      <span className="analysis-item-name">{strength.name}</span>
+                      <span className="analysis-item-value">{strength.value}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {teamWeaknesses.length > 0 && (
+            <div className="weaknesses-card">
+              <div className="analysis-header">
+                <FaExclamationTriangle className="weakness-icon" />
+                <h3>Areas to Improve</h3>
+              </div>
+              <div className="analysis-items">
+                {teamWeaknesses.map((weakness, index) => (
+                  <div className="analysis-item" key={index}>
+                    <div className="analysis-item-icon">{weakness.icon}</div>
+                    <div className="analysis-item-text">
+                      <span className="analysis-item-name">{weakness.name}</span>
+                      <span className="analysis-item-value">{weakness.value}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   // Debug section component 
@@ -851,7 +910,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       <div className="team-stats">
         <div className="loading-container">
           <div className="loading-spinner">
-            <AiOutlineLoading3Quarters className="spinner-icon" style={{ color: accentColor }} />
+            <AiOutlineLoading3Quarters className="spinner-icon" style={{ color: primaryColor }} />
           </div>
           <div className="loading-text">Loading team statistics...</div>
         </div>
@@ -863,14 +922,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return (
       <div className="team-stats">
         <div className="error-container">
-          <div className="error-icon" style={{ color: accentColor }}>
+          <div className="error-icon" style={{ color: primaryColor }}>
             <AiOutlineWarning />
           </div>
           <div className="error-message">Error: {error}</div>
           <button 
             className="retry-button" 
             onClick={() => window.location.reload()}
-            style={{ background: accentColor, color: contrastColor }}
+            style={{ background: primaryColor, color: contrastColor }}
           >
             <BsArrowRepeat className="button-icon" /> Retry
           </button>
@@ -883,7 +942,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return (
       <div className="team-stats">
         <div className="error-container">
-          <div className="error-icon" style={{ color: accentColor }}>
+          <div className="error-icon" style={{ color: primaryColor }}>
             <FaExclamationTriangle />
           </div>
           <div className="error-message">No statistics available for this team</div>
@@ -897,7 +956,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       <div className="team-stats">
         <div className="loading-container">
           <div className="loading-spinner">
-            <AiOutlineLoading3Quarters className="spinner-icon" style={{ color: accentColor }} />
+            <AiOutlineLoading3Quarters className="spinner-icon" style={{ color: primaryColor }} />
           </div>
           <div className="loading-text">Processing statistics...</div>
         </div>
@@ -907,103 +966,122 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
 
   return (
     <div className="team-stats">
-      <div className="stats-header" style={{ borderBottom: `2px solid ${accentColor}` }}>
-        <h1>
-          <GiAmericanFootballHelmet className="team-icon" style={{ color: accentColor }} />
-          <span>{teamName} Team Stats</span>
-          <span className="year-badge" style={{ background: accentColor, color: contrastColor }}>{year}</span>
-        </h1>
+      {/* Page header with team info */}
+      <div className="stats-header">
+        <div className="header-content">
+          <GiAmericanFootballHelmet className="team-icon" style={{ color: primaryColor }} />
+          <div className="header-text">
+            <h1>{teamName} <span>Team Stats</span></h1>
+            <div className="year-badge" style={{ background: primaryColor, color: contrastColor }}>{year}</div>
+          </div>
+        </div>
         <button 
           className="info-button" 
           onClick={() => setShowInfoCard(!showInfoCard)}
-          style={{ background: accentColor, color: contrastColor }}
+          style={{ background: secondaryColor, color: textColor, borderLeft: `3px solid ${primaryColor}` }}
         >
           <FaInfoCircle className="button-icon" />
           {showInfoCard ? "Hide Information" : "What Do These Stats Mean?"}
         </button>
       </div>
 
+      {/* Information card */}
       {showInfoCard && (
-        <div className="info-card" style={{ border: `1px solid ${accentColorLight}`, boxShadow: `0 4px 8px ${accentColor}30` }}>
-          <div className="info-card-header" style={{ background: accentColor, color: contrastColor }}>
+        <div className="info-card">
+          <div className="info-card-header" style={{ borderBottom: `2px solid ${secondaryColor}` }}>
             <h3>
-              <FaInfoCircle className="card-header-icon" />
+              <FaInfoCircle className="card-header-icon" style={{ color: primaryColor }} />
               Understanding Team Statistics
             </h3>
             <button className="close-button" onClick={() => setShowInfoCard(false)}>×</button>
           </div>
           <div className="info-card-content">
-            <p>These statistics represent the team's performance across various aspects of the game. Key metrics are highlighted to show areas of strength and weakness.</p>
+            <p>These statistics represent the team's performance across various aspects of the game. Color-coded metrics highlight strengths and areas for improvement.</p>
             <div className="stat-definitions">
               <div className="stat-definition">
-                <h4 style={{ color: accentColor }}>
+                <h4 style={{ color: primaryColor }}>
                   <FaChartBar className="stat-icon" /> Offensive Stats
                 </h4>
                 <p>Passing and rushing statistics show how the team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
               </div>
               <div className="stat-definition">
-                <h4 style={{ color: accentColor }}>
+                <h4 style={{ color: primaryColor }}>
                   <FaShieldAlt className="stat-icon" /> Defensive Stats
                 </h4>
                 <p>Sacks, interceptions, and tackles for loss demonstrate the defense's ability to disrupt opposing offenses and create turnover opportunities.</p>
               </div>
               <div className="stat-definition">
-                <h4 style={{ color: accentColor }}>
+                <h4 style={{ color: primaryColor }}>
                   <FaPercentage className="stat-icon" /> Efficiency Metrics
                 </h4>
                 <p>Third and fourth down conversion rates show how effectively the team maintains possession in crucial situations.</p>
               </div>
             </div>
-            <div className="legend">
-              <div className="legend-item">
-                <span className="legend-color excellent-legend" style={{ background: "#04aa6d" }}></span>
-                <span>Excellent</span>
-              </div>
-              <div className="legend-item">
-                <span className="legend-color good-legend" style={{ background: "#2196F3" }}></span>
-                <span>Good</span>
-              </div>
-              <div className="legend-item">
-                <span className="legend-color poor-legend" style={{ background: "#f44336" }}></span>
-                <span>Below Average</span>
+            <div className="stat-indicators">
+              <div className="indicator-key">
+                <h4>Color Indicators</h4>
+                <div className="indicator-items">
+                  <div className="indicator-item">
+                    <span className="indicator-color" style={{ background: excellentColor }}></span>
+                    <span>Excellent</span>
+                  </div>
+                  <div className="indicator-item">
+                    <span className="indicator-color" style={{ background: goodColor }}></span>
+                    <span>Good</span>
+                  </div>
+                  <div className="indicator-item">
+                    <span className="indicator-color" style={{ background: poorColor }}></span>
+                    <span>Below Average</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Team Analysis Section */}
+      {renderTeamStrengthsWeaknesses()}
       
       {/* Key Performance Indicators */}
       <div className="kpi-section">
+        <h2 className="section-title">
+          <FaChartLine className="section-icon" style={{ color: primaryColor }} />
+          Key Performance Metrics
+        </h2>
         <div className="kpi-container">
-          <div className="kpi-card" style={{ borderTop: `4px solid ${accentColor}`, boxShadow: `0 2px 4px ${accentColor}20` }}>
-            <div className="kpi-icon" style={{ color: accentColor }}>
+          <div className="kpi-card">
+            <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaChartBar />
             </div>
             <div className="kpi-value">{kpis.yardsPerGame}</div>
             <div className="kpi-label">Yards per Game</div>
           </div>
           
-          <div className="kpi-card" style={{ borderTop: `4px solid ${accentColor}`, boxShadow: `0 2px 4px ${accentColor}20` }}>
-            <div className="kpi-icon" style={{ color: accentColor }}>
+          <div className="kpi-card">
+            <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaTrophy />
             </div>
             <div className="kpi-value">{kpis.estimatedPointsPerGame}</div>
             <div className="kpi-label">Est. Points per Game</div>
           </div>
           
-          <div className="kpi-card" style={{ borderTop: `4px solid ${accentColor}`, boxShadow: `0 2px 4px ${accentColor}20` }}>
-            <div className="kpi-icon" style={{ color: accentColor }}>
+          <div className="kpi-card">
+            <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaPercentage />
             </div>
             <div className="kpi-value">{kpis.thirdDownConversionPercentage}%</div>
             <div className="kpi-label">3rd Down Conversion</div>
           </div>
           
-          <div className="kpi-card" style={{ borderTop: `4px solid ${accentColor}`, boxShadow: `0 2px 4px ${accentColor}20` }}>
-            <div className="kpi-icon" style={{ color: accentColor }}>
+          <div className="kpi-card">
+            <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaExchangeAlt />
             </div>
-            <div className="kpi-value" style={{ color: kpis.turnoverMargin > 0 ? '#16a34a' : '#dc2626' }}>
+            <div className="kpi-value" style={{ 
+              color: kpis.turnoverMargin > 0 ? excellentColor : 
+                     kpis.turnoverMargin < 0 ? poorColor : textColor 
+            }}>
               {kpis.turnoverMargin > 0 ? '+' : ''}{kpis.turnoverMargin}
             </div>
             <div className="kpi-label">Turnover Margin</div>
@@ -1014,8 +1092,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       {/* Comparison Charts */}
       <div className="comparison-section">
         <h2 className="section-title">
-          <IoMdTrendingUp className="section-icon" style={{ color: accentColor }} />
-          Key Metrics Comparison
+          <IoMdTrendingUp className="section-icon" style={{ color: primaryColor }} />
+          Offensive Distribution
         </h2>
         <div className="comparison-grid">
           {renderComparisonCards()}
@@ -1030,13 +1108,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             className={`category-tab ${activeCategory === categoryKey ? 'active' : ''}`}
             onClick={() => setActiveCategory(categoryKey)}
             style={activeCategory === categoryKey ? { 
-              background: accentColor, 
-              color: contrastColor,
-              borderColor: accentColor,
-              boxShadow: `0 2px 4px ${accentColor}40`
-            } : {
-              borderColor: accentColorLight
-            }}
+              background: secondaryColor, 
+              color: textColor,
+              borderLeft: `3px solid ${primaryColor}`
+            } : {}}
           >
             <span className="tab-icon">{categories[categoryKey].icon}</span>
             <span className="tab-text">{categories[categoryKey].name}</span>
@@ -1052,37 +1127,155 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       {/* Debug section */}
       {renderDebugSection()}
       
-      {/* Additional CSS for better display */}
+      {/* Additional CSS for Orbitron font and modern styling */}
       <style>{`
-        .debug-section {
-          margin-top: 20px;
-          text-align: center;
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+        
+        .team-stats {
+          font-family: 'Orbitron', sans-serif;
+          color: ${textColor};
+          --primary-color: ${primaryColor};
+          --secondary-color: ${secondaryColor};
+          --excellent-color: ${excellentColor};
+          --good-color: ${goodColor};
+          --poor-color: ${poorColor};
+          --neutral-color: ${neutralColor};
         }
         
-        .debug-button {
-          padding: 8px 16px;
-          border-radius: 4px;
-          border: none;
-          cursor: pointer;
-          font-size: 14px;
-          opacity: 0.7;
-          transition: opacity 0.2s;
+        .stats-header, .section-title, .kpi-value, .comparison-title, .analysis-header h3 {
+          font-family: 'Orbitron', sans-serif;
+          font-weight: 600;
         }
         
-        .debug-button:hover {
-          opacity: 1;
+        /* Modern animations */
+        .stat-card, .kpi-card, .comparison-card {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .debug-data {
-          margin-top: 10px;
-          background: #f5f5f5;
-          border-radius: 4px;
+        .stat-card:hover, .kpi-card:hover, .comparison-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Better percentage bars */
+        .percentage-track {
+          height: 6px;
+          width: 100%;
+          background: rgba(0,0,0,0.08);
+          border-radius: 3px;
+          overflow: hidden;
+          margin-top: 8px;
+        }
+        
+        .percentage-bar {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 1s ease-out;
+        }
+        
+        /* Team analysis section */
+        .team-analysis-section {
+          margin-bottom: 30px;
+        }
+        
+        .analysis-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+        }
+        
+        .strengths-card, .weaknesses-card {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .strengths-card:hover, .weaknesses-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        
+        .strengths-card {
+          border-left: 3px solid ${excellentColor};
+        }
+        
+        .weaknesses-card {
+          border-left: 3px solid ${poorColor};
+        }
+        
+        .analysis-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+        
+        .analysis-header h3 {
+          margin: 0;
+          font-size: 1.2rem;
+          margin-left: 10px;
+        }
+        
+        .strength-icon {
+          color: ${excellentColor};
+          font-size: 1.4rem;
+        }
+        
+        .weakness-icon {
+          color: ${poorColor};
+          font-size: 1.4rem;
+        }
+        
+        .analysis-items {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .analysis-item {
+          display: flex;
+          align-items: center;
           padding: 10px;
-          text-align: left;
+          background: rgba(0,0,0,0.02);
+          border-radius: 6px;
+          transition: background 0.2s ease;
         }
         
-        .stat-value.excellent-value {
-          font-weight: bold;
+        .analysis-item:hover {
+          background: rgba(0,0,0,0.04);
+        }
+        
+        .analysis-item-icon {
+          margin-right: 12px;
+          color: ${primaryColor};
+          font-size: 1.2rem;
+        }
+        
+        .analysis-item-text {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+        }
+        
+        .analysis-item-name {
+          font-weight: 500;
+        }
+        
+        .analysis-item-value {
+          font-weight: 600;
+          color: ${primaryColor};
+        }
+        
+        /* Rating icons next to values */
+        .value-display {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .rating-icon {
+          opacity: 0.8;
         }
       `}</style>
     </div>
