@@ -574,6 +574,14 @@ const TeamDetail = () => {
         // Render the imported TeamRoster component
         return <TeamRoster teamName={team.school} teamColor={teamColor} year={2024} />;
       
+      case 'rosterMap':
+        // New tab for Roster Map with Coming Soon message
+        return (
+          <div className="dashboard-card full-width-card">
+            <ComingSoon title="Roster Map" color={teamColor} />
+          </div>
+        );
+      
       case 'ratings':
         return (
           <div className="dashboard-card full-width-card">
@@ -709,6 +717,7 @@ const TeamDetail = () => {
           { id: 'overview', label: 'Overview', icon: <FaInfoCircle /> },
           { id: 'schedule', label: 'Schedule', icon: <FaCalendarAlt /> },
           { id: 'roster', label: 'Roster', icon: <FaUserFriends /> },
+          { id: 'rosterMap', label: 'Roster Map', icon: <FaMapMarkerAlt /> },
           { id: 'ratings', label: 'Ratings', icon: <FaChartLine /> },
           { id: 'teamStats', label: 'Team Stats', icon: <FaChartBar /> },
           { id: 'playerStats', label: 'Player Stats', icon: <FaFootballBall /> }
