@@ -74,6 +74,30 @@ const LossIndicator = () => (
   </div>
 );
 
+// Helper function to lighten a color - MOVED TO TOP LEVEL
+const lightenColor = (color, percent) => {
+  const num = parseInt(color.replace('#', ''), 16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        G = (num >> 8 & 0x00FF) + amt,
+        B = (num & 0x0000FF) + amt;
+  return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
+                (G < 255 ? G : 255) * 0x100 +
+                (B < 255 ? B : 255)).toString(16).slice(1);
+};
+
+// Helper function to darken a color - MOVED TO TOP LEVEL
+const darkenColor = (color, percent) => {
+  const num = parseInt(color.replace('#', ''), 16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) - amt,
+        G = (num >> 8 & 0x00FF) - amt,
+        B = (num & 0x0000FF) - amt;
+  return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+                (G > 0 ? G : 0) * 0x100 +
+                (B > 0 ? B : 0)).toString(16).slice(1);
+};
+
 const TeamDetail = () => {
   const { teamId } = useParams();
   const navigate = useNavigate();
@@ -280,30 +304,6 @@ const TeamDetail = () => {
     if (!hexColor) return "linear-gradient(145deg, #1a1a1a, #333333)";
     const lighterColor = lightenColor(hexColor, 20);
     return `linear-gradient(145deg, ${hexColor}, ${lighterColor})`;
-  };
-  
-  // Helper function to lighten a color
-  const lightenColor = (color, percent) => {
-    const num = parseInt(color.replace('#', ''), 16),
-          amt = Math.round(2.55 * percent),
-          R = (num >> 16) + amt,
-          G = (num >> 8 & 0x00FF) + amt,
-          B = (num & 0x0000FF) + amt;
-    return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
-                  (G < 255 ? G : 255) * 0x100 +
-                  (B < 255 ? B : 255)).toString(16).slice(1);
-  };
-
-  // Helper function to darken a color
-  const darkenColor = (color, percent) => {
-    const num = parseInt(color.replace('#', ''), 16),
-          amt = Math.round(2.55 * percent),
-          R = (num >> 16) - amt,
-          G = (num >> 8 & 0x00FF) - amt,
-          B = (num & 0x0000FF) - amt;
-    return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
-                  (G > 0 ? G : 0) * 0x100 +
-                  (B > 0 ? B : 0)).toString(16).slice(1);
   };
 
   // Top bar style using team color with glass effect
