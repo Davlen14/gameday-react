@@ -2,25 +2,37 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import "../styles/GamesAndTeams.css";
+import { FaSearch, FaFilter, FaRegCalendarAlt, FaChevronDown } from "react-icons/fa";
 
 const Games = () => {
     const [games, setGames] = useState([]);
+    const [filteredGames, setFilteredGames] = useState([]);
     const [teams, setTeams] = useState([]);
-    const [fcsTeams, setFcsTeams] = useState([]); // New state for FCS teams
+    const [fcsTeams, setFcsTeams] = useState([]);
     const [weather, setWeather] = useState([]);
     const [media, setMedia] = useState([]);
     const [lines, setLines] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // New state variables for filters
+    const [year, setYear] = useState(2024);
     const [week, setWeek] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
     const navigate = useNavigate();
+
+    // Available years and weeks
+    const availableYears = [2020, 2021, 2022, 2023, 2024, 2025];
+    const availableWeeks = Array.from({ length: 17 }, (_, i) => i + 1);
 
     useEffect(() => {
         const fetchGamesAndRelatedData = async () => {
             try {
                 setIsLoading(true);
                 
-                // Load both FBS and FCS teams
+                // Load both FBS and FCS teams if not already loaded
                 if (teams.length === 0) {
                     const teamsData = await teamsService.getTeams();
                     setTeams(teamsData);
@@ -30,7 +42,7 @@ const Games = () => {
                     setFcsTeams(fcsTeamsData);
                 }
 
-                const gamesData = await teamsService.getGames(week);
+                const gamesData = await teamsService.getGames(week, year);
                 // We want to include games where at least one team is FBS
                 const fbsGames = gamesData.filter(
                     (game) =>
@@ -39,13 +51,13 @@ const Games = () => {
                 );
                 setGames(fbsGames);
 
-                const weatherData = await teamsService.getGameWeather(2024, week);
+                const weatherData = await teamsService.getGameWeather(year, week);
                 setWeather(weatherData);
 
-                const mediaData = await teamsService.getGameMedia(2024, week);
+                const mediaData = await teamsService.getGameMedia(year, week);
                 setMedia(mediaData);
 
-                const linesData = await teamsService.getGameLines(2024);
+                const linesData = await teamsService.getGameLines(year);
                 setLines(linesData);
             } catch (err) {
                 setError(err.message);
@@ -55,10 +67,48 @@ const Games = () => {
         };
 
         fetchGamesAndRelatedData();
-    }, [week, teams.length]);
+    }, [year, week, teams.length]);
+
+    // Update filtered games whenever games or search term changes
+    useEffect(() => {
+        if (searchTerm.trim() === "") {
+            setFilteredGames(games);
+            return;
+        }
+
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const filtered = games.filter(game => 
+            game.homeTeam.toLowerCase().includes(lowerSearchTerm) ||
+            game.awayTeam.toLowerCase().includes(lowerSearchTerm) ||
+            (game.homeConference && game.homeConference.toLowerCase().includes(lowerSearchTerm)) ||
+            (game.awayConference && game.awayConference.toLowerCase().includes(lowerSearchTerm))
+        );
+        
+        setFilteredGames(filtered);
+    }, [games, searchTerm]);
+
+    const handleYearChange = (event) => {
+        setYear(Number(event.target.value));
+        // Reset to week 1 when year changes
+        setWeek(1);
+    };
 
     const handleWeekChange = (event) => {
         setWeek(Number(event.target.value));
+    };
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const toggleFilters = () => {
+        setIsFilterOpen(!isFilterOpen);
+    };
+
+    const clearFilters = () => {
+        setSearchTerm("");
+        setYear(2024);
+        setWeek(1);
     };
 
     const navigateToGameDetails = (gameId) => {
@@ -239,124 +289,203 @@ const Games = () => {
         return !fbsTeam; // If not found in FBS teams, assume it's FCS
     };
 
-    if (isLoading) return <div className="loading">Loading games...</div>;
-    if (error) return <div className="error">Error: {error}</div>;
+    if (isLoading) return (
+        <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading games...</div>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="error-container">
+            <div className="error-icon">!</div>
+            <div className="error-text">Error: {error}</div>
+        </div>
+    );
 
     return (
         <div className="games-container">
             <header className="header">
                 <h1>FBS Schedule</h1>
-                <div className="week-selector">
-                    <label>Week:</label>
-                    <select value={week} onChange={handleWeekChange} className="week-dropdown">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((w) => (
+                
+                <div className="filter-bar">
+                    <div className="filter-toggle" onClick={toggleFilters}>
+                        <FaFilter />
+                        <span>Filters</span>
+                        <FaChevronDown className={isFilterOpen ? "chevron-open" : "chevron-closed"} />
+                    </div>
+                    
+                    <div className="search-box">
+                        <FaSearch className="search-icon" />
+                        <input 
+                            type="text" 
+                            placeholder="Search teams or conferences..." 
+                            value={searchTerm} 
+                            onChange={handleSearchChange}
+                            className="search-input"
+                        />
+                        {searchTerm && (
+                            <button className="search-clear" onClick={() => setSearchTerm("")}>
+                                ×
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            <div className={`filter-panel ${isFilterOpen ? 'filter-panel-open' : ''}`}>
+                <div className="filter-group">
+                    <label className="filter-label">
+                        <FaRegCalendarAlt className="filter-icon" />
+                        Season:
+                    </label>
+                    <select value={year} onChange={handleYearChange} className="filter-select">
+                        {availableYears.map((y) => (
+                            <option key={y} value={y}>{y}</option>
+                        ))}
+                    </select>
+                </div>
+                
+                <div className="filter-group">
+                    <label className="filter-label">Week:</label>
+                    <select value={week} onChange={handleWeekChange} className="filter-select">
+                        {availableWeeks.map((w) => (
                             <option key={w} value={w}>Week {w}</option>
                         ))}
                     </select>
                 </div>
-            </header>
+                
+                <button className="filter-reset" onClick={clearFilters}>
+                    Reset Filters
+                </button>
+            </div>
+
+            <div className="results-summary">
+                <span className="results-count">
+                    {filteredGames.length} {filteredGames.length === 1 ? 'game' : 'games'} found
+                </span>
+                {year === 2025 && (
+                    <span className="future-season-note">
+                        Note: 2025 season has not started yet
+                    </span>
+                )}
+            </div>
 
             <div className="games-grid">
-                {games.map((game) => {
-                    const gameWeather = getWeatherForGame(game.id);
-                    const gameMedia = getMediaForGame(game.id);
-                    const gameLines = getLinesForGame(game.id);
-                    const tvNetwork = gameMedia?.network || gameMedia?.outlet || 'TBD';
-                    
-                    // Check if either team is FCS
-                    const homeIsFCS = isTeamFCS(game.homeTeam);
-                    const awayIsFCS = isTeamFCS(game.awayTeam);
+                {filteredGames.length > 0 ? (
+                    filteredGames.map((game) => {
+                        const gameWeather = getWeatherForGame(game.id);
+                        const gameMedia = getMediaForGame(game.id);
+                        const gameLines = getLinesForGame(game.id);
+                        const tvNetwork = gameMedia?.network || gameMedia?.outlet || 'TBD';
+                        
+                        // Check if either team is FCS
+                        const homeIsFCS = isTeamFCS(game.homeTeam);
+                        const awayIsFCS = isTeamFCS(game.awayTeam);
 
-                    return (
-                        <article key={game.id} className="game-card">
-                            <div className="teams-container">
-                                <div className="team">
-                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                    <div className="team-details">
-                                        <h3>{game.homeTeam}</h3>
-                                        {homeIsFCS && <span className="team-division">FCS</span>}
-                                        <span className="score">{game.homePoints}</span>
+                        return (
+                            <article key={game.id} className="game-card" onClick={() => navigateToGameDetails(game.id)}>
+                                <div className="teams-container">
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
+                                        <div className="team-details">
+                                            <h3>{game.homeTeam}</h3>
+                                            {homeIsFCS && <span className="team-division">FCS</span>}
+                                            {game.status === 'final' && <span className="score">{game.homePoints || '0'}</span>}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="vs-circle">
+                                        <span>VS</span>
+                                    </div>
+
+                                    <div className="team">
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
+                                        <div className="team-details">
+                                            <h3>{game.awayTeam}</h3>
+                                            {awayIsFCS && <span className="team-division">FCS</span>}
+                                            {game.status === 'final' && <span className="score">{game.awayPoints || '0'}</span>}
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div className="vs-circle">
-                                    <span>VS</span>
-                                </div>
 
-                                <div className="team">
-                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                    <div className="team-details">
-                                        <h3>{game.awayTeam}</h3>
-                                        {awayIsFCS && <span className="team-division">FCS</span>}
-                                        <span className="score">{game.awayPoints}</span>
+                                <div className="game-info">
+                                    <div className="info-item">
+                                        <svg className="icon" viewBox="0 0 24 24">
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+                                        </svg>
+                                        <span>{game.venue || 'TBD'}</span>
+                                    </div>
+                                    
+                                    <div className="info-item">
+                                        <svg className="icon" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                        </svg>
+                                        {game.status === 'final' ? (
+                                            <span className="final">Final Score</span>
+                                        ) : (
+                                            <span>{formatGameDate(game)}</span>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="game-info">
-                                <div className="info-item">
-                                    <svg className="icon" viewBox="0 0 24 24">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
-                                    </svg>
-                                    <span>{game.venue}</span>
-                                </div>
-                                
-                                <div className="info-item">
-                                    <svg className="icon" viewBox="0 0 24 24">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
-                                    </svg>
-                                    {game.status === 'final' ? (
-                                        <span className="final">Final Score</span>
-                                    ) : (
-                                        <span>{formatGameDate(game)}</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="game-meta">
-                                <div className="broadcast-weather-row">
-                                    <TvIcon />
-                                    <span className="network">{tvNetwork || 'N/A'}</span>
-                                    <WeatherIcon condition={gameWeather?.weatherCondition} />
-                                    <span className="temperature">
-                                        {gameWeather?.temperature || '--'}°F
-                                    </span>
-                                    <span className="condition">
-                                        {gameWeather?.weatherCondition || 'N/A'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {gameLines && (
-                            <div className="betting-section">
-                                <h4>Betting Lines</h4>
-                                <div className="sportsbooks">
-                                {gameLines.lines && gameLines.lines.map((line) => (
-                                    <div key={line.provider} className="sportsbook-line">
-                                        <img 
-                                            src={getSportsbookLogo(line.provider)} 
-                                            alt={line.provider} 
-                                            className="sportsbook-logo" 
-                                        />
-                                        <span className="spread">SP: {line.spread || 'N/A'}</span>
-                                        <span className="overunder">O/U: {line.overUnder || 'N/A'}</span>
+                                <div className="game-meta">
+                                    <div className="broadcast-weather-row">
+                                        <TvIcon />
+                                        <span className="network">{tvNetwork || 'TBD'}</span>
+                                        {gameWeather && (
+                                            <>
+                                                <WeatherIcon condition={gameWeather?.weatherCondition} />
+                                                <span className="temperature">
+                                                    {gameWeather?.temperature || '--'}°F
+                                                </span>
+                                                <span className="condition">
+                                                    {gameWeather?.weatherCondition || 'N/A'}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
-                                ))}
                                 </div>
-                            </div>
-                            )}
 
-                            <div className="advanced-details-section">
-                                <button 
-                                    className="advanced-details-button"
-                                    onClick={() => navigateToGameDetails(game.id)}
-                                >
-                                    View Advanced Game Details
+                                {gameLines && gameLines.lines && gameLines.lines.length > 0 && (
+                                <div className="betting-section">
+                                    <h4>Betting Lines</h4>
+                                    <div className="sportsbooks">
+                                    {gameLines.lines.slice(0, 2).map((line) => (
+                                        <div key={line.provider} className="sportsbook-line">
+                                            <img 
+                                                src={getSportsbookLogo(line.provider)} 
+                                                alt={line.provider} 
+                                                className="sportsbook-logo" 
+                                            />
+                                            <span className="spread">SP: {line.spread || 'N/A'}</span>
+                                            <span className="overunder">O/U: {line.overUnder || 'N/A'}</span>
+                                        </div>
+                                    ))}
+                                    </div>
+                                </div>
+                                )}
+
+                                <div className="view-details-footer">
+                                    <span className="view-details-text">View Advanced Game Details</span>
+                                </div>
+                            </article>
+                        );
+                    })
+                ) : (
+                    <div className="no-results">
+                        <div className="no-results-icon">🔍</div>
+                        <h3>No games found</h3>
+                        <p>
+                            Try adjusting your filters or search term to see more results.
+                            {searchTerm && (
+                                <button className="clear-search-button" onClick={() => setSearchTerm("")}>
+                                    Clear Search
                                 </button>
-                            </div>
-                        </article>
-                    );
-                })}
+                            )}
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
