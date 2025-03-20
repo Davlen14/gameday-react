@@ -524,21 +524,19 @@ const TeamDetail = () => {
                             <div className="date-value">{gameDate}</div>
                           </div>
                           
-                          {/* Home team */}
-                          <div className="team home-team">
-                            <div className="schedule-team-logo-container">
-                              <img 
-                                src={game.homeLogo || getTeamLogo(game.homeTeam)} 
-                                alt={game.homeTeam}
-                                className="schedule-team-logo"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "/photos/default_team.png";
-                                }}
-                              />
-                            </div>
-                            <div className="schedule-team-name">{game.homeTeam}</div>
-                          </div>
+                        {/* Home team */}
+                        <div className="team home-team">
+                          <img 
+                            src={game.homeLogo || getTeamLogo(game.homeTeam)} 
+                            alt={game.homeTeam}
+                            className="schedule-team-logo plain"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/photos/default_team.png";
+                            }}
+                          />
+                          <div className="schedule-team-name">{game.homeTeam}</div>
+                        </div>
                           
                           {/* Score */}
                           <div className="game-score">
@@ -557,21 +555,19 @@ const TeamDetail = () => {
                             )}
                           </div>
                           
-                          {/* Away team */}
-                          <div className="team away-team">
-                            <div className="schedule-team-logo-container">
-                              <img 
-                                src={game.awayLogo || getTeamLogo(game.awayTeam)} 
-                                alt={game.awayTeam}
-                                className="schedule-team-logo"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "/photos/default_team.png";
-                                }}
-                              />
-                            </div>
-                            <div className="schedule-team-name">{game.awayTeam}</div>
-                          </div>
+                        {/* Away team */}
+                        <div className="team away-team">
+                          <img 
+                            src={game.awayLogo || getTeamLogo(game.awayTeam)} 
+                            alt={game.awayTeam}
+                            className="schedule-team-logo plain"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/photos/default_team.png";
+                            }}
+                          />
+                          <div className="schedule-team-name">{game.awayTeam}</div>
+                        </div>
                           
                           {/* Venue */}
                           <div className="game-venue">

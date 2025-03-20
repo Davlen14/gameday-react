@@ -1016,6 +1016,15 @@ body {
   justify-content: flex-start;
 }
 
+.schedule-team-logo.plain {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  max-width: 100%;
+  background: transparent;
+  box-shadow: none;
+}
+
 .schedule-team-logo-container {
   width: 40px;
   height: 40px;
