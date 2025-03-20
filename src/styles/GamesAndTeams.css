@@ -77,9 +77,9 @@ body {
 
 /* Layout Container */
 .games-container {
-    width: var(--max-width);
-    margin: 0 auto;
-    padding: 1rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
     background-color: var(--bg-off-white);
 }
 
@@ -303,9 +303,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: var(--max-width);
-    margin: 0 auto 1.25rem;
-    padding: 0 0.5rem;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    padding: 0 0.75rem;
 }
 
 .results-count {
@@ -325,9 +325,11 @@ body {
 .games-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-    width: var(--max-width);
-    margin: 0 auto;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem;
+    background-color: var(--bg-off-white);
 }
 
 /* Game Card */
@@ -582,6 +584,9 @@ body {
     background: var(--primary-color);
     border-radius: 0 0 var(--radius-md) var(--radius-md);
     transition: var(--transition-fast);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .view-details-text {
