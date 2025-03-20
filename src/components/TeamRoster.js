@@ -47,7 +47,7 @@ const formatHeight = (heightInInches) => {
 };
 
 const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
-  const [roster, setRoster] = useState();
+  const [roster, setRoster] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null); // Add error state
 
