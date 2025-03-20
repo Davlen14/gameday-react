@@ -212,6 +212,30 @@ const TeamDetail = () => {
   // Default color if team color is not available
   const defaultColor = "#9e9e9e";
   const teamColor = team?.color || defaultColor;
+  
+  // Set CSS variables for team color
+  useEffect(() => {
+    if (teamColor) {
+      // Convert hex to RGB for opacity values
+      const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? 
+          `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
+          null;
+      };
+      
+      document.documentElement.style.setProperty('--team-color', teamColor);
+      document.documentElement.style.setProperty('--team-color-light', lightenColor(teamColor, 20));
+      document.documentElement.style.setProperty('--team-color-rgb', hexToRgb(teamColor));
+    }
+    
+    return () => {
+      // Clean up when component unmounts
+      document.documentElement.style.removeProperty('--team-color');
+      document.documentElement.style.removeProperty('--team-color-light');
+      document.documentElement.style.removeProperty('--team-color-rgb');
+    };
+  }, [teamColor]);
 
   if (isLoading.team) return (
     <div className="loading-screen">
