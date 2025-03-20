@@ -13,6 +13,7 @@ const Games = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1);
+    const [year, setYear] = useState(2024); // New state for year
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +31,7 @@ const Games = () => {
                     setFcsTeams(fcsTeamsData);
                 }
 
-                const gamesData = await teamsService.getGames(week);
+                const gamesData = await teamsService.getGames(week, year); // Added year parameter
                 // We want to include games where at least one team is FBS
                 const fbsGames = gamesData.filter(
                     (game) =>
@@ -39,13 +40,13 @@ const Games = () => {
                 );
                 setGames(fbsGames);
 
-                const weatherData = await teamsService.getGameWeather(2024, week);
+                const weatherData = await teamsService.getGameWeather(year, week); // Updated to use year state
                 setWeather(weatherData);
 
-                const mediaData = await teamsService.getGameMedia(2024, week);
+                const mediaData = await teamsService.getGameMedia(year, week); // Updated to use year state
                 setMedia(mediaData);
 
-                const linesData = await teamsService.getGameLines(2024);
+                const linesData = await teamsService.getGameLines(year); // Updated to use year state
                 setLines(linesData);
             } catch (err) {
                 setError(err.message);
@@ -55,10 +56,14 @@ const Games = () => {
         };
 
         fetchGamesAndRelatedData();
-    }, [week, teams.length]);
+    }, [week, year, teams.length]); // Added year to dependency array
 
     const handleWeekChange = (event) => {
         setWeek(Number(event.target.value));
+    };
+
+    const handleYearChange = (event) => {
+        setYear(Number(event.target.value));
     };
 
     const navigateToGameDetails = (gameId) => {
@@ -246,13 +251,23 @@ const Games = () => {
         <div className="games-container">
             <header className="header">
                 <h1>FBS Schedule</h1>
-                <div className="week-selector">
-                    <label>Week:</label>
-                    <select value={week} onChange={handleWeekChange} className="week-dropdown">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((w) => (
-                            <option key={w} value={w}>Week {w}</option>
-                        ))}
-                    </select>
+                <div className="filters-container">
+                    <div className="week-selector">
+                        <label>Week:</label>
+                        <select value={week} onChange={handleWeekChange} className="week-dropdown">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((w) => (
+                                <option key={w} value={w}>Week {w}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="year-selector">
+                        <label>Year:</label>
+                        <select value={year} onChange={handleYearChange} className="year-dropdown">
+                            {[2020, 2021, 2022, 2023, 2024, 2025].map((y) => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </header>
 
