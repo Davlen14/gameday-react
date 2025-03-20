@@ -93,6 +93,20 @@ const getInitials = (name) => {
   return name.substring(0, 2);
 };
 
+// Win indicator with shine effect
+const WinIndicator = () => (
+  <div className="win-indicator">
+    <span className="result-letter win">W</span>
+  </div>
+);
+
+// Loss indicator with pulse effect
+const LossIndicator = () => (
+  <div className="loss-indicator">
+    <span className="result-letter loss">L</span>
+  </div>
+);
+
 const TeamDetail = () => {
   const { teamId } = useParams();
   const navigate = useNavigate();
@@ -536,17 +550,19 @@ const TeamDetail = () => {
                             }}
                           />
                           <div className="schedule-team-name">{game.homeTeam}</div>
+                          {isCompleted && homeWinner && <WinIndicator />}
+                          {isCompleted && !homeWinner && <LossIndicator />}
                         </div>
                           
                           {/* Score */}
                           <div className="game-score">
                             {isCompleted ? (
                               <>
-                                <div className={`team-score ${homeWinner ? 'schedule-winner' : ''}`} style={homeWinner ? { color: teamColor } : {}}>
+                                <div className="team-score">
                                   {game.homePoints}
                                 </div>
                                 <div className="score-divider">-</div>
-                                <div className={`team-score ${awayWinner ? 'schedule-winner' : ''}`} style={awayWinner ? { color: teamColor } : {}}>
+                                <div className="team-score">
                                   {game.awayPoints}
                                 </div>
                               </>
@@ -567,6 +583,8 @@ const TeamDetail = () => {
                             }}
                           />
                           <div className="schedule-team-name">{game.awayTeam}</div>
+                          {isCompleted && awayWinner && <WinIndicator />}
+                          {isCompleted && !awayWinner && <LossIndicator />}
                         </div>
                           
                           {/* Venue */}
@@ -890,6 +908,9 @@ const TeamDetail = () => {
 
       {/* UPDATED: Custom CSS to override default hover styles */}
       <style>{`
+        /* Import Obitron font */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+        
         .tab-item:hover {
           background-color: ${teamColor}15 !important; 
           color: ${teamColor} !important;
@@ -900,9 +921,78 @@ const TeamDetail = () => {
           border: 1px solid ${teamColor}15 !important;
         }
         
-        .schedule-winner {
-          color: ${teamColor} !important;
-          font-weight: bold;
+        /* NEW: Result letters for wins and losses */
+        .result-letter {
+          font-family: 'Orbitron', sans-serif;
+          font-weight: 700;
+          display: inline-block;
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+          text-align: center;
+          border-radius: 50%;
+          margin-left: 6px;
+          font-size: 14px;
+        }
+        
+        /* Win indicator styling with shine effect */
+        .result-letter.win {
+          color: white;
+          background-color: #00C853;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 0 5px rgba(0, 200, 83, 0.6);
+        }
+        
+        .result-letter.win:after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(
+            45deg, 
+            rgba(255,255,255,0) 0%, 
+            rgba(255,255,255,0.1) 50%, 
+            rgba(255,255,255,0) 100%
+          );
+          transform: rotate(45deg);
+          animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+          0% {
+            left: -100%;
+            top: -100%;
+          }
+          100% {
+            left: 100%;
+            top: 100%;
+          }
+        }
+        
+        /* Loss indicator styling with pulse effect */
+        .result-letter.loss {
+          color: white;
+          background-color: #F44336;
+          animation: pulse 2s infinite;
+          box-shadow: 0 0 5px rgba(244, 67, 54, 0.6);
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
         
         /* UPDATED: Make player icons use team colors */
@@ -923,6 +1013,16 @@ const TeamDetail = () => {
         /* UPDATED: Style active tab icon */
         .tab-item.active .tab-icon {
           color: ${teamColor} !important;
+        }
+        
+        /* Better positioning of win/loss indicators */
+        .home-team, .away-team {
+          display: flex;
+          align-items: center;
+        }
+        
+        .win-indicator, .loss-indicator {
+          margin-left: 8px;
         }
       `}</style>
     </div>
