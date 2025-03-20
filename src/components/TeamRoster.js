@@ -7,17 +7,17 @@ import "../styles/TeamDetail.css";
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
   <div className="loading-spinner">
     <svg width="50" height="50" viewBox="0 0 50 50">
-      <circle 
-        cx="25" 
-        cy="25" 
-        r="20" 
-        fill="none" 
-        stroke={color} 
+      <circle
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke={color}
         strokeWidth="5"
         strokeDasharray="31.4 31.4"
       >
-        <animateTransform 
-          attributeName="transform" 
+        <animateTransform
+          attributeName="transform"
           type="rotate"
           from="0 25 25"
           to="360 25 25"
@@ -31,33 +31,37 @@ const LoadingSpinner = ({ color = "#9e9e9e" }) => (
 // Format height from inches to feet and inches
 const formatHeight = (heightInInches) => {
   if (!heightInInches) return "N/A";
-  
+
   // Try to handle cases where height might be given as "6'2" or similar
   if (typeof heightInInches === 'string' && heightInInches.includes("'")) {
     return heightInInches;
   }
-  
+
   const inches = parseInt(heightInInches, 10);
   if (isNaN(inches)) return "N/A";
-  
+
   const feet = Math.floor(inches / 12);
   const remainingInches = inches % 12;
-  
+
   return `${feet}'${remainingInches}"`;
 };
 
 const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
-  const [roster, setRoster] = useState([]);
+  const [roster, setRoster] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
     const fetchRoster = async () => {
+      setIsLoading(true);
+      setError(null); // Reset error state on new fetch
       try {
-        setIsLoading(true);
         const data = await teamsService.getTeamRoster(teamName, year);
         setRoster(data);
       } catch (err) {
         console.error("Error fetching roster:", err.message);
+        setError("Failed to load roster information."); // Set error message
+        setRoster(); // Ensure roster is empty on error
       } finally {
         setIsLoading(false);
       }
@@ -89,25 +93,25 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
   // Helper function to lighten a color
   const lightenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16),
-          amt = Math.round(2.55 * percent),
-          R = (num >> 16) + amt,
-          G = (num >> 8 & 0x00FF) + amt,
-          B = (num & 0x0000FF) + amt;
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = (num >> 8 & 0x00FF) + amt,
+      B = (num & 0x0000FF) + amt;
     return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
-                  (G < 255 ? G : 255) * 0x100 +
-                  (B < 255 ? B : 255)).toString(16).slice(1);
+      (G < 255 ? G : 255) * 0x100 +
+      (B < 255 ? B : 255)).toString(16).slice(1);
   };
 
   // Helper function to darken a color
   const darkenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16),
-          amt = Math.round(2.55 * percent),
-          R = (num >> 16) - amt,
-          G = (num >> 8 & 0x00FF) - amt,
-          B = (num & 0x0000FF) - amt;
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) - amt,
+      G = (num >> 8 & 0x00FF) - amt,
+      B = (num & 0x0000FF) - amt;
     return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
-                  (G > 0 ? G : 0) * 0x100 +
-                  (B > 0 ? B : 0)).toString(16).slice(1);
+      (G > 0 ? G : 0) * 0x100 +
+      (B > 0 ? B : 0)).toString(16).slice(1);
   };
 
   return (
@@ -121,6 +125,11 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
           <div className="loading-indicator">
             <LoadingSpinner color={teamColor} />
             <p>Loading roster...</p>
+          </div>
+        ) : error ? ( // Display error message if fetching fails
+          <div className="error-message">
+            <FaExclamationTriangle color="red" style={{ marginRight: "8px" }} />
+            {error}
           </div>
         ) : (
           <table className="roster-table">
@@ -140,7 +149,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
                       <div className="player-icon" style={playerIconStyle}>
                         <FaUser />
                       </div>
-                      <div className="player-name">{player.fullName}</div>
+                      <div className="player-name">{player.fullName || "N/A"}</div> {/* Added fallback for fullName */}
                     </div>
                   </td>
                   <td>
@@ -154,7 +163,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
                   </td>
                 </tr>
               ))}
-              {roster.length === 0 && !isLoading && (
+              {roster.length === 0 && !isLoading && !error && ( // Only show "No roster" if not loading and no error
                 <tr>
                   <td colSpan="4" style={{ textAlign: "center" }}>
                     No roster information available
@@ -165,7 +174,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
           </table>
         )}
       </div>
-      
+
       {/* Custom CSS for team-specific styling */}
       <style>{`
         /* Player icon using team colors */
