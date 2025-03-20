@@ -67,7 +67,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [teamWeaknesses, setTeamWeaknesses] = useState([]);
 
   // Default to a neutral gray if no team color is provided
-  const accentColor = teamColor || "#555555";
+  const accentColor1 = teamColor || "#555555";
   
   // Generate a lighter variation of the team color for gradients - more subtle
   const lightenColor = (color, percent) => {
@@ -94,10 +94,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   };
 
   // Modern color palette - using team color more subtly
-  const primaryColor = accentColor;
+  const primaryColor = accentColor1;
   const secondaryColor = 'rgba(255, 255, 255, 0.25)';
-  const accentLight = lightenColor(accentColor, 20);
-  const accentDark = darkenColor(accentColor, 20);
+  const accentLight = lightenColor(accentColor1, 20);
+  const accentDark = darkenColor(accentColor1, 20);
   
   // Modern stat indicators
   const excellentColor = "#38c172"; // Green
@@ -117,7 +117,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   };
   
   // Determine text color to use against team color background
-  const contrastColor = getContrastColor(accentColor);
+  const contrastColor = getContrastColor(accentColor1);
 
   // Helper function to safely get stat value
   const getStatValue = useCallback((name) => {
@@ -881,7 +881,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         <button 
           className="debug-button" 
           onClick={() => setShowDebug(!showDebug)}
-          style={{ background: accentColor, color: contrastColor }}
+          style={{ background: accentColor1, color: contrastColor }}
         >
           {showDebug ? "Hide Raw Data" : "Show Raw Data (Debug)"}
         </button>
