@@ -111,6 +111,8 @@ const TeamDetail = () => {
     team: false,
     ratings: false,
     schedule: false,
+    teamStats: false,
+    playerStats: false
   });
   const [error, setError] = useState(null);
   
@@ -155,6 +157,17 @@ const TeamDetail = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    
+    // Set loading state for the respective tab if needed
+    if (tab === 'teamStats') {
+      setIsLoading(prev => ({ ...prev, teamStats: true }));
+      // You would fetch team stats data here if needed
+      setTimeout(() => setIsLoading(prev => ({ ...prev, teamStats: false })), 1000);
+    } else if (tab === 'playerStats') {
+      setIsLoading(prev => ({ ...prev, playerStats: true }));
+      // You would fetch player stats data here if needed
+      setTimeout(() => setIsLoading(prev => ({ ...prev, playerStats: false })), 1000);
+    }
   };
 
   // Function to fetch game stats for expanded rows
@@ -251,6 +264,12 @@ const TeamDetail = () => {
       document.documentElement.style.setProperty('--team-color', teamColor);
       document.documentElement.style.setProperty('--team-color-light', lightenColor(teamColor, 20));
       document.documentElement.style.setProperty('--team-color-rgb', hexToRgb(teamColor));
+      
+      // Add new CSS variables specifically for stats components
+      document.documentElement.style.setProperty('--stats-header-bg', lightenColor(teamColor, 95));
+      document.documentElement.style.setProperty('--stats-header-border', teamColor);
+      document.documentElement.style.setProperty('--stats-highlight', lightenColor(teamColor, 85));
+      document.documentElement.style.setProperty('--stats-accent', teamColor);
     }
     
     return () => {
@@ -258,6 +277,10 @@ const TeamDetail = () => {
       document.documentElement.style.removeProperty('--team-color');
       document.documentElement.style.removeProperty('--team-color-light');
       document.documentElement.style.removeProperty('--team-color-rgb');
+      document.documentElement.style.removeProperty('--stats-header-bg');
+      document.documentElement.style.removeProperty('--stats-header-border');
+      document.documentElement.style.removeProperty('--stats-highlight');
+      document.documentElement.style.removeProperty('--stats-accent');
     };
   }, [teamColor]);
 
@@ -573,34 +596,48 @@ const TeamDetail = () => {
         
       case 'teamStats':
         return (
-          <div className="dashboard-card full-width-card">
+          <div className="dashboard-card full-width-card stats-card">
             <div className="card-header" style={cardHeaderStyle}>
               <FaChartBar style={{ marginRight: "12px", color: teamColor }} />
               Team Statistics
             </div>
             <div className="card-body">
-              <TeamStats 
-                teamName={team.school} 
-                year={2024} 
-                teamColor={teamColor}
-              />
+              {isLoading.teamStats ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner color={teamColor} />
+                  <p>Loading team statistics...</p>
+                </div>
+              ) : (
+                <TeamStats 
+                  teamName={team.school} 
+                  year={2024} 
+                  teamColor={teamColor}
+                />
+              )}
             </div>
           </div>
         );
         
       case 'playerStats':
         return (
-          <div className="dashboard-card full-width-card">
+          <div className="dashboard-card full-width-card stats-card">
             <div className="card-header" style={cardHeaderStyle}>
               <FaFootballBall style={{ marginRight: "12px", color: teamColor }} />
               Player Statistics
             </div>
             <div className="card-body">
-              <TeamPlayerStats 
-                teamName={team.school} 
-                year={2024} 
-                teamColor={teamColor}
-              />
+              {isLoading.playerStats ? (
+                <div className="loading-indicator">
+                  <LoadingSpinner color={teamColor} />
+                  <p>Loading player statistics...</p>
+                </div>
+              ) : (
+                <TeamPlayerStats 
+                  teamName={team.school} 
+                  year={2024} 
+                  teamColor={teamColor}
+                />
+              )}
             </div>
           </div>
         );
@@ -701,6 +738,7 @@ const TeamDetail = () => {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
         
+        /* Basic styles */
         .tab-item:hover {
           background-color: ${teamColor}15 !important; 
           color: ${teamColor} !important;
@@ -711,6 +749,7 @@ const TeamDetail = () => {
           border: 1px solid ${teamColor}15 !important;
         }
         
+        /* Result letters */
         .result-letter {
           font-family: 'Orbitron', sans-serif;
           font-weight: 700;
@@ -806,6 +845,108 @@ const TeamDetail = () => {
         
         .win-indicator, .loss-indicator {
           margin-left: 8px;
+        }
+        
+        /* Stats specific styling */
+        .stats-card .stat-header {
+          background-color: ${lightenColor(teamColor, 95)} !important;
+          border-bottom: 2px solid ${teamColor} !important;
+          color: ${darkenColor(teamColor, 20)} !important;
+        }
+        
+        .stats-card .stat-row:hover {
+          background-color: ${lightenColor(teamColor, 92)} !important;
+        }
+        
+        .stats-card .stat-highlight {
+          color: ${teamColor} !important;
+          font-weight: bold;
+        }
+        
+        .stats-card .stat-value-high {
+          color: ${teamColor} !important;
+        }
+        
+        .stats-card .stat-category-header {
+          background: ${lightenColor(teamColor, 90)} !important;
+          border-left: 4px solid ${teamColor} !important;
+        }
+        
+        /* Team Stats specific styling */
+        .team-stats-table th {
+          background-color: ${lightenColor(teamColor, 90)} !important;
+          color: ${darkenColor(teamColor, 20)} !important;
+        }
+        
+        .team-stats-table tr:nth-child(odd) {
+          background-color: ${lightenColor(teamColor, 98)} !important;
+        }
+        
+        .team-stats-table tr:hover {
+          background-color: ${lightenColor(teamColor, 85)} !important;
+        }
+        
+        .team-stats-ranking {
+          color: ${teamColor} !important;
+          font-weight: bold;
+        }
+        
+        /* Player Stats specific styling */
+        .player-stats-table th {
+          background-color: ${lightenColor(teamColor, 90)} !important;
+          color: ${darkenColor(teamColor, 15)} !important;
+          border-bottom: 2px solid ${teamColor} !important;
+        }
+        
+        .player-stats-table tr:hover {
+          background-color: ${lightenColor(teamColor, 95)} !important;
+        }
+        
+        .player-stats-table .player-highlighted {
+          background-color: ${lightenColor(teamColor, 90)} !important;
+          font-weight: bold;
+        }
+        
+        .player-stat-leader {
+          position: relative;
+        }
+        
+        .player-stat-leader::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background-color: ${teamColor} !important;
+        }
+        
+        .stat-filter-button {
+          background-color: white;
+          border: 1px solid ${teamColor}30 !important;
+          color: ${teamColor} !important;
+        }
+        
+        .stat-filter-button.active {
+          background-color: ${teamColor} !important;
+          color: white !important;
+        }
+        
+        /* Chart styling for both team and player stats */
+        .stats-chart .recharts-default-tooltip {
+          border-color: ${teamColor} !important;
+        }
+        
+        .stats-chart .recharts-line {
+          stroke: ${teamColor} !important;
+        }
+        
+        .stats-chart .recharts-area {
+          fill: ${teamColor}30 !important;
+        }
+        
+        .stats-chart .recharts-dot {
+          fill: ${teamColor} !important;
         }
       `}</style>
     </div>
