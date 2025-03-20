@@ -131,7 +131,7 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Oregon's Next Move</h3>
               <p>
-                Get the latest on Oregon's strategic decisions that could reshape the program’s future. Read more
+                Get the latest on Oregon's strategic decisions that could reshape the program's future. Read more
               </p>
             </div>
           </div>
@@ -241,69 +241,6 @@ const Home = () => {
           </div>
         </section>
       </div>
-
-      {/* Games Section */}
-      <section className="games-section">
-        <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
-          {week === "postseason" ? "Postseason Matchups" : `Week ${week} Matchups`}
-        </h2>
-        <div className="games-slider">
-          {games.map((game) => (
-            <Link to={`/games/${game.id}`} key={game.id} className="game-card-link">
-              <div className="game-card">
-                <div className="game-header">
-                  <div className="game-time">
-                    {new Date(game.startDate).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric"
-                    })}
-                  </div>
-                  <div className="network">
-                    {getNetworkLogo(game.network || "ESPN")}
-                    <span className="network-name">
-                      {game.network || "ESPN"}
-                    </span>
-                  </div>
-                </div>
-                <div className="teams-container">
-                  <div className="team home-team">
-                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} />
-                    <div className="team-info">
-                      <span className="team-name">{game.homeTeam}</span>
-                      <span className="team-record">
-                        {game.homeRecord || "(N/A)"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="vs-container">
-                    <div className="vs-circle">VS</div>
-                    <div className="score-container">
-                      <span className="score">{game.homePoints || "-"}</span>
-                      <span className="score-divider">-</span>
-                      <span className="score">{game.awayPoints || "-"}</span>
-                    </div>
-                  </div>
-                  <div className="team away-team">
-                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} />
-                    <div className="team-info">
-                      <span className="team-name">{game.awayTeam}</span>
-                      <span className="team-record">
-                        {game.awayRecord || "(N/A)"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="game-footer">
-                  <div className="game-venue">
-                    <span>🏟️ {game.venue}</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 };
