@@ -53,28 +53,30 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             teamColor={teamColor}
           />
           
-          {/* Ratings explanation - preserved from original TeamOverview */}
-          <div className="ratings-explanation">
-            <h3 style={{ color: teamColor }}>How SP+ Ratings Work</h3>
-            <p>
-              The SP+ ratings combine multiple aspects of team performance into a single composite metric.
-              <br />
-              <strong>Overall:</strong> Combines offense, defense, and special teams.
-              <br />
-              <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
-              <br />
-              <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
-            </p>
-            <p>
-              <strong>Color zones indicate performance relative to national average:</strong><br />
-              <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> | 
-              <span style={{ color: "#ffc700" }}><strong>Average</strong></span> | 
-              <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
-            </p>
-            <p>
-              <strong>National Averages (2024):</strong><br />
-              Overall: 0.55 | Offense: 27.14 | Defense: 26.61
-            </p>
+          {/* Ratings explanation with team color gradient */}
+          <div className="ratings-explanation-container">
+            <div className="ratings-explanation">
+              <h3 style={{ color: teamColor }}>How SP+ Ratings Work</h3>
+              <p>
+                The SP+ ratings combine multiple aspects of team performance into a single composite metric.
+                <br />
+                <strong>Overall:</strong> Combines offense, defense, and special teams.
+                <br />
+                <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
+                <br />
+                <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
+              </p>
+              <p>
+                <strong>Color zones indicate performance relative to national average:</strong><br />
+                <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> | 
+                <span style={{ color: "#ffc700" }}><strong>Average</strong></span> | 
+                <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
+              </p>
+              <p>
+                <strong>National Averages (2024):</strong><br />
+                Overall: 0.55 | Offense: 27.14 | Defense: 26.61
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -148,8 +150,24 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: 500;
             }
             
-            .ratings-explanation {
+            .ratings-explanation-container {
+              position: relative;
               margin-top: 1.5rem;
+              width: 100%;
+            }
+            
+            .ratings-explanation-container::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 4px;
+              background: linear-gradient(to right, ${teamColor}, ${lightenColor(teamColor, 30)}, ${teamColor});
+              border-radius: 2px 2px 0 0;
+            }
+            
+            .ratings-explanation {
               background-color: #f9f9f9;
               border-radius: 8px;
               padding: 1rem;
@@ -162,7 +180,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             .ratings-explanation h3 {
               margin-top: 0;
               margin-bottom: 0.75rem;
-              color: #333;
+              color: ${teamColor};
             }
           `}</style>
         </div>
