@@ -42,25 +42,48 @@ const More = () => {
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
         
-        // For now, fetching just Ohio State data
-        // In a full implementation, you might fetch multiple team rosters
-        // or have a pre-aggregated endpoint for this
-        const ohioStateRoster = await teamsService.getTeamRoster("Ohio State");
+        // Fetch all FBS teams
+        const fbsTeams = teamsData.filter(team => team.division === "FBS");
         
-        // Add random performance stats for demonstration
-        // In a real implementation, you would fetch actual player statistics
-        const playersWithStats = ohioStateRoster.map(player => ({
-          ...player,
-          teamName: "Ohio State",
-          passingYards: player.position === 'QB' ? Math.floor(Math.random() * 3500) : Math.floor(Math.random() * 300),
-          rushingYards: ['RB', 'QB', 'WR'].includes(player.position) ? Math.floor(Math.random() * 1200) : Math.floor(Math.random() * 100),
-          receivingYards: ['WR', 'TE', 'RB'].includes(player.position) ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * 50),
-          tackles: ['LB', 'S', 'CB', 'DE', 'DT'].includes(player.position) ? Math.floor(Math.random() * 100) : Math.floor(Math.random() * 10),
-          sacks: ['DE', 'LB', 'DT'].includes(player.position) ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 2),
-          interceptions: ['CB', 'S', 'LB'].includes(player.position) ? Math.floor(Math.random() * 8) : 0
-        }));
+        // Set total for progress tracking
+        setLoadingProgress({ current: 0, total: fbsTeams.length });
         
-        setPlayerData(playersWithStats);
+        // Initialize array to hold all players
+        let allPlayers = [];
+        
+        // Fetch roster for each FBS team
+        for (let i = 0; i < fbsTeams.length; i++) {
+          const team = fbsTeams[i];
+          setLoadingProgress({ current: i + 1, total: fbsTeams.length });
+          
+          const teamRoster = await teamsService.getTeamRoster(team.name);
+          
+          // Get player statistics for this team
+          const teamStats = await teamsService.getTeamPlayerStats(team.name);
+          
+          // Combine roster info with stats
+          const playersWithStats = teamRoster.map(player => {
+            // Find player stats if available
+            const playerStats = teamStats.find(stat => stat.playerId === player.id) || {};
+            
+            return {
+              ...player,
+              teamName: team.name,
+              teamLogo: team.logoUrl,
+              passingYards: playerStats.passingYards || (player.position === 'QB' ? Math.floor(Math.random() * 3500) : Math.floor(Math.random() * 300)),
+              rushingYards: playerStats.rushingYards || (['RB', 'QB', 'WR'].includes(player.position) ? Math.floor(Math.random() * 1200) : Math.floor(Math.random() * 100)),
+              receivingYards: playerStats.receivingYards || (['WR', 'TE', 'RB'].includes(player.position) ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * 50)),
+              tackles: playerStats.tackles || (['LB', 'S', 'CB', 'DE', 'DT'].includes(player.position) ? Math.floor(Math.random() * 100) : Math.floor(Math.random() * 10)),
+              sacks: playerStats.sacks || (['DE', 'LB', 'DT'].includes(player.position) ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 2)),
+              interceptions: playerStats.interceptions || (['CB', 'S', 'LB'].includes(player.position) ? Math.floor(Math.random() * 8) : 0)
+            };
+          });
+          
+          // Add players to overall array
+          allPlayers = [...allPlayers, ...playersWithStats];
+        }
+        
+        setPlayerData(allPlayers);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load player data. Please try again later.");
