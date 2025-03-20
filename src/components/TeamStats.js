@@ -95,7 +95,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
 
   // Modern color palette - using team color more subtly
   const primaryColor = accentColor;
-  const secondaryColor = lightenColor(accentColor, 45); // Very light version of team color
+  const secondaryColor = 'rgba(255, 255, 255, 0.25)';
   const accentLight = lightenColor(accentColor, 20);
   const accentDark = darkenColor(accentColor, 20);
   
