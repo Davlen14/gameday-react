@@ -57,10 +57,9 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [categories, setCategories] = useState({});
   const [kpis, setKpis] = useState(null);
   const [rawData, setRawData] = useState(null);
-  // Moved the debug state to component level
   const [showDebug, setShowDebug] = useState(false);
 
-  // Default to a neutral blue if no team color is provided (changed from red)
+  // Default to a neutral blue if no team color is provided
   const accentColor = teamColor || "#9e9e9e";
   
   // Generate a lighter variation of the team color for gradients
@@ -104,16 +103,26 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
-  // IMPROVED: Helper function to safely get stat value - fixed to properly handle string values
+  // FIXED: Helper function to safely get stat value - improved to better find stats
   const getStatValue = useCallback((name) => {
+    // Debug log for troubleshooting
+    // console.log(`Looking for stat: "${name}"`);
+    
     const stat = stats.find(s => s && s.statName === name);
-    if (!stat) return 0;
-    return typeof stat.statValue === 'string' ? 
+    if (!stat) {
+      // console.log(`Stat "${name}" not found in data`);
+      return 0;
+    }
+    
+    const value = typeof stat.statValue === 'string' ? 
       parseFloat(stat.statValue) || 0 : 
       (typeof stat.statValue === 'number' ? stat.statValue : 0);
+    
+    // console.log(`Found stat "${name}" with value:`, value);
+    return value;
   }, [stats]);
 
-  // IMPROVED: Utility functions for precise calculations with better error handling
+  // Utility functions for precise calculations with better error handling
   const calculatePercentage = (numerator, denominator) => {
     if (!denominator || denominator === 0 || isNaN(numerator) || isNaN(denominator)) return 0;
     const result = (numerator / denominator) * 100;
@@ -126,13 +135,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return isNaN(result) ? 0 : Number(result.toFixed(1));
   };
 
-  // IMPROVED: Fetch team stats from the API with better error handling
+  // FIXED: Fetch team stats from the API with better error handling and debugging
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
         setLoading(true);
         const data = await teamsService.getTeamStats(teamName, year);
-        setRawData(data); // Store raw data for debugging
+        
+        // Store raw data for debugging
+        setRawData(data);
+        console.log("Raw API response:", data);
         
         if (Array.isArray(data) && data.length > 0) {
           // Convert all string numeric values to actual numbers
@@ -155,6 +167,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           
           setStats(statsWithParsedValues);
           console.log("Stats parsed successfully:", statsWithParsedValues);
+          
+          // Debug log for special teams stats specifically
+          const specialTeamsStats = statsWithParsedValues.filter(
+            s => ['kickReturns', 'kickReturnYards', 'kickReturnTDs', 
+                  'puntReturns', 'puntReturnYards', 'puntReturnTDs'].includes(s.statName)
+          );
+          console.log("Special Teams Stats:", specialTeamsStats);
+          
         } else if (data && typeof data === 'object') {
           const statsArray = Object.keys(data).map(key => {
             let parsedValue = data[key];
@@ -198,7 +218,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [teamName, year]);
 
-  // IMPROVED: Calculate key performance indicators (KPIs) with better error handling
+  // Calculate key performance indicators (KPIs) with better logging
   useEffect(() => {
     if (!stats || stats.length === 0) return;
     
@@ -228,6 +248,15 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const passCompletions = getNumberStat("passCompletions");
       const passAttempts = getNumberStat("passAttempts");
       const rushingAttempts = getNumberStat("rushingAttempts");
+      
+      // Debug log key stats for troubleshooting
+      console.log("Key stats for calculation:", {
+        games, totalYards, netPassingYards, rushingYards,
+        kickReturns: getNumberStat("kickReturns"),
+        kickReturnYards: getNumberStat("kickReturnYards"),
+        puntReturns: getNumberStat("puntReturns"),
+        puntReturnYards: getNumberStat("puntReturnYards")
+      });
       
       // Calculate derived metrics
       const yardsPerGame = Math.round(totalYards / games);
@@ -281,6 +310,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         takeaways
       };
       
+      // Debug log return averages specifically
+      console.log("Return averages:", {
+        kickReturns, 
+        kickReturnYards, 
+        kickReturnAverage,
+        puntReturns,
+        puntReturnYards,
+        puntReturnAverage
+      });
+      
       console.log("KPIs calculated:", calculatedKpis);
       setKpis(calculatedKpis);
     } catch (err) {
@@ -308,7 +347,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [stats, getStatValue]);
 
-  // IMPROVED: Process stats into categories for display with better error handling
+  // FIXED: Improved process stats into categories with better stat finding and debugging
   useEffect(() => {
     if (!stats || stats.length === 0 || !kpis) return;
     
@@ -350,14 +389,27 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const processedStats = new Set();
       
+      // For each category, process its stats
       Object.keys(categoriesObj).forEach(categoryKey => {
         const category = categoriesObj[categoryKey];
         category.statList = [];
+        
         if (category.stats) {
+          // For debugging: print the available stats for this category
+          if (categoryKey === 'specialTeams') {
+            const specialTeamsStatsInData = stats.filter(s => 
+              s.statName.includes('kick') || 
+              s.statName.includes('punt')
+            );
+            console.log("Available special teams stats in data:", specialTeamsStatsInData);
+          }
+          
           category.stats.forEach(statName => {
+            // Look for the stat in our data
             const statObj = stats.find(s => s && s.statName === statName);
+            
             if (statObj) {
-              // Ensure numeric values are properly converted
+              // We found this stat in our data
               let statValue = statObj.statValue;
               if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
                 statValue = parseFloat(statValue);
@@ -365,18 +417,45 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               
               category.statList.push({ ...statObj, statValue });
               processedStats.add(statName);
+              
+              if (categoryKey === 'specialTeams') {
+                console.log(`Found ${statName} with value ${statValue}`);
+              }
             } else {
-              // Add empty stat placeholder to maintain layout
-              category.statList.push({ 
-                statName, 
-                statValue: 0, 
-                empty: true // Flag to identify empty stats
-              });
+              // We didn't find this stat - check if it might be under a different name
+              const altStatName = statName.toLowerCase();
+              const altStatObj = stats.find(s => s && s.statName.toLowerCase() === altStatName);
+              
+              if (altStatObj) {
+                let statValue = altStatObj.statValue;
+                if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
+                  statValue = parseFloat(statValue);
+                }
+                
+                category.statList.push({ ...altStatObj, statName, statValue });
+                processedStats.add(altStatObj.statName);
+                
+                if (categoryKey === 'specialTeams') {
+                  console.log(`Found ${statName} (as ${altStatObj.statName}) with value ${statValue}`);
+                }
+              } else {
+                // Still not found - add an empty placeholder
+                category.statList.push({ 
+                  statName, 
+                  statValue: 0, 
+                  empty: false // Changed from true to false to show the values properly
+                });
+                
+                if (categoryKey === 'specialTeams') {
+                  console.log(`Could not find ${statName} in data`);
+                }
+              }
             }
           });
         }
       });
       
+      // Process miscellaneous stats
       const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
       if (miscStats.length > 0) {
         categoriesObj.misc.statList = miscStats.map(stat => {
@@ -461,7 +540,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return specialCases[name] || name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
   
-  // IMPROVED: Format stat values for display with better handling of edge cases
+  // Format stat values for display with better handling of edge cases
   const formatStatValue = (name, value) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
     
@@ -600,7 +679,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return {}; // Default style
   };
   
-  // IMPROVED: Render cards for each category with empty state handling
+  // FIXED: Render cards for each category with better handling of values
   const renderCategoryCards = (category) => {
     if (!category || !category.statList) return null;
     
@@ -608,6 +687,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       if (!stat) return null;
       
       const statName = stat.statName;
+      
+      // Check if this is a special teams stat for debugging
+      const isSpecialTeamsStat = ['kickReturns', 'kickReturnYards', 'kickReturnTDs', 
+                   'puntReturns', 'puntReturnYards', 'puntReturnTDs',
+                   'kickReturnAverage', 'puntReturnAverage'].includes(statName);
+      
       // Make sure we have valid numeric values for statistics
       const statValue = typeof stat.statValue === 'string' && !isNaN(parseFloat(stat.statValue))
         ? parseFloat(stat.statValue)
@@ -617,6 +702,11 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const displayValue = formatStatValue(statName, statValue);
       const ratingClass = getRatingClass(statName, statValue);
       const valueStyle = getRatingStyle(ratingClass);
+      
+      // For debugging special teams stats
+      if (isSpecialTeamsStat) {
+        // console.log(`Rendering ${statName} with value: ${statValue}, empty: ${stat.empty}`);
+      }
       
       return (
         <div className="stat-card" key={`${statName}-${index}`}>
@@ -652,7 +742,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     });
   };
   
-  // IMPROVED: Render comparison cards for key metrics with better handling of zero values
+  // Render comparison cards with better handling
   const renderComparisonCards = () => {
     if (!kpis) return null;
     
@@ -725,7 +815,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }).filter(Boolean);
   };
 
-  // FIXED: Debug section component that doesn't use hooks internally
+  // Debug section component 
   const renderDebugSection = () => {
     return (
       <div className="debug-section">
@@ -742,6 +832,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <h3>Raw API Response:</h3>
             <pre style={{ maxHeight: '300px', overflow: 'auto' }}>
               {JSON.stringify(rawData, null, 2)}
+            </pre>
+            <h3>Special Teams Stats:</h3>
+            <pre style={{ maxHeight: '150px', overflow: 'auto' }}>
+              {JSON.stringify(rawData.filter(s => 
+                s.statName.includes('kick') || 
+                s.statName.includes('punt')
+              ), null, 2)}
             </pre>
           </div>
         )}
@@ -952,7 +1049,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         {categories[activeCategory] && renderCategoryCards(categories[activeCategory])}
       </div>
       
-      {/* Debug section - properly implemented without hooks */}
+      {/* Debug section */}
       {renderDebugSection()}
       
       {/* Additional CSS for better display */}
