@@ -366,7 +366,7 @@ const Games = () => {
                                     <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
                                     <div className="team-details">
                                         <h3>{game.homeTeam}</h3>
-                                        {homeIsFCS && <span className="team-division">FCS</span>}
+                                        {homeIsFCS && <span className="team-division"></span>}
                                         <span className="score">{game.homePoints}</span>
                                     </div>
                                 </div>
@@ -379,7 +379,7 @@ const Games = () => {
                                     <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
                                     <div className="team-details">
                                         <h3>{game.awayTeam}</h3>
-                                        {awayIsFCS && <span className="team-division">FCS</span>}
+                                        {awayIsFCS && <span className="team-division"></span>}
                                         <span className="score">{game.awayPoints}</span>
                                     </div>
                                 </div>
