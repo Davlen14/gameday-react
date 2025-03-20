@@ -4,6 +4,7 @@ import teamsService from "../services/teamsService";
 import TeamPlayerStats from "./TeamPlayerStats";
 import TeamStats from "./TeamStats";
 import TeamRoster from "./TeamRoster"; // Import the separate roster component
+import TeamOverview from "./TeamOverview"; // Import the separate overview component
 
 import { 
   FaMapMarkerAlt, 
@@ -15,17 +16,12 @@ import {
   FaChartLine,
   FaUserFriends,
   FaFootballBall,
-  FaClipboardList,
   FaChartBar,
   FaExclamationTriangle,
-  FaUser,
-  FaMapMarkerAlt as FaVenue,
-  FaClock,
   FaStar,
   FaChevronDown,
   FaChevronUp
 } from "react-icons/fa";
-import GaugeComponent from "./GaugeComponent";
 import RatingsComponent from "./RatingsComponent";
 import "../styles/TeamDetail.css";
 
@@ -63,24 +59,6 @@ const ComingSoon = ({ title, color = "#9e9e9e" }) => (
     <div className="coming-soon-label" style={{ background: color }}>Coming Soon</div>
   </div>
 );
-
-// Format height from inches to feet and inches
-const formatHeight = (heightInInches) => {
-  if (!heightInInches) return "N/A";
-  
-  // Try to handle cases where height might be given as "6'2" or similar
-  if (typeof heightInInches === 'string' && heightInInches.includes("'")) {
-    return heightInInches;
-  }
-  
-  const inches = parseInt(heightInInches, 10);
-  if (isNaN(inches)) return "N/A";
-  
-  const feet = Math.floor(inches / 12);
-  const remainingInches = inches % 12;
-  
-  return `${feet}'${remainingInches}"`;
-};
 
 // Win indicator with shine effect
 const WinIndicator = () => (
@@ -341,109 +319,8 @@ const TeamDetail = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return (
-          <>
-            {/* SP+ Ratings Card */}
-            <div className="dashboard-card team-ratings-card">
-              <div className="card-header" style={cardHeaderStyle}>
-                <FaChartLine style={{ marginRight: "12px", color: teamColor }} /> 
-                SP+ Ratings
-              </div>
-              <div className="card-body">
-                <div className="gauges-container">
-                  <GaugeComponent 
-                    label="Overall" 
-                    metricType="overall" 
-                    teamName={team.school}
-                    year={2024}
-                    teamColor={teamColor}
-                  />
-                  <GaugeComponent 
-                    label="Offense" 
-                    metricType="offense" 
-                    teamName={team.school}
-                    year={2024}
-                    teamColor={teamColor}
-                  />
-                  <GaugeComponent 
-                    label="Defense" 
-                    metricType="defense" 
-                    teamName={team.school}
-                    year={2024}
-                    teamColor={teamColor}
-                  />
-                </div>
-                <div className="ratings-explanation">
-                  <h3 style={{ color: teamColor }}>How SP+ Ratings Work</h3>
-                  <p>
-                    The SP+ ratings combine multiple aspects of team performance into a single composite metric.
-                    <br />
-                    <strong>Overall:</strong> Combines offense, defense, and special teams.
-                    <br />
-                    <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
-                    <br />
-                    <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
-                  </p>
-                  <p>
-                    <strong>Color zones indicate performance relative to national average:</strong><br />
-                    <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> | 
-                    <span style={{ color: "#ffc700" }}><strong>Average</strong></span> | 
-                    <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
-                  </p>
-                  <p>
-                    <strong>National Averages (2024):</strong><br />
-                    Overall: 0.55 | Offense: 27.14 | Defense: 26.61
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Team Info Card */}
-            <div className="dashboard-card team-info-card">
-              <div className="card-header" style={cardHeaderStyle}>
-                <FaInfoCircle style={{ marginRight: "12px", color: teamColor }} />
-                About {team.school} {team.mascot}
-              </div>
-              <div className="card-body">
-                <table className="info-table">
-                  <tbody>
-                    <tr>
-                      <td>Location:</td>
-                      <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
-                    </tr>
-                    <tr>
-                      <td>Conference:</td>
-                      <td><strong>{teamConference}</strong></td>
-                    </tr>
-                    <tr>
-                      <td>Division:</td>
-                      <td><strong>Division I ({team.classification})</strong></td>
-                    </tr>
-                    <tr>
-                      <td>Team Colors:</td>
-                      <td>
-                        <div style={{
-                          display: 'flex',
-                          gap: '8px',
-                          alignItems: 'center'
-                        }}>
-                          <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            background: teamColor,
-                            border: '1px solid rgba(0,0,0,0.1)'
-                          }}></div>
-                          <strong>{teamColor}</strong>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        );
+        // Render the imported TeamOverview component
+        return <TeamOverview team={team} teamColor={teamColor} year={2024} />;
       
       case 'schedule':
         return (
