@@ -558,47 +558,47 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Get icon for a specific stat
   const getStatIcon = (statName) => {
     const iconMap = {
-      "games": <FaFootballBall className="stat-icon" style={{ color: neutralColor }} />,
-      "totalYards": <FaChartBar className="stat-icon" style={{ color: neutralColor }} />,
-      "firstDowns": <FaArrowCircleRight className="stat-icon" style={{ color: neutralColor }} />,
-      "penalties": <FaFlag className="stat-icon" style={{ color: neutralColor }} />,
-      "penaltyYards": <FaFlag className="stat-icon" style={{ color: neutralColor }} />,
-      "turnovers": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "possessionTime": <FaClock className="stat-icon" style={{ color: neutralColor }} />,
-      "netPassingYards": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "passAttempts": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "passCompletions": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "passingTDs": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "rushingYards": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
-      "rushingAttempts": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
-      "rushingTDs": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
-      "completionPercentage": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "yardsPerAttempt": <IoMdFootball className="stat-icon" style={{ color: neutralColor }} />,
-      "yardsPerCarry": <FaRunning className="stat-icon" style={{ color: neutralColor }} />,
-      "sacks": <GiWalkingBoot className="stat-icon" style={{ color: neutralColor }} />,
-      "interceptions": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "interceptionYards": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "interceptionTDs": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "tacklesForLoss": <GiFootprint className="stat-icon" style={{ color: neutralColor }} />,
-      "fumblesRecovered": <FaShieldAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "kickReturns": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "kickReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "kickReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "puntReturns": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "puntReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "puntReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "kickReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "puntReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "thirdDowns": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
-      "thirdDownConversions": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
-      "thirdDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: neutralColor }} />,
-      "fourthDowns": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
-      "fourthDownConversions": <BiDownArrow className="stat-icon" style={{ color: neutralColor }} />,
-      "fourthDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: neutralColor }} />,
-      "fumblesLost": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />,
-      "passesIntercepted": <FaExchangeAlt className="stat-icon" style={{ color: neutralColor }} />
+      "games": <FaFootballBall className="stat-icon" style={{ color: primaryColor }} />,
+      "totalYards": <FaChartBar className="stat-icon" style={{ color: primaryColor }} />,
+      "firstDowns": <FaArrowCircleRight className="stat-icon" style={{ color: primaryColor }} />,
+      "penalties": <FaFlag className="stat-icon" style={{ color: primaryColor }} />,
+      "penaltyYards": <FaFlag className="stat-icon" style={{ color: primaryColor }} />,
+      "turnovers": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "possessionTime": <FaClock className="stat-icon" style={{ color: primaryColor }} />,
+      "netPassingYards": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "passAttempts": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "passCompletions": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "passingTDs": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "rushingYards": <FaRunning className="stat-icon" style={{ color: primaryColor }} />,
+      "rushingAttempts": <FaRunning className="stat-icon" style={{ color: primaryColor }} />,
+      "rushingTDs": <FaRunning className="stat-icon" style={{ color: primaryColor }} />,
+      "completionPercentage": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "yardsPerAttempt": <IoMdFootball className="stat-icon" style={{ color: primaryColor }} />,
+      "yardsPerCarry": <FaRunning className="stat-icon" style={{ color: primaryColor }} />,
+      "sacks": <GiWalkingBoot className="stat-icon" style={{ color: primaryColor }} />,
+      "interceptions": <FaShieldAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "interceptionYards": <FaShieldAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "interceptionTDs": <FaShieldAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "tacklesForLoss": <GiFootprint className="stat-icon" style={{ color: primaryColor }} />,
+      "fumblesRecovered": <FaShieldAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "kickReturns": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "kickReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "kickReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "puntReturns": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "puntReturnYards": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "puntReturnTDs": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "kickReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "puntReturnAverage": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "thirdDowns": <BiDownArrow className="stat-icon" style={{ color: primaryColor }} />,
+      "thirdDownConversions": <BiDownArrow className="stat-icon" style={{ color: primaryColor }} />,
+      "thirdDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: primaryColor }} />,
+      "fourthDowns": <BiDownArrow className="stat-icon" style={{ color: primaryColor }} />,
+      "fourthDownConversions": <BiDownArrow className="stat-icon" style={{ color: primaryColor }} />,
+      "fourthDownConversionPercentage": <FaPercentage className="stat-icon" style={{ color: primaryColor }} />,
+      "fumblesLost": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />,
+      "passesIntercepted": <FaExchangeAlt className="stat-icon" style={{ color: primaryColor }} />
     };
-    return iconMap[statName] || <IoMdStats className="stat-icon" style={{ color: neutralColor }} />;
+    return iconMap[statName] || <IoMdStats className="stat-icon" style={{ color: primaryColor }} />;
   };
   
   // Determine color rating for a stat value - modernized for better visual feedback
@@ -768,7 +768,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       // Use modern colors for the comparison bars
       const color1 = primaryColor;
-      const color2 = neutralColor;
+      const color2 = lightenColor(primaryColor, 30);
       
       return (
         <div className="comparison-card" key={index}>
@@ -833,8 +833,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           {teamStrengths.length > 0 && (
             <div className="strengths-card">
               <div className="analysis-header">
-                <BsLightningChargeFill className="strength-icon" />
-                <h3>Team Strengths</h3>
+                <BsLightningChargeFill className="strength-icon" style={{ color: primaryColor }} />
+                <h3 style={{ color: primaryColor }}>Team Strengths</h3>
               </div>
               <div className="analysis-items">
                 {teamStrengths.map((strength, index) => (
@@ -842,7 +842,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                     <div className="analysis-item-icon">{strength.icon}</div>
                     <div className="analysis-item-text">
                       <span className="analysis-item-name">{strength.name}</span>
-                      <span className="analysis-item-value">{strength.value}</span>
+                      <span className="analysis-item-value" style={{ color: primaryColor }}>{strength.value}</span>
                     </div>
                   </div>
                 ))}
@@ -854,7 +854,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="weaknesses-card">
               <div className="analysis-header">
                 <FaExclamationTriangle className="weakness-icon" />
-                <h3>Areas to Improve</h3>
+                <h3 style={{ color: poorColor }}>Areas to Improve</h3>
               </div>
               <div className="analysis-items">
                 {teamWeaknesses.map((weakness, index) => (
@@ -862,7 +862,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                     <div className="analysis-item-icon">{weakness.icon}</div>
                     <div className="analysis-item-text">
                       <span className="analysis-item-name">{weakness.name}</span>
-                      <span className="analysis-item-value">{weakness.value}</span>
+                      <span className="analysis-item-value" style={{ color: poorColor }}>{weakness.value}</span>
                     </div>
                   </div>
                 ))}
@@ -980,7 +980,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           onClick={() => setShowInfoCard(!showInfoCard)}
           style={{ background: secondaryColor, color: textColor, borderLeft: `3px solid ${primaryColor}` }}
         >
-          <FaInfoCircle className="button-icon" />
+          <FaInfoCircle className="button-icon" style={{ color: primaryColor }} />
           {showInfoCard ? "Hide Information" : "What Do These Stats Mean?"}
         </button>
       </div>
@@ -988,38 +988,38 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       {/* Information card */}
       {showInfoCard && (
         <div className="info-card">
-          <div className="info-card-header" style={{ borderBottom: `2px solid ${secondaryColor}` }}>
+          <div className="info-card-header" style={{ backgroundColor: primaryColor, color: contrastColor }}>
             <h3>
-              <FaInfoCircle className="card-header-icon" style={{ color: primaryColor }} />
+              <FaInfoCircle className="card-header-icon" />
               Understanding Team Statistics
             </h3>
-            <button className="close-button" onClick={() => setShowInfoCard(false)}>×</button>
+            <button className="close-button" onClick={() => setShowInfoCard(false)} style={{ color: contrastColor }}>×</button>
           </div>
           <div className="info-card-content">
             <p>These statistics represent the team's performance across various aspects of the game. Color-coded metrics highlight strengths and areas for improvement.</p>
             <div className="stat-definitions">
-              <div className="stat-definition">
+              <div className="stat-definition" style={{ borderLeft: `3px solid ${primaryColor}` }}>
                 <h4 style={{ color: primaryColor }}>
-                  <FaChartBar className="stat-icon" /> Offensive Stats
+                  <FaChartBar className="stat-icon" style={{ color: primaryColor }} /> Offensive Stats
                 </h4>
                 <p>Passing and rushing statistics show how the team moves the ball. High yardage and touchdown numbers indicate an effective offense.</p>
               </div>
-              <div className="stat-definition">
+              <div className="stat-definition" style={{ borderLeft: `3px solid ${primaryColor}` }}>
                 <h4 style={{ color: primaryColor }}>
-                  <FaShieldAlt className="stat-icon" /> Defensive Stats
+                  <FaShieldAlt className="stat-icon" style={{ color: primaryColor }} /> Defensive Stats
                 </h4>
                 <p>Sacks, interceptions, and tackles for loss demonstrate the defense's ability to disrupt opposing offenses and create turnover opportunities.</p>
               </div>
-              <div className="stat-definition">
+              <div className="stat-definition" style={{ borderLeft: `3px solid ${primaryColor}` }}>
                 <h4 style={{ color: primaryColor }}>
-                  <FaPercentage className="stat-icon" /> Efficiency Metrics
+                  <FaPercentage className="stat-icon" style={{ color: primaryColor }} /> Efficiency Metrics
                 </h4>
                 <p>Third and fourth down conversion rates show how effectively the team maintains possession in crucial situations.</p>
               </div>
             </div>
-            <div className="stat-indicators">
+            <div className="stat-indicators" style={{ borderLeft: `3px solid ${primaryColor}` }}>
               <div className="indicator-key">
-                <h4>Color Indicators</h4>
+                <h4 style={{ color: primaryColor }}>Color Indicators</h4>
                 <div className="indicator-items">
                   <div className="indicator-item">
                     <span className="indicator-color" style={{ background: excellentColor }}></span>
@@ -1045,7 +1045,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       {/* Key Performance Indicators */}
       <div className="kpi-section">
-        <h2 className="section-title">
+        <h2 className="section-title" style={{ color: primaryColor }}>
           <FaChartLine className="section-icon" style={{ color: primaryColor }} />
           Key Performance Metrics
         </h2>
@@ -1054,7 +1054,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaChartBar />
             </div>
-            <div className="kpi-value">{kpis.yardsPerGame}</div>
+            <div className="kpi-value" style={{ color: primaryColor }}>{kpis.yardsPerGame}</div>
             <div className="kpi-label">Yards per Game</div>
           </div>
           
@@ -1062,7 +1062,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaTrophy />
             </div>
-            <div className="kpi-value">{kpis.estimatedPointsPerGame}</div>
+            <div className="kpi-value" style={{ color: primaryColor }}>{kpis.estimatedPointsPerGame}</div>
             <div className="kpi-label">Est. Points per Game</div>
           </div>
           
@@ -1070,7 +1070,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaPercentage />
             </div>
-            <div className="kpi-value">{kpis.thirdDownConversionPercentage}%</div>
+            <div className="kpi-value" style={{ color: primaryColor }}>{kpis.thirdDownConversionPercentage}%</div>
             <div className="kpi-label">3rd Down Conversion</div>
           </div>
           
@@ -1080,7 +1080,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             </div>
             <div className="kpi-value" style={{ 
               color: kpis.turnoverMargin > 0 ? excellentColor : 
-                     kpis.turnoverMargin < 0 ? poorColor : textColor 
+                     kpis.turnoverMargin < 0 ? poorColor : primaryColor 
             }}>
               {kpis.turnoverMargin > 0 ? '+' : ''}{kpis.turnoverMargin}
             </div>
@@ -1091,7 +1091,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       {/* Comparison Charts */}
       <div className="comparison-section">
-        <h2 className="section-title">
+        <h2 className="section-title" style={{ color: primaryColor }}>
           <IoMdTrendingUp className="section-icon" style={{ color: primaryColor }} />
           Offensive Distribution
         </h2>
@@ -1108,9 +1108,9 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             className={`category-tab ${activeCategory === categoryKey ? 'active' : ''}`}
             onClick={() => setActiveCategory(categoryKey)}
             style={activeCategory === categoryKey ? { 
-              background: secondaryColor, 
-              color: textColor,
-              borderLeft: `3px solid ${primaryColor}`
+              background: primaryColor, 
+              color: contrastColor,
+              borderColor: primaryColor
             } : {}}
           >
             <span className="tab-icon">{categories[categoryKey].icon}</span>
@@ -1134,6 +1134,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         .team-stats {
           font-family: 'Orbitron', sans-serif;
           color: ${textColor};
+          --accent-color1: ${primaryColor};
           --primary-color: ${primaryColor};
           --secondary-color: ${secondaryColor};
           --excellent-color: ${excellentColor};
@@ -1146,6 +1147,24 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           font-family: 'Orbitron', sans-serif;
           font-weight: 600;
         }
+
+        /* Section titles with underlines */
+        .section-title::after {
+          background-color: ${primaryColor} !important;
+        }
+        
+        .team-analysis-section::after, 
+        .kpi-section::after, 
+        .comparison-section::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: ${primaryColor} !important;
+          border-radius: 1.5px;
+        }
         
         /* Modern animations */
         .stat-card, .kpi-card, .comparison-card {
@@ -1155,6 +1174,15 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         .stat-card:hover, .kpi-card:hover, .comparison-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Card styling */
+        .kpi-card::before {
+          background: ${primaryColor} !important;
+        }
+        
+        .stat-card-inner::before {
+          background: ${primaryColor} !important;
         }
         
         /* Better percentage bars */
@@ -1198,7 +1226,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         }
         
         .strengths-card {
-          border-left: 3px solid ${excellentColor};
+          border-left: 3px solid ${primaryColor} !important;
         }
         
         .weaknesses-card {
@@ -1218,7 +1246,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         }
         
         .strength-icon {
-          color: ${excellentColor};
+          color: ${primaryColor} !important;
           font-size: 1.4rem;
         }
         
@@ -1248,7 +1276,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         
         .analysis-item-icon {
           margin-right: 12px;
-          color: ${primaryColor};
+          color: ${primaryColor} !important;
           font-size: 1.2rem;
         }
         
@@ -1264,7 +1292,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         
         .analysis-item-value {
           font-weight: 600;
-          color: ${primaryColor};
+        }
+        
+        /* Category tabs */
+        .category-tab:hover {
+          border-color: ${primaryColor} !important;
+          color: ${primaryColor} !important;
         }
         
         /* Rating icons next to values */
