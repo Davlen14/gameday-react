@@ -1,6 +1,6 @@
 import React from "react";
 import { FaChartLine, FaInfoCircle } from "react-icons/fa";
-import GaugeComponent from "./GaugeComponent";
+import GaugeComponent from "./GaugeComponent"; // Using the same name as before
 
 const TeamOverview = ({ team, teamColor, year = 2024 }) => {
   // Helper function to lighten a color
@@ -39,58 +39,19 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
 
   return (
     <>
-      {/* SP+ Ratings Card */}
+      {/* SP+ Ratings Card - Using the modernized GaugeComponent */}
       <div className="dashboard-card team-ratings-card">
         <div className="card-header" style={cardHeaderStyle}>
           <FaChartLine style={{ marginRight: "12px", color: teamColor }} /> 
           SP+ Ratings
         </div>
         <div className="card-body">
-          <div className="gauges-container">
-            <GaugeComponent 
-              label="Overall" 
-              metricType="overall" 
-              teamName={team.school}
-              year={year}
-              teamColor={teamColor}
-            />
-            <GaugeComponent 
-              label="Offense" 
-              metricType="offense" 
-              teamName={team.school}
-              year={year}
-              teamColor={teamColor}
-            />
-            <GaugeComponent 
-              label="Defense" 
-              metricType="defense" 
-              teamName={team.school}
-              year={year}
-              teamColor={teamColor}
-            />
-          </div>
-          <div className="ratings-explanation">
-            <h3 style={{ color: teamColor }}>How SP+ Ratings Work</h3>
-            <p>
-              The SP+ ratings combine multiple aspects of team performance into a single composite metric.
-              <br />
-              <strong>Overall:</strong> Combines offense, defense, and special teams.
-              <br />
-              <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
-              <br />
-              <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
-            </p>
-            <p>
-              <strong>Color zones indicate performance relative to national average:</strong><br />
-              <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> | 
-              <span style={{ color: "#ffc700" }}><strong>Average</strong></span> | 
-              <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
-            </p>
-            <p>
-              <strong>National Averages (2024):</strong><br />
-              Overall: 0.55 | Offense: 27.14 | Defense: 26.61
-            </p>
-          </div>
+          {/* Using the modernized GaugeComponent that shows all metrics in one chart */}
+          <GaugeComponent 
+            teamName={team.school}
+            year={year}
+            teamColor={teamColor}
+          />
         </div>
       </div>
 
@@ -136,6 +97,33 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               </tr>
             </tbody>
           </table>
+
+          <style jsx>{`
+            .info-table {
+              width: 100%;
+              border-collapse: separate;
+              border-spacing: 0;
+            }
+
+            .info-table tr:hover {
+              background-color: ${teamColor}08;
+            }
+
+            .info-table td {
+              padding: 12px;
+              border-bottom: 1px solid #f0f0f0;
+            }
+
+            .info-table tr:last-child td {
+              border-bottom: none;
+            }
+
+            .info-table td:first-child {
+              width: 120px;
+              color: #555;
+              font-weight: 500;
+            }
+          `}</style>
         </div>
       </div>
     </>
