@@ -1,441 +1,1126 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import {
-  FaPlus,
-  FaMinus,
-  FaInfoCircle,
   FaMapMarkerAlt,
-  FaEye,
-  FaSpinner
+  FaFootballBall,
+  FaRunning,
+  FaUserFriends,
+  FaShieldAlt,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
+  FaChartBar,
+  FaInfoCircle,
+  FaFilter,
+  FaTrophy,
+  FaUniversity
 } from "react-icons/fa";
 
 const More = () => {
+  // State for all player data
+  const [playerData, setPlayerData] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedTeams, setSelectedTeams] = useState([]);
+  
+  // State for hometown heroes component
+  const [activeMetric, setActiveMetric] = useState("passingYards");
+  const [activePosition, setActivePosition] = useState("All");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [viewType, setViewType] = useState("states"); // "states" or "players"
+  const [selectedState, setSelectedState] = useState(null);
+  const [activeTab, setActiveTab] = useState("hometownHeroes");
 
-  // List of FCS conferences in preferred order
-  const fcsConferencesOrder = [
-    "Big Sky Conference",
-    "Big South Conference",
-    "Colonial Athletic Association ",
-    "Missouri Valley Football Conference",
-    "Northeast Conference",
-    "Ohio Valley Conference",
-    "Patriot League",
-    "Pioneer Football League",
-    "Southern Conference",
-    "Southland Conference",
-    "United Athletic Conference "
-  ];
-
-  // Fetch FCS teams on mount
+  // Fetch player roster data with hometown info and team data
   useEffect(() => {
-    const fetchFcsTeams = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoading(true);
-        const teamsData = await teamsService.getFCSTeams();
+        setLoading(true);
+        
+        // Fetch team data for logos and team names
+        const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
+        
+        // For now, fetching just Ohio State data
+        // In a full implementation, you might fetch multiple team rosters
+        // or have a pre-aggregated endpoint for this
+        const ohioStateRoster = await teamsService.getTeamRoster("Ohio State");
+        
+        // Add random performance stats for demonstration
+        // In a real implementation, you would fetch actual player statistics
+        const playersWithStats = ohioStateRoster.map(player => ({
+          ...player,
+          teamName: "Ohio State",
+          passingYards: player.position === 'QB' ? Math.floor(Math.random() * 3500) : Math.floor(Math.random() * 300),
+          rushingYards: ['RB', 'QB', 'WR'].includes(player.position) ? Math.floor(Math.random() * 1200) : Math.floor(Math.random() * 100),
+          receivingYards: ['WR', 'TE', 'RB'].includes(player.position) ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * 50),
+          tackles: ['LB', 'S', 'CB', 'DE', 'DT'].includes(player.position) ? Math.floor(Math.random() * 100) : Math.floor(Math.random() * 10),
+          sacks: ['DE', 'LB', 'DT'].includes(player.position) ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 2),
+          interceptions: ['CB', 'S', 'LB'].includes(player.position) ? Math.floor(Math.random() * 8) : 0
+        }));
+        
+        setPlayerData(playersWithStats);
       } catch (err) {
-        console.error("Error fetching FCS teams:", err);
-        setError("Failed to load FCS teams...");
+        console.error("Error fetching data:", err);
+        setError("Failed to load player data. Please try again later.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-
-    fetchFcsTeams();
+    
+    fetchData();
   }, []);
-
-  // Group teams by conference and sort according to predefined order
-  const groupByConference = (teams) => {
-    const grouped = teams.reduce((acc, team) => {
-      const conference = team.conference || "Independent";
-      if (!acc[conference]) acc[conference] = [];
-      acc[conference].push(team);
-      return acc;
-    }, {});
-
-    const sortedConferences = {};
-    // First add conferences in our desired order
-    fcsConferencesOrder.forEach((conf) => {
-      if (grouped[conf]) {
-        sortedConferences[conf] = grouped[conf].sort((a, b) =>
-          a.school.localeCompare(b.school)
-        );
+  
+  // Group and analyze player data by state
+  const statePerformanceData = useMemo(() => {
+    if (!playerData.length) return [];
+    
+    // Group players by homeState
+    const stateGroups = {};
+    
+    playerData.forEach(player => {
+      // Skip players with no homeState
+      if (!player.homeState) return;
+      
+      // Filter by position if needed
+      if (activePosition !== 'All' && player.position !== activePosition) return;
+      
+      if (!stateGroups[player.homeState]) {
+        stateGroups[player.homeState] = {
+          state: player.homeState,
+          playerCount: 0,
+          totalPassingYards: 0,
+          totalRushingYards: 0,
+          totalReceivingYards: 0,
+          totalTackles: 0,
+          totalSacks: 0,
+          totalInterceptions: 0,
+          players: []
+        };
       }
+      
+      // Add to state totals
+      stateGroups[player.homeState].playerCount++;
+      stateGroups[player.homeState].totalPassingYards += player.passingYards || 0;
+      stateGroups[player.homeState].totalRushingYards += player.rushingYards || 0;
+      stateGroups[player.homeState].totalReceivingYards += player.receivingYards || 0;
+      stateGroups[player.homeState].totalTackles += player.tackles || 0;
+      stateGroups[player.homeState].totalSacks += player.sacks || 0;
+      stateGroups[player.homeState].totalInterceptions += player.interceptions || 0;
+      
+      // Add player to state's players array
+      stateGroups[player.homeState].players.push({
+        id: player.id,
+        name: `${player.firstName} ${player.lastName}`.trim(),
+        position: player.position,
+        teamName: player.teamName,
+        homeCity: player.homeCity,
+        homeState: player.homeState,
+        passingYards: player.passingYards,
+        rushingYards: player.rushingYards,
+        receivingYards: player.receivingYards,
+        tackles: player.tackles,
+        sacks: player.sacks,
+        interceptions: player.interceptions
+      });
     });
-    // Then add any remaining conferences that aren't in our list
-    Object.keys(grouped).forEach((conf) => {
-      if (!sortedConferences[conf]) {
-        sortedConferences[conf] = grouped[conf].sort((a, b) =>
-          a.school.localeCompare(b.school)
-        );
-      }
+    
+    // Calculate per-player averages
+    Object.values(stateGroups).forEach(state => {
+      state.avgPassingYards = state.playerCount ? state.totalPassingYards / state.playerCount : 0;
+      state.avgRushingYards = state.playerCount ? state.totalRushingYards / state.playerCount : 0;
+      state.avgReceivingYards = state.playerCount ? state.totalReceivingYards / state.playerCount : 0;
+      state.avgTackles = state.playerCount ? state.totalTackles / state.playerCount : 0;
+      state.avgSacks = state.playerCount ? state.totalSacks / state.playerCount : 0;
+      state.avgInterceptions = state.playerCount ? state.totalInterceptions / state.playerCount : 0;
     });
-    return sortedConferences;
+    
+    // Convert to array for easier sorting/mapping
+    return Object.values(stateGroups);
+  }, [playerData, activePosition]);
+  
+  // Sort state data by the selected metric
+  const sortedStateData = useMemo(() => {
+    if (!statePerformanceData.length) return [];
+    
+    const metricMap = {
+      passingYards: 'totalPassingYards',
+      rushingYards: 'totalRushingYards',
+      receivingYards: 'totalReceivingYards',
+      tackles: 'totalTackles',
+      sacks: 'totalSacks',
+      interceptions: 'totalInterceptions',
+      playerCount: 'playerCount'
+    };
+    
+    const sortMetric = metricMap[activeMetric] || 'totalPassingYards';
+    
+    return [...statePerformanceData].sort((a, b) => {
+      return sortDirection === 'desc' 
+        ? b[sortMetric] - a[sortMetric]
+        : a[sortMetric] - b[sortMetric];
+    });
+  }, [statePerformanceData, activeMetric, sortDirection]);
+  
+  // Get players from the selected state
+  const playersFromSelectedState = useMemo(() => {
+    if (!selectedState || !statePerformanceData.length) return [];
+    
+    const stateData = statePerformanceData.find(s => s.state === selectedState);
+    if (!stateData) return [];
+    
+    const metricMap = {
+      passingYards: 'passingYards',
+      rushingYards: 'rushingYards',
+      receivingYards: 'receivingYards',
+      tackles: 'tackles',
+      sacks: 'sacks',
+      interceptions: 'interceptions'
+    };
+    
+    const sortMetric = metricMap[activeMetric] || 'passingYards';
+    
+    return [...stateData.players].sort((a, b) => {
+      return sortDirection === 'desc' 
+        ? b[sortMetric] - a[sortMetric]
+        : a[sortMetric] - b[sortMetric];
+    });
+  }, [selectedState, statePerformanceData, activeMetric, sortDirection]);
+  
+  // Color scale based on percentile ranking
+  const getHeatColor = (value, metric) => {
+    if (!value || value === 0) return 'transparent';
+    
+    // Get all values for this metric
+    const metricValues = sortedStateData.map(state => {
+      if (metric === 'totalPassingYards') return state.totalPassingYards;
+      if (metric === 'totalRushingYards') return state.totalRushingYards;
+      if (metric === 'totalReceivingYards') return state.totalReceivingYards;
+      if (metric === 'totalTackles') return state.totalTackles;
+      if (metric === 'totalSacks') return state.totalSacks;
+      if (metric === 'totalInterceptions') return state.totalInterceptions;
+      if (metric === 'playerCount') return state.playerCount;
+      return 0;
+    }).filter(v => v > 0);
+    
+    // Sort values to find percentiles
+    metricValues.sort((a, b) => a - b);
+    const percentile = metricValues.findIndex(v => v >= value) / metricValues.length;
+    
+    // Create a color gradient
+    if (percentile < 0.25) return 'rgba(200, 230, 255, 0.2)'; // Very Light Blue
+    if (percentile < 0.5) return 'rgba(100, 180, 255, 0.3)';  // Light Blue
+    if (percentile < 0.75) return 'rgba(0, 120, 255, 0.4)';   // Medium Blue
+    return 'rgba(0, 60, 200, 0.5)';                         // Dark Blue
   };
-
-  // Handle adding or removing teams from the selected list
-  const handleTeamSelect = (team) => {
-    setSelectedTeams((prevSelected) => {
-      // Remove if already selected
-      if (prevSelected.find((t) => t.id === team.id)) {
-        return prevSelected.filter((t) => t.id !== team.id);
-      } else {
-        // Limit to 4 teams for comparison
-        if (prevSelected.length < 4) {
-          return [...prevSelected, team];
-        } else {
-          alert("You can only compare up to 4 teams.");
-          return prevSelected;
-        }
-      }
-    });
+  
+  // Format numbers with commas
+  const formatNumber = (num) => {
+    if (!num && num !== 0) return 'N/A';
+    return num.toLocaleString();
   };
-
-  // Render loading state
-  if (isLoading) {
+  
+  // Toggle sort direction when clicking on a column header
+  const handleSortChange = (metric) => {
+    if (metric === activeMetric) {
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+    } else {
+      setActiveMetric(metric);
+      setSortDirection('desc');
+    }
+  };
+  
+  // Render sort direction indicator
+  const renderSortIndicator = (metric) => {
+    if (metric !== activeMetric) return <FaSort className="sort-icon" />;
+    return sortDirection === 'desc' ? <FaSortDown className="sort-icon active" /> : <FaSortUp className="sort-icon active" />;
+  };
+  
+  // Show player details for a state
+  const handleStateClick = (state) => {
+    setSelectedState(state);
+    setViewType('players');
+  };
+  
+  // Return to state view
+  const handleBackToStates = () => {
+    setSelectedState(null);
+    setViewType('states');
+  };
+  
+  // Filter by position
+  const handlePositionChange = (e) => {
+    setActivePosition(e.target.value);
+  };
+  
+  // Get all unique positions from player data
+  const positions = useMemo(() => {
+    const posSet = new Set(playerData.map(player => player.position).filter(Boolean));
+    return ['All', ...Array.from(posSet).sort()];
+  }, [playerData]);
+  
+  // Get icon for a metric
+  const getMetricIcon = (metric) => {
+    switch (metric) {
+      case 'passingYards': return <FaFootballBall className="metric-icon" />;
+      case 'rushingYards': return <FaRunning className="metric-icon" />;
+      case 'receivingYards': return <FaFootballBall className="metric-icon" />;
+      case 'tackles': return <FaShieldAlt className="metric-icon" />;
+      case 'sacks': return <FaShieldAlt className="metric-icon" />;
+      case 'interceptions': return <FaShieldAlt className="metric-icon" />;
+      case 'playerCount': return <FaUserFriends className="metric-icon" />;
+      default: return <FaChartBar className="metric-icon" />;
+    }
+  };
+  
+  // Format metric name for display
+  const formatMetricName = (metric) => {
+    const nameMap = {
+      passingYards: 'Passing Yards',
+      rushingYards: 'Rushing Yards',
+      receivingYards: 'Receiving Yards',
+      tackles: 'Tackles',
+      sacks: 'Sacks',
+      interceptions: 'Interceptions',
+      playerCount: 'Player Count'
+    };
+    return nameMap[metric] || metric;
+  };
+  
+  // Loading state
+  if (loading) {
     return (
-      <div className="fcs-loading">
-        <FaSpinner className="fcs-spinner" />
-        <p>Loading FCS teams...</p>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading data...</p>
       </div>
     );
   }
-
-  // Render error state
+  
+  // Error state
   if (error) {
     return (
-      <div className="fcs-error">
-        <FaInfoCircle size={40} />
+      <div className="error-container">
+        <FaInfoCircle className="error-icon" />
         <p>{error}</p>
       </div>
     );
   }
 
-  const groupedTeams = groupByConference(teams);
-
   return (
-    <div className="fcs-container">
-      {/* Modern CSS for FCS teams page with custom color scheme */}
-      <style>{`
-        :root {
-          --primary-color: #ffffff;
-          --accent-color: #D4001C;
-          --text-color: #333333;
-          --background-color: #ffffff;
-          --border-color: #dddddd;
-        }
-        
-        .fcs-container {
-          width: 100%;
-          max-width: 100%;
+    <div className="more-container">
+      <div className="more-header">
+        <h1>Tools & Analysis</h1>
+        <p>Advanced tools and specialized analysis for college football</p>
+      </div>
+      
+      <div className="more-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'hometownHeroes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('hometownHeroes')}
+        >
+          <FaMapMarkerAlt className="tab-icon" />
+          <span>Hometown Heroes</span>
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'rankings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('rankings')}
+        >
+          <FaTrophy className="tab-icon" />
+          <span>Rankings</span>
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'academicStats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('academicStats')}
+        >
+          <FaUniversity className="tab-icon" />
+          <span>Academic Stats</span>
+        </button>
+      </div>
+      
+      {activeTab === 'hometownHeroes' && (
+        <div className="hometown-heroes-section">
+          <div className="section-header">
+            <div className="header-content">
+              <FaMapMarkerAlt className="section-icon" />
+              <div className="header-text">
+                <h2>Hometown Heroes Analysis</h2>
+                <p>Geographic performance analysis showing which states produce the best talent</p>
+              </div>
+            </div>
+            
+            <div className="controls">
+              <div className="filter-control">
+                <label>Filter by Position:</label>
+                <select value={activePosition} onChange={handlePositionChange}>
+                  {positions.map(pos => (
+                    <option key={pos} value={pos}>{pos}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="metric-control">
+                <label>Performance Metric:</label>
+                <select 
+                  value={activeMetric} 
+                  onChange={(e) => {
+                    setActiveMetric(e.target.value);
+                    setSortDirection('desc');
+                  }}
+                >
+                  <option value="passingYards">Passing Yards</option>
+                  <option value="rushingYards">Rushing Yards</option>
+                  <option value="receivingYards">Receiving Yards</option>
+                  <option value="tackles">Tackles</option>
+                  <option value="sacks">Sacks</option>
+                  <option value="interceptions">Interceptions</option>
+                  <option value="playerCount">Number of Players</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div className="info-card">
+            <FaInfoCircle className="info-icon" />
+            <div className="info-content">
+              <h3>Geographic Performance Analysis</h3>
+              <p>
+                This visualization shows which states produce the best performing players based on 
+                {' '}<strong>{formatMetricName(activeMetric)}</strong>{activePosition !== 'All' ? ` for ${activePosition}s` : ''}.
+                Click on a state to see detailed player stats.
+              </p>
+            </div>
+          </div>
+          
+          {viewType === 'states' && (
+            <div className="performance-table-container">
+              <table className="performance-table">
+                <thead>
+                  <tr>
+                    <th className="rank-col">#</th>
+                    <th className="state-col">State</th>
+                    <th 
+                      className={`metric-col ${activeMetric === 'playerCount' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('playerCount')}
+                    >
+                      <FaUserFriends className="col-icon" />
+                      <span>Players</span>
+                      {renderSortIndicator('playerCount')}
+                    </th>
+                    <th 
+                      className={`metric-col ${activeMetric === 'passingYards' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('passingYards')}
+                    >
+                      <FaFootballBall className="col-icon" />
+                      <span>Passing</span>
+                      {renderSortIndicator('passingYards')}
+                    </th>
+                    <th 
+                      className={`metric-col ${activeMetric === 'rushingYards' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('rushingYards')}
+                    >
+                      <FaRunning className="col-icon" />
+                      <span>Rushing</span>
+                      {renderSortIndicator('rushingYards')}
+                    </th>
+                    <th 
+                      className={`metric-col ${activeMetric === 'tackles' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('tackles')}
+                    >
+                      <FaShieldAlt className="col-icon" />
+                      <span>Tackles</span>
+                      {renderSortIndicator('tackles')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedStateData.length > 0 ? (
+                    sortedStateData.map((state, index) => (
+                      <tr 
+                        key={state.state} 
+                        className="state-row"
+                        onClick={() => handleStateClick(state.state)}
+                      >
+                        <td className="rank-col">{index + 1}</td>
+                        <td className="state-col">
+                  <Link to={`/state/${state.state}`} className="state-name-cell">
+                    <FaMapMarkerAlt className="state-icon" />
+                    <span>{state.state}</span>
+                  </Link>
+                        </td>
+                        <td 
+                          className="metric-col" 
+                          style={{ backgroundColor: getHeatColor(state.playerCount, 'playerCount') }}
+                        >
+                          {state.playerCount}
+                        </td>
+                        <td 
+                          className="metric-col" 
+                          style={{ backgroundColor: getHeatColor(state.totalPassingYards, 'totalPassingYards') }}
+                        >
+                          {formatNumber(state.totalPassingYards)}
+                        </td>
+                        <td 
+                          className="metric-col" 
+                          style={{ backgroundColor: getHeatColor(state.totalRushingYards, 'totalRushingYards') }}
+                        >
+                          {formatNumber(state.totalRushingYards)}
+                        </td>
+                        <td 
+                          className="metric-col" 
+                          style={{ backgroundColor: getHeatColor(state.totalTackles, 'totalTackles') }}
+                        >
+                          {formatNumber(state.totalTackles)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="no-data">No data available for selected criteria</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+          
+          {viewType === 'players' && selectedState && (
+            <div className="players-view">
+              <div className="back-navigation">
+                <button className="back-button" onClick={handleBackToStates}>
+                  ← Back to All States
+                </button>
+                <h3>{selectedState} Players - {formatMetricName(activeMetric)}</h3>
+              </div>
+              
+              <div className="performance-table-container">
+                <table className="performance-table">
+                  <thead>
+                    <tr>
+                      <th className="rank-col">#</th>
+                      <th className="player-col">Player</th>
+                      <th className="position-col">Pos</th>
+                      <th className="team-col">Team</th>
+                      <th className="hometown-col">Hometown</th>
+                      <th 
+                        className={`metric-col ${activeMetric === 'passingYards' ? 'active' : ''}`}
+                        onClick={() => handleSortChange('passingYards')}
+                      >
+                        <span>Passing</span>
+                        {renderSortIndicator('passingYards')}
+                      </th>
+                      <th 
+                        className={`metric-col ${activeMetric === 'rushingYards' ? 'active' : ''}`}
+                        onClick={() => handleSortChange('rushingYards')}
+                      >
+                        <span>Rushing</span>
+                        {renderSortIndicator('rushingYards')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {playersFromSelectedState.map((player, index) => (
+                      <tr key={player.id} className="player-row">
+                        <td className="rank-col">{index + 1}</td>
+                        <td className="player-col">
+                          <Link to={`/player/${player.id}`} className="player-link">
+                            {player.name}
+                          </Link>
+                        </td>
+                        <td className="position-col">{player.position || 'N/A'}</td>
+                        <td className="team-col">{player.teamName}</td>
+                        <td className="hometown-col">{player.homeCity}, {player.homeState}</td>
+                        <td className="metric-col">{formatNumber(player.passingYards)}</td>
+                        <td className="metric-col">{formatNumber(player.rushingYards)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          <div className="summary-cards">
+            <div className="summary-card">
+              <div className="card-header">
+                <FaMapMarkerAlt className="card-icon" />
+                <h3>Top State</h3>
+              </div>
+              <div className="card-content">
+                {sortedStateData.length > 0 ? (
+                  <>
+                    <div className="top-state">{sortedStateData[0].state}</div>
+                    <div className="top-state-metrics">
+                      {getMetricIcon(activeMetric)}
+                      <span className="top-metric">
+                        {formatNumber(activeMetric === 'playerCount' 
+                          ? sortedStateData[0].playerCount 
+                          : sortedStateData[0][`total${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)}`]
+                        )}
+                      </span>
+                      <span className="metric-label">{formatMetricName(activeMetric)}</span>
+                    </div>
+                    <div className="player-count">
+                      <FaUserFriends className="count-icon" />
+                      {sortedStateData[0].playerCount} players
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data">No data available</div>
+                )}
+              </div>
+            </div>
+            
+            <div className="summary-card">
+              <div className="card-header">
+                <FaChartBar className="card-icon" />
+                <h3>Performance Insights</h3>
+              </div>
+              <div className="card-content">
+                {sortedStateData.length > 0 ? (
+                  <ul className="insights-list">
+                    <li>
+                      {sortedStateData[0].state} leads in {formatMetricName(activeMetric).toLowerCase()} 
+                      with {formatNumber(sortedStateData[0][`total${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)}`])}
+                    </li>
+                    <li>
+                      Top 3 states account for {formatNumber(
+                        sortedStateData.slice(0, 3).reduce((sum, state) => 
+                          sum + state[`total${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)}`], 0)
+                      )} {formatMetricName(activeMetric).toLowerCase()}
+                    </li>
+                    <li>
+                      {sortedStateData.reduce((acc, state) => state.playerCount > acc ? state.state : acc, "")} 
+                      has the most players ({sortedStateData.reduce((acc, state) => 
+                        state.playerCount > acc ? state.playerCount : acc, 0)})
+                    </li>
+                  </ul>
+                ) : (
+                  <div className="no-data">No insights available</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'rankings' && (
+        <div className="coming-soon-section">
+          <h2>Rankings Feature Coming Soon</h2>
+          <p>This feature is currently under development.</p>
+        </div>
+      )}
+      
+      {activeTab === 'academicStats' && (
+        <div className="coming-soon-section">
+          <h2>Academic Stats Feature Coming Soon</h2>
+          <p>This feature is currently under development.</p>
+        </div>
+      )}
+      
+      <style jsx="true">{`
+        .more-container {
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 2rem;
-          font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
-          color: var(--text-color);
-          background-color: var(--background-color);
+          padding: 20px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
         
-        .fcs-header {
-          text-align: center;
-          margin-bottom: 3rem;
+        .more-header {
+          margin-bottom: 30px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        
+        .more-header h1 {
           font-size: 2.5rem;
+          margin-bottom: 10px;
           font-weight: 700;
-          color: var(--text-color);
-          letter-spacing: -0.5px;
+          color: #333;
         }
         
-        .fcs-conference-section {
-          margin-bottom: 3.5rem;
-          background: var(--primary-color);
-          border-radius: 12px;
-          padding: 2rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-          transition: transform 0.2s;
-          border: 1px solid var(--border-color);
+        .more-header p {
+          font-size: 1.1rem;
+          color: #666;
         }
         
-        .fcs-conference-section:hover {
-          transform: translateY(-3px);
+        .more-tabs {
+          display: flex;
+          margin-bottom: 30px;
+          border-bottom: 1px solid #eaeaea;
+          overflow-x: auto;
+          scrollbar-width: none;
         }
         
-        .fcs-conference-header {
+        .more-tabs::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .tab-button {
           display: flex;
           align-items: center;
-          margin-bottom: 1.5rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid var(--border-color);
+          padding: 12px 24px;
+          margin-right: 10px;
+          background: transparent;
+          border: none;
+          border-bottom: 3px solid transparent;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #666;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
         }
         
-        .fcs-conference-logo {
-          width: 70px;
-          height: 70px;
-          margin-right: 1.5rem;
-          object-fit: contain;
-          padding: 0.5rem;
-          filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        .tab-button:hover {
+          color: #333;
+          border-bottom-color: #ddd;
         }
         
-        .fcs-conference-title {
+        .tab-button.active {
+          color: #0066cc;
+          border-bottom-color: #0066cc;
+        }
+        
+        .tab-icon {
+          margin-right: 8px;
+          font-size: 1.1rem;
+        }
+        
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+        
+        .header-content {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+        
+        .section-icon {
           font-size: 1.8rem;
+          margin-right: 15px;
+          color: #0066cc;
+          background-color: rgba(0, 102, 204, 0.1);
+          padding: 10px;
+          border-radius: 50%;
+        }
+        
+        .header-text h2 {
+          font-size: 1.8rem;
+          margin-bottom: 5px;
           font-weight: 700;
-          margin: 0;
-          color: var(--accent-color);
+          color: #333;
         }
         
-        .fcs-teams-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-          gap: 1.5rem;
+        .header-text p {
+          color: #666;
+          font-size: 1rem;
         }
         
-        .fcs-team-card {
-          background: var(--primary-color);
-          border-radius: 10px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-          padding: 1.5rem 1rem;
-          text-align: center;
-          transition: all 0.3s ease;
-          border: 1px solid var(--border-color);
+        .controls {
+          display: flex;
+          gap: 15px;
+          margin-bottom: 15px;
+          flex-wrap: wrap;
+        }
+        
+        .filter-control, .metric-control {
           display: flex;
           flex-direction: column;
-          height: 100%;
         }
         
-        .fcs-team-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-          border: 1px solid var(--accent-color);
+        .filter-control label, .metric-control label {
+          margin-bottom: 5px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #666;
         }
         
-        .fcs-team-logo-container {
-          width: 100%;
-          height: 150px;
+        .filter-control select, .metric-control select {
+          padding: 8px 12px;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-size: 0.95rem;
+          background-color: white;
+          min-width: 180px;
+          cursor: pointer;
+        }
+        
+        .filter-control select:focus, .metric-control select:focus {
+          outline: none;
+          border-color: #0066cc;
+          box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+        }
+        
+        .info-card {
           display: flex;
-          justify-content: center;
+          align-items: flex-start;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 25px;
+          border-left: 4px solid #0066cc;
+        }
+        
+        .info-icon {
+          color: #0066cc;
+          font-size: 1.2rem;
+          margin-right: 15px;
+          margin-top: 3px;
+        }
+        
+        .info-content h3 {
+          margin: 0 0 8px 0;
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .info-content p {
+          margin: 0;
+          color: #555;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+        
+        .performance-table-container {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+          margin-bottom: 30px;
+        }
+        
+        .performance-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        .performance-table th {
+          background-color: #f8f9fa;
+          padding: 12px 15px;
+          text-align: left;
+          font-weight: 600;
+          color: #555;
+          border-bottom: 1px solid #eaeaea;
+          position: sticky;
+          top: 0;
+        }
+        
+        .performance-table th.metric-col {
+          cursor: pointer;
+          user-select: none;
+          transition: background-color 0.15s ease;
+        }
+        
+        .performance-table th.metric-col:hover {
+          background-color: #eef2f6;
+        }
+        
+        .performance-table th.metric-col.active {
+          color: #0066cc;
+          background-color: #eef2f6;
+        }
+        
+        .performance-table th .col-icon {
+          margin-right: 6px;
+          font-size: 0.9rem;
+        }
+        
+        .sort-icon {
+          margin-left: 6px;
+          font-size: 0.9rem;
+          vertical-align: middle;
+          opacity: 0.5;
+        }
+        
+        .sort-icon.active {
+          opacity: 1;
+          color: #0066cc;
+        }
+        
+        .performance-table tbody tr {
+          transition: background-color 0.15s ease;
+        }
+        
+        .performance-table tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+        
+        .state-row {
+          cursor: pointer;
+        }
+        
+        .performance-table td {
+          padding: 12px 15px;
+          border-bottom: 1px solid #f0f0f0;
+          color: #333;
+        }
+        
+        .rank-col {
+          width: 60px;
+          text-align: center;
+          font-weight: 600;
+          color: #888 !important;
+        }
+        
+        .state-col {
+          width: 160px;
+        }
+        
+        .player-link {
+          color: #0066cc;
+          text-decoration: none;
+          transition: color 0.15s ease;
+        }
+        
+        .player-link:hover {
+          color: #004c99;
+          text-decoration: underline;
+        }
+        
+        .state-name-cell {
+          display: flex;
           align-items: center;
-          margin-bottom: 1rem;
-          position: relative;
+          color: #0066cc;
+          text-decoration: none;
         }
         
-        .fcs-team-logo {
-          max-width: 90%;
-          max-height: 90%;
-          object-fit: contain;
-          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-          transition: transform 0.3s ease;
+        .state-name-cell:hover {
+          text-decoration: underline;
         }
         
-        .fcs-team-card:hover .fcs-team-logo {
-          transform: scale(1.05);
+        .state-icon {
+          color: #0066cc;
+          margin-right: 8px;
+          font-size: 0.9rem;
         }
         
-        .fcs-team-name {
+        .position-col, .team-col {
+          width: 100px;
+        }
+        
+        .metric-col {
+          width: 120px;
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+        
+        .metric-icon {
+          margin-right: 5px;
+          font-size: 0.9rem;
+          color: #0066cc;
+        }
+        
+        .no-data {
+          text-align: center;
+          color: #888;
+          padding: 30px;
+          font-size: 1rem;
+        }
+        
+        .back-navigation {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+        
+        .back-button {
+          background: none;
+          border: none;
+          color: #0066cc;
+          cursor: pointer;
+          font-size: 0.95rem;
+          padding: 5px 0;
+          margin-right: 15px;
+          transition: color 0.15s ease;
+        }
+        
+        .back-button:hover {
+          color: #004c99;
+          text-decoration: underline;
+        }
+        
+        .back-navigation h3 {
+          margin: 0;
           font-size: 1.2rem;
           font-weight: 600;
-          margin: 0 0 0.5rem;
-          color: var(--text-color);
+          color: #333;
         }
         
-        .fcs-select-button {
-          background: var(--accent-color);
-          border: none;
-          color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          margin-top: 1rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-weight: 500;
+        .summary-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 20px;
+          margin-top: 30px;
+        }
+        
+        .summary-card {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+        }
+        
+        .card-header {
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
-          width: 100%;
+          padding: 15px;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #eaeaea;
         }
         
-        .fcs-select-button:hover {
-          background: #b3001a;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(212, 0, 28, 0.3);
+        .card-icon {
+          color: #0066cc;
+          font-size: 1.1rem;
+          margin-right: 10px;
         }
         
-        .fcs-selected {
-          background: #333333;
+        .card-header h3 {
+          margin: 0;
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #333;
         }
         
-        .fcs-selected:hover {
-          background: #222222;
-          box-shadow: 0 4px 12px rgba(51, 51, 51, 0.3);
+        .card-content {
+          padding: 15px;
         }
         
-        .fcs-team-location {
-          margin-top: 0.75rem;
+        .top-state {
+          font-size: 1.8rem;
+          font-weight: 700;
+          color: #333;
+          margin-bottom: 10px;
+        }
+        
+        .top-state-metrics {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+        
+        .top-metric {
+          font-size: 1.4rem;
+          font-weight: 600;
+          color: #0066cc;
+          margin: 0 8px;
+          font-variant-numeric: tabular-nums;
+        }
+        
+        .metric-label {
           font-size: 0.9rem;
-          color: #6b7280;
+          color: #666;
+        }
+        
+        .player-count {
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
+          color: #666;
         }
         
-        .fcs-team-links {
-          margin-top: 0.75rem;
-          display: flex;
-          justify-content: center;
+        .count-icon {
+          margin-right: 6px;
+          color: #0066cc;
         }
         
-        .fcs-view-link {
-          color: var(--accent-color);
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.2s ease;
-          padding: 0.35rem 0.75rem;
-          border-radius: 6px;
+        .insights-list {
+          list-style-type: none;
+          padding: 0;
+          margin: 0;
         }
         
-        .fcs-view-link:hover {
-          color: #b3001a;
-          background: rgba(212, 0, 28, 0.1);
-          transform: translateY(-2px);
+        .insights-list li {
+          position: relative;
+          padding: 8px 0 8px 25px;
+          border-bottom: 1px solid #f5f5f5;
+          color: #555;
+          line-height: 1.5;
         }
         
-        .fcs-loading, 
-        .fcs-error {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 60vh;
+        .insights-list li:before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 12px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: #0066cc;
+        }
+        
+        .insights-list li:last-child {
+          border-bottom: none;
+        }
+        
+        .coming-soon-section {
           text-align: center;
-          color: var(--text-color);
-          font-size: 1.2rem;
+          padding: 60px 0;
+          color: #666;
         }
         
-        .fcs-error {
-          color: var(--accent-color);
+        .coming-soon-section h2 {
+          font-size: 1.6rem;
+          margin-bottom: 15px;
+          color: #333;
         }
         
-        .fcs-spinner {
-          animation: spin 1s linear infinite;
-          font-size: 2rem;
-          margin-bottom: 1rem;
-          color: var(--accent-color);
+        /* Loading and Error States */
+        .loading-container, .error-container {
+          text-align: center;
+          padding: 60px 0;
+        }
+        
+        .loading-spinner {
+          display: inline-block;
+          width: 50px;
+          height: 50px;
+          border: 3px solid rgba(0, 102, 204, 0.2);
+          border-radius: 50%;
+          border-top-color: #0066cc;
+          animation: spin 1s ease-in-out infinite;
+          margin-bottom: 20px;
         }
         
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          to { transform: rotate(360deg); }
         }
         
-        /* Responsive adjustments to fill screen */
-        @media (max-width: 1440px) {
-          .fcs-teams-grid {
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-            gap: 1rem;
-          }
+        .error-icon {
+          color: #e74c3c;
+          font-size: 2rem;
+          margin-bottom: 15px;
         }
         
-        @media (max-width: 1024px) {
-          .fcs-teams-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-          }
-        }
-        
+        /* Responsive adjustments */
         @media (max-width: 768px) {
-          .fcs-teams-grid {
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 0.8rem;
+          .section-header {
+            flex-direction: column;
           }
           
-          .fcs-conference-section {
-            padding: 1.5rem;
+          .controls {
+            width: 100%;
           }
           
-          .fcs-team-logo-container {
-            height: 120px;
+          .summary-cards {
+            grid-template-columns: 1fr;
           }
           
-          .fcs-header {
-            font-size: 2rem;
+          .performance-table-container {
+            overflow-x: auto;
+          }
+          
+          .performance-table {
+            min-width: 700px;
           }
         }
       `}</style>
-
-      <h2 className="fcs-header">FCS Teams</h2>
-      
-      {Object.entries(groupedTeams).map(([conference, confTeams]) => (
-        <div key={conference} className="fcs-conference-section">
-          <div className="fcs-conference-header">
-            <img
-              src={`/photos/${conference.replace(/\s/g, "_")}.png`}
-              alt={conference}
-              className="fcs-conference-logo"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/photos/fcs.png";
-              }}
-            />
-            <h3 className="fcs-conference-title">{conference}</h3>
-          </div>
-          
-          <div className="fcs-teams-grid">
-            {confTeams.map((team) => (
-              <div key={team.id} className="fcs-team-card">
-                <div className="fcs-team-logo-container">
-                  <img
-                    src={team.logos?.[0] || "/photos/default_team.png"}
-                    alt={team.school}
-                    className="fcs-team-logo"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/photos/default_team.png";
-                    }}
-                  />
-                </div>
-                
-                <p className="fcs-team-name">{team.school}</p>
-                
-                <div className="fcs-team-location">
-                  <FaMapMarkerAlt size={12} />
-                  {team.location?.city}, {team.location?.state}
-                </div>
-                
-                <div className="fcs-team-links">
-                  <Link to={`/teams/${team.id}`} className="fcs-view-link">
-                    <FaEye size={14} /> View Team
-                  </Link>
-                </div>
-                
-                <button
-                  className={`fcs-select-button ${
-                    selectedTeams.find((t) => t.id === team.id) ? "fcs-selected" : ""
-                  }`}
-                  onClick={() => handleTeamSelect(team)}
-                >
-                  {selectedTeams.find((t) => t.id === team.id) ? (
-                    <>
-                      <FaMinus size={14} /> Remove
-                    </>
-                  ) : (
-                    <>
-                      <FaPlus size={14} /> Compare
-                    </>
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
     </div>
   );
 };
