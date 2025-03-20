@@ -368,16 +368,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         })}
       </div>
       
-      {/* Add descriptive text */}
-      <div className="metrics-explanation">
-        <h4>Understanding SP+ Metrics</h4>
-        <p>
-          <strong>Overall:</strong> Combined team performance rating<br />
-          <strong>Offense:</strong> Higher values indicate better scoring efficiency<br />
-          <strong>Defense:</strong> Lower values indicate stronger defensive performance
-        </p>
-      </div>
-      
       <style jsx>{`
         .modern-radar-chart {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -469,21 +459,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           font-weight: 700;
         }
         
-        .metrics-explanation {
-          background-color: #f9f9f9;
-          border-radius: 8px;
-          padding: 1rem;
-          font-size: 14px;
-          line-height: 1.5;
-          color: #555;
-          width: 100%;
-        }
-        
-        .metrics-explanation h4 {
-          margin-top: 0;
-          margin-bottom: 0.75rem;
-          color: #333;
-        }
+
         
         .loading-spinner {
           width: 40px;
