@@ -56,6 +56,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [showInfoCard, setShowInfoCard] = useState(false);
   const [categories, setCategories] = useState({});
   const [kpis, setKpis] = useState(null);
+  const [rawData, setRawData] = useState(null);
 
   // Default to a neutral blue if no team color is provided (changed from red)
   const accentColor = teamColor || "#9e9e9e";
@@ -101,51 +102,90 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
-  // Helper function to safely get stat value, memoized to avoid unnecessary recalculations
+  // IMPROVED: Helper function to safely get stat value - fixed to properly handle string values
   const getStatValue = useCallback((name) => {
     const stat = stats.find(s => s && s.statName === name);
-    return stat ? Number(stat.statValue) : 0;
+    if (!stat) return 0;
+    return typeof stat.statValue === 'string' ? 
+      parseFloat(stat.statValue) || 0 : 
+      (typeof stat.statValue === 'number' ? stat.statValue : 0);
   }, [stats]);
 
-  // Utility functions for precise calculations
+  // IMPROVED: Utility functions for precise calculations with better error handling
   const calculatePercentage = (numerator, denominator) => {
-    if (!denominator || denominator === 0) return 0;
-    return Number(((numerator / denominator) * 100).toFixed(1));
+    if (!denominator || denominator === 0 || isNaN(numerator) || isNaN(denominator)) return 0;
+    const result = (numerator / denominator) * 100;
+    return isNaN(result) ? 0 : Number(result.toFixed(1));
   };
 
   const calculateRatio = (numerator, denominator) => {
-    if (!denominator || denominator === 0) return 0;
-    return Number((numerator / denominator).toFixed(1));
+    if (!denominator || denominator === 0 || isNaN(numerator) || isNaN(denominator)) return 0;
+    const result = numerator / denominator;
+    return isNaN(result) ? 0 : Number(result.toFixed(1));
   };
 
-  // Fetch team stats from the API
+  // IMPROVED: Fetch team stats from the API with better error handling
   useEffect(() => {
     const fetchTeamStats = async () => {
       try {
         setLoading(true);
         const data = await teamsService.getTeamStats(teamName, year);
+        setRawData(data); // Store raw data for debugging
         
-        if (Array.isArray(data)) {
-          const statsWithParsedValues = data.map(stat => ({
-            ...stat,
-            statValue: isNaN(Number(stat.statValue)) ? stat.statValue : Number(stat.statValue)
-          }));
+        if (Array.isArray(data) && data.length > 0) {
+          // Convert all string numeric values to actual numbers
+          const statsWithParsedValues = data.map(stat => {
+            let parsedValue = stat.statValue;
+            
+            // Try to convert string values to numbers
+            if (typeof parsedValue === 'string') {
+              const numericValue = parseFloat(parsedValue);
+              if (!isNaN(numericValue)) {
+                parsedValue = numericValue;
+              }
+            }
+            
+            return {
+              ...stat,
+              statValue: parsedValue
+            };
+          });
+          
           setStats(statsWithParsedValues);
-          console.log("Stats fetched successfully:", statsWithParsedValues);
+          console.log("Stats parsed successfully:", statsWithParsedValues);
         } else if (data && typeof data === 'object') {
-          const statsArray = Object.keys(data).map(key => ({
-            statName: key,
-            statValue: isNaN(Number(data[key])) ? data[key] : Number(data[key])
-          }));
+          const statsArray = Object.keys(data).map(key => {
+            let parsedValue = data[key];
+            
+            // Try to convert string values to numbers
+            if (typeof parsedValue === 'string') {
+              const numericValue = parseFloat(parsedValue);
+              if (!isNaN(numericValue)) {
+                parsedValue = numericValue;
+              }
+            }
+            
+            return {
+              statName: key,
+              statValue: parsedValue
+            };
+          });
+          
           setStats(statsArray);
           console.log("Stats converted to array:", statsArray);
         } else {
-          console.error('Unexpected data format:', data);
+          console.error('Unexpected data format or empty data:', data);
+          if (!data || data.length === 0) {
+            setError("No statistics data available for this team.");
+          } else {
+            setError("Received unexpected data format from API.");
+          }
           setStats([]);
         }
       } catch (err) {
         console.error("Error fetching team stats:", err);
         setError(err.message || "Error fetching team stats.");
+        setStats([]);
       } finally {
         setLoading(false);
       }
@@ -156,45 +196,45 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }
   }, [teamName, year]);
 
-  // Calculate key performance indicators (KPIs)
+  // IMPROVED: Calculate key performance indicators (KPIs) with better error handling
   useEffect(() => {
     if (!stats || stats.length === 0) return;
     
     try {
-      const games = getStatValue("games");
-      const totalYards = getStatValue("totalYards");
-      const netPassingYards = getStatValue("netPassingYards");
-      const rushingYards = getStatValue("rushingYards");
-      const passingTDs = getStatValue("passingTDs");
-      const rushingTDs = getStatValue("rushingTDs");
-      const kickReturnTDs = getStatValue("kickReturnTDs");
-      const puntReturnTDs = getStatValue("puntReturnTDs");
-      const interceptionTDs = getStatValue("interceptionTDs");
-      const thirdDowns = getStatValue("thirdDowns");
-      const thirdDownConversions = getStatValue("thirdDownConversions");
-      const fourthDowns = getStatValue("fourthDowns");
-      const fourthDownConversions = getStatValue("fourthDownConversions");
-      const turnovers = getStatValue("turnovers");
-      const interceptions = getStatValue("interceptions");
-      const fumblesRecovered = getStatValue("fumblesRecovered");
-      const passCompletions = getStatValue("passCompletions");
-      const passAttempts = getStatValue("passAttempts");
-      const rushingAttempts = getStatValue("rushingAttempts");
+      // Get stat values with proper type conversion
+      const getNumberStat = (name) => {
+        const val = getStatValue(name);
+        return typeof val === 'number' ? val : 0;
+      };
       
-      console.log("Raw stat values:", {
-        games, totalYards, netPassingYards, rushingYards, passingTDs, rushingTDs,
-        kickReturnTDs, puntReturnTDs, interceptionTDs, thirdDowns, thirdDownConversions,
-        fourthDowns, fourthDownConversions, turnovers, interceptions, fumblesRecovered,
-        passCompletions, passAttempts, rushingAttempts
-      });
+      const games = getNumberStat("games") || 1; // Prevent division by zero
+      const totalYards = getNumberStat("totalYards");
+      const netPassingYards = getNumberStat("netPassingYards");
+      const rushingYards = getNumberStat("rushingYards");
+      const passingTDs = getNumberStat("passingTDs");
+      const rushingTDs = getNumberStat("rushingTDs");
+      const kickReturnTDs = getNumberStat("kickReturnTDs");
+      const puntReturnTDs = getNumberStat("puntReturnTDs");
+      const interceptionTDs = getNumberStat("interceptionTDs");
+      const thirdDowns = getNumberStat("thirdDowns");
+      const thirdDownConversions = getNumberStat("thirdDownConversions");
+      const fourthDowns = getNumberStat("fourthDowns");
+      const fourthDownConversions = getNumberStat("fourthDownConversions");
+      const turnovers = getNumberStat("turnovers");
+      const interceptions = getNumberStat("interceptions");
+      const fumblesRecovered = getNumberStat("fumblesRecovered");
+      const passCompletions = getNumberStat("passCompletions");
+      const passAttempts = getNumberStat("passAttempts");
+      const rushingAttempts = getNumberStat("rushingAttempts");
       
-      const yardsPerGame = games ? Math.round(totalYards / games) : 0;
+      // Calculate derived metrics
+      const yardsPerGame = Math.round(totalYards / games);
       const passingYardPercentage = totalYards ? Math.round((netPassingYards / totalYards) * 100) : 0;
       const rushingYardPercentage = totalYards ? Math.round((rushingYards / totalYards) * 100) : 0;
       
       const totalTDs = passingTDs + rushingTDs + kickReturnTDs + puntReturnTDs + interceptionTDs;
       const estimatedPoints = totalTDs * 7;
-      const estimatedPointsPerGame = games ? Math.round(estimatedPoints / games) : 0;
+      const estimatedPointsPerGame = Math.round(estimatedPoints / games);
       
       const thirdDownConversionPercentage = calculatePercentage(thirdDownConversions, thirdDowns);
       const fourthDownConversionPercentage = calculatePercentage(fourthDownConversions, fourthDowns);
@@ -207,12 +247,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const yardsPerCarry = calculateRatio(rushingYards, rushingAttempts);
       
-      const kickReturns = getStatValue("kickReturns");
-      const kickReturnYards = getStatValue("kickReturnYards");
+      const kickReturns = getNumberStat("kickReturns");
+      const kickReturnYards = getNumberStat("kickReturnYards");
       const kickReturnAverage = calculateRatio(kickReturnYards, kickReturns);
       
-      const puntReturns = getStatValue("puntReturns");
-      const puntReturnYards = getStatValue("puntReturnYards");
+      const puntReturns = getNumberStat("puntReturns");
+      const puntReturnYards = getNumberStat("puntReturnYards");
       const puntReturnAverage = calculateRatio(puntReturnYards, puntReturns);
       
       const totalOffensiveTDs = passingTDs + rushingTDs;
@@ -243,10 +283,30 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       setKpis(calculatedKpis);
     } catch (err) {
       console.error("Error calculating KPIs:", err);
+      // Set some default KPIs to prevent rendering errors
+      setKpis({
+        yardsPerGame: 0,
+        estimatedPointsPerGame: 0,
+        thirdDownConversionPercentage: 0,
+        fourthDownConversionPercentage: 0,
+        turnoverMargin: 0,
+        passingYardPercentage: 0,
+        rushingYardPercentage: 0,
+        completionPercentage: 0,
+        yardsPerAttempt: 0,
+        yardsPerCarry: 0,
+        kickReturnAverage: 0,
+        puntReturnAverage: 0,
+        passingTDPercentage: 0,
+        rushingTDPercentage: 0,
+        totalTDs: 0,
+        estimatedPoints: 0,
+        takeaways: 0
+      });
     }
   }, [stats, getStatValue]);
 
-  // Process stats into categories for display
+  // IMPROVED: Process stats into categories for display with better error handling
   useEffect(() => {
     if (!stats || stats.length === 0 || !kpis) return;
     
@@ -295,9 +355,21 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           category.stats.forEach(statName => {
             const statObj = stats.find(s => s && s.statName === statName);
             if (statObj) {
-              const statValue = isNaN(Number(statObj.statValue)) ? statObj.statValue : Number(statObj.statValue);
+              // Ensure numeric values are properly converted
+              let statValue = statObj.statValue;
+              if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
+                statValue = parseFloat(statValue);
+              }
+              
               category.statList.push({ ...statObj, statValue });
               processedStats.add(statName);
+            } else {
+              // Add empty stat placeholder to maintain layout
+              category.statList.push({ 
+                statName, 
+                statValue: 0, 
+                empty: true // Flag to identify empty stats
+              });
             }
           });
         }
@@ -305,10 +377,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       
       const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
       if (miscStats.length > 0) {
-        categoriesObj.misc.statList = miscStats.map(stat => ({
-          ...stat,
-          statValue: isNaN(Number(stat.statValue)) ? stat.statValue : Number(stat.statValue)
-        }));
+        categoriesObj.misc.statList = miscStats.map(stat => {
+          let statValue = stat.statValue;
+          if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
+            statValue = parseFloat(statValue);
+          }
+          return { ...stat, statValue };
+        });
       }
       
       // Add derived metrics to the proper categories
@@ -384,23 +459,33 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return specialCases[name] || name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
   
-  // Format stat values for display
+  // IMPROVED: Format stat values for display with better handling of edge cases
   const formatStatValue = (name, value) => {
-    if (value === null || value === undefined) return '-';
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    
     if (name === "possessionTime") {
       const totalSeconds = parseInt(value, 10);
+      if (isNaN(totalSeconds)) return value;
+      
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
       const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
-      return hours > 0 ? `${hours}h ${minutes}m ${seconds}s` : `${minutes}m ${seconds}s`;
+      
+      return hours > 0 ? 
+        `${hours}h ${minutes}m ${seconds}s` : 
+        `${minutes}m ${seconds}s`;
     }
+    
     if (name.includes("Percentage") || name.endsWith("Percent") || name.endsWith("%")) {
       return `${value}%`;
     }
-    if (typeof value === 'number' && !isNaN(value)) {
+    
+    if (typeof value === 'number') {
       if (value % 1 !== 0) return value.toFixed(1);
       if (value >= 1000) return value.toLocaleString();
+      return value.toString();
     }
+    
     return value;
   };
   
@@ -452,6 +537,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   
   // Determine color rating for a stat value
   const getRatingClass = (statName, value) => {
+    if (value === 0 || isNaN(value)) return "";
+    
     const highIsGood = [
       "netPassingYards", "passCompletions", "passingTDs", 
       "rushingYards", "rushingTDs", "totalYards", "firstDowns",
@@ -511,13 +598,19 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return {}; // Default style
   };
   
-  // Render cards for each category
+  // IMPROVED: Render cards for each category with empty state handling
   const renderCategoryCards = (category) => {
     if (!category || !category.statList) return null;
+    
     return category.statList.map((stat, index) => {
       if (!stat) return null;
+      
       const statName = stat.statName;
-      const statValue = typeof stat.statValue === 'string' ? Number(stat.statValue) : stat.statValue;
+      // Make sure we have valid numeric values for statistics
+      const statValue = typeof stat.statValue === 'string' && !isNaN(parseFloat(stat.statValue))
+        ? parseFloat(stat.statValue)
+        : (typeof stat.statValue === 'number' ? stat.statValue : 0);
+        
       const displayName = formatStatName(statName);
       const displayValue = formatStatValue(statName, statValue);
       const ratingClass = getRatingClass(statName, statValue);
@@ -531,7 +624,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               <span>{displayName}</span>
             </div>
             <div className={`stat-value ${ratingClass}`} style={valueStyle}>
-              {displayValue}
+              {stat.empty ? "N/A" : displayValue}
               {(statName === "thirdDownConversions" || statName === "fourthDownConversions") && kpis && (
                 <div className="stat-percentage">
                   <div 
@@ -557,9 +650,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     });
   };
   
-  // Render comparison cards for key metrics
+  // IMPROVED: Render comparison cards for key metrics with better handling of zero values
   const renderComparisonCards = () => {
     if (!kpis) return null;
+    
     const keyMetrics = [
       { 
         title: "Passing vs. Rushing", 
@@ -582,7 +676,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     ];
     
     return keyMetrics.map((metric, index) => {
-      if (metric.values[0] === 0 && metric.values[1] === 0) return null;
+      // Skip rendering if both values are zero or NaN
+      if ((metric.values[0] === 0 && metric.values[1] === 0) || 
+          (isNaN(metric.values[0]) && isNaN(metric.values[1]))) {
+        return null;
+      }
+      
+      // Ensure percentages are valid numbers
+      const pct1 = isNaN(metric.percentages[0]) ? 0 : metric.percentages[0];
+      const pct2 = isNaN(metric.percentages[1]) ? 0 : metric.percentages[1];
+      
       return (
         <div className="comparison-card" key={index} style={{ borderLeft: `3px solid ${accentColor}` }}>
           <div className="comparison-title" style={{ color: accentColor, fontWeight: 'bold' }}>{metric.title}</div>
@@ -595,10 +698,10 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               <div className="comparison-bar-wrapper">
                 <div 
                   className="comparison-bar first-bar"
-                  style={{ width: `${metric.percentages[0]}%`, background: accentColor }}
+                  style={{ width: `${pct1}%`, background: accentColor }}
                 ></div>
               </div>
-              <div className="comparison-percentage" style={{ color: accentColor }}>{metric.percentages[0]}%</div>
+              <div className="comparison-percentage" style={{ color: accentColor }}>{pct1}%</div>
             </div>
             
             <div className="comparison-bar-container">
@@ -609,15 +712,41 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               <div className="comparison-bar-wrapper">
                 <div 
                   className="comparison-bar second-bar"
-                  style={{ width: `${metric.percentages[1]}%`, background: accentColorDark }}
+                  style={{ width: `${pct2}%`, background: accentColorDark }}
                 ></div>
               </div>
-              <div className="comparison-percentage" style={{ color: accentColorDark }}>{metric.percentages[1]}%</div>
+              <div className="comparison-percentage" style={{ color: accentColorDark }}>{pct2}%</div>
             </div>
           </div>
         </div>
       );
     }).filter(Boolean);
+  };
+
+  // NEW: Debug button to view raw data
+  const renderDebugButton = () => {
+    const [showDebug, setShowDebug] = useState(false);
+    
+    return (
+      <div className="debug-section">
+        <button 
+          className="debug-button" 
+          onClick={() => setShowDebug(!showDebug)}
+          style={{ background: accentColor, color: contrastColor }}
+        >
+          {showDebug ? "Hide Raw Data" : "Show Raw Data (Debug)"}
+        </button>
+        
+        {showDebug && rawData && (
+          <div className="debug-data">
+            <h3>Raw API Response:</h3>
+            <pre style={{ maxHeight: '300px', overflow: 'auto' }}>
+              {JSON.stringify(rawData, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -822,6 +951,43 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       <div className="stats-grid">
         {categories[activeCategory] && renderCategoryCards(categories[activeCategory])}
       </div>
+      
+      {/* Debug button for troubleshooting */}
+      {renderDebugButton()}
+      
+      {/* Additional CSS for better display */}
+      <style>{`
+        .debug-section {
+          margin-top: 20px;
+          text-align: center;
+        }
+        
+        .debug-button {
+          padding: 8px 16px;
+          border-radius: 4px;
+          border: none;
+          cursor: pointer;
+          font-size: 14px;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+        }
+        
+        .debug-button:hover {
+          opacity: 1;
+        }
+        
+        .debug-data {
+          margin-top: 10px;
+          background: #f5f5f5;
+          border-radius: 4px;
+          padding: 10px;
+          text-align: left;
+        }
+        
+        .stat-value.excellent-value {
+          font-weight: bold;
+        }
+      `}</style>
     </div>
   );
 };
