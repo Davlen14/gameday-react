@@ -3,7 +3,8 @@
 
 .games-container {
     padding: 1.5rem;
-    max-width: 1440px;
+    max-width: 99%; /* Changed from 1440px to 99% of screen width */
+    width: 99%;
     margin: 0 auto;
     font-family: "Titillium Web", sans-serif;
     background-color: #ffffff;
@@ -479,6 +480,7 @@
 @media (max-width: 480px) {
     .games-container {
         padding: 0.75rem 0.5rem;
+        width: 98%; /* Slightly smaller on mobile for better edge appearance */
     }
     
     .games-grid {
