@@ -57,6 +57,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [categories, setCategories] = useState({});
   const [kpis, setKpis] = useState(null);
   const [rawData, setRawData] = useState(null);
+  // Moved the debug state to component level
+  const [showDebug, setShowDebug] = useState(false);
 
   // Default to a neutral blue if no team color is provided (changed from red)
   const accentColor = teamColor || "#9e9e9e";
@@ -723,10 +725,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     }).filter(Boolean);
   };
 
-  // NEW: Debug button to view raw data
-  const renderDebugButton = () => {
-    const [showDebug, setShowDebug] = useState(false);
-    
+  // FIXED: Debug section component that doesn't use hooks internally
+  const renderDebugSection = () => {
     return (
       <div className="debug-section">
         <button 
@@ -952,8 +952,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         {categories[activeCategory] && renderCategoryCards(categories[activeCategory])}
       </div>
       
-      {/* Debug button for troubleshooting */}
-      {renderDebugButton()}
+      {/* Debug section - properly implemented without hooks */}
+      {renderDebugSection()}
       
       {/* Additional CSS for better display */}
       <style>{`
