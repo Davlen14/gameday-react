@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
-import TeamPlayerStats from "./TeamPlayerStats"; // Import the Player Stats component
-import TeamStats from "./TeamStats"; // Import the Team Stats component
+import TeamPlayerStats from "./TeamPlayerStats";
+import TeamStats from "./TeamStats";
+import TeamRoster from "./TeamRoster"; // Import the separate roster component
 
 import { 
   FaMapMarkerAlt, 
@@ -24,8 +25,8 @@ import {
   FaChevronDown,
   FaChevronUp
 } from "react-icons/fa";
-import GaugeComponent from "./GaugeComponent"; // Import the separated gauge component
-import RatingsComponent from "./RatingsComponent"; // Import the RatingsComponent
+import GaugeComponent from "./GaugeComponent";
+import RatingsComponent from "./RatingsComponent";
 import "../styles/TeamDetail.css";
 
 // Loading animation component
@@ -81,18 +82,6 @@ const formatHeight = (heightInInches) => {
   return `${feet}'${remainingInches}"`;
 };
 
-// Get initials from player name
-const getInitials = (name) => {
-  if (!name) return "?";
-  
-  const names = name.split(' ');
-  if (names.length >= 2) {
-    return `${names[0][0]}${names[names.length - 1][0]}`;
-  }
-  
-  return name.substring(0, 2);
-};
-
 // Win indicator with shine effect
 const WinIndicator = () => (
   <div className="win-indicator">
@@ -113,14 +102,12 @@ const TeamDetail = () => {
   const [allTeams, setAllTeams] = useState([]);
   const [team, setTeam] = useState(null);
   const [ratings, setRatings] = useState({});
-  const [roster, setRoster] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [expandedGames, setExpandedGames] = useState({});
   const [gameStats, setGameStats] = useState({});
   const [isLoading, setIsLoading] = useState({
     team: false,
     ratings: false,
-    roster: false,
     schedule: false,
   });
   const [error, setError] = useState(null);
@@ -183,7 +170,6 @@ const TeamDetail = () => {
 
   // Function to toggle expanded game rows
   const toggleGameExpanded = (gameId) => {
-    // Fetch stats if we haven't already
     if (!gameStats[gameId]) {
       fetchGameStats(gameId);
     }
@@ -209,7 +195,6 @@ const TeamDetail = () => {
 
         await Promise.all([
           fetchRatings(foundTeam.school),
-          fetchRoster(foundTeam.school),
           fetchSchedule(foundTeam.school),
         ]);
       } catch (err) {
@@ -228,18 +213,6 @@ const TeamDetail = () => {
         console.error("Error fetching ratings:", err.message);
       } finally {
         setIsLoading((prev) => ({ ...prev, ratings: false }));
-      }
-    };
-
-    const fetchRoster = async (teamName) => {
-      try {
-        setIsLoading((prev) => ({ ...prev, roster: true }));
-        const data = await teamsService.getTeamRoster(teamName, 2024);
-        setRoster(data);
-      } catch (err) {
-        console.error("Error fetching roster:", err.message);
-      } finally {
-        setIsLoading((prev) => ({ ...prev, roster: false }));
       }
     };
 
@@ -345,7 +318,7 @@ const TeamDetail = () => {
     color: darkenColor(teamColor, 20)
   };
 
-  // UPDATED: Style for active tabs - white background with team-colored elements and subtle gray shadow
+  // Style for active tabs
   const activeTabStyle = {
     background: '#ffffff',
     color: darkenColor(teamColor, 20),
@@ -354,27 +327,14 @@ const TeamDetail = () => {
     borderBottom: `3px solid ${teamColor}`
   };
 
-  // UPDATED: Style for active tab icons
-  const activeTabIconStyle = {
-    color: teamColor
-  };
-
   // Style for tab icons
   const tabIconStyle = {
     color: darkenColor(teamColor, 10)
   };
 
-  // UPDATED: Style for player icons in roster - using team color
-  const playerIconStyle = {
-    color: teamColor,
-    backgroundColor: `${teamColor}10`,
-    padding: '8px',
-    borderRadius: '50%',
-    width: '32px',
-    height: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+  // Style for active tab icons
+  const activeTabIconStyle = {
+    color: teamColor
   };
 
   // Render the active tab content
@@ -532,74 +492,63 @@ const TeamDetail = () => {
                     return (
                       <div key={index} className="schedule-item">
                         <div className="schedule-row" onClick={() => toggleGameExpanded(game.id)}>
-                          {/* Game date/index */}
                           <div className="game-date">
                             <div className="label-text">Game {index + 1}</div>
                             <div className="date-value">{gameDate}</div>
                           </div>
                           
-                        {/* Home team */}
-                        <div className="team home-team">
-                          <img 
-                            src={game.homeLogo || getTeamLogo(game.homeTeam)} 
-                            alt={game.homeTeam}
-                            className="schedule-team-logo plain"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = "/photos/default_team.png";
-                            }}
-                          />
-                          <div className="schedule-team-name">{game.homeTeam}</div>
-                          {isCompleted && homeWinner && <WinIndicator />}
-                          {isCompleted && !homeWinner && <LossIndicator />}
-                        </div>
+                          <div className="team home-team">
+                            <img 
+                              src={game.homeLogo || getTeamLogo(game.homeTeam)} 
+                              alt={game.homeTeam}
+                              className="schedule-team-logo plain"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/photos/default_team.png";
+                              }}
+                            />
+                            <div className="schedule-team-name">{game.homeTeam}</div>
+                            {isCompleted && homeWinner && <WinIndicator />}
+                            {isCompleted && !homeWinner && <LossIndicator />}
+                          </div>
                           
-                          {/* Score */}
                           <div className="game-score">
                             {isCompleted ? (
                               <>
-                                <div className="team-score">
-                                  {game.homePoints}
-                                </div>
+                                <div className="team-score">{game.homePoints}</div>
                                 <div className="score-divider">-</div>
-                                <div className="team-score">
-                                  {game.awayPoints}
-                                </div>
+                                <div className="team-score">{game.awayPoints}</div>
                               </>
                             ) : (
                               <div className="game-time">{game.time || "TBD"}</div>
                             )}
                           </div>
                           
-                        {/* Away team */}
-                        <div className="team away-team">
-                          <img 
-                            src={game.awayLogo || getTeamLogo(game.awayTeam)} 
-                            alt={game.awayTeam}
-                            className="schedule-team-logo plain"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = "/photos/default_team.png";
-                            }}
-                          />
-                          <div className="schedule-team-name">{game.awayTeam}</div>
-                          {isCompleted && awayWinner && <WinIndicator />}
-                          {isCompleted && !awayWinner && <LossIndicator />}
-                        </div>
+                          <div className="team away-team">
+                            <img 
+                              src={game.awayLogo || getTeamLogo(game.awayTeam)} 
+                              alt={game.awayTeam}
+                              className="schedule-team-logo plain"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/photos/default_team.png";
+                              }}
+                            />
+                            <div className="schedule-team-name">{game.awayTeam}</div>
+                            {isCompleted && awayWinner && <WinIndicator />}
+                            {isCompleted && !awayWinner && <LossIndicator />}
+                          </div>
                           
-                          {/* Venue */}
                           <div className="game-venue">
                             <div className="label-text">Venue</div>
                             <div>{game.venue || "TBD"}</div>
                           </div>
                           
-                          {/* Toggle button */}
                           <div className="game-toggle">
                             {isExpanded ? <FaChevronUp color={teamColor} /> : <FaChevronDown color="#999" />}
                           </div>
                         </div>
                         
-                        {/* Expandable section with impact players */}
                         {isExpanded && (
                           <div className="game-details">
                             <div className="impact-players">
@@ -698,64 +647,8 @@ const TeamDetail = () => {
         );
       
       case 'roster':
-        return (
-          <div className="dashboard-card full-width-card">
-            <div className="card-header" style={cardHeaderStyle}>
-              <FaUserFriends style={{ marginRight: "12px", color: teamColor }} />
-              Team Roster
-            </div>
-            <div className="card-body">
-              {isLoading.roster ? (
-                <div className="loading-indicator">
-                  <LoadingSpinner color={teamColor} />
-                  <p>Loading roster...</p>
-                </div>
-              ) : (
-                <table className="roster-table">
-                  <thead>
-                    <tr style={{ borderBottom: `2px solid ${teamColor}30` }}>
-                      <th>Player</th>
-                      <th>Position</th>
-                      <th>Height</th>
-                      <th>Year</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {roster.map((player, index) => (
-                      <tr key={index} style={{ borderBottom: `1px solid ${teamColor}10` }}>
-                        <td>
-                          <div className="player-info">
-                            {/* UPDATED: Fixed player icon to use team color instead of red */}
-                            <div className="player-icon" style={playerIconStyle}>
-                              <FaUser />
-                            </div>
-                            <div className="player-name">{player.fullName}</div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="player-position">{player.position || "N/A"}</span>
-                        </td>
-                        <td>
-                          <span className="player-height">{formatHeight(player.height) || "N/A"}</span>
-                        </td>
-                        <td>
-                          <span className="player-year">{player.year || "N/A"}</span>
-                        </td>
-                      </tr>
-                    ))}
-                    {roster.length === 0 && !isLoading.roster && (
-                      <tr>
-                        <td colSpan="4" style={{ textAlign: "center" }}>
-                          No roster information available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
-        );
+        // Render the imported TeamRoster component
+        return <TeamRoster teamName={team.school} teamColor={teamColor} year={2024} />;
       
       case 'ratings':
         return (
@@ -777,40 +670,39 @@ const TeamDetail = () => {
           </div>
         );
         
-        case 'teamStats':
-          return (
-            <div className="dashboard-card full-width-card">
-              <div className="card-header" style={cardHeaderStyle}>
-                <FaChartBar style={{ marginRight: "12px", color: teamColor }} />
-                Team Statistics
-              </div>
-              <div className="card-body">
-                <TeamStats 
-                  teamName={team.school} 
-                  year={2024} 
-                  teamColor={teamColor}
-                />
-              </div>
+      case 'teamStats':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaChartBar style={{ marginRight: "12px", color: teamColor }} />
+              Team Statistics
             </div>
-          );
+            <div className="card-body">
+              <TeamStats 
+                teamName={team.school} 
+                year={2024} 
+                teamColor={teamColor}
+              />
+            </div>
+          </div>
+        );
         
-        case 'playerStats':
-          return (
-            <div className="dashboard-card full-width-card">
-              <div className="card-header" style={cardHeaderStyle}>
-                <FaFootballBall style={{ marginRight: "12px", color: teamColor }} />
-                Player Statistics
-              </div>
-              <div className="card-body">
-                {/* Render the TeamPlayerStats component with team color */}
-                <TeamPlayerStats 
-                  teamName={team.school} 
-                  year={2024} 
-                  teamColor={teamColor}
-                />
-              </div>
+      case 'playerStats':
+        return (
+          <div className="dashboard-card full-width-card">
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaFootballBall style={{ marginRight: "12px", color: teamColor }} />
+              Player Statistics
             </div>
-          );
+            <div className="card-body">
+              <TeamPlayerStats 
+                teamName={team.school} 
+                year={2024} 
+                teamColor={teamColor}
+              />
+            </div>
+          </div>
+        );
         
       default:
         return <div>Select a tab to view content</div>;
@@ -873,7 +765,7 @@ const TeamDetail = () => {
         </div>
       </div>
 
-      {/* UPDATED: Dashboard Navigation Tabs with white background for active tabs */}
+      {/* Dashboard Navigation Tabs */}
       <div className="dashboard-tabs" style={{ borderBottom: `2px solid ${teamColor}30` }}>
         {[
           { id: 'overview', label: 'Overview', icon: <FaInfoCircle /> },
@@ -889,10 +781,9 @@ const TeamDetail = () => {
             onClick={() => handleTabChange(tab.id)}
             style={{
               ...activeTab === tab.id ? activeTabStyle : {},
-              '--hover-color': teamColor, // CSS variable for hover effects in stylesheets
+              '--hover-color': teamColor,
             }}
           >
-            {/* UPDATED: Team-colored icons in active tabs */}
             <span className="tab-icon" style={activeTab === tab.id ? activeTabIconStyle : tabIconStyle}>
               {tab.icon}
             </span>
@@ -906,9 +797,7 @@ const TeamDetail = () => {
         {renderTabContent()}
       </div>
 
-      {/* UPDATED: Custom CSS to override default hover styles */}
       <style>{`
-        /* Import Obitron font */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
         
         .tab-item:hover {
@@ -921,7 +810,6 @@ const TeamDetail = () => {
           border: 1px solid ${teamColor}15 !important;
         }
         
-        /* NEW: Result letters for wins and losses */
         .result-letter {
           font-family: 'Orbitron', sans-serif;
           font-weight: 700;
@@ -935,7 +823,6 @@ const TeamDetail = () => {
           font-size: 14px;
         }
         
-        /* Win indicator styling with shine effect */
         .result-letter.win {
           color: white;
           background-color: #00C853;
@@ -972,7 +859,6 @@ const TeamDetail = () => {
           }
         }
         
-        /* Loss indicator styling with pulse effect */
         .result-letter.loss {
           color: white;
           background-color: #F44336;
@@ -995,13 +881,11 @@ const TeamDetail = () => {
           }
         }
         
-        /* UPDATED: Make player icons use team colors */
         .player-icon {
           background-color: ${teamColor}10 !important;
           color: ${teamColor} !important;
         }
         
-        /* UPDATED: Style active tab */
         .tab-item.active {
           background-color: #ffffff !important;
           color: ${darkenColor(teamColor, 20)} !important;
@@ -1010,12 +894,10 @@ const TeamDetail = () => {
           border-bottom: 3px solid ${teamColor} !important;
         }
         
-        /* UPDATED: Style active tab icon */
         .tab-item.active .tab-icon {
           color: ${teamColor} !important;
         }
         
-        /* Better positioning of win/loss indicators */
         .home-team, .away-team {
           display: flex;
           align-items: center;
