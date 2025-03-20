@@ -32,7 +32,7 @@ const More = () => {
   const [selectedState, setSelectedState] = useState(null);
   const [activeTab, setActiveTab] = useState("hometownHeroes");
 
-  // Fetch player roster data with hometown info and team data for every FBS team
+  // Fetch player roster data with hometown info and team data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,26 +42,25 @@ const More = () => {
         const teamsData = await teamsService.getTeams();
         setTeams(teamsData);
         
-        // For each team, fetch the roster and add random performance stats for demonstration.
-        const playersPromises = teamsData.map(async (team) => {
-          const roster = await teamsService.getTeamRoster(team.name);
-          return roster.map(player => ({
-            ...player,
-            teamName: team.name,
-            teamLogo: team.logo, // assumes the team object has a 'logo' property
-            passingYards: player.position === 'QB' ? Math.floor(Math.random() * 3500) : Math.floor(Math.random() * 300),
-            rushingYards: ['RB', 'QB', 'WR'].includes(player.position) ? Math.floor(Math.random() * 1200) : Math.floor(Math.random() * 100),
-            receivingYards: ['WR', 'TE', 'RB'].includes(player.position) ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * 50),
-            tackles: ['LB', 'S', 'CB', 'DE', 'DT'].includes(player.position) ? Math.floor(Math.random() * 100) : Math.floor(Math.random() * 10),
-            sacks: ['DE', 'LB', 'DT'].includes(player.position) ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 2),
-            interceptions: ['CB', 'S', 'LB'].includes(player.position) ? Math.floor(Math.random() * 8) : 0
-          }));
-        });
+        // For now, fetching just Ohio State data
+        // In a full implementation, you might fetch multiple team rosters
+        // or have a pre-aggregated endpoint for this
+        const ohioStateRoster = await teamsService.getTeamRoster("Ohio State");
         
-        // Wait for all team rosters to be fetched and flatten the results
-        const playersArrays = await Promise.all(playersPromises);
-        const allPlayers = playersArrays.flat();
-        setPlayerData(allPlayers);
+        // Add random performance stats for demonstration
+        // In a real implementation, you would fetch actual player statistics
+        const playersWithStats = ohioStateRoster.map(player => ({
+          ...player,
+          teamName: "Ohio State",
+          passingYards: player.position === 'QB' ? Math.floor(Math.random() * 3500) : Math.floor(Math.random() * 300),
+          rushingYards: ['RB', 'QB', 'WR'].includes(player.position) ? Math.floor(Math.random() * 1200) : Math.floor(Math.random() * 100),
+          receivingYards: ['WR', 'TE', 'RB'].includes(player.position) ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * 50),
+          tackles: ['LB', 'S', 'CB', 'DE', 'DT'].includes(player.position) ? Math.floor(Math.random() * 100) : Math.floor(Math.random() * 10),
+          sacks: ['DE', 'LB', 'DT'].includes(player.position) ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 2),
+          interceptions: ['CB', 'S', 'LB'].includes(player.position) ? Math.floor(Math.random() * 8) : 0
+        }));
+        
+        setPlayerData(playersWithStats);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load player data. Please try again later.");
@@ -77,7 +76,9 @@ const More = () => {
   const statePerformanceData = useMemo(() => {
     if (!playerData.length) return [];
     
+    // Group players by homeState
     const stateGroups = {};
+    
     playerData.forEach(player => {
       // Skip players with no homeState
       if (!player.homeState) return;
@@ -99,6 +100,7 @@ const More = () => {
         };
       }
       
+      // Add to state totals
       stateGroups[player.homeState].playerCount++;
       stateGroups[player.homeState].totalPassingYards += player.passingYards || 0;
       stateGroups[player.homeState].totalRushingYards += player.rushingYards || 0;
@@ -107,13 +109,12 @@ const More = () => {
       stateGroups[player.homeState].totalSacks += player.sacks || 0;
       stateGroups[player.homeState].totalInterceptions += player.interceptions || 0;
       
-      // Save the player's details including team info
+      // Add player to state's players array
       stateGroups[player.homeState].players.push({
         id: player.id,
         name: `${player.firstName} ${player.lastName}`.trim(),
         position: player.position,
         teamName: player.teamName,
-        teamLogo: player.teamLogo,
         homeCity: player.homeCity,
         homeState: player.homeState,
         passingYards: player.passingYards,
@@ -125,7 +126,7 @@ const More = () => {
       });
     });
     
-    // Calculate per-player averages for each state group
+    // Calculate per-player averages
     Object.values(stateGroups).forEach(state => {
       state.avgPassingYards = state.playerCount ? state.totalPassingYards / state.playerCount : 0;
       state.avgRushingYards = state.playerCount ? state.totalRushingYards / state.playerCount : 0;
@@ -135,6 +136,7 @@ const More = () => {
       state.avgInterceptions = state.playerCount ? state.totalInterceptions / state.playerCount : 0;
     });
     
+    // Convert to array for easier sorting/mapping
     return Object.values(stateGroups);
   }, [playerData, activePosition]);
   
@@ -153,8 +155,9 @@ const More = () => {
     };
     
     const sortMetric = metricMap[activeMetric] || 'totalPassingYards';
+    
     return [...statePerformanceData].sort((a, b) => {
-      return sortDirection === 'desc'
+      return sortDirection === 'desc' 
         ? b[sortMetric] - a[sortMetric]
         : a[sortMetric] - b[sortMetric];
     });
@@ -177,8 +180,9 @@ const More = () => {
     };
     
     const sortMetric = metricMap[activeMetric] || 'passingYards';
+    
     return [...stateData.players].sort((a, b) => {
-      return sortDirection === 'desc'
+      return sortDirection === 'desc' 
         ? b[sortMetric] - a[sortMetric]
         : a[sortMetric] - b[sortMetric];
     });
@@ -188,6 +192,7 @@ const More = () => {
   const getHeatColor = (value, metric) => {
     if (!value || value === 0) return 'transparent';
     
+    // Get all values for this metric
     const metricValues = sortedStateData.map(state => {
       if (metric === 'totalPassingYards') return state.totalPassingYards;
       if (metric === 'totalRushingYards') return state.totalRushingYards;
@@ -199,13 +204,15 @@ const More = () => {
       return 0;
     }).filter(v => v > 0);
     
+    // Sort values to find percentiles
     metricValues.sort((a, b) => a - b);
     const percentile = metricValues.findIndex(v => v >= value) / metricValues.length;
     
-    if (percentile < 0.25) return 'rgba(200, 230, 255, 0.2)';
-    if (percentile < 0.5) return 'rgba(100, 180, 255, 0.3)';
-    if (percentile < 0.75) return 'rgba(0, 120, 255, 0.4)';
-    return 'rgba(0, 60, 200, 0.5)';
+    // Create a color gradient
+    if (percentile < 0.25) return 'rgba(200, 230, 255, 0.2)'; // Very Light Blue
+    if (percentile < 0.5) return 'rgba(100, 180, 255, 0.3)';  // Light Blue
+    if (percentile < 0.75) return 'rgba(0, 120, 255, 0.4)';   // Medium Blue
+    return 'rgba(0, 60, 200, 0.5)';                         // Dark Blue
   };
   
   // Format numbers with commas
@@ -379,9 +386,8 @@ const More = () => {
             <div className="info-content">
               <h3>Geographic Performance Analysis</h3>
               <p>
-                This visualization shows which states produce the best performing players based on{' '}
-                <strong>{formatMetricName(activeMetric)}</strong>
-                {activePosition !== 'All' ? ` for ${activePosition}s` : ''}.
+                This visualization shows which states produce the best performing players based on 
+                {' '}<strong>{formatMetricName(activeMetric)}</strong>{activePosition !== 'All' ? ` for ${activePosition}s` : ''}.
                 Click on a state to see detailed player stats.
               </p>
             </div>
@@ -438,10 +444,10 @@ const More = () => {
                       >
                         <td className="rank-col">{index + 1}</td>
                         <td className="state-col">
-                          <Link to={`/state/${state.state}`} className="state-name-cell">
-                            <FaMapMarkerAlt className="state-icon" />
-                            <span>{state.state}</span>
-                          </Link>
+                  <Link to={`/state/${state.state}`} className="state-name-cell">
+                    <FaMapMarkerAlt className="state-icon" />
+                    <span>{state.state}</span>
+                  </Link>
                         </td>
                         <td 
                           className="metric-col" 
@@ -518,7 +524,6 @@ const More = () => {
                       <tr key={player.id} className="player-row">
                         <td className="rank-col">{index + 1}</td>
                         <td className="player-col">
-                          <img src={player.teamLogo} alt={`${player.teamName} logo`} className="team-logo" />
                           <Link to={`/player/${player.id}`} className="player-link">
                             {player.name}
                           </Link>
@@ -549,10 +554,9 @@ const More = () => {
                     <div className="top-state-metrics">
                       {getMetricIcon(activeMetric)}
                       <span className="top-metric">
-                        {formatNumber(
-                          activeMetric === 'playerCount'
-                            ? sortedStateData[0].playerCount
-                            : sortedStateData[0][`total${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)}`]
+                        {formatNumber(activeMetric === 'playerCount' 
+                          ? sortedStateData[0].playerCount 
+                          : sortedStateData[0][`total${activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)}`]
                         )}
                       </span>
                       <span className="metric-label">{formatMetricName(activeMetric)}</span>
@@ -1067,6 +1071,7 @@ const More = () => {
           color: #333;
         }
         
+        /* Loading and Error States */
         .loading-container, .error-container {
           text-align: center;
           padding: 60px 0;
@@ -1093,6 +1098,7 @@ const More = () => {
           margin-bottom: 15px;
         }
         
+        /* Responsive adjustments */
         @media (max-width: 768px) {
           .section-header {
             flex-direction: column;
@@ -1113,13 +1119,6 @@ const More = () => {
           .performance-table {
             min-width: 700px;
           }
-        }
-
-        .team-logo {
-          width: 30px;
-          height: 30px;
-          margin-right: 8px;
-          vertical-align: middle;
         }
       `}</style>
     </div>
