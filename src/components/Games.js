@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import "../styles/GamesAndTeams.css";
-import { FaSearch, FaFilter, FaRegCalendarAlt, FaChevronDown, FaTemperatureHigh, FaTv } from "react-icons/fa";
+import { FaSearch, FaFilter, FaRegCalendarAlt, FaChevronDown } from "react-icons/fa";
 
 const Games = () => {
     const [games, setGames] = useState([]);
@@ -169,8 +169,9 @@ const Games = () => {
         });
     };
 
-    // Updated modernized WeatherIcon component with cleaner design
+    // Updated WeatherIcon component with cleaner design
     const WeatherIcon = ({ condition }) => {
+        const iconStyle = { width: 32, height: 32 };
         const normalizedCondition = condition?.toLowerCase() || '';
         
         let iconType = 'clear';
@@ -184,71 +185,51 @@ const Games = () => {
         
         const icons = {
             sunny: (
-                <svg className="weather-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                            <stop offset="0%" stopColor="#FFDD77" />
-                            <stop offset="100%" stopColor="#FFBB33" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="12" cy="12" r="5" fill="url(#sunGlow)" />
+                <svg {...iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5" fill="#FFBB33" />
                     <path d="M12 3v2M12 19v2M5.64 5.64l1.41 1.41M16.95 16.95l1.41 1.41M3 12h2M19 12h2M5.64 18.36l1.41-1.41M16.95 7.05l1.41-1.41" 
                           stroke="#FFBB33" strokeWidth="1.5" strokeLinecap="round" fill="none" />
                 </svg>
             ),
             cloudy: (
-                <svg className="weather-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#C0D0E0" />
-                            <stop offset="100%" stopColor="#A0B0C0" />
-                        </linearGradient>
-                    </defs>
+                <svg {...iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M19.5 14.5c0 2.2-1.8 4-4 4H6.5c-2.8 0-5-2.2-5-5 0-2.3 1.6-4.3 3.8-4.8.5-2.5 2.7-4.2 5.2-4.2 2.3 0 4.3 1.5 5 3.6.4-.1.9-.1 1.3-.1 2.2 0 4 1.8 4 4 0 .3 0 .5-.1.8.9.5 1.5 1.5 1.5 2.6 0 1.7-1.3 3.1-2.9 3.1h-.8" 
-                    fill="url(#cloudGradient)" stroke="#90A4BE" strokeWidth="0.5" />
+                    fill="#B0C4DE" stroke="#90A4BE" strokeWidth="0.5" />
                     <ellipse cx="9" cy="13" rx="3.5" ry="2.8" fill="#EAEAEA" opacity="0.7" />
                 </svg>
             ),
             rain: (
-                <svg className="weather-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="cloudRainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#6494B4" />
-                            <stop offset="100%" stopColor="#4682B4" />
-                        </linearGradient>
-                        <linearGradient id="rainDropGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#75BAEE" />
-                            <stop offset="100%" stopColor="#55AAEE" />
-                        </linearGradient>
-                    </defs>
+                <svg {...iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M19 12.5c0 1.9-1.5 3.5-3.5 3.5H6c-2.5 0-4.5-2-4.5-4.5 0-2.1 1.4-3.8 3.4-4.3.5-2.2 2.4-3.7 4.7-3.7 2.1 0 3.9 1.3 4.5 3.2.4-.1.8-.1 1.2-.1 2 0 3.6 1.5 3.6 3.5 0 .2 0 .5-.1.7.8.5 1.4 1.3 1.4 2.3 0 1.5-1.2 2.7-2.6 2.7h-.8" 
-                    fill="url(#cloudRainGradient)" stroke="#3672A4" strokeWidth="0.5" />
+                    fill="#4682B4" stroke="#3672A4" strokeWidth="0.5" />
                     
-                    <path d="M8.5 16v4" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M12 17v4" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M15.5 16v4" stroke="url(#rainDropGradient)" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M8.5 16v4" stroke="#55AAEE" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M12 17v4" stroke="#55AAEE" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M15.5 16v4" stroke="#55AAEE" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
             ),
             clear: (
-                <svg className="weather-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="sunGlowClear" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                            <stop offset="0%" stopColor="#FFDD77" />
-                            <stop offset="100%" stopColor="#FFBB33" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="12" cy="12" r="5.5" fill="url(#sunGlowClear)" />
+                <svg {...iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5.5" fill="#FFBB33" />
                     <path d="M12 4v2M12 18v2M6 12H4M20 12h-2M7.05 7.05l1.4 1.4M15.55 15.55l1.4 1.4M7.05 16.95l1.4-1.4M15.55 8.45l1.4-1.4" 
                         stroke="#FFBB33" strokeWidth="2" strokeLinecap="round" />
                 </svg>
             )
         };
-        return icons[iconType] || <FaTemperatureHigh className="weather-icon" />;
+        return icons[iconType] || <div style={iconStyle}>?</div>;
     };
 
-    // Updated modernized TvIcon component
+    // Updated TvIcon component with cleaner design
     const TvIcon = () => (
-        <FaTv className="broadcast-icon" />
+        <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="14" rx="2" fill="#555555" />
+            <rect x="3" y="4" width="18" height="12" rx="1" fill="#333333" />
+            <path d="M10 17h4v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z" fill="#555555" />
+            <rect x="9" y="17" width="6" height="1" fill="#444444" />
+            <path d="M5 8c1-1 2-1.5 3-1.5s2 .5 3 1.5" stroke="#6C7CD0" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+            <circle cx="19" cy="6" r="0.5" fill="#f44336" />
+            <circle cx="19" cy="8" r="0.5" fill="#4CAF50" />
+        </svg>
     );
 
     // Helper function to determine if a team is FCS
@@ -263,7 +244,7 @@ const Games = () => {
     if (isLoading) return (
         <div className="loading-container">
             <div className="loading-spinner"></div>
-            <div className="loading-text">Loading games data...</div>
+            <div className="loading-text">Loading games...</div>
         </div>
     );
     
@@ -287,6 +268,7 @@ const Games = () => {
                     </div>
                     
                     <div className="search-box">
+                        <FaSearch className="search-icon" />
                         <input 
                             type="text" 
                             placeholder="Search teams or conferences..." 
@@ -294,7 +276,6 @@ const Games = () => {
                             onChange={handleSearchChange}
                             className="search-input"
                         />
-                        <FaSearch className="search-icon" />
                         {searchTerm && (
                             <button className="search-clear" onClick={() => setSearchTerm("")}>
                                 ×
@@ -358,11 +339,7 @@ const Games = () => {
                             <article key={game.id} className="game-card" onClick={() => navigateToGameDetails(game.id)}>
                                 <div className="teams-container">
                                     <div className="team">
-                                        <div className="team-logo-container">
-                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                            <div className="logo-glow"></div>
-                                            <div className="team-logo-shine"></div>
-                                        </div>
+                                        <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
                                         <div className="team-details">
                                             <h3>{game.homeTeam}</h3>
                                             {homeIsFCS && <span className="team-division">FCS</span>}
@@ -375,11 +352,7 @@ const Games = () => {
                                     </div>
 
                                     <div className="team">
-                                        <div className="team-logo-container">
-                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                            <div className="logo-glow"></div>
-                                            <div className="team-logo-shine"></div>
-                                        </div>
+                                        <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
                                         <div className="team-details">
                                             <h3>{game.awayTeam}</h3>
                                             {awayIsFCS && <span className="team-division">FCS</span>}
@@ -408,25 +381,22 @@ const Games = () => {
                                     </div>
                                 </div>
 
-                                <div className="broadcast-weather-row">
-                                    <div className="broadcast-info">
+                                <div className="game-meta">
+                                    <div className="broadcast-weather-row">
                                         <TvIcon />
                                         <span className="network">{tvNetwork || 'TBD'}</span>
-                                    </div>
-                                    
-                                    {gameWeather && (
-                                        <div className="weather-info">
-                                            <WeatherIcon condition={gameWeather?.weatherCondition} />
-                                            <div>
+                                        {gameWeather && (
+                                            <>
+                                                <WeatherIcon condition={gameWeather?.weatherCondition} />
                                                 <span className="temperature">
                                                     {gameWeather?.temperature || '--'}°F
                                                 </span>
                                                 <span className="condition">
                                                     {gameWeather?.weatherCondition || 'N/A'}
                                                 </span>
-                                            </div>
-                                        </div>
-                                    )}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {gameLines && gameLines.lines && gameLines.lines.length > 0 && (
