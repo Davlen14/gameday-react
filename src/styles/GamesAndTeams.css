@@ -377,6 +377,71 @@
     background-color: #d12d43;
 }
 
+/* New Filters Section */
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+  }
+  
+  .week-selector,
+  .year-selector,
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .week-selector label,
+  .year-selector label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .week-dropdown,
+  .year-dropdown,
+  .search-box input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+    outline: none;
+    background: #fff;
+  }
+  
+  .week-dropdown:focus,
+  .year-dropdown:focus,
+  .search-box input:focus {
+    border-color: var(--primary-color);
+  }
+  
+  .search-box input {
+    width: 200px;
+  }
+  
+  /* Optional: Adjust header styling for consistency */
+  .header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 600px) {
+    .filters-container {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .search-box input {
+      width: 100%;
+    }
+  }
+  
+
 /* Loading & Error States */
 .loading, .error {
     display: flex;
