@@ -129,6 +129,132 @@
     box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
 }
 
+/* Search Container Styles */
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.search-container label {
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 600;
+    color: #D4001C;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: #333;
+    min-width: 200px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4001C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'%3e%3c/line%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1em;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #D4001C;
+    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    color: #D4001C;
+    background-color: rgba(212, 0, 28, 0.1);
+}
+
+/* No Results Message */
+.no-results {
+    grid-column: 1 / -1; /* Span all columns */
+    padding: 3rem;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin: 2rem 0;
+}
+
+.no-results p {
+    color: #64748b;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.clear-search-btn-large {
+    background-color: #D4001C;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-search-btn-large:hover {
+    background-color: #b5001a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 0, 28, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .search-input {
+        min-width: 100%;
+        width: 100%;
+    }
+    
+    .search-container {
+        width: 100%;
+    }
+    
+    .search-input-wrapper {
+        width: 100%;
+    }
+}
+
 /* Games Grid */
 .games-grid {
     display: grid;

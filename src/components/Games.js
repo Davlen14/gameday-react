@@ -5,6 +5,7 @@ import "../styles/GamesAndTeams.css";
 
 const Games = () => {
     const [games, setGames] = useState([]);
+    const [filteredGames, setFilteredGames] = useState([]);
     const [teams, setTeams] = useState([]);
     const [fcsTeams, setFcsTeams] = useState([]); // New state for FCS teams
     const [weather, setWeather] = useState([]);
@@ -14,6 +15,7 @@ const Games = () => {
     const [error, setError] = useState(null);
     const [week, setWeek] = useState(1);
     const [year, setYear] = useState(2024); // New state for year
+    const [searchTerm, setSearchTerm] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -31,7 +33,9 @@ const Games = () => {
                     setFcsTeams(fcsTeamsData);
                 }
 
-                const gamesData = await teamsService.getGames(week, year); // Added year parameter
+                // Note: Update these service calls based on your API structure
+                // You may need to modify these to match how your backend expects parameters
+                const gamesData = await teamsService.getGames(week, year);
                 // We want to include games where at least one team is FBS
                 const fbsGames = gamesData.filter(
                     (game) =>
@@ -39,14 +43,15 @@ const Games = () => {
                         game.awayClassification === "fbs"
                 );
                 setGames(fbsGames);
+                setFilteredGames(fbsGames);
 
-                const weatherData = await teamsService.getGameWeather(year, week); // Updated to use year state
+                const weatherData = await teamsService.getGameWeather(year, week);
                 setWeather(weatherData);
 
-                const mediaData = await teamsService.getGameMedia(year, week); // Updated to use year state
+                const mediaData = await teamsService.getGameMedia(year, week);
                 setMedia(mediaData);
 
-                const linesData = await teamsService.getGameLines(year); // Updated to use year state
+                const linesData = await teamsService.getGameLines(year);
                 setLines(linesData);
             } catch (err) {
                 setError(err.message);
@@ -64,6 +69,41 @@ const Games = () => {
 
     const handleYearChange = (event) => {
         setYear(Number(event.target.value));
+    };
+    
+    const handleSearchChange = (event) => {
+        const searchValue = event.target.value.toLowerCase();
+        setSearchTerm(searchValue);
+        
+        if (!searchValue.trim()) {
+            setFilteredGames(games);
+            return;
+        }
+        
+        const filtered = games.filter(game => {
+            // Search by team name
+            const homeTeamMatch = game.homeTeam.toLowerCase().includes(searchValue);
+            const awayTeamMatch = game.awayTeam.toLowerCase().includes(searchValue);
+            
+            // Search by conference (if available in the data)
+            const homeConferenceMatch = game.homeConference && 
+                game.homeConference.toLowerCase().includes(searchValue);
+            const awayConferenceMatch = game.awayConference && 
+                game.awayConference.toLowerCase().includes(searchValue);
+            
+            // Find team objects to get conference info
+            const homeTeam = teams.find(t => t.school.toLowerCase() === game.homeTeam.toLowerCase());
+            const awayTeam = teams.find(t => t.school.toLowerCase() === game.awayTeam.toLowerCase());
+            
+            const homeTeamConferenceMatch = homeTeam?.conference?.toLowerCase().includes(searchValue);
+            const awayTeamConferenceMatch = awayTeam?.conference?.toLowerCase().includes(searchValue);
+            
+            return homeTeamMatch || awayTeamMatch || 
+                   homeConferenceMatch || awayConferenceMatch ||
+                   homeTeamConferenceMatch || awayTeamConferenceMatch;
+        });
+        
+        setFilteredGames(filtered);
     };
 
     const navigateToGameDetails = (gameId) => {
@@ -268,11 +308,48 @@ const Games = () => {
                             ))}
                         </select>
                     </div>
+                    <div className="search-container">
+                        <label>Search:</label>
+                        <div className="search-input-wrapper">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                placeholder="Team or Conference"
+                                className="search-input"
+                            />
+                            {searchTerm && (
+                                <button 
+                                    className="clear-search-btn"
+                                    onClick={() => {
+                                        setSearchTerm("");
+                                        setFilteredGames(games);
+                                    }}
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </header>
 
             <div className="games-grid">
-                {games.map((game) => {
+                {filteredGames.length === 0 && !isLoading ? (
+                    <div className="no-results">
+                        <p>No games found matching your search for "{searchTerm}"</p>
+                        <button 
+                            className="clear-search-btn-large"
+                            onClick={() => {
+                                setSearchTerm("");
+                                setFilteredGames(games);
+                            }}
+                        >
+                            Clear Search
+                        </button>
+                    </div>
+                ) : (
+                    filteredGames.map((game) => {
                     const gameWeather = getWeatherForGame(game.id);
                     const gameMedia = getMediaForGame(game.id);
                     const gameLines = getLinesForGame(game.id);
@@ -371,7 +448,7 @@ const Games = () => {
                             </div>
                         </article>
                     );
-                })}
+                }))}
             </div>
         </div>
     );
