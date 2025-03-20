@@ -28,7 +28,7 @@ import {
   GiFootprint, 
   GiWhistle, 
   GiWalkingBoot,
-  GiStrength
+  GiMuscleUp
 } from "react-icons/gi";
 import { 
   IoMdStats, 
@@ -825,7 +825,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     return (
       <div className="team-analysis-section">
         <h2 className="section-title">
-          <GiStrength className="section-icon" />
+          <GiMuscleUp className="section-icon" />
           Team Analysis
         </h2>
         
