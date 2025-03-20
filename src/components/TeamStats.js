@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import teamsService from "../services/teamsService";
 // Import react-icons
-import { 
-  FaFootballBall, 
-  FaInfoCircle, 
-  FaChartLine, 
-  FaChartBar, 
+import {
+  FaFootballBall,
+  FaInfoCircle,
+  FaChartLine,
+  FaChartBar,
   FaShieldAlt,
-  FaRunning, 
-  FaClock, 
+  FaRunning,
+  FaClock,
   FaExchangeAlt,
   FaArrowCircleRight,
   FaArrowDown,
@@ -23,30 +23,30 @@ import {
   FaTimesCircle,
   FaArrowRight
 } from "react-icons/fa";
-import { 
-  GiAmericanFootballHelmet, 
-  GiFootprint, 
-  GiWhistle, 
+import {
+  GiAmericanFootballHelmet,
+  GiFootprint,
+  GiWhistle,
   GiWalkingBoot,
   GiMuscleUp
 } from "react-icons/gi";
-import { 
-  IoMdStats, 
-  IoMdFootball, 
-  IoMdTrendingUp 
+import {
+  IoMdStats,
+  IoMdFootball,
+  IoMdTrendingUp
 } from "react-icons/io";
-import { 
-  BiTimer, 
-  BiDownArrow, 
-  BiFootball 
+import {
+  BiTimer,
+  BiDownArrow,
+  BiFootball
 } from "react-icons/bi";
-import { 
-  AiOutlineLoading3Quarters, 
-  AiOutlineWarning 
+import {
+  AiOutlineLoading3Quarters,
+  AiOutlineWarning
 } from "react-icons/ai";
-import { 
-  BsArrowRepeat, 
-  BsChevronDown, 
+import {
+  BsArrowRepeat,
+  BsChevronDown,
   BsChevronUp,
   BsDot,
   BsLightningChargeFill
@@ -54,7 +54,7 @@ import {
 import "../styles/TeamStats.css";
 
 const TeamStats = ({ teamName, year = 2024, teamColor }) => {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('general');
@@ -63,12 +63,12 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const [kpis, setKpis] = useState(null);
   const [rawData, setRawData] = useState(null);
   const [showDebug, setShowDebug] = useState(false);
-  const [teamStrengths, setTeamStrengths] = useState([]);
-  const [teamWeaknesses, setTeamWeaknesses] = useState([]);
+  const [teamStrengths, setTeamStrengths] = useState();
+  const [teamWeaknesses, setTeamWeaknesses] = useState();
 
   // Default to a neutral gray if no team color is provided
   const accentColor = teamColor || "#555555";
-  
+
   // Generate a lighter variation of the team color for gradients - more subtle
   const lightenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16);
@@ -80,7 +80,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                   (G < 255 ? G : 255) * 0x100 +
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
-  
+
   // Generate a darker variation of the team color
   const darkenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16);
@@ -98,14 +98,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   const secondaryColor = lightenColor(accentColor, 45); // Very light version of team color
   const accentLight = lightenColor(accentColor, 20);
   const accentDark = darkenColor(accentColor, 20);
-  
+
   // Modern stat indicators
   const excellentColor = "#38c172"; // Green
   const goodColor = "#ffbb33";      // Yellow/Amber
   const poorColor = "#ff4d4d";      // Red
   const neutralColor = "#667788";   // Slate gray
   const textColor = "#444444";      // Dark gray for text
-  
+
   // Get contrast color for text
   const getContrastColor = (hexColor) => {
     hexColor = hexColor.replace('#', '');
@@ -115,7 +115,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
     return (yiq >= 128) ? '#444444' : '#ffffff';
   };
-  
+
   // Determine text color to use against team color background
   const contrastColor = getContrastColor(accentColor);
 
@@ -125,11 +125,11 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     if (!stat) {
       return 0;
     }
-    
-    const value = typeof stat.statValue === 'string' ? 
-      parseFloat(stat.statValue) || 0 : 
+
+    const value = typeof stat.statValue === 'string' ?
+      parseFloat(stat.statValue) || 0 :
       (typeof stat.statValue === 'number' ? stat.statValue : 0);
-    
+
     return value;
   }, [stats]);
 
@@ -152,15 +152,15 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       try {
         setLoading(true);
         const data = await teamsService.getTeamStats(teamName, year);
-        
+
         // Store raw data for debugging
         setRawData(data);
-        
+
         if (Array.isArray(data) && data.length > 0) {
           // Convert all string numeric values to actual numbers
           const statsWithParsedValues = data.map(stat => {
             let parsedValue = stat.statValue;
-            
+
             // Try to convert string values to numbers
             if (typeof parsedValue === 'string') {
               const numericValue = parseFloat(parsedValue);
@@ -168,19 +168,19 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 parsedValue = numericValue;
               }
             }
-            
+
             return {
               ...stat,
               statValue: parsedValue
             };
           });
-          
+
           setStats(statsWithParsedValues);
-          
+
         } else if (data && typeof data === 'object') {
           const statsArray = Object.keys(data).map(key => {
             let parsedValue = data[key];
-            
+
             // Try to convert string values to numbers
             if (typeof parsedValue === 'string') {
               const numericValue = parseFloat(parsedValue);
@@ -188,13 +188,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 parsedValue = numericValue;
               }
             }
-            
+
             return {
               statName: key,
               statValue: parsedValue
             };
           });
-          
+
           setStats(statsArray);
         } else {
           if (!data || data.length === 0) {
@@ -202,16 +202,16 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           } else {
             setError("Received unexpected data format from API.");
           }
-          setStats([]);
+          setStats();
         }
       } catch (err) {
         setError(err.message || "Error fetching team stats.");
-        setStats([]);
+        setStats();
       } finally {
         setLoading(false);
       }
     };
-  
+
     if (teamName) {
       fetchTeamStats();
     }
@@ -220,14 +220,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Calculate key performance indicators (KPIs)
   useEffect(() => {
     if (!stats || stats.length === 0) return;
-    
+
     try {
       // Get stat values with proper type conversion
       const getNumberStat = (name) => {
         const val = getStatValue(name);
         return typeof val === 'number' ? val : 0;
       };
-      
+
       const games = getNumberStat("games") || 1; // Prevent division by zero
       const totalYards = getNumberStat("totalYards");
       const netPassingYards = getNumberStat("netPassingYards");
@@ -249,39 +249,39 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       const rushingAttempts = getNumberStat("rushingAttempts");
       const sacks = getNumberStat("sacks");
       const tacklesForLoss = getNumberStat("tacklesForLoss");
-      
+
       // Calculate derived metrics
       const yardsPerGame = Math.round(totalYards / games);
       const passingYardPercentage = totalYards ? Math.round((netPassingYards / totalYards) * 100) : 0;
       const rushingYardPercentage = totalYards ? Math.round((rushingYards / totalYards) * 100) : 0;
-      
+
       const totalTDs = passingTDs + rushingTDs + kickReturnTDs + puntReturnTDs + interceptionTDs;
       const estimatedPoints = totalTDs * 7;
       const estimatedPointsPerGame = Math.round(estimatedPoints / games);
-      
+
       const thirdDownConversionPercentage = calculatePercentage(thirdDownConversions, thirdDowns);
       const fourthDownConversionPercentage = calculatePercentage(fourthDownConversions, fourthDowns);
-      
+
       const takeaways = interceptions + fumblesRecovered;
       const turnoverMargin = takeaways - turnovers;
-      
+
       const completionPercentage = calculatePercentage(passCompletions, passAttempts);
       const yardsPerAttempt = calculateRatio(netPassingYards, passAttempts);
-      
+
       const yardsPerCarry = calculateRatio(rushingYards, rushingAttempts);
-      
+
       const kickReturns = getNumberStat("kickReturns");
       const kickReturnYards = getNumberStat("kickReturnYards");
       const kickReturnAverage = calculateRatio(kickReturnYards, kickReturns);
-      
+
       const puntReturns = getNumberStat("puntReturns");
       const puntReturnYards = getNumberStat("puntReturnYards");
       const puntReturnAverage = calculateRatio(puntReturnYards, puntReturns);
-      
+
       const totalOffensiveTDs = passingTDs + rushingTDs;
       const passingTDPercentage = totalOffensiveTDs ? Math.round((passingTDs / totalOffensiveTDs) * 100) : 0;
       const rushingTDPercentage = totalOffensiveTDs ? Math.round((rushingTDs / totalOffensiveTDs) * 100) : 0;
-      
+
       const calculatedKpis = {
         yardsPerGame,
         estimatedPointsPerGame,
@@ -303,36 +303,36 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         sacks,
         tacklesForLoss
       };
-      
+
       setKpis(calculatedKpis);
-      
+
       // Calculate team strengths and weaknesses
       const strengths = [];
       const weaknesses = [];
-      
+
       // Passing offense
       if (netPassingYards > 3500) strengths.push({ name: "Elite Passing Attack", value: netPassingYards, icon: <IoMdFootball /> });
       else if (netPassingYards < 2500 && netPassingYards > 0) weaknesses.push({ name: "Weak Passing Game", value: netPassingYards, icon: <IoMdFootball /> });
-      
+
       // Rushing offense
       if (rushingYards > 2000) strengths.push({ name: "Strong Ground Game", value: rushingYards, icon: <FaRunning /> });
       else if (rushingYards < 1500 && rushingYards > 0) weaknesses.push({ name: "Ineffective Running Game", value: rushingYards, icon: <FaRunning /> });
-      
+
       // Defensive strength
       if (sacks > 35) strengths.push({ name: "Dominant Pass Rush", value: sacks, icon: <GiWalkingBoot /> });
       if (tacklesForLoss > 85) strengths.push({ name: "Disruptive Defense", value: tacklesForLoss, icon: <FaShieldAlt /> });
-      
+
       // Efficiency
       if (thirdDownConversionPercentage > 43) strengths.push({ name: "Efficient on 3rd Down", value: `${thirdDownConversionPercentage}%`, icon: <FaPercentage /> });
       else if (thirdDownConversionPercentage < 33 && thirdDownConversionPercentage > 0) weaknesses.push({ name: "Struggles on 3rd Down", value: `${thirdDownConversionPercentage}%`, icon: <FaPercentage /> });
-      
+
       // Turnover margin
       if (turnoverMargin > 5) strengths.push({ name: "Positive Turnover Margin", value: `+${turnoverMargin}`, icon: <FaExchangeAlt /> });
       else if (turnoverMargin < -3) weaknesses.push({ name: "Negative Turnover Margin", value: turnoverMargin, icon: <FaExchangeAlt /> });
-      
+
       setTeamStrengths(strengths);
       setTeamWeaknesses(weaknesses);
-      
+
     } catch (err) {
       // Set some default KPIs to prevent rendering errors
       setKpis({
@@ -360,79 +360,79 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Process stats into categories for display
   useEffect(() => {
     if (!stats || stats.length === 0 || !kpis) return;
-    
+
     try {
       const categoriesObj = {
         general: {
           name: "General",
-          icon: <IoMdStats style={{ color: primaryColor }} />,
+          icon: <IoMdStats style={{ color: neutralColor }} />,
           stats: ["games", "firstDowns", "totalYards", "penalties", "penaltyYards", "turnovers", "possessionTime"]
         },
         offense: {
           name: "Offense",
-          icon: <FaFootballBall style={{ color: primaryColor }} />,
+          icon: <FaFootballBall style={{ color: neutralColor }} />,
           stats: ["netPassingYards", "passAttempts", "passCompletions", "passingTDs", "rushingYards", "rushingAttempts", "rushingTDs"]
         },
         defense: {
           name: "Defense",
-          icon: <FaShieldAlt style={{ color: primaryColor }} />,
+          icon: <FaShieldAlt style={{ color: neutralColor }} />,
           stats: ["sacks", "interceptions", "interceptionYards", "interceptionTDs", "tacklesForLoss", "fumblesRecovered"]
         },
         specialTeams: {
           name: "Special Teams",
-          icon: <FaTrophy style={{ color: primaryColor }} />,
+          icon: <FaTrophy style={{ color: neutralColor }} />,
           stats: ["kickReturns", "kickReturnYards", "kickReturnTDs", "puntReturns", "puntReturnYards", "puntReturnTDs"]
         },
         situational: {
           name: "Situational",
-          icon: <FaPercentage style={{ color: primaryColor }} />,
+          icon: <FaPercentage style={{ color: neutralColor }} />,
           stats: ["thirdDowns", "thirdDownConversions", "fourthDowns", "fourthDownConversions", "fumblesLost", "passesIntercepted"]
         },
         misc: {
           name: "Miscellaneous",
-          icon: <FaRegChartBar style={{ color: primaryColor }} />,
+          icon: <FaRegChartBar style={{ color: neutralColor }} />,
           stats: []
         }
       };
-      
+
       const processedStats = new Set();
-      
+
       // For each category, process its stats
       Object.keys(categoriesObj).forEach(categoryKey => {
         const category = categoriesObj[categoryKey];
         category.statList = [];
-        
+
         if (category.stats) {
           category.stats.forEach(statName => {
             // Look for the stat in our data
             const statObj = stats.find(s => s && s.statName === statName);
-            
+
             if (statObj) {
               let statValue = statObj.statValue;
               if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
                 statValue = parseFloat(statValue);
               }
-              
+
               category.statList.push({ ...statObj, statValue });
               processedStats.add(statName);
             } else {
               // We didn't find this stat - check if it might be under a different name
               const altStatName = statName.toLowerCase();
               const altStatObj = stats.find(s => s && s.statName.toLowerCase() === altStatName);
-              
+
               if (altStatObj) {
                 let statValue = altStatObj.statValue;
                 if (typeof statValue === 'string' && !isNaN(parseFloat(statValue))) {
                   statValue = parseFloat(statValue);
                 }
-                
+
                 category.statList.push({ ...altStatObj, statName, statValue });
                 processedStats.add(altStatObj.statName);
               } else {
                 // Still not found - add an empty placeholder
-                category.statList.push({ 
-                  statName, 
-                  statValue: 0, 
+                category.statList.push({
+                  statName,
+                  statValue: 0,
                   empty: false
                 });
               }
@@ -440,7 +440,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           });
         }
       });
-      
+
       // Process miscellaneous stats
       const miscStats = stats.filter(s => s && s.statName && !processedStats.has(s.statName));
       if (miscStats.length > 0) {
@@ -452,7 +452,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           return { ...stat, statValue };
         });
       }
-      
+
       // Add derived metrics to the proper categories
       if (categoriesObj.offense && categoriesObj.offense.statList) {
         categoriesObj.offense.statList.push(
@@ -461,27 +461,27 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           { statName: "yardsPerCarry", statValue: Number(kpis.yardsPerCarry), derived: true }
         );
       }
-      
+
       if (categoriesObj.specialTeams && categoriesObj.specialTeams.statList) {
         categoriesObj.specialTeams.statList.push(
           { statName: "kickReturnAverage", statValue: Number(kpis.kickReturnAverage), derived: true },
           { statName: "puntReturnAverage", statValue: Number(kpis.puntReturnAverage), derived: true }
         );
       }
-      
+
       if (categoriesObj.situational && categoriesObj.situational.statList) {
         categoriesObj.situational.statList.push(
           { statName: "thirdDownConversionPercentage", statValue: Number(kpis.thirdDownConversionPercentage), derived: true },
           { statName: "fourthDownConversionPercentage", statValue: Number(kpis.fourthDownConversionPercentage), derived: true }
         );
       }
-      
+
       setCategories(categoriesObj);
     } catch (err) {
       console.error("Error processing categories:", err);
     }
   }, [stats, kpis, getStatValue, primaryColor]);
-  
+
   // Format stat names for display
   const formatStatName = (name) => {
     const specialCases = {
@@ -521,40 +521,40 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "kickReturnAverage": "Kick Return Average",
       "puntReturnAverage": "Punt Return Average"
     };
-    
+
     return specialCases[name] || name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
-  
+
   // Format stat values for display with better handling of edge cases
   const formatStatValue = (name, value) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
-    
+
     if (name === "possessionTime") {
       const totalSeconds = parseInt(value, 10);
       if (isNaN(totalSeconds)) return value;
-      
+
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
       const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
-      
-      return hours > 0 ? 
-        `${hours}h ${minutes}m ${seconds}s` : 
+
+      return hours > 0 ?
+        `${hours}h ${minutes}m ${seconds}s` :
         `${minutes}m ${seconds}s`;
     }
-    
+
     if (name.includes("Percentage") || name.endsWith("Percent") || name.endsWith("%")) {
       return `${value}%`;
     }
-    
+
     if (typeof value === 'number') {
       if (value % 1 !== 0) return value.toFixed(1);
       if (value >= 1000) return value.toLocaleString();
       return value.toString();
     }
-    
+
     return value;
   };
-  
+
   // Get icon for a specific stat
   const getStatIcon = (statName) => {
     const iconMap = {
@@ -600,13 +600,13 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     };
     return iconMap[statName] || <IoMdStats className="stat-icon" style={{ color: neutralColor }} />;
   };
-  
+
   // Determine color rating for a stat value - modernized for better visual feedback
   const getRatingInfo = (statName, value) => {
     if (value === 0 || isNaN(value)) return { class: "", color: textColor, icon: null };
-    
+
     const highIsGood = [
-      "netPassingYards", "passCompletions", "passingTDs", 
+      "netPassingYards", "passCompletions", "passingTDs",
       "rushingYards", "rushingTDs", "totalYards", "firstDowns",
       "thirdDownConversions", "fourthDownConversions", "interceptions",
       "sacks", "interceptionYards", "interceptionTDs", "tacklesForLoss",
@@ -615,19 +615,19 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       "yardsPerAttempt", "yardsPerCarry", "kickReturnAverage", "puntReturnAverage",
       "thirdDownConversionPercentage", "fourthDownConversionPercentage"
     ];
-    
+
     const lowIsGood = [
       "penalties", "penaltyYards", "turnovers", "fumblesLost",
       "passesIntercepted"
     ];
-    
+
     const neutralStats = [
       "games", "passAttempts", "rushingAttempts", "possessionTime",
       "thirdDowns", "fourthDowns", "kickReturns", "puntReturns"
     ];
-    
+
     if (neutralStats.includes(statName)) return { class: "", color: textColor, icon: null };
-    
+
     if (highIsGood.includes(statName)) {
       // Percentage stats have different thresholds
       if (statName.includes("Percentage")) {
@@ -635,7 +635,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
         if (value > 45) return { class: "good-value", color: goodColor, icon: null };
         return { class: "poor-value", color: poorColor, icon: <FaTimesCircle /> };
       }
-      
+
       // Special thresholds for particular stats
       if (statName === "netPassingYards" && value > 3500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       if (statName === "rushingYards" && value > 2500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
@@ -644,39 +644,39 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       if (statName === "interceptions" && value > 15) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       if (statName === "yardsPerAttempt" && value > 8) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       if (statName === "yardsPerCarry" && value > 5) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
-      
+
       // Default for high-is-good stats
       if (value > 0) return { class: "good-value", color: goodColor, icon: null };
     }
-    
+
     if (lowIsGood.includes(statName)) {
       if (statName === "turnovers" && value < 15) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       if (statName === "penalties" && value < 60) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       if (statName === "penaltyYards" && value < 500) return { class: "excellent-value", color: excellentColor, icon: <FaCheckCircle /> };
       return value < 20 ? { class: "good-value", color: goodColor, icon: null } : { class: "poor-value", color: poorColor, icon: <FaTimesCircle /> };
     }
-    
+
     return { class: "", color: textColor, icon: null };
   };
-  
+
   // Render cards for each category with modern visual indicators
   const renderCategoryCards = (category) => {
     if (!category || !category.statList) return null;
-    
+
     return category.statList.map((stat, index) => {
       if (!stat) return null;
-      
+
       const statName = stat.statName;
-      
+
       // Make sure we have valid numeric values for statistics
       const statValue = typeof stat.statValue === 'string' && !isNaN(parseFloat(stat.statValue))
         ? parseFloat(stat.statValue)
         : (typeof stat.statValue === 'number' ? stat.statValue : 0);
-        
+
       const displayName = formatStatName(statName);
       const displayValue = formatStatValue(statName, statValue);
       const ratingInfo = getRatingInfo(statName, statValue);
-      
+
       // Create modern stat card with value indicator
       return (
         <div className="stat-card" key={`${statName}-${index}`}>
@@ -690,28 +690,28 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 {stat.empty ? "N/A" : displayValue}
                 {ratingInfo.icon && <span className="rating-icon">{ratingInfo.icon}</span>}
               </div>
-              
+
               {/* Add percentage bars for conversion stats */}
               {(statName === "thirdDownConversions" || statName === "fourthDownConversions") && kpis && (
                 <div className="stat-percentage">
                   <div className="percentage-track">
-                    <div 
+                    <div
                       className="percentage-bar"
-                      style={{ 
-                        width: `${statName === "thirdDownConversions" 
-                          ? kpis.thirdDownConversionPercentage 
-                          : kpis.fourthDownConversionPercentage}%`, 
+                      style={{
+                        width: `${statName === "thirdDownConversions"
+                          ? kpis.thirdDownConversionPercentage
+                          : kpis.fourthDownConversionPercentage}%`,
                         background: getPercentageColor(
-                          statName === "thirdDownConversions" 
-                            ? kpis.thirdDownConversionPercentage 
+                          statName === "thirdDownConversions"
+                            ? kpis.thirdDownConversionPercentage
                             : kpis.fourthDownConversionPercentage
                         )
                       }}
                     ></div>
                   </div>
                   <span className="percentage-text">
-                    {statName === "thirdDownConversions" 
-                      ? kpis.thirdDownConversionPercentage 
+                    {statName === "thirdDownConversions"
+                      ? kpis.thirdDownConversionPercentage
                       : kpis.fourthDownConversionPercentage}%
                   </span>
                 </div>
@@ -722,54 +722,54 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       );
     });
   };
-  
+
   // Get color for percentage bars
   const getPercentageColor = (percentage) => {
     if (percentage >= 60) return excellentColor;
     if (percentage >= 40) return goodColor;
     return poorColor;
   };
-  
+
   // Render comparison cards with modern design
   const renderComparisonCards = () => {
     if (!kpis) return null;
-    
+
     const keyMetrics = [
-      { 
-        title: "Passing vs. Rushing", 
+      {
+        title: "Passing vs. Rushing",
         stats: ["netPassingYards", "rushingYards"],
         values: [getStatValue("netPassingYards"), getStatValue("rushingYards")],
         percentages: [kpis.passingYardPercentage, kpis.rushingYardPercentage]
       },
-      { 
-        title: "Offensive TDs", 
+      {
+        title: "Offensive TDs",
         stats: ["passingTDs", "rushingTDs"],
         values: [getStatValue("passingTDs"), getStatValue("rushingTDs")],
         percentages: [kpis.passingTDPercentage, kpis.rushingTDPercentage]
       },
-      { 
-        title: "Down Conversions", 
+      {
+        title: "Down Conversions",
         stats: ["thirdDownConversions", "fourthDownConversions"],
         values: [getStatValue("thirdDownConversions"), getStatValue("fourthDownConversions")],
         percentages: [kpis.thirdDownConversionPercentage, kpis.fourthDownConversionPercentage]
       }
     ];
-    
+
     return keyMetrics.map((metric, index) => {
       // Skip rendering if both values are zero or NaN
-      if ((metric.values[0] === 0 && metric.values[1] === 0) || 
+      if ((metric.values[0] === 0 && metric.values[1] === 0) ||
           (isNaN(metric.values[0]) && isNaN(metric.values[1]))) {
         return null;
       }
-      
+
       // Ensure percentages are valid numbers
       const pct1 = isNaN(metric.percentages[0]) ? 0 : metric.percentages[0];
       const pct2 = isNaN(metric.percentages[1]) ? 0 : metric.percentages[1];
-      
+
       // Use modern colors for the comparison bars
       const color1 = primaryColor;
       const color2 = neutralColor;
-      
+
       return (
         <div className="comparison-card" key={index}>
           <div className="comparison-title">
@@ -784,7 +784,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               </div>
               <div className="comparison-bar-wrapper">
                 <div className="bar-track">
-                  <div 
+                  <div
                     className="comparison-bar first-bar"
                     style={{ width: `${pct1}%`, background: color1 }}
                   >
@@ -794,7 +794,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
                 {pct1 <= 15 && <div className="percentage-small" style={{ color: color1 }}>{pct1}%</div>}
               </div>
             </div>
-            
+
             <div className="comparison-bar-container">
               <div className="comparison-label">
                 {formatStatName(metric.stats[1])}
@@ -802,7 +802,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               </div>
               <div className="comparison-bar-wrapper">
                 <div className="bar-track">
-                  <div 
+                  <div
                     className="comparison-bar second-bar"
                     style={{ width: `${pct2}%`, background: color2 }}
                   >
@@ -821,14 +821,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
   // Render team strengths and weaknesses section
   const renderTeamStrengthsWeaknesses = () => {
     if (teamStrengths.length === 0 && teamWeaknesses.length === 0) return null;
-    
+
     return (
       <div className="team-analysis-section">
         <h2 className="section-title">
           <GiMuscleUp className="section-icon" />
           Team Analysis
         </h2>
-        
+
         <div className="analysis-grid">
           {teamStrengths.length > 0 && (
             <div className="strengths-card">
@@ -849,7 +849,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
               </div>
             </div>
           )}
-          
+
           {teamWeaknesses.length > 0 && (
             <div className="weaknesses-card">
               <div className="analysis-header">
@@ -874,18 +874,18 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
     );
   };
 
-  // Debug section component 
+  // Debug section component
   const renderDebugSection = () => {
     return (
       <div className="debug-section">
-        <button 
-          className="debug-button" 
+        <button
+          className="debug-button"
           onClick={() => setShowDebug(!showDebug)}
           style={{ background: accentColor, color: contrastColor }}
         >
           {showDebug ? "Hide Raw Data" : "Show Raw Data (Debug)"}
         </button>
-        
+
         {showDebug && rawData && (
           <div className="debug-data">
             <h3>Raw API Response:</h3>
@@ -894,8 +894,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             </pre>
             <h3>Special Teams Stats:</h3>
             <pre style={{ maxHeight: '150px', overflow: 'auto' }}>
-              {JSON.stringify(rawData.filter(s => 
-                s.statName.includes('kick') || 
+              {JSON.stringify(rawData.filter(s =>
+                s.statName.includes('kick') ||
                 s.statName.includes('punt')
               ), null, 2)}
             </pre>
@@ -926,8 +926,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <AiOutlineWarning />
           </div>
           <div className="error-message">Error: {error}</div>
-          <button 
-            className="retry-button" 
+          <button
+            className="retry-button"
             onClick={() => window.location.reload()}
             style={{ background: primaryColor, color: contrastColor }}
           >
@@ -975,8 +975,8 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="year-badge" style={{ background: primaryColor, color: contrastColor }}>{year}</div>
           </div>
         </div>
-        <button 
-          className="info-button" 
+        <button
+          className="info-button"
           onClick={() => setShowInfoCard(!showInfoCard)}
           style={{ background: secondaryColor, color: textColor, borderLeft: `3px solid ${primaryColor}` }}
         >
@@ -1042,7 +1042,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
 
       {/* Team Analysis Section */}
       {renderTeamStrengthsWeaknesses()}
-      
+
       {/* Key Performance Indicators */}
       <div className="kpi-section">
         <h2 className="section-title">
@@ -1057,7 +1057,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-value">{kpis.yardsPerGame}</div>
             <div className="kpi-label">Yards per Game</div>
           </div>
-          
+
           <div className="kpi-card">
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaTrophy />
@@ -1065,7 +1065,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-value">{kpis.estimatedPointsPerGame}</div>
             <div className="kpi-label">Est. Points per Game</div>
           </div>
-          
+
           <div className="kpi-card">
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaPercentage />
@@ -1073,14 +1073,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             <div className="kpi-value">{kpis.thirdDownConversionPercentage}%</div>
             <div className="kpi-label">3rd Down Conversion</div>
           </div>
-          
+
           <div className="kpi-card">
             <div className="kpi-icon" style={{ color: primaryColor }}>
               <FaExchangeAlt />
             </div>
-            <div className="kpi-value" style={{ 
-              color: kpis.turnoverMargin > 0 ? excellentColor : 
-                     kpis.turnoverMargin < 0 ? poorColor : textColor 
+            <div className="kpi-value" style={{
+              color: kpis.turnoverMargin > 0 ? excellentColor :
+                     kpis.turnoverMargin < 0 ? poorColor : textColor
             }}>
               {kpis.turnoverMargin > 0 ? '+' : ''}{kpis.turnoverMargin}
             </div>
@@ -1088,7 +1088,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Comparison Charts */}
       <div className="comparison-section">
         <h2 className="section-title">
@@ -1107,8 +1107,7 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
             key={categoryKey}
             className={`category-tab ${activeCategory === categoryKey ? 'active' : ''}`}
             onClick={() => setActiveCategory(categoryKey)}
-            style={activeCategory === categoryKey ? { 
-              background: secondaryColor, 
+            style={activeCategory === categoryKey ? {
               color: textColor,
               borderLeft: `3px solid ${primaryColor}`
             } : {}}
@@ -1123,14 +1122,14 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
       <div className="stats-grid">
         {categories[activeCategory] && renderCategoryCards(categories[activeCategory])}
       </div>
-      
+
       {/* Debug section */}
       {renderDebugSection()}
-      
+
       {/* Additional CSS for Orbitron font and modern styling */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
-        
+
         .team-stats {
           font-family: 'Orbitron', sans-serif;
           color: ${textColor};
@@ -1141,22 +1140,22 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           --poor-color: ${poorColor};
           --neutral-color: ${neutralColor};
         }
-        
+
         .stats-header, .section-title, .kpi-value, .comparison-title, .analysis-header h3 {
           font-family: 'Orbitron', sans-serif;
           font-weight: 600;
         }
-        
+
         /* Modern animations */
         .stat-card, .kpi-card, .comparison-card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .stat-card:hover, .kpi-card:hover, .comparison-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         /* Better percentage bars */
         .percentage-track {
           height: 6px;
@@ -1166,24 +1165,24 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           overflow: hidden;
           margin-top: 8px;
         }
-        
+
         .percentage-bar {
           height: 100%;
           border-radius: 3px;
           transition: width 1s ease-out;
         }
-        
+
         /* Team analysis section */
         .team-analysis-section {
           margin-bottom: 30px;
         }
-        
+
         .analysis-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 20px;
         }
-        
+
         .strengths-card, .weaknesses-card {
           background: white;
           border-radius: 8px;
@@ -1191,89 +1190,88 @@ const TeamStats = ({ teamName, year = 2024, teamColor }) => {
           box-shadow: 0 3px 10px rgba(0,0,0,0.08);
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .strengths-card:hover, .weaknesses-card:hover {
           transform: translateY(-3px);
           box-shadow: 0 6px 15px rgba(0,0,0,0.1);
         }
-        
+
         .strengths-card {
           border-left: 3px solid ${excellentColor};
         }
-        
+
         .weaknesses-card {
           border-left: 3px solid ${poorColor};
         }
-        
+
         .analysis-header {
           display: flex;
           align-items: center;
           margin-bottom: 15px;
         }
-        
+
         .analysis-header h3 {
           margin: 0;
           font-size: 1.2rem;
           margin-left: 10px;
         }
-        
+
         .strength-icon {
           color: ${excellentColor};
           font-size: 1.4rem;
         }
-        
+
         .weakness-icon {
           color: ${poorColor};
           font-size: 1.4rem;
         }
-        
+
         .analysis-items {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
-        
+
         .analysis-item {
           display: flex;
           align-items: center;
           padding: 10px;
-          background: rgba(0,0,0,0.02);
           border-radius: 6px;
           transition: background 0.2s ease;
         }
-        
+
         .analysis-item:hover {
           background: rgba(0,0,0,0.04);
         }
-        
+
         .analysis-item-icon {
           margin-right: 12px;
           color: ${primaryColor};
           font-size: 1.2rem;
         }
-        
+
         .analysis-item-text {
           display: flex;
           justify-content: space-between;
           width: 100%;
         }
-        
+
         .analysis-item-name {
           font-weight: 500;
         }
-        
+
         .analysis-item-value {
           font-weight: 600;
           color: ${primaryColor};
         }
-        
+
         /* Rating icons next to values */
         .value-display {
           display: flex;
           align-items: center;
           gap: 6px;
         }
-        
+
         .rating-icon {
           opacity: 0.8;
         }
