@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaExclamationTriangle } from "react-icons/fa"; // Added FaExclamationTriangle import
 import teamsService from "../services/teamsService";
 import "../styles/TeamDetail.css";
 
