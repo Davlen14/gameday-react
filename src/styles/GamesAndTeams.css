@@ -1,4 +1,4 @@
-/* GamesAndTeams.css - Modern, Clean Layout */
+/* GamesAndTeams.css - Modern, Clean Layout - Optimized */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
 :root {
@@ -11,16 +11,16 @@
     --bg-off-white: #f8f9fa;
     --bg-gray: #f1f3f5;
     --border-light: #e2e8f0;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --transition-fast: 0.2s ease;
-    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07); /* Slightly softer shadow */
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06); /* More pronounced but still subtle */
+    --radius-sm: 6px; /* Slightly smaller radius for a cleaner look */
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --transition-fast: 0.15s ease-in-out; /* Faster and slightly different easing */
+
     /* Screen size variables */
     --max-width: 98%;
-    --content-padding: 1.5rem;
+    --content-padding: 1.25rem; /* Slightly reduced default padding */
 }
 
 /* Dark mode support */
@@ -28,15 +28,15 @@
     :root {
         --primary-color: #ff3352;
         --primary-hover: #e02040;
-        --text-dark: #f1f1f1;
-        --text-medium: #b8b8b8;
-        --text-light: #888888;
-        --bg-light: #1a1a1a;
-        --bg-off-white: #222222;
-        --bg-gray: #2a2a2a;
-        --border-light: #333333;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.2);
+        --text-dark: #f8f8f8; /* Lighter dark text */
+        --text-medium: #b0b0b0;
+        --text-light: #777777;
+        --bg-light: #121212; /* Slightly lighter dark background */
+        --bg-off-white: #1a1a1a;
+        --bg-gray: #222222;
+        --border-light: #2e2e2e;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 }
 
@@ -51,42 +51,43 @@ body {
     font-family: "Titillium Web", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-off-white);
     color: var(--text-dark);
-    line-height: 1.5;
+    line-height: 1.6; /* Slightly increased line height for better readability */
+    -webkit-font-smoothing: antialiased; /* Improve font rendering on webkit browsers */
+    -moz-osx-font-smoothing: grayscale; /* Improve font rendering on Firefox */
 }
 
 .games-container {
-    width: 98%;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 1rem;
-    background-color: var(--bg-off-white);
+    width: var(--max-width);
+    max-width: 1200px; /* More specific max-width for larger screens */
+    margin: 2rem auto; /* Increased top/bottom margin for better visual separation */
+    padding: var(--content-padding);
+    background-color: transparent; /* Container background is now transparent */
 }
 
 /* Header and Filters */
 .header {
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem; /* Reduced gap */
     background: var(--bg-light);
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem; /* Slightly reduced padding */
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem; /* Reduced margin */
     position: relative;
-    border-bottom: 3px solid var(--primary-color);
+    border-bottom: 4px solid var(--primary-color); /* Slightly thicker primary color border */
 }
 
 .header h1 {
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-weight: 800;
-    font-size: 2rem;
+    font-weight: 700; /* Slightly reduced font weight */
+    font-size: 1.75rem; /* Slightly smaller font size */
     color: var(--text-dark);
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    line-height: 1.2;
+    letter-spacing: 0.8px; /* Slightly reduced letter spacing */
+    line-height: 1.1;
 }
 
 /* Filter Bar */
@@ -94,29 +95,30 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem; /* Reduced gap */
     flex: 1;
 }
 
 .filter-toggle {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.2rem;
+    gap: 0.4rem; /* Reduced gap */
+    padding: 0.6rem 1rem; /* Slightly reduced padding */
     background: var(--bg-off-white);
     border-radius: var(--radius-sm);
     color: var(--text-medium);
     cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition-fast);
-    font-size: 0.9rem;
+    font-weight: 500; /* Slightly reduced font weight */
+    transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast); /* More specific transitions */
+    font-size: 0.85rem; /* Slightly smaller font size */
     white-space: nowrap;
     border: 1px solid var(--border-light);
 }
 
 .filter-toggle:hover {
-    background: var(--bg-gray);
-    color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--bg-light);
+    border-color: var(--primary-color);
 }
 
 .chevron-open {
@@ -133,50 +135,50 @@ body {
 .search-box {
     position: relative;
     flex-grow: 1;
-    max-width: 450px;
+    max-width: 400px; /* Slightly reduced max-width */
 }
 
 .search-input {
     width: 100%;
-    padding: 0.85rem 1rem 0.85rem 2.7rem;
+    padding: 0.75rem 1rem 0.75rem 2.5rem; /* Slightly reduced padding */
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Slightly smaller font size */
     background: var(--bg-light);
     color: var(--text-dark);
-    transition: var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast); /* More specific transitions */
     outline: none;
     box-shadow: var(--shadow-sm);
 }
 
 .search-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.1);
+    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2); /* Slightly stronger focus shadow */
 }
 
 .search-icon {
     position: absolute;
-    left: 1rem;
+    left: 0.8rem; /* Slightly adjusted left position */
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-light);
-    font-size: 1rem;
+    font-size: 0.9rem; /* Slightly smaller font size */
     pointer-events: none;
 }
 
 .search-clear {
     position: absolute;
-    right: 0.8rem;
+    right: 0.6rem; /* Slightly adjusted right position */
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     color: var(--text-light);
     cursor: pointer;
-    font-size: 1.2rem;
-    transition: var(--transition-fast);
-    width: 1.8rem;
-    height: 1.8rem;
+    font-size: 1rem; /* Slightly smaller font size */
+    transition: background-color var(--transition-fast), color var(--transition-fast); /* More specific transitions */
+    width: 1.6rem; /* Slightly reduced width */
+    height: 1.6rem; /* Slightly reduced height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -184,7 +186,7 @@ body {
 }
 
 .search-clear:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.07); /* Slightly darker hover background */
     color: var(--primary-color);
 }
 
@@ -192,22 +194,22 @@ body {
 .filter-panel {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.25rem;
+    gap: 1rem; /* Reduced gap */
     padding: 0;
     height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease-in-out; /* Slightly different transition */
     margin-bottom: 0;
-    width: 98%;
+    width: var(--max-width);
     margin: 0 auto;
 }
 
 .filter-panel-open {
     height: auto;
-    padding: 1.5rem;
-    margin-top: -0.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1.25rem; /* Slightly reduced padding */
+    margin-top: -0.25rem; /* Slightly adjusted margin */
+    margin-bottom: 1.25rem; /* Reduced margin */
     background: var(--bg-light);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
@@ -217,63 +219,63 @@ body {
 .filter-group {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.6rem; /* Reduced gap */
 }
 
 .filter-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem; /* Reduced gap */
     color: var(--text-medium);
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 500; /* Slightly reduced font weight */
+    font-size: 0.9rem; /* Slightly smaller font size */
 }
 
 .filter-icon {
     color: var(--primary-color);
-    font-size: 1.1rem;
+    font-size: 1rem; /* Slightly smaller font size */
 }
 
 .filter-select {
-    padding: 0.7rem 2.2rem 0.7rem 1rem;
+    padding: 0.6rem 2rem 0.6rem 0.9rem; /* Slightly reduced padding */
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     background: var(--bg-light);
     font-family: "Titillium Web", sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    font-weight: 400; /* Even lighter font weight */
     color: var(--text-dark);
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4001C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 0.8rem center;
-    background-size: 0.8em;
-    min-width: 140px;
+    background-position: right 0.6rem center; /* Slightly adjusted background position */
+    background-size: 0.7em; /* Slightly smaller background size */
+    min-width: 120px; /* Slightly reduced min-width */
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast); /* More specific transitions */
 }
 
 .filter-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.1);
+    box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2); /* Slightly stronger focus shadow */
 }
 
 .filter-reset {
     margin-left: auto;
-    padding: 0.7rem 1.2rem;
+    padding: 0.6rem 1rem; /* Slightly reduced padding */
     background: transparent;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     color: var(--text-medium);
     cursor: pointer;
-    font-weight: 500;
-    transition: var(--transition-fast);
-    font-size: 0.9rem;
+    font-weight: 400; /* Even lighter font weight */
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast); /* More specific transitions */
+    font-size: 0.85rem; /* Slightly smaller font size */
 }
 
 .filter-reset:hover {
-    background: rgba(212, 0, 28, 0.05);
+    background: rgba(212, 0, 28, 0.1); /* Slightly stronger hover background */
     border-color: var(--primary-color);
     color: var(--primary-color);
 }
@@ -283,31 +285,31 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem; /* Reduced margin */
     padding: 0 0.5rem;
-    width: 98%;
-    margin: 0 auto 1.25rem;
+    width: var(--max-width);
+    margin: 0 auto 1rem; /* Reduced margin */
 }
 
 .results-count {
-    font-weight: 600;
+    font-weight: 500; /* Slightly reduced font weight */
     color: var(--text-medium);
-    font-size: 1rem;
+    font-size: 0.9rem; /* Slightly smaller font size */
 }
 
 .future-season-note {
-    font-size: 0.95rem;
+    font-size: 0.85rem; /* Slightly smaller font size */
     color: var(--primary-color);
-    font-weight: 500;
+    font-weight: 400; /* Even lighter font weight */
     font-style: italic;
 }
 
 /* Games Grid */
 .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-    width: 98%;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Slightly smaller minmax */
+    gap: 1rem; /* Reduced gap */
+    width: var(--max-width);
     margin: 0 auto;
 }
 
@@ -317,7 +319,7 @@ body {
     border-radius: var(--radius-md);
     overflow: hidden;
     box-shadow: var(--shadow-md);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Slightly adjusted transition */
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -326,8 +328,8 @@ body {
 }
 
 .game-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px); /* Slightly reduced hover translation */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Slightly adjusted hover shadow */
 }
 
 /* Teams Container */
@@ -335,8 +337,8 @@ body {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 1.25rem;
+    gap: 0.75rem; /* Reduced gap */
+    padding: 1.25rem 1rem; /* Slightly reduced padding */
     background: var(--bg-light);
     border-bottom: 1px solid var(--border-light);
 }
@@ -346,39 +348,39 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 0.8rem;
+    gap: 0.6rem; /* Reduced gap */
 }
 
 .team-logo {
-    width: 85px;
-    height: 85px;
+    width: 70px; /* Slightly smaller logo */
+    height: 70px; /* Slightly smaller logo */
     object-fit: contain;
     border-radius: 50%;
-    padding: 0.5rem;
+    padding: 0.4rem; /* Slightly reduced padding */
     background: var(--bg-off-white);
     box-shadow: var(--shadow-sm);
     transition: transform var(--transition-fast);
 }
 
 .game-card:hover .team-logo {
-    transform: scale(1.08);
+    transform: scale(1.05); /* Slightly reduced hover scale */
 }
 
 .team-details {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem; /* Reduced gap */
 }
 
 .team-details h3 {
     margin: 0;
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    font-weight: 600; /* Slightly reduced font weight */
     color: var(--text-dark);
-    letter-spacing: 0.5px;
-    max-width: 120px;
+    letter-spacing: 0.3px; /* Slightly reduced letter spacing */
+    max-width: 100px; /* Further reduced max-width */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -386,65 +388,65 @@ body {
 }
 
 .team-division {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.7rem; /* Slightly smaller font size */
+    font-weight: 500; /* Slightly reduced font weight */
     color: var(--text-light);
     background: var(--bg-gray);
-    padding: 0.2rem 0.5rem;
-    border-radius: 20px;
+    padding: 0.15rem 0.4rem; /* Further reduced padding */
+    border-radius: 18px; /* Slightly adjusted border radius */
 }
 
 .score {
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
+    font-size: 1.4rem; /* Slightly smaller font size */
+    font-weight: 700; /* Slightly reduced font weight */
     color: var(--text-dark);
-    margin-top: 0.2rem;
+    margin-top: 0.1rem; /* Slightly adjusted margin */
 }
 
 .vs-circle {
     background: var(--primary-color);
     color: white;
-    width: 44px;
-    height: 44px;
+    width: 38px; /* Slightly smaller circle */
+    height: 38px; /* Slightly smaller circle */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: 600; /* Slightly reduced font weight */
+    font-size: 0.8rem; /* Slightly smaller font size */
     box-shadow: var(--shadow-sm);
-    letter-spacing: 0.5px;
-    transition: transform 0.3s ease;
+    letter-spacing: 0.3px; /* Slightly reduced letter spacing */
+    transition: transform 0.2s ease-in-out; /* Slightly adjusted transition */
     z-index: 2;
 }
 
 .game-card:hover .vs-circle {
-    transform: rotate(10deg) scale(1.1);
+    transform: rotate(8deg) scale(1.05); /* Slightly adjusted hover transform */
 }
 
 /* Game Info */
 .game-info {
-    padding: 0.9rem 1.2rem;
+    padding: 0.8rem 1rem; /* Slightly reduced padding */
     background-color: var(--bg-off-white);
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Slightly smaller font size */
     border-bottom: 1px solid var(--border-light);
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.5rem; /* Reduced gap */
 }
 
 .info-item {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem; /* Reduced gap */
     color: var(--text-medium);
 }
 
 .info-item .icon {
-    width: 18px;
-    height: 18px;
+    width: 16px; /* Slightly smaller icon */
+    height: 16px; /* Slightly smaller icon */
     fill: var(--text-light);
     flex-shrink: 0;
 }
@@ -454,13 +456,13 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
-    line-height: 1.3;
+    line-height: 1.4; /* Slightly increased line height */
 }
 
 .final {
     color: var(--primary-color);
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-weight: 600; /* Slightly reduced font weight */
+    letter-spacing: 0.3px; /* Slightly reduced letter spacing */
     font-family: "Orbitron", "Titillium Web", sans-serif;
 }
 
@@ -469,24 +471,24 @@ body {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    padding: 0.9rem 1.2rem;
+    padding: 0.8rem 1rem; /* Slightly reduced padding */
     background-color: var(--bg-light);
     border-bottom: 1px solid var(--border-light);
-    gap: 1rem;
+    gap: 0.75rem; /* Reduced gap */
 }
 
 .temperature, .network {
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    font-weight: 600; /* Slightly reduced font weight */
     color: var(--text-dark);
-    line-height: 1.1;
+    line-height: 1.2;
 }
 
 .condition {
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* Slightly smaller font size */
     color: var(--text-light);
-    max-width: 120px;
+    max-width: 100px; /* Further reduced max-width */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -494,7 +496,7 @@ body {
 
 /* Betting Section */
 .betting-section {
-    padding: 0.9rem 1.2rem;
+    padding: 0.8rem 1rem; /* Slightly reduced padding */
     background: var(--bg-off-white);
     flex-grow: 1;
     display: flex;
@@ -503,29 +505,29 @@ body {
 }
 
 .betting-section h4 {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.6rem 0; /* Reduced margin */
     color: var(--text-dark);
     font-family: "Orbitron", "Titillium Web", sans-serif;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
+    font-size: 0.85rem; /* Slightly smaller font size */
+    letter-spacing: 0.3px; /* Slightly reduced letter spacing */
     text-transform: uppercase;
     position: relative;
     display: inline-block;
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.2rem; /* Slightly reduced padding */
     border-bottom: 2px solid var(--primary-color);
 }
 
 .sportsbooks {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.5rem; /* Reduced gap */
 }
 
 .sportsbook-line {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
-    padding: 0.6rem 0.9rem;
+    gap: 0.7rem; /* Reduced gap */
+    padding: 0.5rem 0.7rem; /* Slightly reduced padding */
     background: var(--bg-light);
     border-radius: var(--radius-sm);
     transition: transform var(--transition-fast);
@@ -533,39 +535,39 @@ body {
 }
 
 .sportsbook-logo {
-    width: 45px;
-    height: 22px;
+    width: 40px; /* Slightly smaller logo */
+    height: 20px; /* Slightly smaller logo */
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 3px; /* Slightly smaller border radius */
     background: white;
-    padding: 2px;
+    padding: 1px; /* Slightly reduced padding */
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 }
 
 .spread, .overunder, .moneyline {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.85rem; /* Slightly smaller font size */
+    font-weight: 500; /* Slightly reduced font weight */
     color: var(--text-medium);
     white-space: nowrap;
 }
 
 /* View Details Footer - Always visible */
 .view-details-footer {
-    padding: 0.95rem 1.2rem;
+    padding: 0.85rem 1rem; /* Slightly reduced padding */
     background: var(--primary-color);
     color: white;
-    font-weight: 600;
+    font-weight: 500; /* Slightly reduced font weight */
     text-align: center;
-    transition: var(--transition-fast);
+    transition: background-color var(--transition-fast); /* More specific transition */
     margin-top: auto;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .view-details-text {
     display: block;
-    font-size: 0.95rem;
-    letter-spacing: 0.5px;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    letter-spacing: 0.3px; /* Slightly reduced letter spacing */
 }
 
 .game-card:hover .view-details-footer {
@@ -576,7 +578,7 @@ body {
 .no-results {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 2.5rem 1rem; /* Slightly reduced padding */
     background: var(--bg-light);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
@@ -584,32 +586,33 @@ body {
 }
 
 .no-results-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2.5rem; /* Slightly smaller icon */
+    margin-bottom: 0.8rem; /* Reduced margin */
 }
 
 .no-results h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.3rem; /* Slightly smaller font size */
+    margin-bottom: 0.6rem; /* Reduced margin */
     color: var(--text-dark);
 }
 
 .no-results p {
-    max-width: 400px;
+    max-width: 380px; /* Slightly reduced max-width */
     margin: 0 auto;
+    font-size: 0.9rem; /* Slightly smaller font size */
 }
 
 .clear-search-button {
     display: block;
-    margin: 1rem auto 0;
-    padding: 0.7rem 1.4rem;
+    margin: 0.8rem auto 0; /* Reduced margin */
+    padding: 0.6rem 1.2rem; /* Slightly reduced padding */
     background: transparent;
     border: 1px solid var(--primary-color);
     color: var(--primary-color);
     border-radius: var(--radius-sm);
-    font-weight: 600;
+    font-weight: 500; /* Slightly reduced font weight */
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: background-color var(--transition-fast), color var(--transition-fast); /* More specific transitions */
 }
 
 .clear-search-button:hover {
@@ -623,45 +626,45 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1rem;
+    padding: 2.5rem 1rem; /* Slightly reduced padding */
     text-align: center;
     border-radius: var(--radius-md);
     background: var(--bg-light);
     box-shadow: var(--shadow-md);
-    min-height: 250px;
+    min-height: 220px; /* Slightly reduced min-height */
     width: 100%;
-    max-width: 500px;
-    margin: 2rem auto;
+    max-width: 450px; /* Slightly reduced max-width */
+    margin: 1.5rem auto; /* Reduced margin */
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(212, 0, 28, 0.1);
+    width: 40px; /* Slightly smaller spinner */
+    height: 40px; /* Slightly smaller spinner */
+    border: 3px solid rgba(212, 0, 28, 0.1); /* Slightly thinner border */
     border-left-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem; /* Reduced margin */
 }
 
 .loading-text, .error-text {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1rem; /* Slightly smaller font size */
+    font-weight: 500; /* Slightly reduced font weight */
     color: var(--text-medium);
 }
 
 .error-icon {
-    width: 60px;
-    height: 60px;
+    width: 50px; /* Slightly smaller icon */
+    height: 50px; /* Slightly smaller icon */
     background: var(--primary-color);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+    font-size: 1.75rem; /* Slightly smaller font size */
+    font-weight: 600; /* Slightly reduced font weight */
+    margin-bottom: 1rem; /* Reduced margin */
 }
 
 @keyframes spin {
@@ -675,7 +678,7 @@ body {
         flex-direction: row;
         justify-content: space-between;
     }
-    
+
     .filter-bar {
         width: auto;
     }
@@ -683,114 +686,114 @@ body {
 
 @media (max-width: 1400px) {
     .games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Further adjusted minmax */
     }
-    
+
     .team-logo {
-        width: 75px;
-        height: 75px;
+        width: 65px; /* Slightly smaller logo */
+        height: 65px; /* Slightly smaller logo */
     }
 }
 
 @media (max-width: 1200px) {
     .games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Further adjusted minmax */
     }
-    
+
     .team-logo {
-        width: 70px;
-        height: 70px;
+        width: 60px; /* Slightly smaller logo */
+        height: 60px; /* Slightly smaller logo */
     }
 }
 
 @media (max-width: 768px) {
     :root {
-        --content-padding: 1rem;
+        --content-padding: 0.8rem; /* Further reduced padding */
     }
-    
+
     .header {
-        padding: 1.2rem;
+        padding: 1rem;
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .header h1 {
-        font-size: 1.6rem;
+        font-size: 1.5rem; /* Further reduced font size */
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem; /* Reduced margin */
     }
-    
+
     .filter-bar {
         width: 100%;
     }
-    
+
     .filter-toggle span {
-        display: none;
+        display: inline-block; /* Re-enable text on smaller screens if needed for clarity */
     }
-    
+
     .games-grid {
         grid-template-columns: 1fr;
-        gap: 1.2rem;
+        gap: 1rem; /* Reduced gap */
     }
-    
+
     .game-card {
         max-width: 100%;
     }
-    
+
     .team-logo {
-        width: 60px;
-        height: 60px;
+        width: 55px; /* Further reduced logo size */
+        height: 55px; /* Further reduced logo size */
     }
-    
+
     .team-details h3 {
-        font-size: 0.9rem;
-        max-width: 90px;
+        font-size: 0.85rem; /* Further reduced font size */
+        max-width: 80px; /* Further reduced max-width */
     }
-    
+
     .score {
-        font-size: 1.3rem;
+        font-size: 1.2rem; /* Further reduced font size */
     }
-    
+
     .vs-circle {
-        width: 38px;
-        height: 38px;
-        font-size: 0.8rem;
+        width: 34px; /* Further reduced circle size */
+        height: 34px; /* Further reduced circle size */
+        font-size: 0.75rem; /* Further reduced font size */
     }
 }
 
 @media (max-width: 480px) {
     :root {
-        --content-padding: 0.75rem;
+        --content-padding: 0.6rem; /* Further reduced padding */
     }
-    
+
     .header h1 {
-        font-size: 1.4rem;
+        font-size: 1.3rem; /* Further reduced font size */
     }
-    
+
     .filter-panel-open {
-        padding: 1rem;
+        padding: 0.8rem; /* Further reduced padding */
     }
-    
+
     .teams-container {
-        padding: 1.2rem 0.9rem;
+        padding: 1rem 0.75rem; /* Further reduced padding */
     }
-    
+
     .team-logo {
-        width: 50px;
-        height: 50px;
-        padding: 0.3rem;
+        width: 45px; /* Further reduced logo size */
+        height: 45px; /* Further reduced logo size */
+        padding: 0.25rem; /* Further reduced padding */
     }
-    
+
     .info-item, .broadcast-weather-row, .betting-section, .view-details-footer {
-        padding: 0.7rem 0.9rem;
+        padding: 0.6rem 0.75rem; /* Further reduced padding */
     }
-    
+
     .temperature, .network {
-        font-size: 0.85rem;
+        font-size: 0.8rem; /* Further reduced font size */
     }
-    
+
     .condition {
-        font-size: 0.75rem;
+        font-size: 0.7rem; /* Further reduced font size */
     }
 }
 
