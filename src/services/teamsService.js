@@ -113,71 +113,27 @@ export const getGameLines = async (year, team = null, seasonType = "regular") =>
     if (team) params.team = team;
     return await fetchData(endpoint, params);
 };
-
 export const getTeamStats = async (team, year) => {
   const statsEndpoint = "/stats/season"; // API endpoint for team stats
   const params = { year, team };
-
+  
   try {
     console.log(`Fetching stats for team: ${team}`);
     const response = await fetchData(statsEndpoint, params);
-
+    
     if (!Array.isArray(response) || response.length === 0) {
       console.error(`Unexpected or empty API response for ${team}:`, response);
-      // Return default stats if no response or unexpected data
-      return {
-        netPassingYards: 0,
-        rushingYards: 0,
-        totalYards: 0,
-        yardsAllowed: 0,
-        pointsAllowed: 0,
-        sacks: 0,
-      };
+      return [];
     }
-
+    
     console.log(`Raw Team Stats for ${team}:`, response);
-
-    // Create an object with default values.
-    const stats = {
-      netPassingYards: 0,
-      rushingYards: 0,
-      totalYards: 0,
-      yardsAllowed: 0,
-      pointsAllowed: 0,
-      sacks: 0,
-    };
-
-    // Map the raw response fields to your UI fields.
-    // Adjust these comparisons to match exactly what the API returns.
-    response.forEach((stat) => {
-      if (stat.statName === "netPassingYards") {
-        stats.netPassingYards = stat.statValue;
-      } else if (stat.statName === "rushingYards") {
-        stats.rushingYards = stat.statValue;
-      } else if (stat.statName === "totalYards") {
-        stats.totalYards = stat.statValue;
-      } else if (stat.statName === "opponentTotalYards") {
-        stats.yardsAllowed = stat.statValue;
-      } else if (stat.statName === "opponentPoints") {
-        stats.pointsAllowed = stat.statValue;
-      } else if (stat.statName === "sacks") {
-        stats.sacks = stat.statValue;
-      }
-    });
-
-    console.log(`Mapped Stats for ${team}:`, stats);
-    return stats;
+    
+    // Return the full array of stats directly without filtering
+    return response;
+    
   } catch (error) {
     console.error(`Error fetching stats for ${team}:`, error);
-    // Return default values on error
-    return {
-      netPassingYards: 0,
-      rushingYards: 0,
-      totalYards: 0,
-      yardsAllowed: 0,
-      pointsAllowed: 0,
-      sacks: 0,
-    };
+    return [];
   }
 };
 
