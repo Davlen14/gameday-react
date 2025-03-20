@@ -33,7 +33,7 @@ const formatHeight = (heightInInches) => {
   if (!heightInInches) return "N/A";
 
   // Try to handle cases where height might be given as "6'2" or similar
-  if (typeof heightInInches === 'string' && heightInInches.includes("'")) {
+  if (typeof heightInInches === "string" && heightInInches.includes("'")) {
     return heightInInches;
   }
 
@@ -47,6 +47,7 @@ const formatHeight = (heightInInches) => {
 };
 
 const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
+  // Initialize roster as an empty array
   const [roster, setRoster] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null); // Add error state
@@ -61,7 +62,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
       } catch (err) {
         console.error("Error fetching roster:", err.message);
         setError("Failed to load roster information."); // Set error message
-        setRoster(); // Ensure roster is empty on error
+        setRoster([]); // Ensure roster is empty on error
       } finally {
         setIsLoading(false);
       }
@@ -81,37 +82,51 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
   const playerIconStyle = {
     color: teamColor,
     backgroundColor: `${teamColor}10`,
-    padding: '8px',
-    borderRadius: '50%',
-    width: '32px',
-    height: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    padding: "8px",
+    borderRadius: "50%",
+    width: "32px",
+    height: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   };
 
   // Helper function to lighten a color
   const lightenColor = (color, percent) => {
-    const num = parseInt(color.replace('#', ''), 16),
+    const num = parseInt(color.replace("#", ""), 16),
       amt = Math.round(2.55 * percent),
       R = (num >> 16) + amt,
       G = (num >> 8 & 0x00FF) + amt,
       B = (num & 0x0000FF) + amt;
-    return '#' + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
-      (G < 255 ? G : 255) * 0x100 +
-      (B < 255 ? B : 255)).toString(16).slice(1);
+    return (
+      "#" +
+      (0x1000000 +
+        (R < 255 ? R : 255) * 0x10000 +
+        (G < 255 ? G : 255) * 0x100 +
+        (B < 255 ? B : 255)
+      )
+        .toString(16)
+        .slice(1)
+    );
   };
 
   // Helper function to darken a color
   const darkenColor = (color, percent) => {
-    const num = parseInt(color.replace('#', ''), 16),
+    const num = parseInt(color.replace("#", ""), 16),
       amt = Math.round(2.55 * percent),
       R = (num >> 16) - amt,
       G = (num >> 8 & 0x00FF) - amt,
       B = (num & 0x0000FF) - amt;
-    return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
-      (G > 0 ? G : 0) * 0x100 +
-      (B > 0 ? B : 0)).toString(16).slice(1);
+    return (
+      "#" +
+      (0x1000000 +
+        (R > 0 ? R : 0) * 0x10000 +
+        (G > 0 ? G : 0) * 0x100 +
+        (B > 0 ? B : 0)
+      )
+        .toString(16)
+        .slice(1)
+    );
   };
 
   return (
@@ -149,7 +164,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
                       <div className="player-icon" style={playerIconStyle}>
                         <FaUser />
                       </div>
-                      <div className="player-name">{player.fullName || "N/A"}</div> {/* Added fallback for fullName */}
+                      <div className="player-name">{player.fullName || "N/A"}</div>
                     </div>
                   </td>
                   <td>
@@ -163,7 +178,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
                   </td>
                 </tr>
               ))}
-              {roster.length === 0 && !isLoading && !error && ( // Only show "No roster" if not loading and no error
+              {roster.length === 0 && !isLoading && !error && (
                 <tr>
                   <td colSpan="4" style={{ textAlign: "center" }}>
                     No roster information available
