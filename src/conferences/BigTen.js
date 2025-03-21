@@ -297,9 +297,19 @@ const BigTen = () => {
     };
 
     // Fetch data
+    // Force a data fetch if needed
+    const [dataVersion, setDataVersion] = useState(1);
+    
+    // Function to force refresh data
+    const refreshData = () => {
+        console.log("Forcing data refresh...");
+        setDataVersion(prev => prev + 1);
+    };
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log("Starting data fetch process...");
                 setLoading(true);
                 
                 // Fetch teams
@@ -350,63 +360,119 @@ const BigTen = () => {
                 }
 
                 // Fetch team records for standings
-                const standingsData = await Promise.all(
-                    bigTenTeams.map(async (team) => {
-                        try {
-                            const records = await teamsService.getTeamRecords(team.id);
-                            return {
-                                id: team.id,
-                                school: team.school,
-                                mascot: team.mascot,
-                                logo: team.logos?.[0],
-                                color: team.color,
-                                conference: {
-                                    wins: records.conferenceGames?.wins || 0,
-                                    losses: records.conferenceGames?.losses || 0,
-                                    ties: records.conferenceGames?.ties || 0
-                                },
-                                overall: {
-                                    wins: records.total?.wins || 0,
-                                    losses: records.total?.losses || 0,
-                                    ties: records.total?.ties || 0
-                                },
-                                expectedWins: records.expectedWins,
-                                homeRecord: records.homeGames,
-                                awayRecord: records.awayGames,
-                                postseasonRecord: records.postseason
-                            };
-                        } catch (error) {
-                            console.error(`Error fetching records for ${team.school}:`, error);
-                            return {
-                                id: team.id,
-                                school: team.school,
-                                mascot: team.mascot,
-                                logo: team.logos?.[0],
-                                color: team.color,
-                                conference: { wins: 0, losses: 0, ties: 0 },
-                                overall: { wins: 0, losses: 0, ties: 0 }
-                            };
-                        }
-                    })
-                );
-
-                // Sort by conference wins percentage (descending)
-                const sortedStandings = standingsData.sort((a, b) => {
-                    const aWinPct = a.conference.wins / Math.max(1, (a.conference.wins + a.conference.losses + a.conference.ties));
-                    const bWinPct = b.conference.wins / Math.max(1, (b.conference.wins + b.conference.losses + b.conference.ties));
-                    
-                    if (bWinPct !== aWinPct) {
-                        return bWinPct - aWinPct;
-                    }
-                    
-                    // If tie in conference, sort by overall record
-                    const aOverallWinPct = a.overall.wins / Math.max(1, (a.overall.wins + a.overall.losses + a.overall.ties));
-                    const bOverallWinPct = b.overall.wins / Math.max(1, (b.overall.wins + b.overall.losses + b.overall.ties));
-                    
-                    return bOverallWinPct - aOverallWinPct;
-                });
+                console.log("Fetching records for Big Ten teams...");
                 
-                setStandings(sortedStandings);
+                // First approach - try to get all records at once
+                try {
+                    const allRecords = await teamsService.getTeamRecords(); // Get all records
+                    console.log("All records fetched:", allRecords);
+                    
+                    // Map Big Ten teams with their records
+                    const standingsData = bigTenTeams.map(team => {
+                        // Find the record for this team
+                        const teamRecord = allRecords.find(r => r.teamId === team.id) || {};
+                        console.log(`Record for ${team.school}:`, teamRecord);
+                        
+                        return {
+                            id: team.id,
+                            school: team.school,
+                            mascot: team.mascot,
+                            logo: team.logos?.[0],
+                            color: team.color,
+                            conference: {
+                                wins: teamRecord.conferenceGames?.wins || 0,
+                                losses: teamRecord.conferenceGames?.losses || 0,
+                                ties: teamRecord.conferenceGames?.ties || 0
+                            },
+                            overall: {
+                                wins: teamRecord.total?.wins || 0,
+                                losses: teamRecord.total?.losses || 0,
+                                ties: teamRecord.total?.ties || 0
+                            },
+                            expectedWins: teamRecord.expectedWins,
+                            homeRecord: teamRecord.homeGames,
+                            awayRecord: teamRecord.awayGames,
+                            postseasonRecord: teamRecord.postseason
+                        };
+                    });
+                    
+                    // Sort by conference win percentage
+                    const sortedStandings = standingsData.sort((a, b) => {
+                        const aWinPct = a.conference.wins / Math.max(1, (a.conference.wins + a.conference.losses + a.conference.ties));
+                        const bWinPct = b.conference.wins / Math.max(1, (b.conference.wins + b.conference.losses + b.conference.ties));
+                        
+                        if (bWinPct !== aWinPct) {
+                            return bWinPct - aWinPct;
+                        }
+                        
+                        // If tie in conference, sort by overall record
+                        const aOverallWinPct = a.overall.wins / Math.max(1, (a.overall.wins + a.overall.losses + a.overall.ties));
+                        const bOverallWinPct = b.overall.wins / Math.max(1, (b.overall.wins + b.overall.losses + b.overall.ties));
+                        
+                        return bOverallWinPct - aOverallWinPct;
+                    });
+                    
+                    console.log("Sorted standings:", sortedStandings);
+                    setStandings(sortedStandings);
+                    
+                } catch (error) {
+                    console.error("Error fetching all records:", error);
+                    
+                    // Fallback: Fetch individual team records as before
+                    console.log("Falling back to individual record fetching...");
+                    const fallbackStandings = await Promise.all(
+                        bigTenTeams.map(async (team) => {
+                            try {
+                                const records = await teamsService.getTeamRecords(team.id);
+                                console.log(`Records for ${team.school}:`, records);
+                                return {
+                                    id: team.id,
+                                    school: team.school,
+                                    mascot: team.mascot,
+                                    logo: team.logos?.[0],
+                                    color: team.color,
+                                    conference: {
+                                        wins: records.conferenceGames?.wins || 0,
+                                        losses: records.conferenceGames?.losses || 0,
+                                        ties: records.conferenceGames?.ties || 0
+                                    },
+                                    overall: {
+                                        wins: records.total?.wins || 0,
+                                        losses: records.total?.losses || 0,
+                                        ties: records.total?.ties || 0
+                                    },
+                                    expectedWins: records.expectedWins,
+                                    homeRecord: records.homeGames,
+                                    awayRecord: records.awayGames,
+                                    postseasonRecord: records.postseason
+                                };
+                            } catch (error) {
+                                console.error(`Error fetching records for ${team.school}:`, error);
+                                return {
+                                    id: team.id,
+                                    school: team.school,
+                                    mascot: team.mascot,
+                                    logo: team.logos?.[0],
+                                    color: team.color,
+                                    conference: { wins: 0, losses: 0, ties: 0 },
+                                    overall: { wins: 0, losses: 0, ties: 0 }
+                                };
+                            }
+                        })
+                    );
+                    
+                    // Sort and set the standings
+                    const sortedFallback = fallbackStandings.sort((a, b) => {
+                        const aWinPct = a.conference.wins / Math.max(1, (a.conference.wins + a.conference.losses));
+                        const bWinPct = b.conference.wins / Math.max(1, (b.conference.wins + b.conference.losses));
+                        return bWinPct - aWinPct;
+                    });
+                    
+                    console.log("Fallback sorted standings:", sortedFallback);
+                    setStandings(sortedFallback);
+                }
+
+                // This code section has been moved into the try/catch block above
                 setLoading(false);
             } catch (err) {
                 setError(`Error loading data: ${err.message}`);
@@ -415,7 +481,7 @@ const BigTen = () => {
         };
 
         fetchData();
-    }, []);
+    }, [dataVersion]); // Re-run when dataVersion changes
 
     const handleTeamClick = (teamId) => {
         const team = teams.find(t => t.id === teamId);
@@ -435,15 +501,63 @@ const BigTen = () => {
     }
 
     if (error) {
-        return <div style={errorStyle}>{error}</div>;
+        return (
+            <div style={errorStyle}>
+                <div>{error}</div>
+                <button 
+                    onClick={refreshData}
+                    style={{
+                        marginTop: "20px",
+                        padding: "10px 20px",
+                        backgroundColor: "#002855",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                    }}
+                >
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+    
+    // Handle empty standings
+    if (standings.length === 0) {
+        return (
+            <div style={errorStyle}>
+                <div>No standings data available. Try refreshing the data.</div>
+                <button 
+                    onClick={refreshData}
+                    style={{
+                        marginTop: "20px",
+                        padding: "10px 20px",
+                        backgroundColor: "#002855",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                    }}
+                >
+                    Refresh Data
+                </button>
+            </div>
+        );
     }
 
     // Calculate conference and overall winning percentages
     const calculateWinPct = (wins, losses, ties) => {
+        wins = parseInt(wins) || 0;
+        losses = parseInt(losses) || 0;
+        ties = parseInt(ties) || 0;
+        
         const total = wins + losses + ties;
         if (total === 0) return 0;
         return (wins / total * 100).toFixed(1);
     };
+    
+    // Debug - check if we have standings data
+    console.log("Standings data at render time:", standings);
 
     return (
         <div style={pageStyle}>
