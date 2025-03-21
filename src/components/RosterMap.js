@@ -22,6 +22,14 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Fix Leaflet icon issues
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
   <div className="loading-spinner">
@@ -104,7 +112,7 @@ const formatHeight = (heightInInches) => {
 };
 
 // Leaflet map controller for programmatic control
-const MapController = ({ center, zoom, selectedPlayer }) => {
+const MapController = ({ center, zoom }) => {
   const map = useMap();
   
   useEffect(() => {
@@ -129,6 +137,8 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const [mapZoom, setMapZoom] = useState(4);
   const [searchTerm, setSearchTerm] = useState('');
   const [stadiumLocation, setStadiumLocation] = useState(null);
+  const [mapKey, setMapKey] = useState(Date.now()); // For forcing remount of MapContainer
+  const mapContainerRef = useRef(null);
   
   // Fetch roster data
   useEffect(() => {
@@ -143,19 +153,31 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
         const positions = ['All', ...new Set(data.map(player => player.position))].filter(Boolean);
         setPositionGroups(positions);
         
-        // Also fetch team location data
+        // Fetch team location data
         const teamsData = await teamsService.getTeams();
         const team = teamsData.find(t => t.school === teamName);
-        setTeamData(team);
         
-        // Set stadium location (placeholder - in real app, get actual stadium coordinates)
-        // For now just use a random player's location or center of US
-        const somePlayer = data.find(p => p.homeLatitude && p.homeLongitude);
-        if (somePlayer) {
-          setStadiumLocation([somePlayer.homeLatitude + 0.5, somePlayer.homeLongitude - 0.5]);
+        if (team) {
+          setTeamData(team);
+          
+          // Set stadium location using the team's actual location data
+          if (team.location && team.location.latitude && team.location.longitude) {
+            setStadiumLocation([team.location.latitude, team.location.longitude]);
+            
+            // Center the map on the stadium initially
+            setMapCenter([team.location.latitude, team.location.longitude]);
+            setMapZoom(5); // Start with a reasonable zoom level
+            
+            console.log("Set stadium location:", [team.location.latitude, team.location.longitude]);
+          } else {
+            console.warn("Team location data missing or incomplete:", team);
+          }
         } else {
-          setStadiumLocation([39.8283, -98.5795]);
+          console.warn("Team not found:", teamName);
         }
+        
+        // Force a refresh of the map
+        setMapKey(Date.now());
       } catch (err) {
         console.error("Error fetching roster:", err.message);
         setError("Failed to load roster information.");
@@ -167,6 +189,53 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
     fetchRoster();
   }, [teamName, year]);
+
+  // Determine bounds for the map to fit all markers
+  useEffect(() => {
+    if (roster.length > 0 && stadiumLocation) {
+      // Create a bounds object to include all points
+      const validPlayerLocations = roster
+        .filter(p => p.homeLatitude && p.homeLongitude)
+        .map(p => [p.homeLatitude, p.homeLongitude]);
+      
+      if (validPlayerLocations.length > 0) {
+        // Add stadium location to the points
+        const allPoints = [...validPlayerLocations, stadiumLocation];
+        
+        // Get the extremes
+        const latitudes = allPoints.map(p => p[0]);
+        const longitudes = allPoints.map(p => p[1]);
+        
+        const south = Math.min(...latitudes);
+        const north = Math.max(...latitudes);
+        const west = Math.min(...longitudes);
+        const east = Math.max(...longitudes);
+        
+        // Add some padding
+        const latPadding = (north - south) * 0.2;
+        const lngPadding = (east - west) * 0.2;
+        
+        // Calculate center point
+        const centerLat = (north + south) / 2;
+        const centerLng = (east + west) / 2;
+        
+        setMapCenter([centerLat, centerLng]);
+        
+        // Determine zoom level based on the bounds size
+        // This is a rough calculation, adjust as needed
+        const latDiff = Math.abs(north - south) + latPadding * 2;
+        const lngDiff = Math.abs(east - west) + lngPadding * 2;
+        
+        // The larger the difference, the smaller the zoom
+        const zoom = Math.min(
+          Math.floor(6 / Math.max(latDiff / 10, lngDiff / 20)),
+          10
+        );
+        
+        setMapZoom(zoom > 3 ? zoom : 4);
+      }
+    }
+  }, [roster, stadiumLocation]);
 
   // Filter players based on selected position and search term
   const filteredPlayers = roster.filter(player => {
@@ -221,8 +290,14 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const resetFilters = () => {
     setFilterPosition('All');
     setSearchTerm('');
-    setMapCenter([39.8283, -98.5795]);
-    setMapZoom(4);
+    
+    // Reset map view to fit all players
+    if (roster.length > 0 && stadiumLocation) {
+      setMapCenter([39.8283, -98.5795]);
+      setMapZoom(4);
+    }
+    
+    setSelectedPlayer(null);
   };
   
   // Find home state distribution
@@ -237,7 +312,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const topStates = Object.entries(stateDistribution)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
-    
+
   // Create custom icons for markers
   const createPlayerIcon = (player) => {
     const initials = getInitials(player.firstName, player.lastName);
@@ -256,19 +331,39 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   };
   
   // Create stadium icon
-  const stadiumIcon = teamData ? L.divIcon({
-    className: 'stadium-marker-icon',
-    html: `
-      <div class="stadium-container" style="--team-color: ${teamColor}; --team-light: ${lightenColor(teamColor, 20)}; --team-dark: ${darkenColor(teamColor, 30)};">
-        <div class="stadium-icon">
-          <i class="fa-university"></i>
+  const createStadiumIcon = () => {
+    if (!teamData || !teamData.logos || !teamData.logos[0]) {
+      return L.divIcon({
+        className: 'stadium-marker-icon',
+        html: `
+          <div class="stadium-container" style="--team-color: ${teamColor}; --team-light: ${lightenColor(teamColor, 20)}; --team-dark: ${darkenColor(teamColor, 30)};">
+            <div class="stadium-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3L1 9l11 6l11-6l-11-6zm0 18l-9-5v-6.5l9 5v6.5zm0 0l9-5v-6.5l-9 5v6.5z"/>
+              </svg>
+            </div>
+          </div>
+        `,
+        iconSize: [50, 50],
+        iconAnchor: [25, 50]
+      });
+    }
+    
+    return L.divIcon({
+      className: 'stadium-marker-icon',
+      html: `
+        <div class="stadium-container" style="--team-color: ${teamColor}; --team-light: ${lightenColor(teamColor, 20)}; --team-dark: ${darkenColor(teamColor, 30)};">
+          <img src="${teamData.logos[0]}" alt="${teamName}" class="stadium-logo" />
         </div>
-        <img src="${teamData.logos?.[0] || "/photos/default_team.png"}" alt="${teamName}" class="stadium-logo" />
-      </div>
-    `,
-    iconSize: [50, 50],
-    iconAnchor: [25, 50]
-  }) : null;
+      `,
+      iconSize: [50, 50],
+      iconAnchor: [25, 50]
+    });
+  };
+
+  console.log("Filtered players count:", filteredPlayers.length);
+  console.log("Players with location data:", filteredPlayers.filter(p => p.homeLatitude && p.homeLongitude).length);
+  console.log("Stadium location:", stadiumLocation);
 
   return (
     <div className="dashboard-card full-width-card">
@@ -373,8 +468,9 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
               )}
             </div>
             
-            <div className="map-visualization">
+            <div className="map-visualization" ref={mapContainerRef}>
               <MapContainer 
+                key={mapKey}
                 center={mapCenter} 
                 zoom={mapZoom} 
                 style={{ height: '600px', width: '100%', borderRadius: '8px', overflow: 'hidden' }}
@@ -386,15 +482,14 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
                 
                 <MapController 
                   center={mapCenter} 
-                  zoom={mapZoom} 
-                  selectedPlayer={selectedPlayer} 
+                  zoom={mapZoom}
                 />
                 
                 {/* Stadium marker */}
                 {stadiumLocation && (
                   <Marker 
                     position={stadiumLocation} 
-                    icon={stadiumIcon}
+                    icon={createStadiumIcon()}
                     eventHandlers={{
                       click: handleStadiumClick
                     }}
@@ -402,7 +497,12 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
                     <Popup>
                       <div className="stadium-popup">
                         <h3>{teamName} Stadium</h3>
-                        <div>Home of the {teamName} {teamData?.mascot}</div>
+                        {teamData?.location?.name && (
+                          <div>{teamData.location.name}</div>
+                        )}
+                        {teamData?.location?.city && teamData?.location?.state && (
+                          <div>{teamData.location.city}, {teamData.location.state}</div>
+                        )}
                       </div>
                     </Popup>
                   </Marker>
@@ -411,6 +511,9 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
                 {/* Player markers */}
                 {filteredPlayers.map(player => {
                   if (!player.homeLatitude || !player.homeLongitude) return null;
+                  
+                  // Debugging output for player locations
+                  console.log(`Player ${player.firstName} ${player.lastName} at [${player.homeLatitude}, ${player.homeLongitude}]`);
                   
                   return (
                     <Marker 
@@ -707,6 +810,8 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           border-radius: 8px;
           overflow: hidden;
           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+          position: relative;
+          z-index: 1;
         }
         
         /* Player Marker Styling */
@@ -755,7 +860,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           position: absolute;
           bottom: -24px;
           left: 50%;
-          transform: translateX(-50%);
+          transform: translateX(-50%) rotate(45deg);
           background: var(--player-color);
           color: white;
           padding: 2px 6px;
@@ -786,6 +891,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           position: relative;
           cursor: pointer;
           transition: all 0.3s ease;
+          z-index: 1000;
         }
         
         .stadium-marker-icon .stadium-container:hover {
@@ -797,6 +903,11 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           height: 80%;
           object-fit: contain;
           filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
+        }
+        
+        .stadium-marker-icon .stadium-icon {
+          color: white;
+          font-size: 24px;
         }
         
         /* Popup Styling */
