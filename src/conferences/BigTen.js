@@ -449,11 +449,36 @@ const BigTen = () => {
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
                 }
 
-                // Fetch news
-                const newsData = await newsService.fetchCollegeFootballNews();
-                console.log("Fetched news data:", newsData);
-                if (newsData && !newsData.error && newsData.length > 0) {
-                    setNews(newsData.slice(0, 5)); // Get top 5 news articles
+                // Fetch news - now fetch both football and coach news
+                const footballNewsPromise = newsService.fetchCollegeFootballNews();
+                const coachNewsPromise = newsService.fetchCollegeCoachNews();
+                
+                const [footballNews, coachNews] = await Promise.all([footballNewsPromise, coachNewsPromise]);
+                
+                let combinedNews = [];
+                
+                // Add football news if available
+                if (footballNews && !footballNews.error && footballNews.length > 0) {
+                    combinedNews = [...footballNews];
+                }
+                
+                // Add coach news if available
+                if (coachNews && !coachNews.error && coachNews.length > 0) {
+                    // Filter out duplicate news (same title)
+                    const coachNewsFiltered = coachNews.filter(coachArticle => 
+                        !combinedNews.some(article => article.title === coachArticle.title)
+                    );
+                    combinedNews = [...combinedNews, ...coachNewsFiltered];
+                }
+                
+                // Sort by published date (newest first)
+                combinedNews.sort((a, b) => {
+                    return new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0);
+                });
+                
+                // Get top 10 news articles
+                if (combinedNews.length > 0) {
+                    setNews(combinedNews.slice(0, 10));
                 }
 
                 // Fetch top recruits
@@ -700,25 +725,62 @@ const BigTen = () => {
                     <div style={sectionStyle}>
                         <h2 style={newsTitleStyle}>LATEST NEWS</h2>
                         {news && news.length > 0 ? (
-                            news.map((article, index) => (
-                                <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
-                                    {article.urlToImage && (
-                                        <img
-                                            src={article.urlToImage}
-                                            alt={article.title}
-                                            style={newsImageStyle}
-                                            onError={(e) => {
-                                                e.target.src = "/photos/default_news.jpg";
-                                            }}
-                                        />
-                                    )}
-                                    <h3 style={newsTitleTextStyle}>{article.title}</h3>
-                                    <p style={newsDescriptionStyle}>{article.description || "Read more..."}</p>
-                                    <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
-                                </div>
-                            ))
+                            <div style={{ maxHeight: '850px', overflowY: 'auto' }}>
+                                {news.map((article, index) => (
+                                    <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
+                                        {article.urlToImage && (
+                                            <img
+                                                src={article.urlToImage}
+                                                alt={article.title}
+                                                style={newsImageStyle}
+                                                onError={(e) => {
+                                                    e.target.src = "/photos/default_news.jpg";
+                                                }}
+                                            />
+                                        )}
+                                        <h3 style={newsTitleTextStyle}>{article.title}</h3>
+                                        <p style={newsDescriptionStyle}>{article.description || "Read more..."}</p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ 
+                                                backgroundColor: '#f0f0f0', 
+                                                padding: '3px 6px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.7rem',
+                                                color: '#555'
+                                            }}>
+                                                {article.source?.name || "College Sports"}
+                                            </span>
+                                            <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
-                            <div>No news articles available</div>
+                            <div style={{ 
+                                padding: "20px", 
+                                textAlign: "center", 
+                                backgroundColor: "#f9f9f9",
+                                borderRadius: "6px",
+                                color: "#666"
+                            }}>
+                                <FaNewspaper style={{ fontSize: "24px", marginBottom: "10px", opacity: 0.6 }} />
+                                <p>No news articles available at the moment</p>
+                                <button 
+                                    onClick={refreshData}
+                                    style={{
+                                        marginTop: "10px",
+                                        padding: "8px 16px",
+                                        backgroundColor: bigTenColors.secondary,
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                        fontSize: "0.8rem"
+                                    }}
+                                >
+                                    Refresh News
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
