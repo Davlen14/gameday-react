@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import teamsService from "../services/teamsService";
-import { FaTrophy, FaUserAlt, FaStar } from 'react-icons/fa';
+import newsService from "../services/newsService";
+import { FaTrophy, FaUserAlt, FaStar, FaNewspaper } from 'react-icons/fa';
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -171,6 +172,7 @@ const BigTen = () => {
     const [teams, setTeams] = useState([]);
     const [recruits, setRecruits] = useState([]);
     const [standings, setStandings] = useState([]);
+    const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [mapCenter, setMapCenter] = useState([41.0, -85.0]);
@@ -190,6 +192,8 @@ const BigTen = () => {
         padding: "20px 0",
         minHeight: "100vh",
         fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        width: "98%",
+        margin: "0 auto",
     };
 
     const headerStyle = {
@@ -198,12 +202,12 @@ const BigTen = () => {
         alignItems: "center",
         justifyContent: "center",
         padding: "20px",
-        backgroundColor: bigTenColors.primary,
-        color: bigTenColors.accent,
+        backgroundColor: "#ffffff", // Changed to white as requested
+        color: "#000000", // Black text
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         borderRadius: "8px",
-        margin: "0 auto 20px auto",
-        maxWidth: "1200px",
+        marginBottom: "20px",
+        width: "100%",
     };
 
     const logoStyle = {
@@ -214,7 +218,7 @@ const BigTen = () => {
 
     const subtitleStyle = {
         fontSize: "1.2rem",
-        color: "#ffffff",
+        color: "#000000", // Black text
         fontWeight: "300",
         letterSpacing: "0.1em",
         margin: "0",
@@ -224,9 +228,7 @@ const BigTen = () => {
         display: "grid",
         gridTemplateColumns: "1fr 350px", // Main content area and sidebar
         gap: "20px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        padding: "0 20px",
+        width: "100%",
     };
 
     const mainContentStyle = {
@@ -277,6 +279,10 @@ const BigTen = () => {
         borderBottom: `2px solid ${bigTenColors.secondary}`,
     };
 
+    const newsTitleStyle = {
+        ...crystalBallTitleStyle,
+    };
+
     const recruitRowStyle = {
         display: "flex",
         padding: "10px 0",
@@ -293,6 +299,53 @@ const BigTen = () => {
         backgroundColor: "#f0f0f0",
         borderRadius: "50%",
         marginRight: "10px",
+    };
+
+    const newsCardStyle = {
+        padding: "12px",
+        marginBottom: "15px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        cursor: "pointer",
+    };
+
+    const newsImageStyle = {
+        width: "100%",
+        height: "140px",
+        objectFit: "cover",
+        borderRadius: "6px",
+        marginBottom: "10px",
+    };
+
+    const newsTitleTextStyle = {
+        fontSize: "1rem",
+        fontWeight: "600",
+        marginBottom: "8px",
+        lineHeight: "1.3",
+        display: "-webkit-box",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    };
+
+    const newsDescriptionStyle = {
+        fontSize: "0.85rem",
+        color: "#555",
+        marginBottom: "8px",
+        display: "-webkit-box",
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    };
+
+    const newsDateStyle = {
+        fontSize: "0.75rem",
+        color: "#888",
+        textAlign: "right",
     };
 
     const loadingStyle = {
@@ -350,6 +403,12 @@ const BigTen = () => {
         });
     };
 
+    // Format date for news articles
+    const formatNewsDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     // Force a data fetch if needed
     const [dataVersion, setDataVersion] = useState(1);
     
@@ -384,6 +443,13 @@ const BigTen = () => {
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
                 }
 
+                // Fetch news
+                const newsData = await newsService.fetchCollegeFootballNews();
+                console.log("Fetched news data:", newsData);
+                if (newsData && !newsData.error && newsData.length > 0) {
+                    setNews(newsData.slice(0, 5)); // Get top 5 news articles
+                }
+
                 // Fetch top recruits
                 const recruitsData = await teamsService.getAllRecruits();
                 if (recruitsData && recruitsData.length > 0) {
@@ -399,7 +465,19 @@ const BigTen = () => {
                         .sort((a, b) => b.rating - a.rating)
                         .slice(0, 10); // Get top 10
                     
-                    setRecruits(bigTenRecruits);
+                    // Add team logo URLs to each recruit
+                    const recruitsWithLogos = bigTenRecruits.map(recruit => {
+                        const team = bigTenTeams.find(t => 
+                            t.school === recruit.committedTo || 
+                            t.mascot === recruit.committedTo
+                        );
+                        return {
+                            ...recruit,
+                            teamLogo: team?.logos?.[0] || null
+                        };
+                    });
+                    
+                    setRecruits(recruitsWithLogos);
                 }
 
                 // Fetch team records for standings
@@ -598,9 +676,6 @@ const BigTen = () => {
         return (wins / total * 100).toFixed(1);
     };
     
-    // Debug - check if we have standings data
-    console.log("Standings data at render time:", standings);
-
     return (
         <div style={pageStyle}>
             {/* Header with Big Ten logo and subtitle */}
@@ -763,6 +838,34 @@ const BigTen = () => {
                             </MapContainer>
                         </div>
                     </div>
+
+                    {/* News Section */}
+                    <div style={sectionStyle}>
+                        <h2 style={newsTitleStyle}>LATEST NEWS</h2>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "15px" }}>
+                            {news && news.length > 0 ? (
+                                news.map((article, index) => (
+                                    <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
+                                        {article.urlToImage && (
+                                            <img
+                                                src={article.urlToImage}
+                                                alt={article.title}
+                                                style={newsImageStyle}
+                                                onError={(e) => {
+                                                    e.target.src = "/photos/default_news.jpg";
+                                                }}
+                                            />
+                                        )}
+                                        <h3 style={newsTitleTextStyle}>{article.title}</h3>
+                                        <p style={newsDescriptionStyle}>{article.description || "Read more..."}</p>
+                                        <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div>No news articles available</div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Sidebar - Crystal Ball (Recruits) */}
@@ -781,8 +884,26 @@ const BigTen = () => {
                                                 {recruit.name || "Unnamed Recruit"}
                                             </div>
                                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                                    {recruit.position || "Unknown"} • {recruit.committedTo || "Uncommitted"}
+                                                <div style={{ 
+                                                    fontSize: "0.8rem", 
+                                                    color: "#666", 
+                                                    display: "flex", 
+                                                    alignItems: "center"
+                                                }}>
+                                                    {recruit.position || "Unknown"} • 
+                                                    {recruit.teamLogo && (
+                                                        <img 
+                                                            src={recruit.teamLogo} 
+                                                            alt={recruit.committedTo}
+                                                            style={{
+                                                                width: "18px",
+                                                                height: "18px",
+                                                                margin: "0 4px",
+                                                                objectFit: "contain",
+                                                            }}
+                                                        />
+                                                    )}
+                                                    {recruit.committedTo || "Uncommitted"}
                                                 </div>
                                                 <div style={{ display: "flex", alignItems: "center" }}>
                                                     <span style={{ 
