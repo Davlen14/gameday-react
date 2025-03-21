@@ -23,31 +23,7 @@ const MapViewUpdater = ({ center, zoom }) => {
     return null;
 };
 
-// Team abbreviations mapping
-const getTeamAbbreviation = (school) => {
-    const abbreviations = {
-        "Illinois": "ILL",
-        "Indiana": "IND",
-        "Iowa": "IOWA",
-        "Maryland": "MD",
-        "Michigan": "MICH",
-        "Michigan State": "MSU",
-        "Minnesota": "MINN",
-        "Nebraska": "NEB",
-        "Northwestern": "NW",
-        "Ohio State": "OSU",
-        "Penn State": "PSU",
-        "Purdue": "PUR",
-        "Rutgers": "RUT",
-        "Wisconsin": "WIS",
-        "UCLA": "UCLA",
-        "USC": "USC",
-        "Oregon": "ORE",
-        "Washington": "WASH"
-    };
-    
-    return abbreviations[school] || school.substring(0, 3).toUpperCase();
-};
+// No need for custom abbreviations mapping - data comes from API
 
 // Custom Map Control for Title and Legend (INLINE STYLES)
 const MapControl = ({ teams, onTeamClick }) => {
@@ -150,8 +126,8 @@ const MapControl = ({ teams, onTeamClick }) => {
                 Object.assign(span.style, {
                     fontSize: "0.8rem"
                 });
-                // Use team abbreviation instead of full name
-                span.textContent = getTeamAbbreviation(team.school);
+                // Use team abbreviation from API instead of full name
+                span.textContent = team.abbreviation || team.school.substring(0, 3).toUpperCase();
             });
 
             // Event delegation for legend clicks
