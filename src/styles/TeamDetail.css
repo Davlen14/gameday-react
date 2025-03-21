@@ -459,7 +459,6 @@ body {
   justify-content: center;
   margin-right: 2.5rem;
   flex-shrink: 0;
-  position: relative;
   perspective: 800px;
   border-radius: 12px;
   box-shadow:
@@ -480,10 +479,7 @@ body {
   z-index: 2;
 }
 
-
-
-/* Metallic overlay that works with any logo */
-.team-logo-container::after {
+.team-detail-logo-container::after {
   content: "";
   position: absolute;
   top: 0;
@@ -501,8 +497,7 @@ body {
   z-index: 2;
 }
 
-/* Shining effect overlay */
-.team-logo-container::before {
+.team-detail-logo-container::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -524,12 +519,10 @@ body {
   animation: shine 4s infinite ease-in-out;
 }
 
-/* Interactive hover effect */
-.team-logo-container:hover .team-logo-large {
+.team-detail-logo-container:hover .team-detail-logo-large {
   transform: rotateY(-5deg) rotateX(-5deg) scale(1.05);
 }
 
-/* Ensuring shine animation is available */
 @keyframes shine {
   0%, 100% {
     top: -150%;
@@ -540,6 +533,7 @@ body {
     left: 100%;
   }
 }
+
 
 .team-info {
   display: flex;
