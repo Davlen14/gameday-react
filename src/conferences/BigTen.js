@@ -12,6 +12,43 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
+// Helper component to update map view when center/zoom changes
+const MapViewUpdater = ({ center, zoom }) => {
+    const map = useMap();
+    
+    useEffect(() => {
+        map.setView(center, zoom);
+    }, [center, zoom, map]);
+    
+    return null;
+};
+
+// Team abbreviations mapping
+const getTeamAbbreviation = (school) => {
+    const abbreviations = {
+        "Illinois": "ILL",
+        "Indiana": "IND",
+        "Iowa": "IOWA",
+        "Maryland": "MD",
+        "Michigan": "MICH",
+        "Michigan State": "MSU",
+        "Minnesota": "MINN",
+        "Nebraska": "NEB",
+        "Northwestern": "NW",
+        "Ohio State": "OSU",
+        "Penn State": "PSU",
+        "Purdue": "PUR",
+        "Rutgers": "RUT",
+        "Wisconsin": "WIS",
+        "UCLA": "UCLA",
+        "USC": "USC",
+        "Oregon": "ORE",
+        "Washington": "WASH"
+    };
+    
+    return abbreviations[school] || school.substring(0, 3).toUpperCase();
+};
+
 // Custom Map Control for Title and Legend (INLINE STYLES)
 const MapControl = ({ teams, onTeamClick }) => {
     const map = useMap();
@@ -25,71 +62,53 @@ const MapControl = ({ teams, onTeamClick }) => {
             // Inline styles for map-control-container
             Object.assign(div.style, {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
-                padding: "8px", // Reduced padding
-                borderRadius: "8px", // Reduced border radius
+                padding: "8px", 
+                borderRadius: "8px", 
                 boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                maxWidth: "200px", // Further reduced max width
-                minWidth: "150px" // Reduced min-width
+                maxWidth: "230px", // Increased max width to fit more teams
+                minWidth: "180px" // Increased min-width
             });
 
             const mapTitleDiv = L.DomUtil.create("div", "", div);
-            //Inline styles for map-title
+            // Inline styles for map-title
             Object.assign(mapTitleDiv.style, {
               display: "flex",
+              justifyContent: "center", // Center the logo
               alignItems: "center",
-              marginBottom: "8px", // Reduced margin
+              marginBottom: "8px",
             });
 
-
             const logoImg = L.DomUtil.create("img", "", mapTitleDiv);
-            //Inline styles for map-title-logo
+            // Inline styles for map-title-logo
             Object.assign(logoImg.style, {
-                width: "32px", // Smaller logo
-                height: "32px",
-                marginRight: "8px",
+                width: "40px", // Slightly larger logo
+                height: "40px",
                 objectFit: "contain"
             });
             logoImg.src = "/photos/Big Ten.png";
             logoImg.alt = "Big Ten Logo";
 
-            const titleH1 = L.DomUtil.create("h1", "", mapTitleDiv);
-            //Inline styles for the h1 in map-title
-             Object.assign(titleH1.style, {
-                fontSize: "1.2rem", // Smaller font size
-                margin: "0",
-                fontWeight: "bold",
-                color: "#002855",
-            });
-            titleH1.textContent = "Big Ten";
-
+            // Remove Big Ten text header
 
             const legendDiv = L.DomUtil.create("div", "", div);
-            //Inline styles for legend
+            // Inline styles for legend
             Object.assign(legendDiv.style, {
-                marginTop: "8px" // Reduced margin
+                marginTop: "8px"
             });
 
-            const legendH3 = L.DomUtil.create('h3', "", legendDiv);
-             //Inline styles for h3 in legend
-            Object.assign(legendH3.style, {
-                fontSize: "1rem", // Smaller font size
-                margin: "0 0 6px 0", // Reduced margin
-                fontWeight: "bold",
-            });
-            legendH3.textContent = "Teams";
-
+            // Remove Teams text header
 
             const ul = L.DomUtil.create("ul", "", legendDiv);
-            //Inline styles for ul in legend
-             Object.assign(ul.style, {
+            // Inline styles for ul in legend
+            Object.assign(ul.style, {
                 listStyle: "none",
                 padding: "0",
                 margin: "0",
-                display: 'flex', // Added
-                flexWrap: 'wrap', // Added
-                gap: '5px'
-
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px',
+                justifyContent: 'space-between'
             });
 
             teams.forEach(team => {
@@ -100,13 +119,12 @@ const MapControl = ({ teams, onTeamClick }) => {
                 Object.assign(li.style, {
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "3px", // Reduced margin
+                  marginBottom: "3px",
                   cursor: "pointer",
-                  padding: "3px",  // Reduced padding
-                  borderRadius: "4px", // Reduced border radius
+                  padding: "3px",
+                  borderRadius: "4px",
                   transition: "background-color 0.2s",
-                   width: '48%', // Added for two columns
-
+                  width: '45%', // Reduced from 48% to create more space
                 });
 
                 li.addEventListener('mouseover', () => {
@@ -116,28 +134,25 @@ const MapControl = ({ teams, onTeamClick }) => {
                     li.style.backgroundColor = "";
                 });
 
-
-
                 const img = L.DomUtil.create("img", "", li);
                 img.src = team.logos?.[0] || "/photos/default_team.png";
                 img.alt = team.school;
                 // Inline Styles for legend-logo
                 Object.assign(img.style, {
-                    width: "20px", // Smaller logo
+                    width: "20px",
                     height: "20px",
-                    marginRight: "5px", // Reduced margin
+                    marginRight: "5px",
                     objectFit: "contain",
                 });
 
-
                 const span = L.DomUtil.create("span", "", li);
-                //Inline styles for span in legend
-                Object.assign(span.style,{
-                    fontSize: "0.8rem"  //Smaller font size
+                // Inline styles for span in legend
+                Object.assign(span.style, {
+                    fontSize: "0.8rem"
                 });
-                span.textContent = team.school;
+                // Use team abbreviation instead of full name
+                span.textContent = getTeamAbbreviation(team.school);
             });
-
 
             // Event delegation for legend clicks
             L.DomEvent.addListener(div, 'click', (e) => {
@@ -149,14 +164,12 @@ const MapControl = ({ teams, onTeamClick }) => {
             return div;
         };
 
-
         control.addTo(map);
         return () => control.remove();
     }, [teams, map, onTeamClick]);
 
     return null; // This component doesn't render anything directly
 };
-
 
 const BigTen = () => {
     const [teams, setTeams] = useState([]);
@@ -181,7 +194,6 @@ const BigTen = () => {
         margin: "0 auto",
     };
 
-
     const mapContainerStyle = {
         width: "100%",
         height: "500px",
@@ -190,8 +202,6 @@ const BigTen = () => {
         margin: "20px 0 30px 0",
         position: "relative",
     };
-
-
 
     const loadingStyle = {
         display: "flex",
@@ -235,7 +245,6 @@ const BigTen = () => {
         });
     };
 
-
     // Fetch teams
     useEffect(() => {
         const fetchBigTenTeams = async () => {
@@ -273,7 +282,7 @@ const BigTen = () => {
         const team = teams.find(t => t.id === teamId);
         if (team) {
             setMapCenter([team.location.latitude, team.location.longitude]);
-            setMapZoom(15); // Zoom in closer
+            setMapZoom(20); // Increased zoom level for closer view
         }
     };
 
@@ -306,10 +315,10 @@ const BigTen = () => {
                     touchZoom={true}
                     scrollWheelZoom={true}
                 >
-                  <TileLayer
+                    <TileLayer
                         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                         attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-                  />
+                    />
                     {teams.map((team) => (
                         <Marker
                             key={team.id}
@@ -317,7 +326,7 @@ const BigTen = () => {
                             icon={customMarkerIcon(team.logos?.[0] || "/photos/default_team.png")}
                         >
                             <Popup>
-                                 {/* Popup styling (INLINE) */}
+                                {/* Popup styling (INLINE) */}
                                 <div style={{
                                     display: "flex",
                                     flexDirection: "column",
@@ -346,6 +355,8 @@ const BigTen = () => {
                     ))}
                     {/* Custom Control for Title and Legend */}
                     <MapControl teams={teams} onTeamClick={handleTeamClick} />
+                    {/* View updater component to handle map state changes */}
+                    <MapViewUpdater center={mapCenter} zoom={mapZoom} />
                 </MapContainer>
             </div>
         </div>
