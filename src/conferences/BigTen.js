@@ -12,12 +12,18 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 
-// Helper component to update map view when center/zoom changes
+// Helper component to update map view with smooth animation when center/zoom changes
 const MapViewUpdater = ({ center, zoom }) => {
     const map = useMap();
     
     useEffect(() => {
-        map.setView(center, zoom);
+        // Use flyTo for smooth animated transitions between map locations
+        map.flyTo(center, zoom, {
+            animate: true,
+            duration: 1.5, // Duration of animation in seconds
+            easeLinearity: 0.25, // Makes the animation more natural
+            noMoveStart: false // Ensures the movestart event is fired
+        });
     }, [center, zoom, map]);
     
     return null;
