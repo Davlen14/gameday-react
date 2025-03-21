@@ -681,11 +681,11 @@ const TeamDetail = () => {
 
       {/* Team Header with animation */}
       <div className="team-header" ref={headerRef} style={{ borderBottom: `1px solid ${teamColor}20` }}>
-        <div className="team-logo-container">
+        <div className="team-detail-logo-container">
           <img
             src={getTeamLogo(team.school)}
             alt={team.school}
-            className="team-logo-large"
+            className="team-detail-logo-large"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = "/photos/default_team.png";
