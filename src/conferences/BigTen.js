@@ -328,11 +328,20 @@ const BigTen = () => {
                     center={mapCenter}
                     zoom={mapZoom}
                     style={{ height: "100%", width: "100%", borderRadius: "10px" }} // borderRadius for MapContainer
+                    //Enable 3d
+                    doubleClickZoom={true}
+                    closePopupOnClick={false}
+                    dragging={true}
+                    zoomSnap={true}
+                    zoomDelta={true}
+                    trackResize={true}
+                    touchZoom={true}
+                    scrollWheelZoom={true}
                 >
                   <TileLayer
-                    url="https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png" // College-themed map style
-                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-                    />
+                        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                  />
                     {teams.map((team) => (
                         <Marker
                             key={team.id}
