@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -25,12 +25,12 @@ const MapControl = ({ teams, onTeamClick }) => {
             // Inline styles for map-control-container
             Object.assign(div.style, {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
-                padding: "10px",
-                borderRadius: "10px",
+                padding: "8px", // Reduced padding
+                borderRadius: "8px", // Reduced border radius
                 boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                maxWidth: "250px", // Control width
-                minWidth: "180px"
+                maxWidth: "200px", // Further reduced max width
+                minWidth: "150px" // Reduced min-width
             });
 
             const mapTitleDiv = L.DomUtil.create("div", "", div);
@@ -38,16 +38,16 @@ const MapControl = ({ teams, onTeamClick }) => {
             Object.assign(mapTitleDiv.style, {
               display: "flex",
               alignItems: "center",
-              marginBottom: "10px",
+              marginBottom: "8px", // Reduced margin
             });
 
 
             const logoImg = L.DomUtil.create("img", "", mapTitleDiv);
             //Inline styles for map-title-logo
             Object.assign(logoImg.style, {
-                width: "40px",
-                height: "40px",
-                marginRight: "10px",
+                width: "32px", // Smaller logo
+                height: "32px",
+                marginRight: "8px",
                 objectFit: "contain"
             });
             logoImg.src = "/photos/Big Ten.png";
@@ -56,25 +56,25 @@ const MapControl = ({ teams, onTeamClick }) => {
             const titleH1 = L.DomUtil.create("h1", "", mapTitleDiv);
             //Inline styles for the h1 in map-title
              Object.assign(titleH1.style, {
-                fontSize: "1.5rem",
+                fontSize: "1.2rem", // Smaller font size
                 margin: "0",
                 fontWeight: "bold",
-                color: "#002855", // Dark blue - Big Ten color
+                color: "#002855",
             });
-            titleH1.textContent = "Big Ten Conference";
+            titleH1.textContent = "Big Ten";
 
 
             const legendDiv = L.DomUtil.create("div", "", div);
             //Inline styles for legend
             Object.assign(legendDiv.style, {
-                marginTop: "10px"
+                marginTop: "8px" // Reduced margin
             });
 
             const legendH3 = L.DomUtil.create('h3', "", legendDiv);
              //Inline styles for h3 in legend
             Object.assign(legendH3.style, {
-                fontSize: "1.1rem",
-                margin: "0 0 8px 0",
+                fontSize: "1rem", // Smaller font size
+                margin: "0 0 6px 0", // Reduced margin
                 fontWeight: "bold",
             });
             legendH3.textContent = "Teams";
@@ -86,6 +86,10 @@ const MapControl = ({ teams, onTeamClick }) => {
                 listStyle: "none",
                 padding: "0",
                 margin: "0",
+                display: 'flex', // Added
+                flexWrap: 'wrap', // Added
+                gap: '5px'
+
             });
 
             teams.forEach(team => {
@@ -96,11 +100,13 @@ const MapControl = ({ teams, onTeamClick }) => {
                 Object.assign(li.style, {
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "5px",
+                  marginBottom: "3px", // Reduced margin
                   cursor: "pointer",
-                  padding: "5px",
-                  borderRadius: "5px",
+                  padding: "3px",  // Reduced padding
+                  borderRadius: "4px", // Reduced border radius
                   transition: "background-color 0.2s",
+                   width: '48%', // Added for two columns
+
                 });
 
                 li.addEventListener('mouseover', () => {
@@ -117,9 +123,9 @@ const MapControl = ({ teams, onTeamClick }) => {
                 img.alt = team.school;
                 // Inline Styles for legend-logo
                 Object.assign(img.style, {
-                    width: "25px",
-                    height: "25px",
-                    marginRight: "8px",
+                    width: "20px", // Smaller logo
+                    height: "20px",
+                    marginRight: "5px", // Reduced margin
                     objectFit: "contain",
                 });
 
@@ -127,7 +133,7 @@ const MapControl = ({ teams, onTeamClick }) => {
                 const span = L.DomUtil.create("span", "", li);
                 //Inline styles for span in legend
                 Object.assign(span.style,{
-                    fontSize: "0.9rem"
+                    fontSize: "0.8rem"  //Smaller font size
                 });
                 span.textContent = team.school;
             });
@@ -181,48 +187,11 @@ const BigTen = () => {
         height: "500px",
         borderRadius: "10px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-        margin: "20px 0 30px 0", // Added margin
-        position: "relative", // For absolute positioning of the title
+        margin: "20px 0 30px 0",
+        position: "relative",
     };
 
-    const teamListStyle = {
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        gap: "20px",
-        width: "100%",
-        marginTop: "20px",
-    };
 
-    const glassyTeamLogoStyle = {
-        width: "80px",
-        height: "80px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "15px",
-        borderRadius: "15px",
-        background: "rgba(255, 255, 255, 0.25)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255, 255, 255, 0.18)",
-        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.17)",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        cursor: "pointer",
-    };
-
-    const teamLogoImageStyle = {
-        width: "100%",
-        height: "auto",
-        objectFit: "contain",
-        maxHeight: "50px",
-    };
-
-    const teamNameStyle = {
-        fontSize: "0.8rem",
-        marginTop: "8px",
-        fontWeight: "bold",
-    };
 
     const loadingStyle = {
         display: "flex",
@@ -304,7 +273,7 @@ const BigTen = () => {
         const team = teams.find(t => t.id === teamId);
         if (team) {
             setMapCenter([team.location.latitude, team.location.longitude]);
-            setMapZoom(10);
+            setMapZoom(15); // Zoom in closer
         }
     };
 
@@ -327,8 +296,7 @@ const BigTen = () => {
                 <MapContainer
                     center={mapCenter}
                     zoom={mapZoom}
-                    style={{ height: "100%", width: "100%", borderRadius: "10px" }} // borderRadius for MapContainer
-                    //Enable 3d
+                    style={{ height: "100%", width: "100%", borderRadius: "10px" }}
                     doubleClickZoom={true}
                     closePopupOnClick={false}
                     dragging={true}
@@ -379,29 +347,6 @@ const BigTen = () => {
                     {/* Custom Control for Title and Legend */}
                     <MapControl teams={teams} onTeamClick={handleTeamClick} />
                 </MapContainer>
-            </div>
-
-            {/* Team Logos */}
-            <h2>Teams</h2>
-            <div style={teamListStyle}>
-                {teams.map((team) => (
-                    <div
-                        key={team.id}
-                        style={glassyTeamLogoStyle}
-                        onClick={() => {
-                            setMapCenter([team.location.latitude, team.location.longitude]);
-                            setMapZoom(10);
-                        }}
-                    >
-                        <img
-                            src={team.logos?.[0] || "/photos/default_team.png"}
-                            alt={team.school}
-                            style={teamLogoImageStyle}
-                            onError={(e) => { e.target.src = "/photos/default_team.png"; }}
-                        />
-                        <span style={teamNameStyle}>{team.school}</span>
-                    </div>
-                ))}
             </div>
         </div>
     );
