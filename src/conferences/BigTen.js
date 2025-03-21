@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import teamsService from "../services/teamsService";
-import { FaTrophy } from 'react-icons/fa';
+import { FaTrophy, FaUserAlt, FaStar } from 'react-icons/fa';
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -148,9 +148,27 @@ const MapControl = ({ teams, onTeamClick }) => {
     return null;
 };
 
+// Star rating component
+const StarRating = ({ rating }) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    for (let i = 1; i <= 5; i++) {
+        if (i <= fullStars) {
+            stars.push(<FaStar key={i} color="#FFD700" />);
+        } else if (i === fullStars + 1 && hasHalfStar) {
+            stars.push(<FaStar key={i} color="#FFD700" style={{ opacity: 0.5 }} />);
+        } else {
+            stars.push(<FaStar key={i} color="#e0e0e0" />);
+        }
+    }
+    
+    return <div style={{ display: 'flex' }}>{stars}</div>;
+};
+
 const BigTen = () => {
     const [teams, setTeams] = useState([]);
-    const [polls, setPolls] = useState([]);
     const [recruits, setRecruits] = useState([]);
     const [standings, setStandings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -158,9 +176,17 @@ const BigTen = () => {
     const [mapCenter, setMapCenter] = useState([41.0, -85.0]);
     const [mapZoom, setMapZoom] = useState(6);
 
+    // Big Ten colors
+    const bigTenColors = {
+        primary: "#000000", // Black
+        secondary: "#0088ce", // Blue
+        accent: "#ffffff",   // White
+        background: "#f5f5f5"
+    };
+
     // Modern styled containers and components
     const pageStyle = {
-        backgroundColor: "#f8f9fa",
+        backgroundColor: bigTenColors.background,
         padding: "20px 0",
         minHeight: "100vh",
         fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -171,74 +197,102 @@ const BigTen = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "30px 20px",
-        backgroundColor: "#fff",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-        borderRadius: "12px",
-        margin: "0 auto 30px auto",
+        padding: "20px",
+        backgroundColor: bigTenColors.primary,
+        color: bigTenColors.accent,
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        borderRadius: "8px",
+        margin: "0 auto 20px auto",
         maxWidth: "1200px",
     };
 
     const logoStyle = {
-        width: "180px",
+        width: "150px",
         height: "auto",
         marginBottom: "10px",
     };
 
     const subtitleStyle = {
         fontSize: "1.2rem",
-        color: "#666",
+        color: "#ffffff",
         fontWeight: "300",
         letterSpacing: "0.1em",
         margin: "0",
     };
 
-    const containerStyle = {
+    const mainContentContainerStyle = {
+        display: "grid",
+        gridTemplateColumns: "1fr 350px", // Main content area and sidebar
+        gap: "20px",
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "0 20px",
+    };
+
+    const mainContentStyle = {
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
-        padding: "20px",
-        textAlign: "center",
-        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-        color: "#333",
-        width: "100%",
-        maxWidth: "1200px",
-        margin: "0 auto 30px auto",
+    };
+
+    const sidebarStyle = {
+        display: "flex",
+        flexDirection: "column",
     };
 
     const sectionStyle = {
         width: "100%",
         backgroundColor: "#fff",
-        borderRadius: "12px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-        padding: "20px",
-        marginBottom: "30px",
+        borderRadius: "8px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        padding: "15px",
+        marginBottom: "20px",
     };
 
     const sectionTitleStyle = {
-        fontSize: "1.5rem",
-        fontWeight: "600",
+        fontSize: "1.4rem",
+        fontWeight: "700",
         textAlign: "left",
-        marginBottom: "20px",
-        borderBottom: "2px solid #002855", // Big Ten blue
-        paddingBottom: "10px",
-        color: "#002855",
+        marginBottom: "15px",
+        padding: "8px 0",
+        color: bigTenColors.primary,
+        borderBottom: `2px solid ${bigTenColors.secondary}`,
     };
 
     const mapContainerStyle = {
         width: "100%",
         height: "500px",
-        borderRadius: "10px",
+        borderRadius: "8px",
         overflow: "hidden",
         position: "relative",
     };
 
-    const gridStyle = {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-        gap: "20px",
-        width: "100%",
+    const crystalBallTitleStyle = {
+        fontSize: "1.6rem",
+        fontWeight: "bold",
+        textAlign: "left",
+        marginBottom: "15px",
+        padding: "0 0 10px 0",
+        color: bigTenColors.primary,
+        textTransform: "uppercase",
+        borderBottom: `2px solid ${bigTenColors.secondary}`,
+    };
+
+    const recruitRowStyle = {
+        display: "flex",
+        padding: "10px 0",
+        borderBottom: "1px solid #eee",
+        alignItems: "center",
+    };
+
+    const recruitIconStyle = {
+        width: "40px",
+        height: "40px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f0f0f0",
+        borderRadius: "50%",
+        marginRight: "10px",
     };
 
     const loadingStyle = {
@@ -261,15 +315,15 @@ const BigTen = () => {
 
     // Trophy styles
     const conferenceTrophyStyle = {
-        color: "#002855", // Big Ten blue
+        color: bigTenColors.secondary, 
         marginLeft: "8px",
-        fontSize: "20px"
+        fontSize: "18px"
     };
 
     const nationalTrophyStyle = {
         color: "#FFD700", // Gold color
         marginLeft: "8px",
-        fontSize: "20px"
+        fontSize: "18px"
     };
 
     // Custom marker icon
@@ -296,7 +350,6 @@ const BigTen = () => {
         });
     };
 
-    // Fetch data
     // Force a data fetch if needed
     const [dataVersion, setDataVersion] = useState(1);
     
@@ -329,16 +382,6 @@ const BigTen = () => {
                     const latSum = teamsWithLocations.reduce((sum, team) => sum + team.location.latitude, 0);
                     const lngSum = teamsWithLocations.reduce((sum, team) => sum + team.location.longitude, 0);
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
-                }
-
-                // Fetch postseason poll data
-                const pollsData = await teamsService.getPolls(2024, "ap", "postseason");
-                if (pollsData && pollsData.length > 0) {
-                    // Filter for just Big Ten teams in the polls
-                    const bigTenRankings = pollsData[0].rankings.filter(
-                        team => bigTenTeams.some(t => t.school === team.school)
-                    );
-                    setPolls(bigTenRankings);
                 }
 
                 // Fetch top recruits
@@ -472,7 +515,6 @@ const BigTen = () => {
                     setStandings(sortedFallback);
                 }
 
-                // This code section has been moved into the try/catch block above
                 setLoading(false);
             } catch (err) {
                 setError(`Error loading data: ${err.message}`);
@@ -509,7 +551,7 @@ const BigTen = () => {
                     style={{
                         marginTop: "20px",
                         padding: "10px 20px",
-                        backgroundColor: "#002855",
+                        backgroundColor: bigTenColors.secondary,
                         color: "white",
                         border: "none",
                         borderRadius: "4px",
@@ -532,7 +574,7 @@ const BigTen = () => {
                     style={{
                         marginTop: "20px",
                         padding: "10px 20px",
-                        backgroundColor: "#002855",
+                        backgroundColor: bigTenColors.secondary,
                         color: "white",
                         border: "none",
                         borderRadius: "4px",
@@ -571,298 +613,218 @@ const BigTen = () => {
                 <h2 style={subtitleStyle}>LEADERS AND LEGENDS</h2>
             </div>
 
-            <div style={containerStyle}>
-                {/* Map Section */}
-                <div style={sectionStyle}>
-                    <h2 style={sectionTitleStyle}>Conference Map</h2>
-                    <div style={mapContainerStyle}>
-                        <MapContainer
-                            center={mapCenter}
-                            zoom={mapZoom}
-                            style={{ height: "100%", width: "100%" }}
-                            doubleClickZoom={true}
-                            closePopupOnClick={false}
-                            dragging={true}
-                            zoomSnap={true}
-                            zoomDelta={true}
-                            trackResize={true}
-                            touchZoom={true}
-                            scrollWheelZoom={true}
-                        >
-                            <TileLayer
-                                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                                attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-                            />
-                            {teams.map((team) => (
-                                <Marker
-                                    key={team.id}
-                                    position={[team.location.latitude, team.location.longitude]}
-                                    icon={customMarkerIcon(team.logos?.[0] || "/photos/default_team.png")}
-                                >
-                                    <Popup>
-                                        <div style={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "center",
-                                            padding: "10px"
-                                        }}>
-                                            <img
-                                                src={team.logos?.[0] || "/photos/default_team.png"}
-                                                alt={team.school}
-                                                style={{ width: "50px", height: "50px", marginBottom: "10px" }}
-                                                onError={(e) => { e.target.src = "/photos/default_team.png"; }}
-                                            />
-                                            <h3 style={{ margin: "5px 0" }}>{team.school}</h3>
-                                            <p style={{ margin: "5px 0" }}>{team.mascot}</p>
-                                            <p style={{ margin: "5px 0" }}>
-                                                {team.location.city}, {team.location.state}
-                                            </p>
-                                            {team.location.name && (
-                                                <p style={{ margin: "5px 0", fontStyle: "italic" }}>
-                                                    {team.location.name}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            ))}
-                            <MapControl teams={teams} onTeamClick={handleTeamClick} />
-                            <MapViewUpdater center={mapCenter} zoom={mapZoom} />
-                        </MapContainer>
-                    </div>
-                </div>
-
-                {/* Conference Standings Section */}
-                <div style={sectionStyle}>
-                    <h2 style={sectionTitleStyle}>Conference Standings</h2>
-                    <div style={{ overflowX: "auto", width: "100%" }}>
-                        <table style={{ 
-                            width: "100%", 
-                            borderCollapse: "collapse", 
-                            textAlign: "left",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                            borderRadius: "8px",
-                            overflow: "hidden"
-                        }}>
-                            <thead>
-                                <tr style={{ 
-                                    backgroundColor: "#002855", 
-                                    color: "white",
-                                }}>
-                                    <th style={{ padding: "12px", textAlign: "left" }}>Team</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Conference</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Pct</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Overall</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Pct</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Home</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Away</th>
-                                    <th style={{ padding: "12px", textAlign: "center" }}>Postseason</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {standings.map((team, index) => (
-                                    <tr key={index} style={{ 
-                                        backgroundColor: index % 2 === 0 ? "#f8f9fa" : "white",
-                                        borderBottom: "1px solid #e0e0e0"
-                                    }}>
-                                        <td style={{ 
-                                            padding: "10px", 
-                                            display: "flex", 
-                                            alignItems: "center"
-                                        }}>
-                                            <img 
-                                                src={team.logo || "/photos/default_team.png"} 
-                                                alt={team.school}
-                                                style={{
-                                                    width: "30px",
-                                                    height: "30px",
-                                                    marginRight: "10px",
-                                                    objectFit: "contain"
-                                                }}
-                                            />
-                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                <div style={{ fontWeight: "bold" }}>
-                                                    {team.school}
-                                                    {/* Conference champion trophy */}
-                                                    {index === 0 && <FaTrophy style={conferenceTrophyStyle} title="Big Ten Champion" />}
-                                                    {/* National champion trophy */}
-                                                    {team.school === "Ohio State" && <FaTrophy style={nationalTrophyStyle} title="National Champion" />}
-                                                </div>
-                                                <div style={{ fontSize: "0.8rem", color: "#666" }}>{team.mascot}</div>
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {team.conference.wins}-{team.conference.losses}
-                                            {team.conference.ties > 0 ? `-${team.conference.ties}` : ''}
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {calculateWinPct(team.conference.wins, team.conference.losses, team.conference.ties)}%
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {team.overall.wins}-{team.overall.losses}
-                                            {team.overall.ties > 0 ? `-${team.overall.ties}` : ''}
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {calculateWinPct(team.overall.wins, team.overall.losses, team.overall.ties)}%
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {team.homeRecord?.wins || 0}-{team.homeRecord?.losses || 0}
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {team.awayRecord?.wins || 0}-{team.awayRecord?.losses || 0}
-                                        </td>
-                                        <td style={{ padding: "10px", textAlign: "center" }}>
-                                            {team.postseasonRecord?.wins || 0}-{team.postseasonRecord?.losses || 0}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Top Recruits Section */}
-                <div style={sectionStyle}>
-                    <h2 style={sectionTitleStyle}>Top Big Ten Recruits</h2>
-                    <div style={gridStyle}>
-                        {recruits.length > 0 ? recruits.map((recruit, index) => (
-                            <div key={index} style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                padding: "15px",
-                                borderRadius: "8px",
-                                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                                backgroundColor: "white",
-                                transition: "transform 0.2s",
-                                cursor: "pointer",
-                                position: "relative"
+            <div style={mainContentContainerStyle}>
+                {/* Main content area */}
+                <div style={mainContentStyle}>
+                    {/* Conference Standings Section - Now at the top */}
+                    <div style={sectionStyle}>
+                        <h2 style={sectionTitleStyle}>Conference Standings</h2>
+                        <div style={{ overflowX: "auto", width: "100%" }}>
+                            <table style={{ 
+                                width: "100%", 
+                                borderCollapse: "collapse", 
+                                textAlign: "left",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                                borderRadius: "4px",
+                                overflow: "hidden"
                             }}>
-                                {/* Star rating */}
-                                <div style={{
-                                    position: "absolute",
-                                    top: "10px",
-                                    right: "10px",
-                                    backgroundColor: "#FFD700",
-                                    borderRadius: "50%",
-                                    width: "35px",
-                                    height: "35px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontWeight: "bold",
-                                    boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+                                <thead>
+                                    <tr style={{ 
+                                        backgroundColor: bigTenColors.primary, 
+                                        color: "white",
+                                    }}>
+                                        <th style={{ padding: "10px", textAlign: "left" }}>Team</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Conference</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Pct</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Overall</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Pct</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Home</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Away</th>
+                                        <th style={{ padding: "10px", textAlign: "center" }}>Postseason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {standings.map((team, index) => (
+                                        <tr key={index} style={{ 
+                                            backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+                                            borderBottom: "1px solid #eee"
+                                        }}>
+                                            <td style={{ 
+                                                padding: "8px", 
+                                                display: "flex", 
+                                                alignItems: "center"
+                                            }}>
+                                                <img 
+                                                    src={team.logo || "/photos/default_team.png"} 
+                                                    alt={team.school}
+                                                    style={{
+                                                        width: "25px",
+                                                        height: "25px",
+                                                        marginRight: "8px",
+                                                        objectFit: "contain"
+                                                    }}
+                                                />
+                                                <div>
+                                                    <div style={{ display: "flex", alignItems: "center", fontWeight: "bold", fontSize: "0.9rem" }}>
+                                                        {team.school}
+                                                        {/* Conference champion trophy */}
+                                                        {index === 0 && <FaTrophy style={conferenceTrophyStyle} title="Big Ten Champion" />}
+                                                        {/* National champion trophy */}
+                                                        {team.school === "Ohio State" && <FaTrophy style={nationalTrophyStyle} title="National Champion" />}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {team.conference.wins}-{team.conference.losses}
+                                                {team.conference.ties > 0 ? `-${team.conference.ties}` : ''}
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {calculateWinPct(team.conference.wins, team.conference.losses, team.conference.ties)}%
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {team.overall.wins}-{team.overall.losses}
+                                                {team.overall.ties > 0 ? `-${team.overall.ties}` : ''}
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {calculateWinPct(team.overall.wins, team.overall.losses, team.overall.ties)}%
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {team.homeRecord?.wins || 0}-{team.homeRecord?.losses || 0}
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {team.awayRecord?.wins || 0}-{team.awayRecord?.losses || 0}
+                                            </td>
+                                            <td style={{ padding: "8px", textAlign: "center", fontSize: "0.9rem" }}>
+                                                {team.postseasonRecord?.wins || 0}-{team.postseasonRecord?.losses || 0}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Map Section - Now below standings */}
+                    <div style={sectionStyle}>
+                        <h2 style={sectionTitleStyle}>Conference Map</h2>
+                        <div style={mapContainerStyle}>
+                            <MapContainer
+                                center={mapCenter}
+                                zoom={mapZoom}
+                                style={{ height: "100%", width: "100%" }}
+                                doubleClickZoom={true}
+                                closePopupOnClick={false}
+                                dragging={true}
+                                zoomSnap={true}
+                                zoomDelta={true}
+                                trackResize={true}
+                                touchZoom={true}
+                                scrollWheelZoom={true}
+                            >
+                                <TileLayer
+                                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                                    attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                                />
+                                {teams.map((team) => (
+                                    <Marker
+                                        key={team.id}
+                                        position={[team.location.latitude, team.location.longitude]}
+                                        icon={customMarkerIcon(team.logos?.[0] || "/photos/default_team.png")}
+                                    >
+                                        <Popup>
+                                            <div style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                padding: "10px"
+                                            }}>
+                                                <img
+                                                    src={team.logos?.[0] || "/photos/default_team.png"}
+                                                    alt={team.school}
+                                                    style={{ width: "50px", height: "50px", marginBottom: "10px" }}
+                                                    onError={(e) => { e.target.src = "/photos/default_team.png"; }}
+                                                />
+                                                <h3 style={{ margin: "5px 0" }}>{team.school}</h3>
+                                                <p style={{ margin: "5px 0" }}>{team.mascot}</p>
+                                                <p style={{ margin: "5px 0" }}>
+                                                    {team.location.city}, {team.location.state}
+                                                </p>
+                                                {team.location.name && (
+                                                    <p style={{ margin: "5px 0", fontStyle: "italic" }}>
+                                                        {team.location.name}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                ))}
+                                <MapControl teams={teams} onTeamClick={handleTeamClick} />
+                                <MapViewUpdater center={mapCenter} zoom={mapZoom} />
+                            </MapContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar - Crystal Ball (Recruits) */}
+                <div style={sidebarStyle}>
+                    <div style={sectionStyle}>
+                        <h2 style={crystalBallTitleStyle}>CRYSTAL BALL</h2>
+                        {recruits.length > 0 ? (
+                            <div>
+                                {recruits.map((recruit, index) => (
+                                    <div key={index} style={recruitRowStyle}>
+                                        <div style={recruitIconStyle}>
+                                            <FaUserAlt size={20} color="#666" />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: "bold", fontSize: "0.95rem" }}>
+                                                {recruit.name || "Unnamed Recruit"}
+                                            </div>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                                                    {recruit.position || "Unknown"} • {recruit.committedTo || "Uncommitted"}
+                                                </div>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <span style={{ 
+                                                        backgroundColor: bigTenColors.secondary,
+                                                        color: "white",
+                                                        padding: "2px 6px",
+                                                        borderRadius: "4px",
+                                                        fontSize: "0.75rem",
+                                                        fontWeight: "bold",
+                                                        marginRight: "5px"
+                                                    }}>
+                                                        {recruit.stars || Math.floor(recruit.rating)}★
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginTop: "2px" }}>
+                                                <StarRating rating={recruit.stars || recruit.rating} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div style={{ 
+                                    marginTop: "15px", 
+                                    textAlign: "center",
+                                    padding: "8px",
+                                    borderTop: "1px solid #eee" 
                                 }}>
-                                    {recruit.stars || Math.floor(recruit.rating)}★
+                                    <a href="#" style={{ 
+                                        color: bigTenColors.secondary,
+                                        textDecoration: "none",
+                                        fontWeight: "bold",
+                                        fontSize: "0.9rem"
+                                    }}>
+                                        View All Predictions
+                                    </a>
                                 </div>
-                                
-                                {/* Find the team this recruit is committed to */}
-                                {teams.some(t => 
-                                    t.school === recruit.committedTo || 
-                                    t.mascot === recruit.committedTo
-                                ) && (
-                                    <img 
-                                        src={teams.find(t => 
-                                            t.school === recruit.committedTo || 
-                                            t.mascot === recruit.committedTo
-                                        )?.logos?.[0] || "/photos/default_team.png"}
-                                        alt={recruit.committedTo}
-                                        style={{
-                                            width: "50px",
-                                            height: "50px",
-                                            objectFit: "contain",
-                                            marginBottom: "10px"
-                                        }}
-                                    />
-                                )}
-                                
-                                <h3 style={{ margin: "5px 0", fontSize: "1.1rem" }}>
-                                    {recruit.name || "Unnamed Recruit"}
-                                </h3>
-                                <p style={{ margin: "3px 0", color: "#666", fontSize: "0.9rem" }}>
-                                    {recruit.position || "Unknown Position"}
-                                </p>
-                                <p style={{ margin: "3px 0", color: "#333", fontSize: "0.9rem", fontWeight: "500" }}>
-                                    {recruit.committedTo || "Uncommitted"}
-                                </p>
-                                {recruit.hometown && (
-                                    <p style={{ margin: "3px 0", color: "#666", fontSize: "0.8rem" }}>
-                                        {recruit.hometown}, {recruit.stateProvince}
-                                    </p>
-                                )}
                             </div>
-                        )) : (
+                        ) : (
                             <p>No recruit data available</p>
                         )}
                     </div>
                 </div>
-
-                {/* Rankings Section */}
-                {polls.length > 0 && (
-                    <div style={sectionStyle}>
-                        <h2 style={sectionTitleStyle}>Big Ten Teams in Final AP Poll</h2>
-                        <div style={{ 
-                            display: "flex", 
-                            flexWrap: "wrap", 
-                            gap: "15px",
-                            justifyContent: "center" 
-                        }}>
-                            {polls.map((team, index) => (
-                                <div key={index} style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    padding: "12px 20px",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                                    backgroundColor: "white",
-                                    minWidth: "220px",
-                                    // Highlight national champion
-                                    border: team.school === "Ohio State" ? "2px solid #FFD700" : "none"
-                                }}>
-                                    <div style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        minWidth: "35px",
-                                        height: "35px",
-                                        backgroundColor: "#002855",
-                                        color: "white",
-                                        borderRadius: "50%",
-                                        marginRight: "15px",
-                                        fontWeight: "bold"
-                                    }}>
-                                        {team.rank}
-                                    </div>
-                                    <div style={{
-                                        display: "flex",
-                                        alignItems: "center"
-                                    }}>
-                                        <img 
-                                            src={teams.find(t => t.school === team.school)?.logos?.[0] || "/photos/default_team.png"}
-                                            alt={team.school}
-                                            style={{
-                                                width: "30px",
-                                                height: "30px",
-                                                objectFit: "contain",
-                                                marginRight: "10px"
-                                            }}
-                                        />
-                                        <div>
-                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                <div style={{ fontWeight: "bold" }}>{team.school}</div>
-                                                {team.school === "Ohio State" && <FaTrophy style={{...nationalTrophyStyle, marginLeft: "5px", fontSize: "16px"}} />}
-                                            </div>
-                                            <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                                {team.points && `${team.points} points`}
-                                                {team.firstPlaceVotes > 0 && ` (${team.firstPlaceVotes} first place)`}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );
