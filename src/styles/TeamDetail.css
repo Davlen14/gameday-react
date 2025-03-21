@@ -475,10 +475,10 @@ body {
 }
 
 .team-logo-large {
-  width: 99px;
-  height: 99px;
+  width: 90%;
+  height: 90%;
   transform-style: preserve-3d;
-  transform: rotateY(5deg) rotateX(5deg) scale(1.1);
+  transform: rotateY(5deg) rotateX(5deg);
   transition: all 0.3s ease;
   filter:
     contrast(1.1)
