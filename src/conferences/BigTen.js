@@ -449,36 +449,28 @@ const BigTen = () => {
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
                 }
 
-                // Fetch news - now fetch both football and coach news
-                const footballNewsPromise = newsService.fetchCollegeFootballNews();
-                const coachNewsPromise = newsService.fetchCollegeCoachNews();
-                
-                const [footballNews, coachNews] = await Promise.all([footballNewsPromise, coachNewsPromise]);
-                
-                let combinedNews = [];
-                
-                // Add football news if available
-                if (footballNews && !footballNews.error && footballNews.length > 0) {
-                    combinedNews = [...footballNews];
-                }
-                
-                // Add coach news if available
-                if (coachNews && !coachNews.error && coachNews.length > 0) {
-                    // Filter out duplicate news (same title)
-                    const coachNewsFiltered = coachNews.filter(coachArticle => 
-                        !combinedNews.some(article => article.title === coachArticle.title)
-                    );
-                    combinedNews = [...combinedNews, ...coachNewsFiltered];
-                }
-                
-                // Sort by published date (newest first)
-                combinedNews.sort((a, b) => {
-                    return new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0);
-                });
-                
-                // Get top 10 news articles
-                if (combinedNews.length > 0) {
-                    setNews(combinedNews.slice(0, 10));
+                // Fetch news using the working approach from LatestUpdates component
+                try {
+                    console.log("Fetching news with general fetchNews method...");
+                    const newsData = await newsService.fetchNews();
+                    
+                    if (newsData && newsData.articles && newsData.articles.length > 0) {
+                        console.log("Successfully fetched news articles:", newsData.articles.length);
+                        // Sort by published date (newest first) if publishedAt exists
+                        const sortedArticles = [...newsData.articles].sort((a, b) => {
+                            if (a.publishedAt && b.publishedAt) {
+                                return new Date(b.publishedAt) - new Date(a.publishedAt);
+                            }
+                            return 0;
+                        });
+                        setNews(sortedArticles.slice(0, 10)); // Get top 10 news articles
+                    } else {
+                        console.error("News API returned empty or invalid data:", newsData);
+                        setNews([]);
+                    }
+                } catch (error) {
+                    console.error("Error fetching news:", error);
+                    setNews([]);
                 }
 
                 // Fetch top recruits
@@ -728,9 +720,9 @@ const BigTen = () => {
                             <div style={{ maxHeight: '850px', overflowY: 'auto' }}>
                                 {news.map((article, index) => (
                                     <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
-                                        {article.urlToImage && (
+                                        {article.image && (
                                             <img
-                                                src={article.urlToImage}
+                                                src={article.image}
                                                 alt={article.title}
                                                 style={newsImageStyle}
                                                 onError={(e) => {
@@ -748,7 +740,7 @@ const BigTen = () => {
                                                 fontSize: '0.7rem',
                                                 color: '#555'
                                             }}>
-                                                {article.source?.name || "College Sports"}
+                                                {article.source && article.source.name ? article.source.name : "College Sports"}
                                             </span>
                                             <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
                                         </div>
