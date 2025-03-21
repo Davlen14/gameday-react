@@ -125,6 +125,14 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const GLOBE_RADIUS = 100;
   const MARKER_SIZE = 3.5;
 
+  // Texture URLs - centralized for easier management
+  const TEXTURE_URLS = {
+    earth: 'https://threejs.org/examples/textures/planets/earth_atmos_4k.jpg',
+    specular: 'https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',
+    normal: 'https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',
+    clouds: 'https://threejs.org/examples/textures/planets/earth_clouds_2048.png',
+  };
+
   // Style for card headers
   const cardHeaderStyle = {
     background: lightenColor(teamColor, 90),
@@ -243,18 +251,28 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.crossOrigin = "anonymous";
 
-    // Load earth textures - using high quality NASA textures
+    // Improved texture loading with better error handling
+    const loadTexture = (url) => {
+      return new Promise((resolve, reject) => {
+        textureLoader.load(
+          url, 
+          (texture) => resolve(texture),
+          undefined,  // progress callback
+          (error) => {
+            console.error(`Failed to load texture from ${url}:`, error);
+            reject(error);
+          }
+        );
+      });
+    };
+
+    // Load earth textures - using high quality NASA textures with updated URLs
     Promise.all([
-      new Promise(resolve =>
-        textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_4k.jpg', resolve)),
-      new Promise(resolve =>
-        textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg', resolve)),
-      new Promise(resolve =>
-        textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg', resolve)),
-      new Promise(resolve =>
-        textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_2048.png', resolve)),
-      new Promise(resolve =>
-        textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg', resolve)),
+      loadTexture(TEXTURE_URLS.earth),
+      loadTexture(TEXTURE_URLS.specular),
+      loadTexture(TEXTURE_URLS.normal),
+      loadTexture(TEXTURE_URLS.clouds),
+      loadTexture(TEXTURE_URLS.specular), // Using specular as bump map too
     ]).then(([earthMap, earthSpecular, earthNormal, cloudsTexture, bumpMap]) => {
       // Create Earth globe with high detail for realistic appearance
       const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
@@ -376,7 +394,68 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     }).catch(err => {
       console.error("Error loading globe textures:", err);
       setError("Failed to load globe textures. Please try refreshing the page.");
+      
+      // Create a fallback earth if textures fail to load
+      createFallbackEarth();
     });
+
+    // Create a simple fallback earth if textures fail to load
+    const createFallbackEarth = () => {
+      const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 32, 32);
+      const earthMaterial = new THREE.MeshPhongMaterial({
+        color: 0x2244aa,
+        specular: 0x333333,
+        shininess: 15,
+      });
+      
+      const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+      scene.add(earth);
+      earthRef.current = earth;
+      globeRef.current = earth;
+      
+      // Add continents as simple geometry
+      const continentsMaterial = new THREE.MeshBasicMaterial({ color: 0x44aa66 });
+      
+      // Simplified continent representation
+      const continentsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.2, 32, 32);
+      const continents = new THREE.Mesh(continentsGeometry, continentsMaterial);
+      
+      // Only show parts of the sphere for continents
+      const noise = new SimplexNoise();
+      const positionAttribute = continentsGeometry.attributes.position;
+      const vertex = new THREE.Vector3();
+      
+      for (let i = 0; i < positionAttribute.count; i++) {
+        vertex.fromBufferAttribute(positionAttribute, i);
+        const normalized = vertex.normalize();
+        
+        // Use noise to determine which parts to show (rough continent shapes)
+        const n = 0.5 * noise.noise(2 * normalized.x, 2 * normalized.y, 2 * normalized.z);
+        
+        if (n < 0.1) {
+          // This is an "ocean" vertex
+          positionAttribute.setXYZ(i, 0, 0, 0);
+        }
+      }
+      
+      scene.add(continents);
+      
+      // Start animation
+      animate();
+      
+      if (stadiumLocation) {
+        addTeamLogoMarker();
+        startZoomSequence();
+      }
+    };
+    
+    // SimplexNoise implementation for fallback earth
+    function SimplexNoise() {
+      this.noise = function(x, y, z) {
+        // Very simple random noise function for fallback
+        return Math.random() * 2 - 1;
+      };
+    }
 
     // Cleanup on unmount
     return () => {
@@ -438,7 +517,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  },);
+  }, []);
 
   // Add team logo marker in a glassy effect
   const addTeamLogoMarker = () => {
