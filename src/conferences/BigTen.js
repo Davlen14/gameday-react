@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import teamsService from "../services/teamsService";
+import { FaTrophy } from 'react-icons/fa';
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -29,7 +30,7 @@ const MapViewUpdater = ({ center, zoom }) => {
     return null;
 };
 
-// Custom Map Control for Title and Legend (INLINE STYLES)
+// Custom Map Control for Title and Legend
 const MapControl = ({ teams, onTeamClick }) => {
     const map = useMap();
 
@@ -258,6 +259,19 @@ const BigTen = () => {
         backgroundColor: "#ffebee",
     };
 
+    // Trophy styles
+    const conferenceTrophyStyle = {
+        color: "#002855", // Big Ten blue
+        marginLeft: "8px",
+        fontSize: "20px"
+    };
+
+    const nationalTrophyStyle = {
+        color: "#FFD700", // Gold color
+        marginLeft: "8px",
+        fontSize: "20px"
+    };
+
     // Custom marker icon
     const customMarkerIcon = (logoUrl) => {
         return L.divIcon({
@@ -307,8 +321,8 @@ const BigTen = () => {
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
                 }
 
-                // Fetch poll data (AP Poll)
-                const pollsData = await teamsService.getPolls();
+                // Fetch postseason poll data
+                const pollsData = await teamsService.getPolls(2024, "ap", "postseason");
                 if (pollsData && pollsData.length > 0) {
                     // Filter for just Big Ten teams in the polls
                     const bigTenRankings = pollsData[0].rankings.filter(
@@ -335,33 +349,64 @@ const BigTen = () => {
                     setRecruits(bigTenRecruits);
                 }
 
-                // Calculate conference standings based on teams
-                // In real app, fetch this from an API endpoint
-                // For now, creating mock standings based on team data
-                const mockStandings = bigTenTeams.map(team => ({
-                    school: team.school,
-                    mascot: team.mascot,
-                    logo: team.logos?.[0],
-                    conference: {
-                        wins: Math.floor(Math.random() * 10),
-                        losses: Math.floor(Math.random() * 8)
-                    },
-                    overall: {
-                        wins: Math.floor(Math.random() * 12),
-                        losses: Math.floor(Math.random() * 10)
+                // Fetch team records for standings
+                const standingsData = await Promise.all(
+                    bigTenTeams.map(async (team) => {
+                        try {
+                            const records = await teamsService.getTeamRecords(team.id);
+                            return {
+                                id: team.id,
+                                school: team.school,
+                                mascot: team.mascot,
+                                logo: team.logos?.[0],
+                                color: team.color,
+                                conference: {
+                                    wins: records.conferenceGames?.wins || 0,
+                                    losses: records.conferenceGames?.losses || 0,
+                                    ties: records.conferenceGames?.ties || 0
+                                },
+                                overall: {
+                                    wins: records.total?.wins || 0,
+                                    losses: records.total?.losses || 0,
+                                    ties: records.total?.ties || 0
+                                },
+                                expectedWins: records.expectedWins,
+                                homeRecord: records.homeGames,
+                                awayRecord: records.awayGames,
+                                postseasonRecord: records.postseason
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching records for ${team.school}:`, error);
+                            return {
+                                id: team.id,
+                                school: team.school,
+                                mascot: team.mascot,
+                                logo: team.logos?.[0],
+                                color: team.color,
+                                conference: { wins: 0, losses: 0, ties: 0 },
+                                overall: { wins: 0, losses: 0, ties: 0 }
+                            };
+                        }
+                    })
+                );
+
+                // Sort by conference wins percentage (descending)
+                const sortedStandings = standingsData.sort((a, b) => {
+                    const aWinPct = a.conference.wins / Math.max(1, (a.conference.wins + a.conference.losses + a.conference.ties));
+                    const bWinPct = b.conference.wins / Math.max(1, (b.conference.wins + b.conference.losses + b.conference.ties));
+                    
+                    if (bWinPct !== aWinPct) {
+                        return bWinPct - aWinPct;
                     }
-                }));
-                
-                // Sort by conference wins
-                mockStandings.sort((a, b) => {
-                    if (b.conference.wins !== a.conference.wins) {
-                        return b.conference.wins - a.conference.wins;
-                    }
-                    return a.conference.losses - b.conference.losses;
+                    
+                    // If tie in conference, sort by overall record
+                    const aOverallWinPct = a.overall.wins / Math.max(1, (a.overall.wins + a.overall.losses + a.overall.ties));
+                    const bOverallWinPct = b.overall.wins / Math.max(1, (b.overall.wins + b.overall.losses + b.overall.ties));
+                    
+                    return bOverallWinPct - aOverallWinPct;
                 });
                 
-                setStandings(mockStandings);
-                
+                setStandings(sortedStandings);
                 setLoading(false);
             } catch (err) {
                 setError(`Error loading data: ${err.message}`);
@@ -392,6 +437,13 @@ const BigTen = () => {
     if (error) {
         return <div style={errorStyle}>{error}</div>;
     }
+
+    // Calculate conference and overall winning percentages
+    const calculateWinPct = (wins, losses, ties) => {
+        const total = wins + losses + ties;
+        if (total === 0) return 0;
+        return (wins / total * 100).toFixed(1);
+    };
 
     return (
         <div style={pageStyle}>
@@ -485,7 +537,12 @@ const BigTen = () => {
                                 }}>
                                     <th style={{ padding: "12px", textAlign: "left" }}>Team</th>
                                     <th style={{ padding: "12px", textAlign: "center" }}>Conference</th>
+                                    <th style={{ padding: "12px", textAlign: "center" }}>Pct</th>
                                     <th style={{ padding: "12px", textAlign: "center" }}>Overall</th>
+                                    <th style={{ padding: "12px", textAlign: "center" }}>Pct</th>
+                                    <th style={{ padding: "12px", textAlign: "center" }}>Home</th>
+                                    <th style={{ padding: "12px", textAlign: "center" }}>Away</th>
+                                    <th style={{ padding: "12px", textAlign: "center" }}>Postseason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -509,16 +566,39 @@ const BigTen = () => {
                                                     objectFit: "contain"
                                                 }}
                                             />
-                                            <div>
-                                                <div style={{ fontWeight: "bold" }}>{team.school}</div>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                                <div style={{ fontWeight: "bold" }}>
+                                                    {team.school}
+                                                    {/* Conference champion trophy */}
+                                                    {index === 0 && <FaTrophy style={conferenceTrophyStyle} title="Big Ten Champion" />}
+                                                    {/* National champion trophy */}
+                                                    {team.school === "Ohio State" && <FaTrophy style={nationalTrophyStyle} title="National Champion" />}
+                                                </div>
                                                 <div style={{ fontSize: "0.8rem", color: "#666" }}>{team.mascot}</div>
                                             </div>
                                         </td>
                                         <td style={{ padding: "10px", textAlign: "center" }}>
                                             {team.conference.wins}-{team.conference.losses}
+                                            {team.conference.ties > 0 ? `-${team.conference.ties}` : ''}
+                                        </td>
+                                        <td style={{ padding: "10px", textAlign: "center" }}>
+                                            {calculateWinPct(team.conference.wins, team.conference.losses, team.conference.ties)}%
                                         </td>
                                         <td style={{ padding: "10px", textAlign: "center" }}>
                                             {team.overall.wins}-{team.overall.losses}
+                                            {team.overall.ties > 0 ? `-${team.overall.ties}` : ''}
+                                        </td>
+                                        <td style={{ padding: "10px", textAlign: "center" }}>
+                                            {calculateWinPct(team.overall.wins, team.overall.losses, team.overall.ties)}%
+                                        </td>
+                                        <td style={{ padding: "10px", textAlign: "center" }}>
+                                            {team.homeRecord?.wins || 0}-{team.homeRecord?.losses || 0}
+                                        </td>
+                                        <td style={{ padding: "10px", textAlign: "center" }}>
+                                            {team.awayRecord?.wins || 0}-{team.awayRecord?.losses || 0}
+                                        </td>
+                                        <td style={{ padding: "10px", textAlign: "center" }}>
+                                            {team.postseasonRecord?.wins || 0}-{team.postseasonRecord?.losses || 0}
                                         </td>
                                     </tr>
                                 ))}
@@ -606,7 +686,7 @@ const BigTen = () => {
                 {/* Rankings Section */}
                 {polls.length > 0 && (
                     <div style={sectionStyle}>
-                        <h2 style={sectionTitleStyle}>Big Ten Teams in AP Poll</h2>
+                        <h2 style={sectionTitleStyle}>Big Ten Teams in Final AP Poll</h2>
                         <div style={{ 
                             display: "flex", 
                             flexWrap: "wrap", 
@@ -621,7 +701,9 @@ const BigTen = () => {
                                     borderRadius: "8px",
                                     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                                     backgroundColor: "white",
-                                    minWidth: "220px"
+                                    minWidth: "220px",
+                                    // Highlight national champion
+                                    border: team.school === "Ohio State" ? "2px solid #FFD700" : "none"
                                 }}>
                                     <div style={{
                                         display: "flex",
@@ -652,7 +734,10 @@ const BigTen = () => {
                                             }}
                                         />
                                         <div>
-                                            <div style={{ fontWeight: "bold" }}>{team.school}</div>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                                <div style={{ fontWeight: "bold" }}>{team.school}</div>
+                                                {team.school === "Ohio State" && <FaTrophy style={{...nationalTrophyStyle, marginLeft: "5px", fontSize: "16px"}} />}
+                                            </div>
                                             <div style={{ fontSize: "0.8rem", color: "#666" }}>
                                                 {team.points && `${team.points} points`}
                                                 {team.firstPlaceVotes > 0 && ` (${team.firstPlaceVotes} first place)`}
