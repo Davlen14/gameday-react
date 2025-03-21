@@ -1,34 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
   FaMapMarkerAlt, 
-  FaUniversity, 
   FaExclamationTriangle, 
   FaInfoCircle,
   FaWeight,
   FaRulerVertical,
   FaUser,
-  FaTshirt,
-  FaMapPin,
   FaIdCard,
   FaGraduationCap,
   FaCity,
   FaFlag,
   FaSearch,
   FaCompass,
-  FaFilter
+  FaFilter,
+  FaGlobeAmericas
 } from "react-icons/fa";
 import teamsService from "../services/teamsService";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-// Fix Leaflet icon issues
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
@@ -93,6 +82,23 @@ const darkenColor = (color, percent) => {
   );
 };
 
+// Convert hex color to THREE.js Color
+const hexToThreeColor = (hex) => {
+  return new THREE.Color(hex);
+};
+
+// Convert latitude/longitude to 3D coordinates on sphere
+const latLongToVector3 = (lat, lon, radius) => {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lon + 180) * (Math.PI / 180);
+  
+  const x = -radius * Math.sin(phi) * Math.cos(theta);
+  const y = radius * Math.cos(phi);
+  const z = radius * Math.sin(phi) * Math.sin(theta);
+  
+  return new THREE.Vector3(x, y, z);
+};
+
 // Gets player initials
 const getInitials = (firstName, lastName) => {
   return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
@@ -111,19 +117,6 @@ const formatHeight = (heightInInches) => {
   return `${feet}'${remainingInches}"`;
 };
 
-// Leaflet map controller for programmatic control
-const MapController = ({ center, zoom }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (center && center.length === 2) {
-      map.setView(center, zoom);
-    }
-  }, [center, zoom, map]);
-  
-  return null;
-};
-
 const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const [roster, setRoster] = useState([]);
   const [teamData, setTeamData] = useState(null);
@@ -133,12 +126,39 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const [filterPosition, setFilterPosition] = useState('All');
   const [positionGroups, setPositionGroups] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [mapCenter, setMapCenter] = useState([39.8283, -98.5795]); // Center of US
-  const [mapZoom, setMapZoom] = useState(4);
   const [searchTerm, setSearchTerm] = useState('');
   const [stadiumLocation, setStadiumLocation] = useState(null);
-  const [mapKey, setMapKey] = useState(Date.now()); // For forcing remount of MapContainer
-  const mapContainerRef = useRef(null);
+  const [playersWithLocation, setPlayersWithLocation] = useState([]);
+  const [animationComplete, setAnimationComplete] = useState(false);
+  
+  // THREE.js refs
+  const containerRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const controlsRef = useRef(null);
+  const globeRef = useRef(null);
+  const markersRef = useRef({});
+  const animationRef = useRef(null);
+  const tooltipRef = useRef(null);
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const mouseRef = useRef(new THREE.Vector2());
+  const targetPositionRef = useRef(null);
+  const initialPositionRef = useRef(null);
+  
+  // Constants for the globe
+  const GLOBE_RADIUS = 100;
+  const MARKER_SIZE = 2;
+  const MARKER_HEIGHT = 4;
+  const TEAM_MARKER_SIZE = 4;
+  const TEAM_MARKER_HEIGHT = 6;
+  
+  // Style for card headers
+  const cardHeaderStyle = {
+    background: lightenColor(teamColor, 90),
+    borderBottom: `2px solid ${teamColor}`,
+    color: darkenColor(teamColor, 20)
+  };
   
   // Fetch roster data
   useEffect(() => {
@@ -148,6 +168,10 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       try {
         const data = await teamsService.getTeamRoster(teamName, year);
         setRoster(data);
+        
+        // Extract players with location data
+        const playersWithCoords = data.filter(p => p.homeLatitude && p.homeLongitude);
+        setPlayersWithLocation(playersWithCoords);
         
         // Extract unique position groups for filtering
         const positions = ['All', ...new Set(data.map(player => player.position))].filter(Boolean);
@@ -163,21 +187,15 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           // Set stadium location using the team's actual location data
           if (team.location && team.location.latitude && team.location.longitude) {
             setStadiumLocation([team.location.latitude, team.location.longitude]);
-            
-            // Center the map on the stadium initially
-            setMapCenter([team.location.latitude, team.location.longitude]);
-            setMapZoom(5); // Start with a reasonable zoom level
-            
             console.log("Set stadium location:", [team.location.latitude, team.location.longitude]);
           } else {
             console.warn("Team location data missing or incomplete:", team);
+            // Use a default location for the team if not provided
+            setStadiumLocation([39.8283, -98.5795]);
           }
         } else {
           console.warn("Team not found:", teamName);
         }
-        
-        // Force a refresh of the map
-        setMapKey(Date.now());
       } catch (err) {
         console.error("Error fetching roster:", err.message);
         setError("Failed to load roster information.");
@@ -189,97 +207,547 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
     fetchRoster();
   }, [teamName, year]);
-
-  // Determine bounds for the map to fit all markers
+  
+  // Initialize Three.js scene
   useEffect(() => {
-    if (roster.length > 0 && stadiumLocation) {
-      // Create a bounds object to include all points
-      const validPlayerLocations = roster
-        .filter(p => p.homeLatitude && p.homeLongitude)
-        .map(p => [p.homeLatitude, p.homeLongitude]);
+    if (!containerRef.current || isLoading || error) return;
+    
+    // Create scene
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    scene.background = new THREE.Color(0x000510);
+    
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientLight);
+    
+    // Add directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+    
+    // Create camera
+    const camera = new THREE.PerspectiveCamera(
+      45, // FOV
+      containerRef.current.clientWidth / containerRef.current.clientHeight, // aspect ratio
+      0.1, // near plane
+      10000 // far plane
+    );
+    camera.position.set(0, 0, 350);
+    initialPositionRef.current = new THREE.Vector3(0, 0, 350);
+    cameraRef.current = camera;
+    
+    // Create renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    containerRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+    
+    // Add orbit controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.5;
+    controls.enablePan = false;
+    controls.minDistance = GLOBE_RADIUS * 1.1;
+    controls.maxDistance = GLOBE_RADIUS * 5;
+    controlsRef.current = controls;
+    
+    // Create globe
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Load earth textures (using NASA textures)
+    Promise.all([
+      new Promise(resolve => textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg', resolve)),
+      new Promise(resolve => textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg', resolve)),
+      new Promise(resolve => textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg', resolve)),
+    ]).then(([earthMap, earthSpecular, earthNormal]) => {
+      // Create Earth globe
+      const globeGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+      const globeMaterial = new THREE.MeshPhongMaterial({
+        map: earthMap,
+        specularMap: earthSpecular,
+        normalMap: earthNormal,
+        specular: new THREE.Color(0x333333),
+        shininess: 15,
+      });
       
-      if (validPlayerLocations.length > 0) {
-        // Add stadium location to the points
-        const allPoints = [...validPlayerLocations, stadiumLocation];
-        
-        // Get the extremes
-        const latitudes = allPoints.map(p => p[0]);
-        const longitudes = allPoints.map(p => p[1]);
-        
-        const south = Math.min(...latitudes);
-        const north = Math.max(...latitudes);
-        const west = Math.min(...longitudes);
-        const east = Math.max(...longitudes);
-        
-        // Add some padding
-        const latPadding = (north - south) * 0.2;
-        const lngPadding = (east - west) * 0.2;
-        
-        // Calculate center point
-        const centerLat = (north + south) / 2;
-        const centerLng = (east + west) / 2;
-        
-        setMapCenter([centerLat, centerLng]);
-        
-        // Determine zoom level based on the bounds size
-        // This is a rough calculation, adjust as needed
-        const latDiff = Math.abs(north - south) + latPadding * 2;
-        const lngDiff = Math.abs(east - west) + lngPadding * 2;
-        
-        // The larger the difference, the smaller the zoom
-        const zoom = Math.min(
-          Math.floor(6 / Math.max(latDiff / 10, lngDiff / 20)),
-          10
-        );
-        
-        setMapZoom(zoom > 3 ? zoom : 4);
+      const globe = new THREE.Mesh(globeGeometry, globeMaterial);
+      scene.add(globe);
+      globeRef.current = globe;
+      
+      // Create atmosphere glow
+      const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.01, 32, 32);
+      const atmosphereMaterial = new THREE.ShaderMaterial({
+        vertexShader: `
+          varying vec3 vNormal;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vNormal;
+          void main() {
+            float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 4.0);
+            gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+          }
+        `,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        transparent: true
+      });
+      
+      const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+      scene.add(atmosphere);
+      
+      // Stars background
+      const starsGeometry = new THREE.BufferGeometry();
+      const starsCount = 5000;
+      const positions = new Float32Array(starsCount * 3);
+      
+      for (let i = 0; i < starsCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 2000;
+        positions[i + 1] = (Math.random() - 0.5) * 2000;
+        positions[i + 2] = (Math.random() - 0.5) * 2000;
       }
+      
+      starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      
+      const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 1,
+        transparent: true
+      });
+      
+      const stars = new THREE.Points(starsGeometry, starsMaterial);
+      scene.add(stars);
+      
+      // Add markers when textures are loaded
+      addMarkersToGlobe();
+      
+      // Add tooltip for hovering over markers
+      const tooltip = document.createElement('div');
+      tooltip.className = 'globe-tooltip';
+      tooltip.style.display = 'none';
+      tooltip.style.position = 'absolute';
+      tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      tooltip.style.color = 'white';
+      tooltip.style.padding = '8px 12px';
+      tooltip.style.borderRadius = '4px';
+      tooltip.style.fontSize = '14px';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.zIndex = '10000';
+      containerRef.current.appendChild(tooltip);
+      tooltipRef.current = tooltip;
+      
+      // Start animation loop
+      animate();
+      
+      // Start initial zoom animation to team location
+      if (stadiumLocation) {
+        const [lat, lon] = stadiumLocation;
+        const targetVector = latLongToVector3(lat, lon, GLOBE_RADIUS);
+        targetPositionRef.current = targetVector.clone().normalize().multiplyScalar(GLOBE_RADIUS * 1.5);
+        
+        // Start animation
+        animateToTeam();
+      }
+    });
+    
+    // Cleanup on unmount
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+      }
+      
+      if (tooltipRef.current && containerRef.current) {
+        containerRef.current.removeChild(tooltipRef.current);
+      }
+      
+      // Clear all allocated THREE.js resources
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
+      }
+      
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
+  }, [isLoading, error]);
+  
+  // Add markers to globe when roster and team data are loaded
+  const addMarkersToGlobe = () => {
+    if (!sceneRef.current || !stadiumLocation || !playersWithLocation.length) return;
+    
+    // Clear existing markers
+    Object.values(markersRef.current).forEach(marker => {
+      sceneRef.current.remove(marker);
+    });
+    markersRef.current = {};
+    
+    // Add team stadium marker
+    const [stadiumLat, stadiumLon] = stadiumLocation;
+    const stadiumPosition = latLongToVector3(stadiumLat, stadiumLon, GLOBE_RADIUS);
+    
+    // Create team marker
+    const teamMarkerGeometry = new THREE.CylinderGeometry(
+      TEAM_MARKER_SIZE, // top radius
+      TEAM_MARKER_SIZE / 2, // bottom radius
+      TEAM_MARKER_HEIGHT, // height
+      8 // radial segments
+    );
+    
+    const teamMarkerMaterial = new THREE.MeshLambertMaterial({
+      color: hexToThreeColor(teamColor),
+      emissive: hexToThreeColor(lightenColor(teamColor, 20)),
+      emissiveIntensity: 0.5
+    });
+    
+    const teamMarker = new THREE.Mesh(teamMarkerGeometry, teamMarkerMaterial);
+    
+    // Position the marker
+    const teamMarkerPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS);
+    teamMarker.position.copy(teamMarkerPosition);
+    
+    // Orient the marker to point away from center
+    teamMarker.lookAt(teamMarkerPosition.clone().multiplyScalar(2));
+    teamMarker.rotateX(Math.PI / 2);
+    
+    // Translate the marker so its base is at the globe surface
+    const offset = teamMarkerPosition.clone().normalize().multiplyScalar(TEAM_MARKER_HEIGHT / 2);
+    teamMarker.position.add(offset);
+    
+    // Add glow effect
+    const teamGlowGeometry = new THREE.SphereGeometry(TEAM_MARKER_SIZE * 1.5, 16, 16);
+    const teamGlowMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        c: { value: 0.2 },
+        p: { value: 1.8 },
+        glowColor: { value: new THREE.Color(teamColor) }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float c;
+        uniform float p;
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+          gl_FragColor = vec4(glowColor, intensity);
+        }
+      `,
+      side: THREE.FrontSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+    
+    const teamGlow = new THREE.Mesh(teamGlowGeometry, teamGlowMaterial);
+    teamMarker.add(teamGlow);
+    
+    // Add to scene and store in ref
+    sceneRef.current.add(teamMarker);
+    markersRef.current.team = teamMarker;
+    teamMarker.userData = { 
+      type: 'team', 
+      name: teamData?.school || teamName,
+      location: teamData?.location?.name || 'Home Stadium',
+      city: teamData?.location?.city,
+      state: teamData?.location?.state
+    };
+    
+    // Add player markers
+    playersWithLocation.forEach(player => {
+      if (!player.homeLatitude || !player.homeLongitude) return;
+      
+      // Only add markers for filtered players
+      if (filterPosition !== 'All' && player.position !== filterPosition) return;
+      
+      // Search filter
+      if (searchTerm) {
+        const playerName = `${player.firstName || ''} ${player.lastName || ''}`.toLowerCase();
+        const playerHometown = `${player.homeCity || ''} ${player.homeState || ''}`.toLowerCase();
+        const searchLower = searchTerm.toLowerCase();
+        
+        if (!playerName.includes(searchLower) && 
+            !playerHometown.includes(searchLower) && 
+            !(player.position || '').toLowerCase().includes(searchLower)) {
+          return;
+        }
+      }
+      
+      const playerPosition = latLongToVector3(player.homeLatitude, player.homeLongitude, GLOBE_RADIUS);
+      
+      // Create player marker
+      const markerGeometry = new THREE.CylinderGeometry(
+        MARKER_SIZE, // top radius
+        MARKER_SIZE / 2, // bottom radius
+        MARKER_HEIGHT, // height
+        8 // radial segments
+      );
+      
+      const markerMaterial = new THREE.MeshLambertMaterial({
+        color: hexToThreeColor(teamColor),
+        transparent: true,
+        opacity: 0.8
+      });
+      
+      const playerMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+      
+      // Position the marker
+      const markerPosition = playerPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS);
+      playerMarker.position.copy(markerPosition);
+      
+      // Orient the marker to point away from center
+      playerMarker.lookAt(markerPosition.clone().multiplyScalar(2));
+      playerMarker.rotateX(Math.PI / 2);
+      
+      // Translate the marker so its base is at the globe surface
+      const markerOffset = markerPosition.clone().normalize().multiplyScalar(MARKER_HEIGHT / 2);
+      playerMarker.position.add(markerOffset);
+      
+      // Store player data with the marker
+      playerMarker.userData = { player, type: 'player' };
+      
+      // Add to scene and store in ref
+      sceneRef.current.add(playerMarker);
+      markersRef.current[player.id] = playerMarker;
+    });
+  };
+  
+  // Create animation to zoom to the team location
+  const animateToTeam = () => {
+    if (!cameraRef.current || !targetPositionRef.current || !initialPositionRef.current) return;
+    
+    let startTime = null;
+    const duration = 3000; // 3 seconds
+    
+    const animateFrame = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-in-out)
+      const easedProgress = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      
+      // Interpolate camera position
+      const newPosition = new THREE.Vector3().lerpVectors(
+        initialPositionRef.current,
+        targetPositionRef.current,
+        easedProgress
+      );
+      
+      cameraRef.current.position.copy(newPosition);
+      
+      // Point camera at globe center
+      cameraRef.current.lookAt(0, 0, 0);
+      
+      // Continue animation until complete
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animateFrame);
+      } else {
+        // Animation complete, enable controls
+        if (controlsRef.current) {
+          controlsRef.current.target.set(0, 0, 0);
+          controlsRef.current.update();
+        }
+        setAnimationComplete(true);
+      }
+    };
+    
+    // Start animation
+    animationRef.current = requestAnimationFrame(animateFrame);
+  };
+  
+  // Animation loop
+  const animate = () => {
+    if (!globeRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    
+    // Gentle globe rotation only if animation is complete and no player is selected
+    if (animationComplete && !selectedPlayer && globeRef.current) {
+      globeRef.current.rotation.y += 0.0005;
     }
-  }, [roster, stadiumLocation]);
-
-  // Filter players based on selected position and search term
-  const filteredPlayers = roster.filter(player => {
-    // Position filter
-    const positionMatch = filterPosition === 'All' || player.position === filterPosition;
     
-    // Search filter
-    const playerName = `${player.firstName || ''} ${player.lastName || ''}`.toLowerCase();
-    const playerHometown = `${player.homeCity || ''} ${player.homeState || ''}`.toLowerCase();
-    const searchLower = searchTerm.toLowerCase();
-    const searchMatch = !searchTerm || 
-                      playerName.includes(searchLower) || 
-                      playerHometown.includes(searchLower) ||
-                      (player.position || '').toLowerCase().includes(searchLower);
+    // Update controls if enabled
+    if (controlsRef.current && animationComplete) {
+      controlsRef.current.update();
+    }
     
-    return positionMatch && searchMatch;
-  });
-
-  // Style for card headers
-  const cardHeaderStyle = {
-    background: lightenColor(teamColor, 90),
-    borderBottom: `2px solid ${teamColor}`,
-    color: darkenColor(teamColor, 20)
-  };
-
-  // Handle marker click
-  const handleMarkerClick = (player) => {
-    setSelectedPlayer(player);
-    setMapCenter([player.homeLatitude, player.homeLongitude]);
-    setMapZoom(7);
+    // Render scene
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+    
+    // Continue animation loop
+    animationRef.current = requestAnimationFrame(animate);
   };
   
-  // Handle stadium marker click
-  const handleStadiumClick = () => {
-    // Reset the map view to show all players
-    setMapZoom(4);
-    setMapCenter([39.8283, -98.5795]);
-    setSelectedPlayer(null);
-  };
+  // Update markers when filters change
+  useEffect(() => {
+    addMarkersToGlobe();
+  }, [filterPosition, searchTerm, playersWithLocation]);
   
-  // Close player info panel
-  const closePlayerInfo = () => {
-    setSelectedPlayer(null);
-  };
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+      
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+      
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+      
+      rendererRef.current.setSize(width, height);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  // Handle mouse moves for interactive elements
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const handleMouseMove = (event) => {
+      if (!containerRef.current || !sceneRef.current || !cameraRef.current || !tooltipRef.current) return;
+      
+      // Calculate mouse position in normalized device coordinates
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseRef.current.x = ((event.clientX - rect.left) / containerRef.current.clientWidth) * 2 - 1;
+      mouseRef.current.y = -((event.clientY - rect.top) / containerRef.current.clientHeight) * 2 + 1;
+      
+      // Update the raycaster
+      raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+      
+      // Find intersections with markers
+      const allMarkers = Object.values(markersRef.current);
+      const intersects = raycasterRef.current.intersectObjects(allMarkers);
+      
+      if (intersects.length > 0 && intersects[0].object.userData) {
+        const userData = intersects[0].object.userData;
+        
+        // Set tooltip content and position
+        if (userData.type === 'team') {
+          tooltipRef.current.innerHTML = `
+            <div><strong>${userData.name}</strong></div>
+            <div>${userData.location}</div>
+            ${userData.city && userData.state ? `<div>${userData.city}, ${userData.state}</div>` : ''}
+          `;
+        } else if (userData.type === 'player' && userData.player) {
+          const player = userData.player;
+          tooltipRef.current.innerHTML = `
+            <div><strong>${player.firstName} ${player.lastName}</strong></div>
+            <div>${player.position || ''} #${player.jersey || ''}</div>
+            <div>${player.homeCity}, ${player.homeState}</div>
+          `;
+        }
+        
+        // Position tooltip next to mouse
+        tooltipRef.current.style.left = `${event.clientX + 15}px`;
+        tooltipRef.current.style.top = `${event.clientY + 15}px`;
+        tooltipRef.current.style.display = 'block';
+        
+        // Change cursor
+        containerRef.current.style.cursor = 'pointer';
+      } else {
+        // Hide tooltip when not hovering over a marker
+        tooltipRef.current.style.display = 'none';
+        containerRef.current.style.cursor = 'default';
+      }
+    };
+    
+    const handleClick = (event) => {
+      if (!containerRef.current || !sceneRef.current || !cameraRef.current) return;
+      
+      // Calculate mouse position in normalized device coordinates
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseRef.current.x = ((event.clientX - rect.left) / containerRef.current.clientWidth) * 2 - 1;
+      mouseRef.current.y = -((event.clientY - rect.top) / containerRef.current.clientHeight) * 2 + 1;
+      
+      // Update the raycaster
+      raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+      
+      // Find intersections with markers
+      const allMarkers = Object.values(markersRef.current);
+      const intersects = raycasterRef.current.intersectObjects(allMarkers);
+      
+      if (intersects.length > 0 && intersects[0].object.userData) {
+        const userData = intersects[0].object.userData;
+        
+        if (userData.type === 'player' && userData.player) {
+          // Select player
+          setSelectedPlayer(userData.player);
+          
+          // Animate camera to player location
+          const player = userData.player;
+          const playerPosition = latLongToVector3(player.homeLatitude, player.homeLongitude, GLOBE_RADIUS);
+          const playerNormal = playerPosition.clone().normalize();
+          
+          // Set camera target and position
+          const newPosition = playerNormal.clone().multiplyScalar(GLOBE_RADIUS * 1.8);
+          cameraRef.current.position.copy(newPosition);
+          cameraRef.current.lookAt(0, 0, 0);
+          
+          if (controlsRef.current) {
+            controlsRef.current.target.set(0, 0, 0);
+            controlsRef.current.update();
+          }
+        } else if (userData.type === 'team') {
+          // Reset selection
+          setSelectedPlayer(null);
+          
+          // Animate camera to team location
+          const [lat, lon] = stadiumLocation;
+          const teamPosition = latLongToVector3(lat, lon, GLOBE_RADIUS);
+          const teamNormal = teamPosition.clone().normalize();
+          
+          // Set camera target and position
+          const newPosition = teamNormal.clone().multiplyScalar(GLOBE_RADIUS * 1.8);
+          cameraRef.current.position.copy(newPosition);
+          cameraRef.current.lookAt(0, 0, 0);
+          
+          if (controlsRef.current) {
+            controlsRef.current.target.set(0, 0, 0);
+            controlsRef.current.update();
+          }
+        }
+      }
+    };
+    
+    containerRef.current.addEventListener('mousemove', handleMouseMove);
+    containerRef.current.addEventListener('click', handleClick);
+    
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.removeEventListener('mousemove', handleMouseMove);
+        containerRef.current.removeEventListener('click', handleClick);
+      }
+    };
+  }, [stadiumLocation]);
   
   // Toggle filter panel
   const toggleFilters = () => {
@@ -290,13 +758,22 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const resetFilters = () => {
     setFilterPosition('All');
     setSearchTerm('');
+    setSelectedPlayer(null);
     
-    // Reset map view to fit all players
-    if (roster.length > 0 && stadiumLocation) {
-      setMapCenter([39.8283, -98.5795]);
-      setMapZoom(4);
+    // Reset camera to initial view of globe
+    if (cameraRef.current) {
+      cameraRef.current.position.set(0, 0, 350);
+      cameraRef.current.lookAt(0, 0, 0);
+      
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, 0, 0);
+        controlsRef.current.update();
+      }
     }
-    
+  };
+  
+  // Close player info panel
+  const closePlayerInfo = () => {
     setSelectedPlayer(null);
   };
   
@@ -313,63 +790,11 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
-  // Create custom icons for markers
-  const createPlayerIcon = (player) => {
-    const initials = getInitials(player.firstName, player.lastName);
-    
-    return L.divIcon({
-      className: 'player-marker-icon',
-      html: `
-        <div class="marker-container" style="--player-color: ${teamColor}; --player-light: ${lightenColor(teamColor, 20)}; --player-dark: ${darkenColor(teamColor, 30)};">
-          <div class="marker-initials">${initials}</div>
-          <div class="marker-position">${player.position || ''}</div>
-        </div>
-      `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 40]
-    });
-  };
-  
-  // Create stadium icon
-  const createStadiumIcon = () => {
-    if (!teamData || !teamData.logos || !teamData.logos[0]) {
-      return L.divIcon({
-        className: 'stadium-marker-icon',
-        html: `
-          <div class="stadium-container" style="--team-color: ${teamColor}; --team-light: ${lightenColor(teamColor, 20)}; --team-dark: ${darkenColor(teamColor, 30)};">
-            <div class="stadium-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3L1 9l11 6l11-6l-11-6zm0 18l-9-5v-6.5l9 5v6.5zm0 0l9-5v-6.5l-9 5v6.5z"/>
-              </svg>
-            </div>
-          </div>
-        `,
-        iconSize: [50, 50],
-        iconAnchor: [25, 50]
-      });
-    }
-    
-    return L.divIcon({
-      className: 'stadium-marker-icon',
-      html: `
-        <div class="stadium-container" style="--team-color: ${teamColor}; --team-light: ${lightenColor(teamColor, 20)}; --team-dark: ${darkenColor(teamColor, 30)};">
-          <img src="${teamData.logos[0]}" alt="${teamName}" class="stadium-logo" />
-        </div>
-      `,
-      iconSize: [50, 50],
-      iconAnchor: [25, 50]
-    });
-  };
-
-  console.log("Filtered players count:", filteredPlayers.length);
-  console.log("Players with location data:", filteredPlayers.filter(p => p.homeLatitude && p.homeLongitude).length);
-  console.log("Stadium location:", stadiumLocation);
-
   return (
     <div className="dashboard-card full-width-card">
       <div className="card-header" style={cardHeaderStyle}>
-        <FaMapMarkerAlt style={{ marginRight: "12px", color: teamColor }} />
-        Roster Map
+        <FaGlobeAmericas style={{ marginRight: "12px", color: teamColor }} />
+        Roster Map - 3D Globe
       </div>
       <div className="card-body roster-map-container">
         {isLoading ? (
@@ -407,7 +832,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
                     boxShadow: `0 4px 10px ${teamColor}30`
                   }}
                 >
-                  <FaCompass /> Reset Map
+                  <FaCompass /> Reset View
                 </button>
               </div>
               
@@ -464,78 +889,21 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
                       ))}
                     </div>
                   </div>
+                  
+                  <div className="globe-instructions">
+                    <h4 style={{color: teamColor}}>Globe Controls</h4>
+                    <ul>
+                      <li>Click and drag to rotate the globe</li>
+                      <li>Scroll to zoom in/out</li>
+                      <li>Click on markers to view player details</li>
+                      <li>Hover over markers for quick info</li>
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>
             
-            <div className="map-visualization" ref={mapContainerRef}>
-              <MapContainer 
-                key={mapKey}
-                center={mapCenter} 
-                zoom={mapZoom} 
-                style={{ height: '600px', width: '100%', borderRadius: '8px', overflow: 'hidden' }}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                
-                <MapController 
-                  center={mapCenter} 
-                  zoom={mapZoom}
-                />
-                
-                {/* Stadium marker */}
-                {stadiumLocation && (
-                  <Marker 
-                    position={stadiumLocation} 
-                    icon={createStadiumIcon()}
-                    eventHandlers={{
-                      click: handleStadiumClick
-                    }}
-                  >
-                    <Popup>
-                      <div className="stadium-popup">
-                        <h3>{teamName} Stadium</h3>
-                        {teamData?.location?.name && (
-                          <div>{teamData.location.name}</div>
-                        )}
-                        {teamData?.location?.city && teamData?.location?.state && (
-                          <div>{teamData.location.city}, {teamData.location.state}</div>
-                        )}
-                      </div>
-                    </Popup>
-                  </Marker>
-                )}
-                
-                {/* Player markers */}
-                {filteredPlayers.map(player => {
-                  if (!player.homeLatitude || !player.homeLongitude) return null;
-                  
-                  // Debugging output for player locations
-                  console.log(`Player ${player.firstName} ${player.lastName} at [${player.homeLatitude}, ${player.homeLongitude}]`);
-                  
-                  return (
-                    <Marker 
-                      key={player.id}
-                      position={[player.homeLatitude, player.homeLongitude]} 
-                      icon={createPlayerIcon(player)}
-                      eventHandlers={{
-                        click: () => handleMarkerClick(player)
-                      }}
-                    >
-                      <Popup>
-                        <div className="player-popup">
-                          <h3>{player.firstName} {player.lastName}</h3>
-                          <div>{player.position} | #{player.jersey}</div>
-                          <div>{player.homeCity}, {player.homeState}</div>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  );
-                })}
-              </MapContainer>
-            </div>
+            <div className="globe-container" ref={containerRef}></div>
             
             {/* Player Info Panel */}
             {selectedPlayer && (
@@ -628,11 +996,6 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
       {/* CSS styles in component */}
       <style>{`
-        /* Fix for Leaflet icons */
-        .leaflet-default-icon-path {
-          background-image: url("https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png");
-        }
-        
         /* Base Styles */
         .roster-map-container {
           position: relative;
@@ -652,6 +1015,24 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
         .error-message {
           color: #e53935;
           font-weight: 500;
+        }
+        
+        /* Globe Container */
+        .globe-container {
+          height: 700px;
+          width: 100%;
+          overflow: hidden;
+          position: relative;
+          background-color: #000510;
+          border-radius: 0 0 8px 8px;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Globe Tooltip */
+        .globe-tooltip {
+          font-family: Arial, sans-serif;
+          max-width: 200px;
+          box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
         }
         
         /* Controls Styling */
@@ -728,7 +1109,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           to { opacity: 1; transform: translateY(0); }
         }
         
-        .filter-panel h3 {
+        .filter-panel h3, .filter-panel h4 {
           margin-top: 0;
           margin-bottom: 12px;
           font-size: 18px;
@@ -758,6 +1139,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
         .map-stats {
           border-top: 1px solid #eaeaea;
           padding-top: 15px;
+          margin-bottom: 15px;
         }
         
         .stat-item {
@@ -805,120 +1187,20 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           font-weight: 600;
         }
         
-        /* Map Visualization */
-        .map-visualization {
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-          position: relative;
-          z-index: 1;
+        /* Globe Instructions */
+        .globe-instructions {
+          border-top: 1px solid #eaeaea;
+          padding-top: 15px;
         }
         
-        /* Player Marker Styling */
-        .player-marker-icon .marker-container {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(145deg, var(--player-color), var(--player-light));
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.6);
-          border: 2px solid white;
-          position: relative;
-          cursor: pointer;
-          transition: all 0.2s ease;
+        .globe-instructions ul {
+          padding-left: 20px;
+          margin: 10px 0;
         }
         
-        .player-marker-icon .marker-container:hover {
-          transform: rotate(-45deg) scale(1.1);
-        }
-        
-        .player-marker-icon .marker-container::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          border-radius: 50% 50% 50% 0;
-          background: linear-gradient(rgba(255, 255, 255, 0.3), transparent);
-          z-index: 0;
-        }
-        
-        .player-marker-icon .marker-initials {
-          transform: rotate(45deg);
-          color: white;
-          font-weight: 700;
-          font-size: 16px;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-          z-index: 1;
-        }
-        
-        .player-marker-icon .marker-position {
-          position: absolute;
-          bottom: -24px;
-          left: 50%;
-          transform: translateX(-50%) rotate(45deg);
-          background: var(--player-color);
-          color: white;
-          padding: 2px 6px;
-          border-radius: 10px;
-          font-size: 11px;
-          font-weight: 600;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          z-index: 0;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        
-        .player-marker-icon .marker-container:hover .marker-position {
-          opacity: 1;
-        }
-        
-        /* Stadium Marker Styling */
-        .stadium-marker-icon .stadium-container {
-          width: 50px;
-          height: 50px;
-          background: radial-gradient(circle, var(--team-light), var(--team-color));
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.6);
-          border: 3px solid white;
-          position: relative;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          z-index: 1000;
-        }
-        
-        .stadium-marker-icon .stadium-container:hover {
-          transform: scale(1.1);
-        }
-        
-        .stadium-marker-icon .stadium-logo {
-          width: 80%;
-          height: 80%;
-          object-fit: contain;
-          filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.4));
-        }
-        
-        .stadium-marker-icon .stadium-icon {
-          color: white;
-          font-size: 24px;
-        }
-        
-        /* Popup Styling */
-        .player-popup, .stadium-popup {
-          text-align: center;
-          padding: 5px;
-        }
-        
-        .player-popup h3, .stadium-popup h3 {
-          margin: 5px 0;
-          font-size: 16px;
+        .globe-instructions li {
+          margin-bottom: 6px;
+          font-size: 14px;
         }
         
         /* Player Info Panel */
@@ -1007,15 +1289,12 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
           font-size: 16px;
         }
         
-        /* Pulse Animation */
-        @keyframes pulse {
-          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--team-color-rgb), 0.7); }
-          70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(var(--team-color-rgb), 0); }
-          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--team-color-rgb), 0); }
-        }
-        
         /* Responsive Styles */
         @media (max-width: 768px) {
+          .globe-container {
+            height: 500px;
+          }
+          
           .player-info-panel {
             top: auto;
             right: auto;
