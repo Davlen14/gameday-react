@@ -202,7 +202,7 @@ const BigTen = () => {
         alignItems: "center",
         justifyContent: "center",
         padding: "20px",
-        backgroundColor: "#ffffff", // Changed to white as requested
+        backgroundColor: "#ffffff", // White background as requested
         color: "#000000", // Black text
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         borderRadius: "8px",
@@ -224,11 +224,17 @@ const BigTen = () => {
         margin: "0",
     };
 
+    // Three column layout with news on left, main content in middle, and crystal ball on right
     const mainContentContainerStyle = {
         display: "grid",
-        gridTemplateColumns: "1fr 350px", // Main content area and sidebar
+        gridTemplateColumns: "350px 1fr 350px", // Left sidebar, main content, right sidebar
         gap: "20px",
         width: "100%",
+    };
+
+    const leftSidebarStyle = {
+        display: "flex",
+        flexDirection: "column",
     };
 
     const mainContentStyle = {
@@ -236,7 +242,7 @@ const BigTen = () => {
         flexDirection: "column",
     };
 
-    const sidebarStyle = {
+    const rightSidebarStyle = {
         display: "flex",
         flexDirection: "column",
     };
@@ -689,6 +695,34 @@ const BigTen = () => {
             </div>
 
             <div style={mainContentContainerStyle}>
+                {/* Left Sidebar - News */}
+                <div style={leftSidebarStyle}>
+                    <div style={sectionStyle}>
+                        <h2 style={newsTitleStyle}>LATEST NEWS</h2>
+                        {news && news.length > 0 ? (
+                            news.map((article, index) => (
+                                <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
+                                    {article.urlToImage && (
+                                        <img
+                                            src={article.urlToImage}
+                                            alt={article.title}
+                                            style={newsImageStyle}
+                                            onError={(e) => {
+                                                e.target.src = "/photos/default_news.jpg";
+                                            }}
+                                        />
+                                    )}
+                                    <h3 style={newsTitleTextStyle}>{article.title}</h3>
+                                    <p style={newsDescriptionStyle}>{article.description || "Read more..."}</p>
+                                    <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <div>No news articles available</div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Main content area */}
                 <div style={mainContentStyle}>
                     {/* Conference Standings Section - Now at the top */}
@@ -838,38 +872,10 @@ const BigTen = () => {
                             </MapContainer>
                         </div>
                     </div>
-
-                    {/* News Section */}
-                    <div style={sectionStyle}>
-                        <h2 style={newsTitleStyle}>LATEST NEWS</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "15px" }}>
-                            {news && news.length > 0 ? (
-                                news.map((article, index) => (
-                                    <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
-                                        {article.urlToImage && (
-                                            <img
-                                                src={article.urlToImage}
-                                                alt={article.title}
-                                                style={newsImageStyle}
-                                                onError={(e) => {
-                                                    e.target.src = "/photos/default_news.jpg";
-                                                }}
-                                            />
-                                        )}
-                                        <h3 style={newsTitleTextStyle}>{article.title}</h3>
-                                        <p style={newsDescriptionStyle}>{article.description || "Read more..."}</p>
-                                        <p style={newsDateStyle}>{article.publishedAt && formatNewsDate(article.publishedAt)}</p>
-                                    </div>
-                                ))
-                            ) : (
-                                <div>No news articles available</div>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
-                {/* Sidebar - Crystal Ball (Recruits) */}
-                <div style={sidebarStyle}>
+                {/* Right Sidebar - Crystal Ball (Recruits) */}
+                <div style={rightSidebarStyle}>
                     <div style={sectionStyle}>
                         <h2 style={crystalBallTitleStyle}>CRYSTAL BALL</h2>
                         {recruits.length > 0 ? (
