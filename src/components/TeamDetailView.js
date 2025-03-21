@@ -3,8 +3,9 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import TeamPlayerStats from "./TeamPlayerStats";
 import TeamStats from "./TeamStats";
-import TeamRoster from "./TeamRoster"; // Import the separate roster component
-import TeamOverview from "./TeamOverview"; // Import the separate overview component
+import TeamRoster from "./TeamRoster"; 
+import TeamOverview from "./TeamOverview";
+import RosterMap from "./RosterMap"; // Import the new RosterMap component
 
 import { 
   FaMapMarkerAlt, 
@@ -112,7 +113,8 @@ const TeamDetail = () => {
     ratings: false,
     schedule: false,
     teamStats: false,
-    playerStats: false
+    playerStats: false,
+    rosterMap: false // Added loading state for rosterMap
   });
   const [error, setError] = useState(null);
   
@@ -167,6 +169,10 @@ const TeamDetail = () => {
       setIsLoading(prev => ({ ...prev, playerStats: true }));
       // You would fetch player stats data here if needed
       setTimeout(() => setIsLoading(prev => ({ ...prev, playerStats: false })), 1000);
+    } else if (tab === 'rosterMap') {
+      setIsLoading(prev => ({ ...prev, rosterMap: true }));
+      // Set loading briefly for smooth transition
+      setTimeout(() => setIsLoading(prev => ({ ...prev, rosterMap: false })), 500);
     }
   };
 
@@ -575,11 +581,22 @@ const TeamDetail = () => {
         return <TeamRoster teamName={team.school} teamColor={teamColor} year={2024} />;
       
       case 'rosterMap':
-        // New tab for Roster Map with Coming Soon message
+        // Now render the new RosterMap component instead of ComingSoon
         return (
-          <div className="dashboard-card full-width-card">
-            <ComingSoon title="Roster Map" color={teamColor} />
-          </div>
+          isLoading.rosterMap ? (
+            <div className="dashboard-card full-width-card">
+              <div className="card-header" style={cardHeaderStyle}>
+                <FaMapMarkerAlt style={{ marginRight: "12px", color: teamColor }} />
+                Roster Map
+              </div>
+              <div className="card-body" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+                <LoadingSpinner color={teamColor} />
+                <p style={{ marginLeft: '20px' }}>Loading roster map...</p>
+              </div>
+            </div>
+          ) : (
+            <RosterMap teamName={team.school} teamColor={teamColor} year={2024} />
+          )
         );
       
       case 'ratings':
