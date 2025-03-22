@@ -102,6 +102,31 @@ body {
   box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
+/* Section Title */
+.tcd-teams-section-title {
+  margin-top: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tcd-teams-section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
 /* Improve teams container inside the teams section */
 .tcd-teams-container {
   padding: 0.5rem 0; /* Reduced from 1rem for better space utilization */
@@ -163,10 +188,6 @@ body {
   background: var(--accent-primary);
   border-radius: 3px;
 }
-
-/* -------------------------- */
-/* The remaining styles below remain largely unchanged except for updated sizing */
-/* -------------------------- */
 
 /* Enhanced Clear Button */
 .tcd-clear-button {
@@ -979,159 +1000,6 @@ box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
 font-size: 1rem;
 }
 
-/* Division Tabs Styling */
-.tcd-division-tabs {
-  display: flex;
-  justify-content: center;
-  margin: 0 auto 2rem;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 0;
-  max-width: 500px;
-}
-
-.tcd-division-tab {
-  background: transparent;
-  border: none;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  margin: 0 5px;
-}
-
-.tcd-division-tab:hover {
-  color: #000;
-}
-
-.tcd-division-tab.active {
-  color: #D4001C;
-}
-
-.tcd-division-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background-color: #D4001C;
-  border-radius: 3px 3px 0 0;
-}
-
-/* FCS Teams Grid Styling */
-.tcd-teams-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.5rem;
-}
-
-.tcd-team-location {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.tcd-team-links {
-  margin-top: 0.75rem;
-  display: flex;
-  justify-content: center;
-}
-
-.tcd-view-link {
-  color: #D4001C;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-}
-
-.tcd-view-link:hover {
-  color: #b3001a;
-  background: rgba(212, 0, 28, 0.1);
-  transform: translateY(-2px);
-}
-
-.tcd-select-button {
-  background: #D4001C;
-  border: none;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-}
-
-.tcd-select-button:hover {
-  background: #b3001a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 0, 28, 0.3);
-}
-
-.tcd-selected {
-  background: #333333;
-}
-
-.tcd-selected:hover {
-  background: #222222;
-  box-shadow: 0 4px 12px rgba(51, 51, 51, 0.3);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 1440px) {
-  .tcd-teams-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 1024px) {
-  .tcd-teams-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-  
-  .tcd-division-tabs {
-    width: 90%;
-  }
-}
-
-@media (max-width: 768px) {
-  .tcd-teams-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 0.8rem;
-  }
-  
-  .tcd-division-tab {
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .tcd-division-tab {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9rem;
-  }
-}
-
 /* Enhanced Loading Screen */
 .tcd-loading-screen {
 display: flex;
@@ -1161,4 +1029,26 @@ gap: 2rem;
 padding: 2rem;
 text-align: center;
 color: var(--accent-primary);
+}
+
+/* Define animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
 }

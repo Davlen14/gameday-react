@@ -117,35 +117,9 @@ const ChartTabs = ({ activeTab, setActiveTab }) => {
   );
 };
 
-// New Component: Division Tabs
-const DivisionTabs = ({ activeTab, setActiveTab }) => {
-  const tabs = [
-    { id: "fbs", label: "FBS Teams" },
-    { id: "fcs", label: "FCS Teams" }
-  ];
-
-  return (
-    <div className="tcd-division-tabs">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          className={`tcd-division-tab ${activeTab === tab.id ? "active" : ""}`}
-          onClick={() => setActiveTab(tab.id)}
-        >
-          <span>{tab.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
-
 const Teams = () => {
-  // State for tracking which division tab is active
-  const [activeDivision, setActiveDivision] = useState("fbs");
-  
-  // Separate teams state for FBS and FCS
-  const [fbsTeams, setFbsTeams] = useState([]);
-  const [fcsTeams, setFcsTeams] = useState([]);
+  // State for teams
+  const [teams, setTeams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -166,7 +140,7 @@ const Teams = () => {
   const [chartsLoaded, setChartsLoaded] = useState(false);
 
   // Conference order based on popularity for FBS
-  const fbsConferenceOrder = [
+  const conferenceOrder = [
     "Big Ten",
     "SEC",
     "ACC",
@@ -177,21 +151,6 @@ const Teams = () => {
     "Conference USA",
     "Mid-American",
     "FBS Independents"
-  ];
-
-  // Conference order for FCS
-  const fcsConferenceOrder = [
-    "Big Sky Conference",
-    "Big South Conference",
-    "Colonial Athletic Association ",
-    "Missouri Valley Football Conference",
-    "Northeast Conference",
-    "Ohio Valley Conference",
-    "Patriot League",
-    "Pioneer Football League",
-    "Southern Conference",
-    "Southland Conference",
-    "United Athletic Conference "
   ];
 
   // Group teams by conference and sort by popularity
@@ -226,7 +185,7 @@ const Teams = () => {
   };
 
   // Conference logo mapping for FBS
-  const fbsConferenceLogos = {
+  const conferenceLogos = {
     ACC: "/photos/ACC.png",
     "American Athletic": "/photos/American Athletic.png",
     "Big 12": "/photos/Big 12.png",
@@ -247,11 +206,11 @@ const Teams = () => {
 
   // Fetch FBS teams on mount
   useEffect(() => {
-    const fetchFbsTeams = async () => {
+    const fetchTeams = async () => {
       try {
         setIsLoading(true);
         const teamsData = await teamsService.getTeams();
-        setFbsTeams(teamsData);
+        setTeams(teamsData);
 
         // Check if there are teams in localStorage to compare
         const savedTeams = localStorage.getItem("compareTeams");
@@ -269,26 +228,8 @@ const Teams = () => {
         setIsLoading(false);
       }
     };
-    fetchFbsTeams();
+    fetchTeams();
   }, []);
-
-  // Fetch FCS teams when the FCS tab is clicked
-  useEffect(() => {
-    if (activeDivision === "fcs" && fcsTeams.length === 0) {
-      const fetchFcsTeams = async () => {
-        try {
-          setIsLoading(true);
-          const teamsData = await teamsService.getFCSTeams();
-          setFcsTeams(teamsData);
-        } catch (err) {
-          setError("Failed to load FCS teams: " + err.message);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchFcsTeams();
-    }
-  }, [activeDivision, fcsTeams.length]);
 
   // Extract and transform ratings data from GraphQL response
   const extractRatingsFromGraphQL = (data) => {
@@ -411,10 +352,7 @@ const Teams = () => {
       </div>
     );
 
-  // Get the active set of teams based on the selected division
-  const activeTeams = activeDivision === "fbs" ? fbsTeams : fcsTeams;
-  const activeConferenceOrder = activeDivision === "fbs" ? fbsConferenceOrder : fcsConferenceOrder;
-  const groupedTeams = groupByConference(activeTeams, activeConferenceOrder);
+  const groupedTeams = groupByConference(teams, conferenceOrder);
 
   // Handle adding/removing teams from comparison
   const handleTeamSelect = (team) => {
@@ -446,8 +384,7 @@ const Teams = () => {
 
   // Helper to get team abbreviation
   const getTeamAbbreviation = (teamName) => {
-    const allTeams = [...fbsTeams, ...fcsTeams];
-    const team = allTeams.find(
+    const team = teams.find(
       (t) => t.school.toLowerCase() === teamName?.toLowerCase()
     );
     return team?.abbreviation || teamName;
@@ -590,23 +527,11 @@ const Teams = () => {
     }
   };
 
-  // Get the conference logo based on the active division
-  const getConferenceLogo = (conference) => {
-    if (activeDivision === "fbs") {
-      return fbsConferenceLogos[conference] || "/photos/default_conference.png";
-    } else {
-      // For FCS, use a different pattern to find logos
-      return `/photos/${conference.replace(/\s/g, "_")}.png`;
-    }
-  };
-
   return (
     <div className="tcd-teams-comparison-container" style={{ fontFamily: "Obriton, sans-serif" }}>
-      {/* Division tabs for switching between FBS and FCS */}
-      <DivisionTabs activeTab={activeDivision} setActiveTab={setActiveDivision} />
-
       {/* Teams Section: Displaying all teams */}
       <div className="tcd-teams-list-section">
+        <h2 className="tcd-teams-section-title">FBS Teams</h2>
         <div className="tcd-teams-container">
           <div className="tcd-conferences-list">
             {Object.entries(groupedTeams).map(([conference, confTeams]) => (
@@ -614,14 +539,12 @@ const Teams = () => {
                 <div className="tcd-conference-header">
                   <div className="tcd-conference-logo-container">
                     <img
-                      src={getConferenceLogo(conference)}
+                      src={conferenceLogos[conference] || "/photos/default_conference.png"}
                       alt={conference}
                       className="tcd-conference-logo"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = activeDivision === "fbs" 
-                          ? "/photos/default_conference.png"
-                          : "/photos/fcs.png";
+                        e.target.src = "/photos/default_conference.png";
                       }}
                     />
                   </div>
