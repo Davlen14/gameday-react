@@ -516,6 +516,15 @@
   background-color: var(--accent-color);
 }
 
+.poll-year-note {
+  text-align: center;
+  color: var(--accent-color);
+  font-size: 1rem;
+  margin: 0 0 1.2rem 0;
+  font-weight: 500;
+  font-style: italic;
+}
+
 .ap-poll-rankings {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

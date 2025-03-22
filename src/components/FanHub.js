@@ -43,8 +43,8 @@ const FanHub = () => {
   const [featuredGame, setFeaturedGame] = useState(null);
   const [polls, setPolls] = useState([]);
   const [discussions, setDiscussions] = useState([]);
-  const [year] = useState(2024);
-  const [week] = useState(1); // Week 1 for Ohio State vs Texas game
+  const [year] = useState(2025);
+  const [week] = useState(1); // Week 1 for Ohio State vs Texas game in 2025 season
   
   // Responsive design refs
   const discussionContainerRef = useRef(null);
@@ -84,11 +84,28 @@ const FanHub = () => {
         console.log("Games data:", gamesData);
         
         // Find Ohio State vs Texas game (could be home or away)
-        const ohioTexasGame = gamesData.find(
+        console.log("Looking for Ohio State vs Texas game in 2025 Week 1");
+        let ohioTexasGame = gamesData.find(
           game => 
             (game.homeTeam === "Ohio State" && game.awayTeam === "Texas") || 
             (game.homeTeam === "Texas" && game.awayTeam === "Ohio State")
         );
+        
+        // If game not found in API, create a placeholder for the 2025 season
+        if (!ohioTexasGame) {
+          console.log("Game not found in API, creating placeholder");
+          ohioTexasGame = {
+            id: "2025_ohiostate_texas",
+            homeTeam: "Ohio State",
+            awayTeam: "Texas",
+            startDate: "2025-08-30T19:30:00.000Z", // Fictional date for 2025 season opener
+            venue: "Ohio Stadium, Columbus, OH",
+            homePoints: null,
+            awayPoints: null,
+            season: 2025,
+            week: 1
+          };
+        }
         
         // If game found, get additional details
         if (ohioTexasGame) {
@@ -152,10 +169,10 @@ const FanHub = () => {
     const topicsData = [
       { 
         id: 1, 
-        title: `Week 1 Showdown: ${popularTeams[0]?.school || "Ohio State"} vs ${popularTeams[1]?.school || "Texas"}`, 
+        title: `2025 Season Opener: Ohio State vs Texas Preview`, 
         category: "Game Analysis", 
-        activeUsers: Math.floor(Math.random() * 500) + 300, 
-        lastActivity: "1 hour ago" 
+        activeUsers: Math.floor(Math.random() * 500) + 800, // High interest for this big matchup
+        lastActivity: "Just now" 
       },
       { 
         id: 2, 
@@ -265,20 +282,25 @@ const FanHub = () => {
     return [
       {
         id: 1,
-        question: "Who will win the National Championship?",
+        question: "Who will win the 2025 National Championship?",
         options: [
           { 
-            text: apPoll.rankings[0]?.school || "Georgia", 
-            votes: Math.floor(Math.random() * 20) + 40, 
-            percentage: Math.floor(Math.random() * 20) + 40
+            text: "Ohio State", 
+            votes: Math.floor(Math.random() * 15) + 30, 
+            percentage: Math.floor(Math.random() * 15) + 30
           },
           { 
-            text: apPoll.rankings[1]?.school || "Alabama", 
+            text: apPoll.rankings[0]?.school || "Georgia", 
             votes: Math.floor(Math.random() * 15) + 25, 
             percentage: Math.floor(Math.random() * 15) + 25
           },
           { 
-            text: apPoll.rankings[2]?.school || "Ohio State", 
+            text: "Texas", 
+            votes: Math.floor(Math.random() * 15) + 20, 
+            percentage: Math.floor(Math.random() * 15) + 20
+          },
+          { 
+            text: apPoll.rankings[1]?.school || "Alabama", 
             votes: Math.floor(Math.random() * 10) + 15, 
             percentage: Math.floor(Math.random() * 10) + 15
           },
@@ -291,25 +313,25 @@ const FanHub = () => {
       },
       {
         id: 2,
-        question: "Top Heisman Candidate?",
+        question: "Who will win the Ohio State vs Texas 2025 opener?",
         options: [
           { 
-            text: "QB, " + (apPoll.rankings[0]?.school || "Georgia"), 
-            votes: Math.floor(Math.random() * 15) + 30, 
-            percentage: Math.floor(Math.random() * 15) + 30
+            text: "Ohio State by 7+ points", 
+            votes: Math.floor(Math.random() * 15) + 35, 
+            percentage: Math.floor(Math.random() * 15) + 35
           },
           { 
-            text: "QB, " + (apPoll.rankings[1]?.school || "Alabama"), 
+            text: "Ohio State by 1-6 points", 
             votes: Math.floor(Math.random() * 15) + 25, 
             percentage: Math.floor(Math.random() * 15) + 25
           },
           { 
-            text: "RB, " + (apPoll.rankings[2]?.school || "Ohio State"), 
+            text: "Texas by 1-6 points", 
             votes: Math.floor(Math.random() * 10) + 20, 
             percentage: Math.floor(Math.random() * 10) + 20
           },
           { 
-            text: "WR, " + (apPoll.rankings[3]?.school || "Texas"), 
+            text: "Texas by 7+ points", 
             votes: Math.floor(Math.random() * 10) + 15, 
             percentage: Math.floor(Math.random() * 10) + 15
           }
@@ -345,7 +367,7 @@ const FanHub = () => {
       {/* Featured Game Banner */}
       {featuredGame && (
         <div className="featured-game-banner">
-          <h2>Featured Game of the Week</h2>
+          <h2>2025 Season Opener - Week 1</h2>
           <div className="teams-matchup">
             <div className="team">
               <img 
@@ -527,7 +549,8 @@ const FanHub = () => {
                 <div className="ap-poll-container">
                   <h3>Latest AP Top 25 Poll</h3>
                   <div className="ap-poll-rankings">
-                    {polls[0].rankings.slice(0, 10).map((team, index) => (
+                    <h4 className="poll-year-note">Looking ahead to the 2025 Season</h4>
+              {polls[0].rankings.slice(0, 10).map((team, index) => (
                       <div key={index} className="ap-poll-team">
                         <span className="ap-poll-rank">{team.rank}</span>
                         <span className="ap-poll-school">{team.school}</span>
