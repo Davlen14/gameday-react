@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
   FaFootballBall, 
   FaChartBar, 
@@ -10,103 +11,22 @@ import {
   FaSearch,
   FaTrophy,
   FaChartLine,
-  FaPoll
+  FaPoll,
+  FaSpinner,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaTv
 } from 'react-icons/fa';
+import teamsService from '../services/teamsService';
 import "../styles/FanHub.css";
 
-const mockLivePolls = [
-  {
-    id: 1,
-    question: "Who wins the SEC Championship?",
-    options: [
-      { text: "Georgia", votes: 45, percentage: 45 },
-      { text: "Alabama", votes: 35, percentage: 35 },
-      { text: "LSU", votes: 20, percentage: 20 }
-    ]
-  },
-  {
-    id: 2, 
-    question: "Top Transfer Portal QB?",
-    options: [
-      { text: "Michael Penix Jr.", votes: 52, percentage: 52 },
-      { text: "Caleb Williams", votes: 38, percentage: 38 },
-      { text: "Drake Maye", votes: 10, percentage: 10 }
-    ]
-  }
-];
-
-const mockDiscussionTopics = [
-  { 
-    id: 1, 
-    title: "Week 1 Showdown: Ohio State vs Texas", 
-    category: "Game Analysis", 
-    activeUsers: 564, 
-    lastActivity: "1 hour ago" 
-  },
-  { 
-    id: 2, 
-    title: "Transfer Portal Megathread: Biggest Moves", 
-    category: "Recruiting", 
-    activeUsers: 742, 
-    lastActivity: "30 mins ago" 
-  },
-  { 
-    id: 3, 
-    title: "Bill Belichick to College Football: Potential Landing Spots", 
-    category: "Coaching", 
-    activeUsers: 421, 
-    lastActivity: "3 hours ago" 
-  },
-  { 
-    id: 4, 
-    title: "16-Team Playoff: What It Means for College Football", 
-    category: "NCAA Updates", 
-    activeUsers: 612, 
-    lastActivity: "45 mins ago" 
-  },
-  { 
-    id: 5, 
-    title: "NIL Deals: Top Earning College Athletes", 
-    category: "Name, Image, Likeness", 
-    activeUsers: 503, 
-    lastActivity: "2 hours ago" 
-  },
-  { 
-    id: 6, 
-    title: "Breaking Down Conference Realignment", 
-    category: "College Football Landscape", 
-    activeUsers: 389, 
-    lastActivity: "4 hours ago" 
-  },
-  { 
-    id: 7, 
-    title: "Freshman QBs to Watch in 2024", 
-    category: "Recruiting", 
-    activeUsers: 276, 
-    lastActivity: "5 hours ago" 
-  },
-  { 
-    id: 8, 
-    title: "Dark Horse Teams for National Championship", 
-    category: "Predictions", 
-    activeUsers: 532, 
-    lastActivity: "1 day ago" 
-  },
-  { 
-    id: 9, 
-    title: "Best Tailgate Locations Across College Football", 
-    category: "Fan Culture", 
-    activeUsers: 215, 
-    lastActivity: "6 hours ago" 
-  },
-  { 
-    id: 10, 
-    title: "Analytics Revolution in College Football", 
-    category: "Strategy", 
-    activeUsers: 187, 
-    lastActivity: "12 hours ago" 
-  }
-];
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="loading-container">
+    <FaSpinner className="loading-icon" />
+    <p>Loading data...</p>
+  </div>
+);
 
 const FanHub = () => {
   // State management
@@ -116,13 +36,16 @@ const FanHub = () => {
     category: 'All',
     sortBy: 'Recent'
   });
-
-  // Filtered discussion topics
-  const filteredTopics = mockDiscussionTopics.filter(topic => 
-    topic.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedFilters.category === 'All' || topic.category === selectedFilters.category)
-  );
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Data states from API
+  const [featuredGame, setFeaturedGame] = useState(null);
+  const [polls, setPolls] = useState([]);
+  const [discussions, setDiscussions] = useState([]);
+  const [year] = useState(2024);
+  const [week] = useState(1); // Week 1 for Ohio State vs Texas game
+  
   // Responsive design refs
   const discussionContainerRef = useRef(null);
 
@@ -149,6 +72,264 @@ const FanHub = () => {
       label: 'Game Predictions' 
     }
   ];
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch games for week 1
+        const gamesData = await teamsService.getGames(week, year);
+        console.log("Games data:", gamesData);
+        
+        // Find Ohio State vs Texas game (could be home or away)
+        const ohioTexasGame = gamesData.find(
+          game => 
+            (game.homeTeam === "Ohio State" && game.awayTeam === "Texas") || 
+            (game.homeTeam === "Texas" && game.awayTeam === "Ohio State")
+        );
+        
+        // If game found, get additional details
+        if (ohioTexasGame) {
+          // Get media data
+          const mediaData = await teamsService.getGameMedia(year, week);
+          const gameMedia = mediaData.find(m => m.id === ohioTexasGame.id);
+          
+          // Get weather data
+          const weatherData = await teamsService.getGameWeather(year, week);
+          const gameWeather = weatherData.find(w => w.id === ohioTexasGame.id);
+          
+          // Get betting lines
+          const linesData = await teamsService.getGameLines(year);
+          const gameLines = linesData.find(l => l.id === ohioTexasGame.id);
+          
+          // Get team data for logos
+          const teamsData = await teamsService.getTeams(year);
+          const homeTeam = teamsData.find(t => t.school === ohioTexasGame.homeTeam);
+          const awayTeam = teamsData.find(t => t.school === ohioTexasGame.awayTeam);
+          
+          // Combine all data
+          setFeaturedGame({
+            ...ohioTexasGame,
+            media: gameMedia || {},
+            weather: gameWeather || {},
+            lines: gameLines || {},
+            homeTeamData: homeTeam || {},
+            awayTeamData: awayTeam || {}
+          });
+        }
+        
+        // Fetch latest AP poll
+        const pollsData = await teamsService.getPolls(year, "ap", week);
+        setPolls(pollsData);
+        
+        // Generate realistic discussion topics based on teams and current college football topics
+        const allTeams = await teamsService.getTeams(year);
+        generateDiscussionTopics(allTeams);
+        
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [year, week]);
+  
+  // Generate realistic discussion topics based on real teams
+  const generateDiscussionTopics = (teams) => {
+    if (!teams || teams.length === 0) return;
+    
+    // Get some popular teams for discussions
+    const popularTeams = teams.filter(team => 
+      ["Alabama", "Georgia", "Ohio State", "Michigan", "Texas", "USC", "Clemson", "Oklahoma", "Notre Dame", "LSU"].includes(team.school)
+    );
+    
+    // Generate discussion topics
+    const topicsData = [
+      { 
+        id: 1, 
+        title: `Week 1 Showdown: ${popularTeams[0]?.school || "Ohio State"} vs ${popularTeams[1]?.school || "Texas"}`, 
+        category: "Game Analysis", 
+        activeUsers: Math.floor(Math.random() * 500) + 300, 
+        lastActivity: "1 hour ago" 
+      },
+      { 
+        id: 2, 
+        title: "Transfer Portal Megathread: Biggest Moves", 
+        category: "Recruiting", 
+        activeUsers: Math.floor(Math.random() * 300) + 500, 
+        lastActivity: "30 mins ago" 
+      },
+      { 
+        id: 3, 
+        title: "NIL Deals: Top Earning College Athletes", 
+        category: "Name, Image, Likeness", 
+        activeUsers: Math.floor(Math.random() * 200) + 400, 
+        lastActivity: "2 hours ago" 
+      },
+      { 
+        id: 4, 
+        title: "16-Team Playoff: What It Means for College Football", 
+        category: "NCAA Updates", 
+        activeUsers: Math.floor(Math.random() * 300) + 500, 
+        lastActivity: "45 mins ago" 
+      },
+      { 
+        id: 5, 
+        title: `${popularTeams[2]?.school || "Georgia"}'s Path to the National Championship`, 
+        category: "Team Analysis", 
+        activeUsers: Math.floor(Math.random() * 200) + 300, 
+        lastActivity: "3 hours ago" 
+      },
+      { 
+        id: 6, 
+        title: "Breaking Down Conference Realignment", 
+        category: "College Football Landscape", 
+        activeUsers: Math.floor(Math.random() * 200) + 300, 
+        lastActivity: "4 hours ago" 
+      },
+      { 
+        id: 7, 
+        title: `Freshman QBs to Watch in ${year}`, 
+        category: "Recruiting", 
+        activeUsers: Math.floor(Math.random() * 100) + 200, 
+        lastActivity: "5 hours ago" 
+      },
+      { 
+        id: 8, 
+        title: `Dark Horse Teams for ${year} National Championship`, 
+        category: "Predictions", 
+        activeUsers: Math.floor(Math.random() * 300) + 400, 
+        lastActivity: "1 day ago" 
+      },
+      { 
+        id: 9, 
+        title: "Best Tailgate Locations Across College Football", 
+        category: "Fan Culture", 
+        activeUsers: Math.floor(Math.random() * 100) + 200, 
+        lastActivity: "6 hours ago" 
+      },
+      { 
+        id: 10, 
+        title: "Analytics Revolution in College Football", 
+        category: "Strategy", 
+        activeUsers: Math.floor(Math.random() * 100) + 150, 
+        lastActivity: "12 hours ago" 
+      }
+    ];
+    
+    setDiscussions(topicsData);
+  };
+  
+  // Format game date
+  const formatGameDate = (dateString) => {
+    if (!dateString) return "TBD";
+    
+    const gameDate = new Date(dateString);
+    if (isNaN(gameDate.getTime())) return "TBD";
+    
+    return gameDate.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }) + ' • ' + gameDate.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Filtered discussion topics
+  const filteredTopics = discussions.filter(topic => 
+    topic.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (selectedFilters.category === 'All' || topic.category === selectedFilters.category)
+  );
+  
+  // Create poll data based on real teams from the AP poll
+  const getLivePolls = () => {
+    if (!polls || polls.length === 0) {
+      return [];
+    }
+    
+    // Use the first poll (AP Top 25)
+    const apPoll = polls[0];
+    
+    if (!apPoll || !apPoll.rankings || apPoll.rankings.length === 0) {
+      return [];
+    }
+    
+    return [
+      {
+        id: 1,
+        question: "Who will win the National Championship?",
+        options: [
+          { 
+            text: apPoll.rankings[0]?.school || "Georgia", 
+            votes: Math.floor(Math.random() * 20) + 40, 
+            percentage: Math.floor(Math.random() * 20) + 40
+          },
+          { 
+            text: apPoll.rankings[1]?.school || "Alabama", 
+            votes: Math.floor(Math.random() * 15) + 25, 
+            percentage: Math.floor(Math.random() * 15) + 25
+          },
+          { 
+            text: apPoll.rankings[2]?.school || "Ohio State", 
+            votes: Math.floor(Math.random() * 10) + 15, 
+            percentage: Math.floor(Math.random() * 10) + 15
+          },
+          { 
+            text: "Other", 
+            votes: Math.floor(Math.random() * 10) + 5, 
+            percentage: Math.floor(Math.random() * 10) + 5
+          }
+        ]
+      },
+      {
+        id: 2,
+        question: "Top Heisman Candidate?",
+        options: [
+          { 
+            text: "QB, " + (apPoll.rankings[0]?.school || "Georgia"), 
+            votes: Math.floor(Math.random() * 15) + 30, 
+            percentage: Math.floor(Math.random() * 15) + 30
+          },
+          { 
+            text: "QB, " + (apPoll.rankings[1]?.school || "Alabama"), 
+            votes: Math.floor(Math.random() * 15) + 25, 
+            percentage: Math.floor(Math.random() * 15) + 25
+          },
+          { 
+            text: "RB, " + (apPoll.rankings[2]?.school || "Ohio State"), 
+            votes: Math.floor(Math.random() * 10) + 20, 
+            percentage: Math.floor(Math.random() * 10) + 20
+          },
+          { 
+            text: "WR, " + (apPoll.rankings[3]?.school || "Texas"), 
+            votes: Math.floor(Math.random() * 10) + 15, 
+            percentage: Math.floor(Math.random() * 10) + 15
+          }
+        ]
+      }
+    ];
+  };
+  
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  
+  if (error) {
+    return (
+      <div className="error">
+        <h2>Error loading data</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="fanhub-container">
@@ -160,6 +341,57 @@ const FanHub = () => {
           <p>The ultimate community for college football enthusiasts</p>
         </div>
       </header>
+
+      {/* Featured Game Banner */}
+      {featuredGame && (
+        <div className="featured-game-banner">
+          <h2>Featured Game of the Week</h2>
+          <div className="teams-matchup">
+            <div className="team">
+              <img 
+                src={featuredGame.homeTeamData.logos?.[0] || "/photos/default_team.png"} 
+                alt={featuredGame.homeTeam} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/photos/default_team.png";
+                }}
+              />
+              <span>{featuredGame.homeTeam}</span>
+            </div>
+            <div className="vs">VS</div>
+            <div className="team">
+              <img 
+                src={featuredGame.awayTeamData.logos?.[0] || "/photos/default_team.png"} 
+                alt={featuredGame.awayTeam} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/photos/default_team.png";
+                }}
+              />
+              <span>{featuredGame.awayTeam}</span>
+            </div>
+          </div>
+          
+          <div className="game-details">
+            <div className="detail-item">
+              <FaMapMarkerAlt />
+              <span>{featuredGame.venue || "TBD"}</span>
+            </div>
+            <div className="detail-item">
+              <FaCalendarAlt />
+              <span>{formatGameDate(featuredGame.startDate)}</span>
+            </div>
+            <div className="detail-item">
+              <FaTv />
+              <span>{featuredGame.media?.network || "TBD"}</span>
+            </div>
+          </div>
+          
+          <Link to={`/game/${featuredGame.id}`} className="view-game-details">
+            View Full Game Details
+          </Link>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="fanhub-tabs">
@@ -180,42 +412,49 @@ const FanHub = () => {
       {/* Main Content Area */}
       <div className="fanhub-content">
         {/* Search and Filter Section */}
-        <div className="content-filters">
-          <div className="search-container">
-            <FaSearch className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search discussions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        {activeTab === 'discussions' && (
+          <div className="content-filters">
+            <div className="search-container">
+              <FaSearch className="search-icon" />
+              <input 
+                type="text" 
+                placeholder="Search discussions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="filter-container">
+              <select 
+                value={selectedFilters.category}
+                onChange={(e) => setSelectedFilters(prev => ({
+                  ...prev, 
+                  category: e.target.value
+                }))}
+              >
+                <option value="All">All Categories</option>
+                <option value="Game Analysis">Game Analysis</option>
+                <option value="Recruiting">Recruiting</option>
+                <option value="Team Analysis">Team Analysis</option>
+                <option value="NCAA Updates">NCAA Updates</option>
+                <option value="Predictions">Predictions</option>
+                <option value="Fan Culture">Fan Culture</option>
+                <option value="Strategy">Strategy</option>
+                <option value="Name, Image, Likeness">NIL</option>
+              </select>
+              <select 
+                value={selectedFilters.sortBy}
+                onChange={(e) => setSelectedFilters(prev => ({
+                  ...prev, 
+                  sortBy: e.target.value
+                }))}
+              >
+                <option value="Recent">Most Recent</option>
+                <option value="Popular">Most Popular</option>
+                <option value="ActiveUsers">Active Users</option>
+              </select>
+            </div>
           </div>
-          <div className="filter-container">
-            <select 
-              value={selectedFilters.category}
-              onChange={(e) => setSelectedFilters(prev => ({
-                ...prev, 
-                category: e.target.value
-              }))}
-            >
-              <option value="All">All Categories</option>
-              <option value="Recruiting">Recruiting</option>
-              <option value="Betting">Betting</option>
-              <option value="Team Analysis">Team Analysis</option>
-            </select>
-            <select 
-              value={selectedFilters.sortBy}
-              onChange={(e) => setSelectedFilters(prev => ({
-                ...prev, 
-                sortBy: e.target.value
-              }))}
-            >
-              <option value="Recent">Most Recent</option>
-              <option value="Popular">Most Popular</option>
-              <option value="ActiveUsers">Active Users</option>
-            </select>
-          </div>
-        </div>
+        )}
 
         {/* Dynamic Content Based on Active Tab */}
         <AnimatePresence mode="wait">
@@ -248,7 +487,7 @@ const FanHub = () => {
                 ))
               ) : (
                 <div className="no-discussions">
-                  <p>No discussions available at the moment.</p>
+                  <p>No discussions found matching your search criteria.</p>
                 </div>
               )}
             </motion.div>
@@ -263,21 +502,49 @@ const FanHub = () => {
               className="polls-container"
             >
               <h2>Live Community Polls</h2>
-              {mockLivePolls.map(poll => (
+              {getLivePolls().map(poll => (
                 <div key={poll.id} className="live-poll">
                   <h3>{poll.question}</h3>
-                  {poll.options.map(option => (
-                    <div key={option.text} className="poll-option">
+                  {poll.options.map((option, index) => (
+                    <div key={index} className="poll-option">
                       <div 
                         className="poll-bar" 
                         style={{ width: `${option.percentage}%` }}
                       >
-                        {option.text} ({option.votes} votes)
+                        <span className="poll-text">{option.text}</span>
+                        <span className="poll-votes">({option.votes} votes)</span>
                       </div>
                     </div>
                   ))}
+                  <div className="poll-total">
+                    Total votes: {poll.options.reduce((sum, option) => sum + option.votes, 0)}
+                  </div>
                 </div>
               ))}
+              
+              {/* AP Top 25 Poll Display */}
+              {polls && polls.length > 0 && polls[0]?.rankings && (
+                <div className="ap-poll-container">
+                  <h3>Latest AP Top 25 Poll</h3>
+                  <div className="ap-poll-rankings">
+                    {polls[0].rankings.slice(0, 10).map((team, index) => (
+                      <div key={index} className="ap-poll-team">
+                        <span className="ap-poll-rank">{team.rank}</span>
+                        <span className="ap-poll-school">{team.school}</span>
+                        <span className="ap-poll-points">{team.points} pts</span>
+                        {team.firstPlaceVotes > 0 && (
+                          <span className="ap-poll-first-votes">
+                            ({team.firstPlaceVotes} first place)
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Link to="/polls" className="view-full-polls">
+                    View Complete AP Poll Rankings
+                  </Link>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -292,7 +559,7 @@ const FanHub = () => {
             >
               <FaTrophy className="coming-soon-icon" />
               <h2>Coming Soon!</h2>
-              <p>We're working on bringing you amazing {activeTab.replace('bets', 'betting').replace('predictions', 'prediction')} features.</p>
+              <p>We're working on bringing you amazing {activeTab === 'bets' ? 'betting insights' : 'game prediction'} features.</p>
             </motion.div>
           )}
         </AnimatePresence>
