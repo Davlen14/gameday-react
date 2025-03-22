@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import teamsService from "../services/teamsService";
 import newsService from "../services/newsService";
-import { FaTrophy, FaUserAlt, FaStar, FaNewspaper } from 'react-icons/fa';
+import { FaTrophy, FaUserAlt, FaStar, FaNewspaper, FaChartBar } from 'react-icons/fa';
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -173,6 +173,7 @@ const BigTen = () => {
     const [recruits, setRecruits] = useState([]);
     const [standings, setStandings] = useState([]);
     const [news, setNews] = useState([]);
+    const [teamTalent, setTeamTalent] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [mapCenter, setMapCenter] = useState([41.0, -85.0]);
@@ -287,6 +288,26 @@ const BigTen = () => {
 
     const newsTitleStyle = {
         ...crystalBallTitleStyle,
+    };
+
+    const talentTitleStyle = {
+        ...crystalBallTitleStyle,
+    };
+
+    const talentRowStyle = {
+        display: "flex",
+        padding: "8px 0",
+        borderBottom: "1px solid #eee",
+        alignItems: "center",
+    };
+
+    const talentBarContainerStyle = {
+        height: "8px",
+        borderRadius: "4px",
+        backgroundColor: "#f0f0f0",
+        overflow: "hidden",
+        flex: 1,
+        margin: "0 10px",
     };
 
     const recruitRowStyle = {
@@ -447,6 +468,29 @@ const BigTen = () => {
                     const latSum = teamsWithLocations.reduce((sum, team) => sum + team.location.latitude, 0);
                     const lngSum = teamsWithLocations.reduce((sum, team) => sum + team.location.longitude, 0);
                     setMapCenter([latSum / teamsWithLocations.length, lngSum / teamsWithLocations.length]);
+                }
+
+                // Fetch team talent data
+                try {
+                    console.log("Fetching team talent data");
+                    const talentData = await teamsService.getTeamTalent();
+                    
+                    if (talentData && talentData.length > 0) {
+                        // Filter for Big Ten teams and sort by talent score (highest to lowest)
+                        const bigTenTalent = talentData
+                            .filter(team => 
+                                bigTenTeams.some(t => 
+                                    t.school === team.team || 
+                                    t.mascot === team.team
+                                )
+                            )
+                            .sort((a, b) => b.talent - a.talent);
+                        
+                        setTeamTalent(bigTenTalent);
+                        console.log("Big Ten talent data:", bigTenTalent);
+                    }
+                } catch (error) {
+                    console.error("Error fetching talent data:", error);
                 }
 
                 // Fetch news using the working approach from LatestUpdates component
@@ -698,6 +742,9 @@ const BigTen = () => {
         if (total === 0) return 0;
         return (wins / total * 100).toFixed(1);
     };
+
+    // Find max talent score for normalization
+    const maxTalent = teamTalent.length > 0 ? teamTalent[0].talent : 1000;
     
     return (
         <div style={pageStyle}>
@@ -712,12 +759,98 @@ const BigTen = () => {
             </div>
 
             <div style={mainContentContainerStyle}>
-                {/* Left Sidebar - News */}
+                {/* Left Sidebar - Team Talent and News */}
                 <div style={leftSidebarStyle}>
+                    {/* Team Talent Section */}
+                    <div style={sectionStyle}>
+                        <h2 style={talentTitleStyle}>
+                            <FaChartBar style={{ marginRight: "10px" }} />
+                            TEAM TALENT
+                        </h2>
+                        {teamTalent.length > 0 ? (
+                            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                                {teamTalent.map((team, index) => (
+                                    <div key={index} style={talentRowStyle}>
+                                        <div style={{ 
+                                            width: "24px", 
+                                            textAlign: "center", 
+                                            fontWeight: "bold",
+                                            fontSize: "0.9rem",
+                                            color: index < 3 ? bigTenColors.secondary : "#666"
+                                        }}>
+                                            {index + 1}
+                                        </div>
+                                        <div style={{ 
+                                            display: "flex",
+                                            alignItems: "center",
+                                            width: "120px"
+                                        }}>
+                                            {/* Try to find the matching team logo */}
+                                            {teams.find(t => t.school === team.team)?.logos?.[0] && (
+                                                <img
+                                                    src={teams.find(t => t.school === team.team)?.logos?.[0] || "/photos/default_team.png"}
+                                                    alt={team.team}
+                                                    style={{
+                                                        width: "20px",
+                                                        height: "20px",
+                                                        marginRight: "8px",
+                                                        objectFit: "contain"
+                                                    }}
+                                                />
+                                            )}
+                                            <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                                                {team.team}
+                                            </span>
+                                        </div>
+                                        <div style={talentBarContainerStyle}>
+                                            <div style={{
+                                                height: "100%",
+                                                width: `${(team.talent / maxTalent) * 100}%`,
+                                                backgroundColor: index < 3 ? bigTenColors.secondary : "#aaa",
+                                                borderRadius: "4px"
+                                            }} />
+                                        </div>
+                                        <div style={{ 
+                                            width: "60px", 
+                                            textAlign: "right",
+                                            fontSize: "0.85rem",
+                                            fontWeight: "500",
+                                            color: index < 3 ? bigTenColors.secondary : "#555"
+                                        }}>
+                                            {team.talent.toFixed(1)}
+                                        </div>
+                                    </div>
+                                ))}
+                                <div style={{ 
+                                    marginTop: "10px",
+                                    fontSize: "0.8rem",
+                                    color: "#666",
+                                    textAlign: "center",
+                                    padding: "5px",
+                                    backgroundColor: "#f9f9f9",
+                                    borderRadius: "4px"
+                                }}>
+                                    Talent Composite scores based on recruiting ratings
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ 
+                                padding: "15px", 
+                                textAlign: "center", 
+                                color: "#666",
+                                backgroundColor: "#f9f9f9",
+                                borderRadius: "4px"
+                            }}>
+                                No talent data available
+                            </div>
+                        )}
+                    </div>
+
+                    {/* News Section */}
                     <div style={sectionStyle}>
                         <h2 style={newsTitleStyle}>LATEST NEWS</h2>
                         {news && news.length > 0 ? (
-                            <div style={{ maxHeight: '850px', overflowY: 'auto' }}>
+                            <div style={{ maxHeight: '650px', overflowY: 'auto' }}>
                                 {news.map((article, index) => (
                                     <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
                                         {article.image && (

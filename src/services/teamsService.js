@@ -36,6 +36,14 @@ export const getTeams = async (year = 2024) => {
   return allTeams.filter(team => team.classification === "fbs");
 };
 
+// Fetch team talent composite rankings
+export const getTeamTalent = async (year = 2024, team = null) => {
+  const endpoint = "/talent";
+  const params = { year };
+  if (team) params.team = team;
+  return await fetchData(endpoint, params);
+};
+
 export const getFCSTeams = async (year = 2024) => {
   const endpoint = "/teams";
   const params = { year }; // Use the provided year parameter
@@ -623,6 +631,7 @@ export const getPPAPlayers = async (team, year = 2024) => {
 const teamsService = {
     getGameById,
     getTeams,
+    getTeamTalent,
     getGames,
     getGameMedia,
     getGameWeather,
