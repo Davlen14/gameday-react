@@ -68,7 +68,7 @@ const MapControl = ({ teams, onTeamClick }) => {
                 height: "40px",
                 objectFit: "contain"
             });
-            logoImg.src = "/photos/NCAA.png";
+            logoImg.src = "/photos/NC2A.png";
             logoImg.alt = "NCAA Logo";
 
             const legendDiv = L.DomUtil.create("div", "", div);
@@ -224,6 +224,7 @@ const Teams = () => {
             fontWeight: "500",
             margin: "10px 0 0 0",
             textAlign: "center",
+            fontFamily: "'Orbitron', 'Titillium Web', sans-serif",
         },
         
         mainContentContainerStyle: {
@@ -718,7 +719,7 @@ const Teams = () => {
             {/* Header with NCAA logo and subtitle */}
             <div style={styles.headerStyle}>
                 <img 
-                    src="/photos/NCAA.png" 
+                    src="/photos/NC2A.png" 
                     alt="NCAA Logo" 
                     style={styles.logoStyle} 
                 />
