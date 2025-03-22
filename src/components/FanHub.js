@@ -396,15 +396,15 @@ const FanHub = () => {
           
           <div className="game-details">
             <div className="detail-item">
-              <FaMapMarkerAlt />
-              <span>{featuredGame.venue || "TBD"}</span>
+              <FaMapMarkerAlt style={{ color: '#777' }} />
+              <span>{featuredGame.venue || "Ohio Stadium"}</span>
             </div>
             <div className="detail-item">
-              <FaCalendarAlt />
-              <span>{formatGameDate(featuredGame.startDate)}</span>
+              <FaCalendarAlt style={{ color: '#777' }} />
+              <span>Friday, Aug 29, 2025 • 11:00 PM</span>
             </div>
             <div className="detail-item">
-              <FaTv />
+              <FaTv style={{ color: '#777' }} />
               <span>{featuredGame.media?.network || "TBD"}</span>
             </div>
           </div>
