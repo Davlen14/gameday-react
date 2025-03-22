@@ -181,8 +181,8 @@ const Teams = () => {
 
     // NCAA colors
     const ncaaColors = {
-        primary: "#0a0f1d", // Dark blue
-        secondary: "#D20A2C", // Red
+        primary: "#D20A2C", // Red (primary color for headers)
+        secondary: "#000000", // Black
         accent: "#ffffff",   // White
         background: "#f5f5f5"
     };
@@ -204,92 +204,26 @@ const Teams = () => {
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
-            backgroundColor: ncaaColors.primary,
-            color: "#ffffff",
+            backgroundColor: "#ffffff",
+            color: "#000000",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
             borderRadius: "8px",
             marginBottom: "20px",
             width: "100%",
-            position: "relative",
-            overflow: "hidden",
-        },
-        
-        headerBackground: {
-            content: '',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: "url('/photos/football-pattern.png')",
-            backgroundSize: "500px",
-            opacity: 0.07,
-            zIndex: 0,
         },
         
         logoStyle: {
-            width: "150px",
+            width: "200px",
             height: "auto",
-            marginBottom: "10px",
-            position: "relative",
-            zIndex: 2,
-        },
-        
-        titleStyle: {
-            margin: 0,
-            fontFamily: "'Impact', 'Arial Black', sans-serif",
-            fontSize: "3.5rem",
-            fontWeight: 900,
-            letterSpacing: "1px",
-            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.4)",
-            backgroundImage: "linear-gradient(to bottom, #ffffff, #dddddd)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8))",
-            position: "relative",
-            zIndex: 2,
+            marginBottom: "15px",
         },
         
         subtitleStyle: {
             fontSize: "1.2rem",
-            color: "#ffffff",
-            fontWeight: "300",
-            letterSpacing: "0.1em",
+            color: "#000000",
+            fontWeight: "500",
             margin: "10px 0 0 0",
-            position: "relative",
-            zIndex: 2,
-        },
-        
-        gamedayBadge: {
-            backgroundColor: "#fff",
-            border: "3px solid #000",
-            borderRadius: "6px",
-            padding: "6px 16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: "-15px",
-            zIndex: 3,
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
-            position: "relative",
-        },
-        
-        gamedayText: {
-            fontFamily: "'Orbitron', 'Titillium Web', sans-serif",
-            fontWeight: 900,
-            fontSize: "1.2rem",
-            color: ncaaColors.secondary,
-            marginRight: "4px",
-        },
-        
-        cfbText: {
-            fontFamily: "Arial, sans-serif",
-            fontWeight: 800,
-            fontSize: "1.2rem",
-            color: "#ff9933",
-            backgroundColor: "#000",
-            padding: "2px 6px",
-            borderRadius: "3px",
+            textAlign: "center",
         },
         
         mainContentContainerStyle: {
@@ -783,24 +717,12 @@ const Teams = () => {
         <div style={styles.pageStyle}>
             {/* Header with NCAA logo and subtitle */}
             <div style={styles.headerStyle}>
-                <div style={styles.headerBackground}></div>
-                
-                <div style={styles.gamedayBadge}>
-                    <span style={styles.gamedayText}>GAMEDAY</span>
-                    <span style={styles.cfbText}>CFB</span>
-                </div>
-                
                 <img 
                     src="/photos/NCAA.png" 
                     alt="NCAA Logo" 
                     style={styles.logoStyle} 
                 />
-                <h1 style={styles.titleStyle}>The Heart of Saturday</h1>
-                <p style={styles.subtitleStyle}>NCAA Football, where dreams are chased and rivalries are born.</p>
-                
-                <div style={styles.seasonBanner}>
-                    <span style={styles.seasonText}>2023-2024 SEASON</span>
-                </div>
+                <p style={styles.subtitleStyle}>The Heart of Saturday: NCAA Football, where dreams are chased and rivalries are born.</p>
             </div>
 
             <div style={styles.mainContentContainerStyle}>
