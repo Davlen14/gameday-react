@@ -188,7 +188,7 @@ const BigTen = () => {
 
     // Modern styled containers and components
     const pageStyle = {
-        backgroundColor: bigTenColors.background,
+        backgroundColor:"#ffffff", // White background as requested
         padding: "20px 0",
         minHeight: "100vh",
         fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
