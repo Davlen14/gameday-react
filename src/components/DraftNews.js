@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserGraduate, FaSearch, FaFilter, FaSpinner, FaInfoCircle, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaTrophy, FaRulerVertical, FaWeightHanging, FaUniversity, FaRankings } from 'react-icons/fa';
+import { FaUserGraduate, FaSearch, FaFilter, FaSpinner, FaInfoCircle, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaTrophy, FaRulerVertical, FaWeightHanging, FaUniversity, FaListOl } from 'react-icons/fa';
 import teamsService from '../services/teamsService';
 
 const DraftNews = () => {
@@ -719,7 +719,7 @@ const DraftNews = () => {
             
             <div className="details-card">
               <div className="details-card-header">
-                <FaRankings /> Pre-Draft Rankings
+                <FaListOl /> Pre-Draft Rankings
               </div>
               <div className="details-card-content">#{pick.preDraftRanking || "N/A"} Overall</div>
               <div className="details-card-secondary">#{pick.preDraftPositionRanking || "N/A"} {pick.position}</div>
