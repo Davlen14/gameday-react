@@ -16,6 +16,7 @@ import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Te
 import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
 import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysis
 import AdvancedGameDetailView from "./components/AdvancedGameDetailView"; // Import the new AdvancedGameDetailView component
+import DraftNews from "./components/DraftNews"; // Import the DraftNews component
 
 // New ArbitrageEV Component Import
 import ArbitrageEV from "./components/ArbitrageEV";
@@ -253,6 +254,7 @@ function App() {
                     <button className="dropdown-button">News</button>
                     {dropdownOpen === "news" && (
                       <div className="dropdown-menu">
+                        <Link to="/draft-news">NFL Draft News</Link>
                         <Link to="/latest-news">Latest Updates</Link>
                         <Link to="/injury-reports">Injury Report</Link>
                         <Link to="/rankings">Rankings</Link>
@@ -402,6 +404,7 @@ function App() {
               </div>
               {dropdownOpen === "mobile-news" && (
                 <>
+                  <Link to="/draft-news" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>NFL Draft News</Link>
                   <Link to="/latest-news" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Latest Updates</Link>
                   <Link to="/injury-reports" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Injury Report</Link>
                   <Link to="/rankings" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Rankings</Link>
@@ -496,6 +499,7 @@ function App() {
               <Route path="/game/:id" element={<AdvancedGameDetailView />} />
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
+              <Route path="/draft-news" element={<DraftNews />} />
 
               {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
