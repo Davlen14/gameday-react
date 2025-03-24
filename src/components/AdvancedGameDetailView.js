@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
+import youtubeService from "../services/youtubeService";
 import WinProb from "./WinProb";
 import "../styles/AdvancedGameDetailView.css";
 
@@ -382,6 +383,35 @@ const getRandomLineForGame = (gameId, lines) => {
   return gameLines[Math.floor(Math.random() * gameLines.length)];
 };
 
+// Video card component for displaying YouTube videos
+const VideoCard = ({ video, onClick }) => {
+  const { snippet, id } = video;
+  
+  return (
+    <div className="video-card" onClick={onClick}>
+      <div className="video-thumbnail">
+        <img 
+          src={snippet.thumbnails.medium.url} 
+          alt={snippet.title} 
+        />
+        <div className="play-button">
+          <svg width="48" height="48" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.6)" />
+            <path fill="#fff" d="M10,8L16,12L10,16V8Z" />
+          </svg>
+        </div>
+      </div>
+      <div className="video-info">
+        <h3 className="video-title">{snippet.title}</h3>
+        <div className="video-channel">{snippet.channelTitle}</div>
+        <div className="video-published">
+          {new Date(snippet.publishedAt).toLocaleDateString()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdvancedGameDetailView = () => {
   const { id } = useParams();
   const [gameData, setGameData] = useState(null);
@@ -391,6 +421,11 @@ const AdvancedGameDetailView = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // States for video content
+  const [videos, setVideos] = useState([]);
+  const [videosLoading, setVideosLoading] = useState(false);
+  const [videosError, setVideosError] = useState(null);
 
   // Helper to find a team from either FBS or FCS
   const findTeam = (teamName) => {
@@ -421,6 +456,53 @@ const AdvancedGameDetailView = () => {
     return team && team.color ? `#${team.color}` : "#666666";
   };
 
+  // Function to build a search query for YouTube based on game data
+  const buildVideoSearchQuery = () => {
+    if (!gameData) return "";
+    
+    const { homeTeam, awayTeam, season } = gameData;
+    let query = `${homeTeam} vs ${awayTeam}`;
+    
+    if (season) {
+      query += ` ${season}`;
+    }
+    
+    if (gameData.status === "final") {
+      query += " football highlights";
+    } else {
+      query += " football preview";
+    }
+    
+    return query;
+  };
+
+  // Function to fetch videos from YouTube
+  const fetchVideos = async () => {
+    if (videos.length > 0 || videosError) return; // Don't fetch if we already have videos or an error
+    
+    try {
+      setVideosLoading(true);
+      const searchQuery = buildVideoSearchQuery();
+      console.log(`Fetching videos for query: ${searchQuery}`);
+      
+      const response = await youtubeService.fetchYoutubeData(searchQuery);
+      
+      if (response.error) {
+        setVideosError(response.error);
+      } else if (response && response.items) {
+        setVideos(response.items);
+      } else {
+        setVideos([]);
+      }
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+      setVideosError("Failed to load videos. Please try again later.");
+    } finally {
+      setVideosLoading(false);
+    }
+  };
+
+  // Effect to load game data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -449,6 +531,13 @@ const AdvancedGameDetailView = () => {
     };
     fetchData();
   }, [id]);
+
+  // Effect to fetch videos when the videos tab is selected
+  useEffect(() => {
+    if (activeTab === "videos" && gameData && !videos.length && !videosLoading && !videosError) {
+      fetchVideos();
+    }
+  }, [activeTab, gameData]);
 
   if (isLoading)
     return (
@@ -770,6 +859,55 @@ const AdvancedGameDetailView = () => {
         <div className="last-play-container">
           <div className="last-play-label">Last Play</div>
           <div className="last-play-text">{lastPlay}</div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderVideos = () => (
+    <div className="tab-content videos">
+      <h2>Game Videos</h2>
+      
+      {videosLoading ? (
+        <div className="video-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading game videos...</p>
+        </div>
+      ) : videosError ? (
+        <div className="video-error">
+          <div className="error-icon">⚠️</div>
+          <h3>Error Loading Videos</h3>
+          <p>{videosError}</p>
+          <button 
+            className="retry-button"
+            onClick={() => {
+              setVideosError(null);
+              fetchVideos();
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      ) : videos.length === 0 ? (
+        <div className="no-videos">
+          <svg width="64" height="64" viewBox="0 0 24 24">
+            <path
+              fill="#888"
+              d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"
+            />
+          </svg>
+          <h3>No Videos Found</h3>
+          <p>We couldn't find any videos for this game.</p>
+        </div>
+      ) : (
+        <div className="video-grid">
+          {videos.map((video) => (
+            <VideoCard 
+              key={video.id.videoId} 
+              video={video} 
+              onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id.videoId}`, '_blank')}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -1171,6 +1309,7 @@ const AdvancedGameDetailView = () => {
       {renderTabs()}
       {activeTab === "overview" && renderOverview()}
       {activeTab === "statistics" && renderStatisticsTab()}
+      {activeTab === "videos" && renderVideos()}
       {activeTab === "betting" && renderBetting()}
       {activeTab === "weather" && renderWeatherTab()}
       {activeTab === "venue" && renderVenue()}
