@@ -214,7 +214,8 @@ const WinProb = ({ gameId }) => {
           if (currentIndex >= wpData.length) {
             setIsPlaying(false);
             setGameFinished(true);
-            setTimeout(() => setShowRecap(true), 800); // Delay recap animation
+            // Ensure enough time for the user to see the final state before showing recap
+            setTimeout(() => setShowRecap(true), 1200); // Increased delay for better transition
             return;
           }
         } catch (e) {
@@ -263,7 +264,8 @@ const WinProb = ({ gameId }) => {
       setSelectedPlay(wpData.length - 1);
       setIsPlaying(false);
       setGameFinished(true);
-      setTimeout(() => setShowRecap(true), 800);
+      // Use a slightly longer delay for better visual transition
+      setTimeout(() => setShowRecap(true), 1200);
     }
   }, [wpData]);
 
@@ -815,7 +817,7 @@ const WinProb = ({ gameId }) => {
   }
 
   return (
-    <div className="winprob-container">
+    <div className={`winprob-container ${showRecap ? 'wp-recap-active' : ''}`}>
       {wpData && wpData.length > 0 ? (
         <>
           {renderTeamHeaders}
@@ -851,7 +853,15 @@ const WinProb = ({ gameId }) => {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           position: relative;
           overflow: hidden;
+          min-height: 600px; /* Ensure minimum height to accommodate recap */
+          transition: all 0.3s ease;
         }
+        
+        /* Add a class for when recap is active */
+        .winprob-container.wp-recap-active {
+          min-height: 700px; /* Additional space for recap content */
+        }
+        
         /* Team Headers with Logos */
         .wp-team-header-container {
           display: flex;
@@ -1080,14 +1090,15 @@ const WinProb = ({ gameId }) => {
           background-color: #fafafa;
           box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
           width: 100%;
-          transition: opacity 0.5s ease;
+          transition: all 0.5s ease;
         }
         .wp-chart-container.wp-fade-out {
           opacity: 0;
-          height: 0;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
+          transform: scale(0.95);
+          position: absolute;
+          pointer-events: none;
+          z-index: -1; /* Place behind recap content */
+          visibility: hidden; /* Hide from view but maintain space */
         }
         /* Play Details Styling */
         .wp-play-details {
@@ -1214,26 +1225,30 @@ const WinProb = ({ gameId }) => {
         
         /* Game Recap Styling */
         .wp-game-recap {
-          position: absolute;
-          top: 0;
-          left: 0;
+          position: relative; /* Changed from absolute to relative */
           width: 100%;
-          height: 100%;
-          background: rgba(255, 255, 255, 0.95);
+          min-height: 500px; /* Ensure enough space for recap content */
+          background: rgba(255, 255, 255, 0.98);
           display: flex;
           justify-content: center;
           align-items: center;
           opacity: 0;
           visibility: hidden;
-          transition: opacity 0.5s ease, visibility 0.5s ease;
+          height: 0;
+          overflow: hidden;
+          transition: opacity 0.8s ease, visibility 0.8s ease, height 0.8s ease;
           z-index: 10;
-          padding: 24px;
-          overflow: auto;
+          padding: 0;
+          margin-top: -24px; /* Offset to ensure smooth transition */
         }
         
         .wp-game-recap.wp-visible {
           opacity: 1;
           visibility: visible;
+          height: auto;
+          min-height: 500px;
+          padding: 24px;
+          margin-top: 0;
         }
         
         .wp-recap-content {
@@ -1244,11 +1259,12 @@ const WinProb = ({ gameId }) => {
           max-width: 800px;
           width: 100%;
           text-align: center;
-          animation: slideUp 0.6s ease;
+          animation: slideUp 0.8s ease;
+          margin: 20px auto; /* Center horizontally */
         }
         
         @keyframes slideUp {
-          from { transform: translateY(30px); opacity: 0; }
+          from { transform: translateY(40px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
         
@@ -1542,6 +1558,14 @@ const WinProb = ({ gameId }) => {
             height: 300px;
           }
           
+          .winprob-container {
+            min-height: 500px;
+          }
+          
+          .winprob-container.wp-recap-active {
+            min-height: 600px;
+          }
+          
           .wp-recap-content {
             padding: 16px;
           }
@@ -1576,6 +1600,11 @@ const WinProb = ({ gameId }) => {
         @media (max-width: 480px) {
           .winprob-container {
             padding: 16px;
+            min-height: 450px;
+          }
+          
+          .winprob-container.wp-recap-active {
+            min-height: 550px;
           }
           
           .wp-team-logo-container {
