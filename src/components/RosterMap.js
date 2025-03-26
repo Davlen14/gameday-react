@@ -126,7 +126,13 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
   const GLOBE_RADIUS = 100;
   const MARKER_SIZE = 3.5;
 
-  // Simplify - let's not rely on external textures that might fail
+  // Texture URLs - with fallbacks and CORS-friendly sources
+  const TEXTURE_URLS = {
+    earth: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-blue-marble.jpg',
+    specular: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-water.png',
+    normal: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-topology.png',
+    clouds: 'https://unpkg.com/three-globe@2.24.10/example/img/clouds.png',
+  };
 
   // Style for card headers
   const cardHeaderStyle = {
@@ -135,41 +141,35 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
     color: darkenColor(teamColor, 20)
   };
 
-  // Direct team data use (skipping fetch when we already have the data)
+  // Fetch team data
   useEffect(() => {
-    setIsLoading(true);
-    setError(null);
-    
-    // Skip API call if we already have explicit team data or just use the name to fetch
-    if (teamName) {
+    const fetchTeam = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        // For Ohio State hardcoded data
-        if (teamName === "Ohio State") {
-          const teamData = {
-            school: "Ohio State",
-            mascot: "Buckeyes",
-            abbreviation: "OSU",
-            conference: "Big Ten",
-            color: "#ce1141",
-            logos: ["http://a.espncdn.com/i/teamlogos/ncaa/500/194.png"],
-            location: {
-              name: "Ohio Stadium",
-              city: "Columbus",
-              state: "OH",
-              latitude: 40.0016447,
-              longitude: -83.0197266
-            }
-          };
-          
-          setTeamData(teamData);
-          setStadiumLocation([teamData.location.latitude, teamData.location.longitude]);
-          
-          // Preload team logo
-          if (teamData.logos && teamData.logos[0]) {
+        // Fetch team location data
+        const teamsData = await teamsService.getTeams();
+        const team = teamsData.find(t => t.school === teamName);
+
+        if (team) {
+          setTeamData(team);
+
+          // Set stadium location using the team's actual location data
+          if (team.location && team.location.latitude && team.location.longitude) {
+            const coordinates = [team.location.latitude, team.location.longitude];
+            setStadiumLocation(coordinates);
+          } else {
+            console.warn("Team location data missing or incomplete:", team);
+            // Use a default location for the team if not provided (US center)
+            setStadiumLocation([39.8283, -98.5795]);
+          }
+
+          // Preload team logo if available
+          if (team.logos && team.logos[0]) {
             const textureLoader = new THREE.TextureLoader();
             textureLoader.crossOrigin = "anonymous";
             textureLoader.load(
-              teamData.logos[0],
+              team.logos[0],
               (texture) => {
                 texture.minFilter = THREE.LinearFilter;
                 setLogoTexture(texture);
@@ -177,259 +177,145 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
               undefined,
               (err) => {
                 console.error("Error loading team logo:", err);
+                // Continue without logo
               }
             );
           }
         } else {
-          // Fetch team data from service for other teams
-          const fetchTeam = async () => {
-            try {
-              const teamsData = await teamsService.getTeams();
-              const team = teamsData.find(t => t.school === teamName);
-              
-              if (team) {
-                setTeamData(team);
-                
-                if (team.location && team.location.latitude && team.location.longitude) {
-                  setStadiumLocation([team.location.latitude, team.location.longitude]);
-                } else {
-                  console.warn("Team location data missing or incomplete:", team);
-                  setStadiumLocation([39.8283, -98.5795]); // US center fallback
-                }
-                
-                // Preload team logo
-                if (team.logos && team.logos[0]) {
-                  const textureLoader = new THREE.TextureLoader();
-                  textureLoader.crossOrigin = "anonymous";
-                  textureLoader.load(
-                    team.logos[0],
-                    (texture) => {
-                      texture.minFilter = THREE.LinearFilter;
-                      setLogoTexture(texture);
-                    },
-                    undefined,
-                    (err) => {
-                      console.error("Error loading team logo:", err);
-                    }
-                  );
-                }
-              } else {
-                console.warn("Team not found:", teamName);
-                setError("Team not found");
-              }
-            } catch (err) {
-              console.error("Error fetching team:", err.message);
-              setError("Failed to load team information.");
-            }
-          };
-          
-          fetchTeam();
+          console.warn("Team not found:", teamName);
+          setError("Team not found");
         }
       } catch (err) {
-        console.error("Error setting up team data:", err.message);
+        console.error("Error fetching team:", err.message);
         setError("Failed to load team information.");
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      setError("No team name provided");
-    }
-    
-    setIsLoading(false);
+    };
+
+    fetchTeam();
   }, [teamName, year]);
 
   // Initialize Three.js scene
   useEffect(() => {
     if (!containerRef.current) return;
-    
-    console.log("Initializing Three.js scene");
 
-    try {
-      // Create scene
-      const scene = new THREE.Scene();
-      sceneRef.current = scene;
-      scene.background = new THREE.Color(0x000000);
+    // Create scene
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    scene.background = new THREE.Color(0x000000);
 
-      // Add ambient light
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-      scene.add(ambientLight);
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
 
-      // Add directional light
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-      directionalLight.position.set(5, 3, 5);
-      scene.add(directionalLight);
+    // Add directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    directionalLight.position.set(5, 3, 5);
+    scene.add(directionalLight);
 
-      // Create camera
-      const camera = new THREE.PerspectiveCamera(
-        45, // FOV
-        containerRef.current.clientWidth / containerRef.current.clientHeight, // aspect ratio
-        0.1, // near plane
-        10000 // far plane
-      );
-      camera.position.set(0, 0, 300);
-      initialCameraPositionRef.current = new THREE.Vector3(0, 0, 300);
-      cameraRef.current = camera;
+    // Create camera
+    const camera = new THREE.PerspectiveCamera(
+      45, // FOV
+      containerRef.current.clientWidth / containerRef.current.clientHeight, // aspect ratio
+      0.1, // near plane
+      10000 // far plane
+    );
+    camera.position.set(0, 0, 300);
+    initialCameraPositionRef.current = new THREE.Vector3(0, 0, 300);
+    cameraRef.current = camera;
 
-      // Create renderer - explicitly handle WebGL support
-      let renderer;
-      try {
-        renderer = new THREE.WebGLRenderer({
-          canvas: document.createElement('canvas'),
-          antialias: true,
-          alpha: true,
-          logarithmicDepthBuffer: false // Disable this to improve compatibility
-        });
-        
-        console.log("WebGL renderer created successfully");
-      } catch (err) {
-        console.error("WebGL renderer creation failed:", err);
-        setError("Your browser doesn't support WebGL properly. Please try a different browser.");
-        return;
+    // Create renderer
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      logarithmicDepthBuffer: true
+    });
+    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    containerRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // Add orbit controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.3;
+    controls.enablePan = false;
+    controls.minDistance = GLOBE_RADIUS * 1.1;
+    controls.maxDistance = GLOBE_RADIUS * 10;
+    controls.enabled = false; // Disabled until initial animation completes
+    controlsRef.current = controls;
+
+    // Create textureLoader for reuse
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.crossOrigin = "anonymous";
+    textureLoaderRef.current = textureLoader;
+
+    // Create stars background first so there's always something visible
+    createStarsBackground();
+
+    // Load the earth with a simple pre-rendered version first, then enhance
+    createBasicEarth();
+    loadDetailedEarth();
+
+    // Start animation loop
+    animate();
+
+    // Handle window resize
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+
+      rendererRef.current.setSize(width, height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
-      
-      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-      renderer.setPixelRatio(1); // Force to 1 for reliability
-      containerRef.current.appendChild(renderer.domElement);
-      rendererRef.current = renderer;
 
-      // Add orbit controls
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.rotateSpeed = 0.3;
-      controls.enablePan = false;
-      controls.minDistance = GLOBE_RADIUS * 1.1;
-      controls.maxDistance = GLOBE_RADIUS * 10;
-      controls.enabled = false; // Disabled until initial animation completes
-      controlsRef.current = controls;
-
-      // Create textureLoader for reuse
-      const textureLoader = new THREE.TextureLoader();
-      textureLoader.crossOrigin = "anonymous";
-      textureLoaderRef.current = textureLoader;
-
-      console.log("Creating initial earth and stars");
-      
-      // Create a simple earth immediately (guaranteed to work)
-      const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 32, 32);
-      const earthMaterial = new THREE.MeshBasicMaterial({
-        color: 0x2244aa,
-      });
-      
-      const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-      scene.add(earth);
-      earthRef.current = earth;
-      globeRef.current = earth;
-      
-      // Create basic continents
-      const continentsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.2, 32, 32);
-      const continentsMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0x44aa66,
-        wireframe: false 
-      });
-      const continents = new THREE.Mesh(continentsGeometry, continentsMaterial);
-      scene.add(continents);
-      
-      // Create stars background
-      const starsGeometry = new THREE.BufferGeometry();
-      const starsCount = 3000;
-      const positions = new Float32Array(starsCount * 3);
-      
-      for (let i = 0; i < starsCount * 3; i += 3) {
-        positions[i] = (Math.random() - 0.5) * 2000;
-        positions[i + 1] = (Math.random() - 0.5) * 2000;
-        positions[i + 2] = (Math.random() - 0.5) * 2000;
+      if (zoomAnimationRef.current) {
+        cancelAnimationFrame(zoomAnimationRef.current);
       }
-      
-      starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      
-      const starsMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 2,
-      });
-      
-      const stars = new THREE.Points(starsGeometry, starsMaterial);
-      scene.add(stars);
-      
-      // If we have stadium location, add marker right away with basic implementation
-      if (stadiumLocation) {
-        addSimpleTeamMarker();
+
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
       }
-      
-      // Start the animation loop
-      const animateLoop = () => {
-        if (!globeRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
-        
-        // Gentle earth rotation
-        if (globeRef.current) {
-          globeRef.current.rotation.y += 0.001;
-        }
-        
-        // Update controls if enabled
-        if (controlsRef.current && controlsRef.current.enabled) {
-          controlsRef.current.update();
-        }
-        
-        // Render scene
-        renderer.render(scene, camera);
-        
-        // Continue animation loop
-        animationRef.current = requestAnimationFrame(animateLoop);
-      };
-      
-      animateLoop();
-      
-      // Handle window resize
-      const handleResize = () => {
-        if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
 
-        const width = containerRef.current.clientWidth;
-        const height = containerRef.current.clientHeight;
-
-        cameraRef.current.aspect = width / height;
-        cameraRef.current.updateProjectionMatrix();
-
-        rendererRef.current.setSize(width, height);
-      };
-
-      window.addEventListener('resize', handleResize);
-
-      // Cleanup on unmount
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-
-        if (zoomAnimationRef.current) {
-          cancelAnimationFrame(zoomAnimationRef.current);
-        }
-
-        if (rendererRef.current && containerRef.current) {
-          containerRef.current.removeChild(rendererRef.current.domElement);
-        }
-
-        // Clear all allocated THREE.js resources
-        if (sceneRef.current) {
-          sceneRef.current.traverse((object) => {
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) {
-              if (Array.isArray(object.material)) {
-                object.material.forEach(material => material.dispose());
-              } else {
-                object.material.dispose();
-              }
+      // Clear all allocated THREE.js resources
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
             }
-          });
-        }
+          }
+          if (object.texture) {
+            object.texture.dispose();
+          }
+        });
+      }
 
-        if (rendererRef.current) {
-          rendererRef.current.dispose();
-        }
-      };
-    } catch (err) {
-      console.error("Error in THREE.js initialization:", err);
-      setError("Failed to initialize 3D visualization");
-    }
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
   }, []);
 
   // Create a basic Earth immediately for fast initial rendering
@@ -613,32 +499,28 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
     });
   };
 
-  // Add team marker when stadiumLocation changes
+  // Add team logo marker when stadiumLocation changes
   useEffect(() => {
-    if (stadiumLocation && sceneRef.current) {
-      console.log("Stadium location set, adding marker:", stadiumLocation);
-      addSimpleTeamMarker();
+    if (stadiumLocation && !isLoading && sceneRef.current && globeRef.current) {
+      addTeamLogoMarker();
       
       // Only start zoom sequence if it hasn't been completed yet
       if (!animationComplete) {
         startZoomSequence();
       }
     }
-  }, [stadiumLocation]);
+  }, [stadiumLocation, isLoading]);
 
   // Update marker when logoTexture changes
   useEffect(() => {
     if (logoTexture && stadiumLocation && sceneRef.current) {
-      console.log("Logo texture loaded, updating marker");
-      addFancyTeamMarker();
+      addTeamLogoMarker();
     }
   }, [logoTexture]);
 
-  // Add simple team marker that's guaranteed to work
-  const addSimpleTeamMarker = () => {
+  // Add team logo marker
+  const addTeamLogoMarker = () => {
     if (!sceneRef.current || !stadiumLocation) return;
-
-    console.log("Adding simple team marker at", stadiumLocation);
 
     // Remove existing marker if any
     if (teamMarkerRef.current) {
@@ -649,111 +531,106 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
     const [stadiumLat, stadiumLon] = stadiumLocation;
     const stadiumPosition = latLongToVector3(stadiumLat, stadiumLon, GLOBE_RADIUS);
 
-    // Create a simple and reliable marker
-    const markerGeometry = new THREE.SphereGeometry(MARKER_SIZE * 2, 16, 16);
-    const markerMaterial = new THREE.MeshBasicMaterial({
-      color: teamColor || 0xff0000,
-      transparent: true,
-      opacity: 0.8
+    // Create marker group
+    const markerGroup = new THREE.Group();
+
+    // Create a glassy base effect
+    const glassGeometry = new THREE.SphereGeometry(MARKER_SIZE * 1.5, 24, 24);
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+      color: hexToThreeColor(teamColor),
+      metalness: 0.1,
+      roughness: 0.1,
+      transmission: 0.9, // Glass-like transparency
+      thickness: 1.0,    // Glass thickness
+      clearcoat: 1.0,    // Clear coat layer
+      clearcoatRoughness: 0.1
     });
 
-    const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-    
-    // Position on globe surface
-    const markerPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS + 1);
-    marker.position.copy(markerPosition);
-    
-    // Add to scene
-    sceneRef.current.add(marker);
-    teamMarkerRef.current = marker;
-    
-    // After basic marker is added, try to add the fancy one
+    const glassMarker = new THREE.Mesh(glassGeometry, glassMaterial);
+    markerGroup.add(glassMarker);
+
+    // Create a team logo plane inside the glass sphere if we have a texture
     if (logoTexture) {
-      setTimeout(() => addFancyTeamMarker(), 500);
-    }
-  };
-  
-  // Add fancy team marker with logo and effects
-  const addFancyTeamMarker = () => {
-    if (!sceneRef.current || !stadiumLocation) return;
-
-    // Remove existing marker if any
-    if (teamMarkerRef.current) {
-      sceneRef.current.remove(teamMarkerRef.current);
-      teamMarkerRef.current = null;
-    }
-
-    try {
-      const [stadiumLat, stadiumLon] = stadiumLocation;
-      const stadiumPosition = latLongToVector3(stadiumLat, stadiumLon, GLOBE_RADIUS);
-
-      // Create marker group
-      const markerGroup = new THREE.Group();
-
-      // Create a simple colored sphere (more reliable than glass effect)
-      const sphereGeometry = new THREE.SphereGeometry(MARKER_SIZE * 1.5, 16, 16);
-      const sphereMaterial = new THREE.MeshBasicMaterial({
-        color: hexToThreeColor(teamColor),
+      const logoSize = MARKER_SIZE * 1.8;
+      const logoGeometry = new THREE.PlaneGeometry(logoSize, logoSize);
+      const logoMaterial = new THREE.MeshBasicMaterial({
+        map: logoTexture,
         transparent: true,
-        opacity: 0.8
+        side: THREE.DoubleSide
       });
 
-      const sphereMarker = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      markerGroup.add(sphereMarker);
+      const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
 
-      // Create a team logo plane if we have a texture
-      if (logoTexture) {
-        const logoSize = MARKER_SIZE * 2;
-        const logoGeometry = new THREE.PlaneGeometry(logoSize, logoSize);
-        const logoMaterial = new THREE.MeshBasicMaterial({
-          map: logoTexture,
-          transparent: true,
-          side: THREE.DoubleSide
-        });
+      // Position the logo so it always faces the camera
+      logoMesh.lookAt(new THREE.Vector3(0, 0, 0));
 
-        const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
-        logoMesh.position.z = MARKER_SIZE * 0.8; // Position slightly in front
-        
-        // Add logo to marker group
-        markerGroup.add(logoMesh);
-      }
-
-      // Create beam pointing up from marker (simpler version)
-      const beamGeometry = new THREE.CylinderGeometry(0.5, 0, 10, 8, 1);
-      const beamMaterial = new THREE.MeshBasicMaterial({
-        color: hexToThreeColor(teamColor),
-        transparent: true,
-        opacity: 0.5
-      });
-
-      const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-      beam.position.y = 7;
-      beam.rotation.x = Math.PI;
-      markerGroup.add(beam);
-
-      // Position the marker on the globe surface
-      const markerPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS + 1);
-      markerGroup.position.copy(markerPosition);
-
-      // Orient the marker to face outward
-      const lookAtPoint = new THREE.Vector3().copy(markerPosition).multiplyScalar(2);
-      markerGroup.lookAt(lookAtPoint);
-
-      // Add marker to scene
-      sceneRef.current.add(markerGroup);
-      teamMarkerRef.current = markerGroup;
-    } catch (err) {
-      console.error("Error creating fancy marker:", err);
-      // Fall back to simple marker
-      addSimpleTeamMarker();
+      // Add logo to marker group
+      markerGroup.add(logoMesh);
     }
+
+    // Add glow effect
+    const glowGeometry = new THREE.SphereGeometry(MARKER_SIZE * 2.0, 24, 24);
+    const glowMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        c: { value: 0.2 },
+        p: { value: 1.8 },
+        glowColor: { value: new THREE.Color(teamColor) }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float c;
+        uniform float p;
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+          gl_FragColor = vec4(glowColor, intensity);
+        }
+      `,
+      side: THREE.FrontSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    markerGroup.add(glow);
+
+    // Create light beam pointing up from marker
+    const beamGeometry = new THREE.CylinderGeometry(0.5, 0, 15, 16, 1, true);
+    const beamMaterial = new THREE.MeshBasicMaterial({
+      color: hexToThreeColor(teamColor),
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide
+    });
+
+    const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+    beam.position.y = 10;
+    beam.rotation.x = Math.PI;
+    markerGroup.add(beam);
+
+    // Position the marker on the globe surface
+    const markerPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS + 0.5);
+    markerGroup.position.copy(markerPosition);
+
+    // Orient the marker to point away from center
+    markerGroup.lookAt(0, 0, 0);
+    markerGroup.rotateY(Math.PI); // Rotate to face outward
+
+    // Add marker to scene
+    sceneRef.current.add(markerGroup);
+    teamMarkerRef.current = markerGroup;
   };
 
-  // Simplified zoom sequence animation for better compatibility
+  // Start zoom sequence animation
   const startZoomSequence = () => {
     if (!stadiumLocation || !cameraRef.current) return;
-    
-    console.log("Starting zoom sequence to", stadiumLocation);
     
     // Cancel any existing zoom animation
     if (zoomAnimationRef.current) {
@@ -762,65 +639,116 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
 
     setZoomLevel(0); // Start at space view
 
-    try {
-      // Get the stadium position in 3D space
-      const [lat, lon] = stadiumLocation;
-      
-      // Rotate globe to show US (hard-coded rotation for reliability)
-      if (globeRef.current) {
-        // For US locations, this rotation works well as a starting point
-        globeRef.current.rotation.y = Math.PI - Math.PI/4;
+    // Define zoom stages
+    const [lat, lon] = stadiumLocation;
+    const zoomStages = [
+      { distance: 300, duration: 0, position: new THREE.Vector3(0, 0, 300) }, // Initial space view
+      { distance: 200, duration: 1000, position: new THREE.Vector3(0, 0, 200) }, // Approaching Earth
+      { distance: 150, duration: 1000 }, // Continent view
+      { distance: 120, duration: 1000 }, // Country view
+      { distance: 3 * GLOBE_RADIUS, duration: 1000 } // Final stadium view
+    ];
+
+    // Start animation sequence
+    let currentStage = 0;
+    const startAnimation = () => {
+      if (currentStage >= zoomStages.length - 1) {
+        setAnimationComplete(true);
+        setShowStadiumDetails(true);
+        if (controlsRef.current) {
+          controlsRef.current.enabled = true;
+        }
+        return;
       }
-      
-      // Simple zoom animation that works reliably
+
+      const stage = zoomStages[currentStage];
+      const nextStage = zoomStages[currentStage + 1];
+
+      // Calculate target position based on stadium location for closer views
+      let targetPosition;
+      if (currentStage >= 1) {
+        const stadiumVector = latLongToVector3(lat, lon, GLOBE_RADIUS);
+        const distanceFromCenter = nextStage.distance;
+        targetPosition = stadiumVector.clone().normalize().multiplyScalar(distanceFromCenter);
+      } else {
+        targetPosition = nextStage.position;
+      }
+
+      // Update zoom level
+      setZoomLevel(currentStage + 1);
+
+      // Start animation between stages
       const startTime = performance.now();
-      const duration = 3000; // 3 seconds
-      const startPosition = new THREE.Vector3(0, 0, 300); // Start far out
-      
-      // End position looking at the stadium location
-      const stadiumPosition = latLongToVector3(lat, lon, GLOBE_RADIUS);
-      const endPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS * 3);
-      
+      const duration = nextStage.duration;
+      const startPosition = new THREE.Vector3().copy(cameraRef.current.position);
+
+      // Rotate the globe to show the stadium location
+      if (globeRef.current && currentStage >= 1) {
+        const globeRotation = globeRef.current.rotation.clone();
+        const targetRotation = new THREE.Euler();
+        
+        // Calculate the rotation needed to bring the stadium point to the front
+        const targetLatLon = new THREE.Vector3();
+        targetLatLon.copy(latLongToVector3(lat, lon, GLOBE_RADIUS));
+        targetLatLon.normalize();
+        
+        // Animate globe rotation
+        const rotateGlobe = (time) => {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeInOutCubic(progress);
+          
+          if (globeRef.current) {
+            // Rotate globe to face the target location
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 90) * (Math.PI / 180);
+            
+            globeRef.current.rotation.y = Math.PI + theta * easedProgress;
+          }
+          
+          if (progress < 1) {
+            requestAnimationFrame(rotateGlobe);
+          }
+        };
+        
+        requestAnimationFrame(rotateGlobe);
+      }
+
       const animate = (time) => {
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Use simple linear animation for reliability
+        const easedProgress = easeInOutCubic(progress);
+
+        // Interpolate camera position
         const newPosition = new THREE.Vector3().lerpVectors(
           startPosition,
-          endPosition,
-          progress
+          targetPosition,
+          easedProgress
         );
 
-        if (cameraRef.current) {
-          cameraRef.current.position.copy(newPosition);
-          cameraRef.current.lookAt(0, 0, 0);
-        }
+        cameraRef.current.position.copy(newPosition);
+        cameraRef.current.lookAt(0, 0, 0);
 
         if (progress < 1) {
           zoomAnimationRef.current = requestAnimationFrame(animate);
         } else {
-          // Animation complete
-          setAnimationComplete(true);
-          setShowStadiumDetails(true);
-          if (controlsRef.current) {
-            controlsRef.current.enabled = true;
+          currentStage++;
+          if (currentStage < zoomStages.length - 1) {
+            startAnimation();
+          } else {
+            setAnimationComplete(true);
+            setShowStadiumDetails(true);
+            if (controlsRef.current) {
+              controlsRef.current.enabled = true;
+            }
           }
         }
       };
 
-      // Start the animation
       zoomAnimationRef.current = requestAnimationFrame(animate);
-    } catch (err) {
-      console.error("Error in zoom animation:", err);
-      
-      // If animation fails, just show the details panel anyway
-      setAnimationComplete(true);
-      setShowStadiumDetails(true);
-      if (controlsRef.current) {
-        controlsRef.current.enabled = true;
-      }
-    }
+    };
+
+    startAnimation();
   };
 
   // Animation loop
