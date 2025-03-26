@@ -1,246 +1,342 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaTv, FaStar, FaCheckCircle } from "react-icons/fa";
-import teamsService, { getAllRecruits } from "../services/teamsService";
-import "../styles/Home.css";
-import { useWeek } from "../context/WeekContext"; // Global week state
+import { FaTv, FaFootballBall, FaChessBoard, FaUsers, FaUserGraduate, FaChartBar } from "react-icons/fa";
 
 const Home = () => {
-  const { week } = useWeek();
-
-  const [polls, setPolls] = useState([]);
-  const [games, setGames] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [topRecruits, setTopRecruits] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  // State for particle animation
+  const [particles, setParticles] = useState([]);
+  
+  // Generate particles on component mount
   useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        setIsLoading(true);
-
-        // Fetch polls (e.g., "ap" or "coaches")
-        const pollsPromise = teamsService.getPolls(2024, "ap", week);
-
-        // Determine the query param for games
-        const queryParam =
-          week === "postseason" ? { seasonType: "postseason" } : parseInt(week, 10);
-
-        // Fetch teams, polls, games, and recruits in parallel
-        const [teamsData, pollsData, gamesData, recruitsData] = await Promise.all([
-          teamsService.getTeams(),
-          pollsPromise,
-          teamsService.getGames(queryParam),
-          getAllRecruits(2025)
-        ]);
-
-        setTeams(teamsData);
-        setPolls(pollsData);
-
-        // Filter games to include only FBS vs. FBS matchups
-        const fbsGames = gamesData.filter(
-          (game) =>
-            game.homeClassification === "fbs" &&
-            game.awayClassification === "fbs"
-        );
-        setGames(fbsGames);
-
-        // Sort recruits by ranking and keep top 20
-        const sortedRecruits = recruitsData.sort((a, b) => a.ranking - b.ranking);
-        setTopRecruits(sortedRecruits.slice(0, 20));
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+    const generateParticles = () => {
+      const particleCount = 50;
+      const newParticles = [];
+      
+      for (let i = 0; i < particleCount; i++) {
+        newParticles.push({
+          id: i,
+          left: Math.random() * 100 + '%',
+          top: Math.random() * 100 + '%',
+          size: Math.random() * 3 + 1,
+          duration: Math.random() * 20 + 10,
+          delay: Math.random() * 10,
+        });
       }
+      
+      setParticles(newParticles);
     };
+    
+    generateParticles();
+  }, []);
 
-    fetchHomeData();
-  }, [week]);
-
-  // Helper functions
-  const getTeamLogo = (teamName) => {
-    const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.logos?.[0] || "/photos/default_team.png";
+  // Function to handle theme toggle (if needed)
+  const toggleTheme = () => {
+    const htmlElement = document.documentElement;
+    const currentTheme = htmlElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    htmlElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
   };
-
-  const getTeamAbbreviation = (teamName) => {
-    const team = teams.find(
-      (t) => t.school.toLowerCase() === teamName?.toLowerCase()
-    );
-    return team?.abbreviation || teamName;
-  };
-
-  const getNetworkLogo = (network) => {
-    const networks = {
-      ESPN: <FaTv className="network-icon espn" />,
-      FOX: <FaTv className="network-icon fox" />,
-      ABC: <FaTv className="network-icon abc" />,
-      CBS: <FaTv className="network-icon cbs" />
-    };
-    return networks[network] || <FaTv className="network-icon default" />;
-  };
-
-  // Inline helper to render stars for recruits
-  const renderStars = (stars) => (
-    <div className="stars-container">
-      {[...Array(stars)].map((_, index) => (
-        <FaStar key={index} className="star-icon" />
-      ))}
-    </div>
-  );
-
-  if (isLoading) return <div className="loading-container">Loading...</div>;
-  if (error) return <div className="error-container">Error: {error}</div>;
+  
+  // Check saved theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (prefersDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, []);
 
   return (
-    <div className="home-container">
-      <header className="hero-header">
-        <h1 style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>GAMEDAY+</h1>
-      </header>
-
-      {/* Featured Section */}
-      <section className="featured-section">
-        <div className="featured-grid">
-          {/* Big Hero Card */}
-          <div className="featured-card big-card">
-            <img src="/photos/Ostate.webp" alt="Ohio State Celebration" />
-            <div className="featured-overlay">
-              <h2>Ohio State Triumph</h2>
-              <p>
-                Discover how Ohio State clinched the championship in a thrilling matchup. Read more
-              </p>
-            </div>
-          </div>
-
-          {/* Additional Featured Cards */}
-          <div className="featured-card small-card">
-            <img src="/photos/ArchTime.jpg" alt="Arch Manning" />
-            <div className="featured-overlay">
-              <h3>Arch Manning Buzz</h3>
-              <p>
-                Arch Manning is poised for a breakout season as excitement builds around his potential. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Oregon.jpg" alt="Oregon Ducks" />
-            <div className="featured-overlay">
-              <h3>Oregon's Next Move</h3>
-              <p>
-                Get the latest on Oregon's strategic decisions that could reshape the program's future. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/CU.jpg" alt="Colorado" />
-            <div className="featured-overlay">
-              <h3>Colorado on the Rise</h3>
-              <p>
-                A detailed look into Colorado's evolving game plan and rising expectations this season. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Pennst.jpg" alt="Penn State" />
-            <div className="featured-overlay">
-              <h3>Penn State Prospects</h3>
-              <p>
-                Explore early roster insights and what they mean for the future of the Nittany Lions. Read more
-              </p>
-            </div>
-          </div>
-          <div className="featured-card small-card">
-            <img src="/photos/Ksmart.jpg" alt="Georgia Bulldogs" />
-            <div className="featured-overlay">
-              <h3>Georgia's Offseason</h3>
-              <p>
-                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. Read more
-              </p>
-            </div>
-          </div>
+    <div className="gameday-home">
+      <style jsx="true">{`
+        /* Modern styling for GAMEDAY+ */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+        
+        :root {
+          /* Primary color scheme - Red */
+          --accent-color: #D4001C;
+          --accent-light: #FF3F58;
+          --accent-dark: #990014;
+          --accent-glow: rgba(212, 0, 28, 0.5);
+          
+          /* Dark theme colors (default) */
+          --dark: #0C0F16;
+          --darker: #060910;
+          --text: #ffffff;
+          --text-muted: rgba(255, 255, 255, 0.8);
+          --circle-border: rgba(212, 0, 28, 0.2);
+          --circle-opacity: 0.7;
+        }
+        
+        /* Light theme if needed */
+        [data-theme="light"] {
+          --dark: #f0f3f8;
+          --darker: #e0e5ee;
+          --text: #232730;
+          --text-muted: rgba(35, 39, 48, 0.8);
+          --accent-dark: #B80017;
+          --circle-border: rgba(212, 0, 28, 0.3);
+          --circle-opacity: 0.5;
+        }
+        
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        .gameday-home {
+          font-family: "Titillium Web", sans-serif;
+          background-color: var(--dark);
+          color: var(--text);
+          background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+          min-height: 100vh;
+          width: 100%;
+          overflow: hidden;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .gameday-home::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: 
+              radial-gradient(circle at 20% 30%, var(--accent-color), transparent 20%),
+              radial-gradient(circle at 80% 70%, var(--accent-color), transparent 20%);
+          opacity: 0.05;
+          z-index: -1;
+        }
+        
+        .particle-visual {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          z-index: 1;
+          pointer-events: none;
+        }
+        
+        .particle {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background-color: var(--accent-light);
+          border-radius: 50%;
+          box-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+        }
+        
+        .hero {
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+        }
+        
+        .hero-content {
+          text-align: center;
+          z-index: 2;
+          max-width: 1200px;
+          padding: 0 2rem;
+          position: relative;
+        }
+        
+        /* Quantum circle visualization */
+        .quantum-circle {
+          position: absolute;
+          width: 500px;
+          height: 500px;
+          border-radius: 50%;
+          border: 2px solid var(--circle-border);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          box-shadow: 0 0 50px var(--circle-border);
+          opacity: var(--circle-opacity);
+          animation: rotate 20s linear infinite;
+          z-index: 1;
+        }
+        
+        .quantum-circle::before,
+        .quantum-circle::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 2px solid var(--circle-border);
+          top: 0;
+          left: 0;
+          animation: pulse 4s ease-in-out infinite alternate;
+        }
+        
+        .quantum-circle::after {
+          animation-delay: 2s;
+        }
+        
+        @keyframes rotate {
+          from {
+            transform: translate(-50%, -50%) rotate(0deg);
+          }
+          to {
+            transform: translate(-50%, -50%) rotate(360deg);
+          }
+        }
+        
+        @keyframes pulse {
+          from {
+            transform: scale(0.8);
+            opacity: 0.2;
+          }
+          to {
+            transform: scale(1.2);
+            opacity: 0.8;
+          }
+        }
+        
+        .hero-title {
+          font-family: "Orbitron", sans-serif;
+          font-size: 5rem;
+          font-weight: 800;
+          margin-bottom: 1.5rem;
+          line-height: 1.1;
+          background: linear-gradient(to right, #D4001C, #FF3F58, #D4001C, #FF3F58);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 0 15px rgba(212, 0, 28, 0.3);
+          text-transform: uppercase;
+          position: relative;
+          z-index: 2;
+        }
+        
+        .hero-subtitle {
+          font-size: 1.8rem;
+          font-weight: 300;
+          margin-bottom: 3rem;
+          max-width: 800px;
+          margin-left: auto;
+          margin-right: auto;
+          color: var(--text-muted);
+          position: relative;
+          z-index: 2;
+        }
+        
+        .explore-btn {
+          display: inline-block;
+          padding: 1rem 2.5rem;
+          background: var(--accent-color);
+          color: #ffffff;
+          font-family: "Orbitron", sans-serif;
+          font-weight: 600;
+          text-decoration: none;
+          text-transform: uppercase;
+          border-radius: 50px;
+          letter-spacing: 0.1rem;
+          transition: all 0.3s ease;
+          position: relative;
+          z-index: 2;
+          border: none;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        
+        .explore-btn:hover {
+          background: var(--accent-light);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(212, 0, 28, 0.3);
+        }
+        
+        @keyframes float {
+          0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100vh) translateX(100vw);
+            opacity: 0;
+          }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .hero-title {
+            font-size: 3.5rem;
+          }
+          
+          .hero-subtitle {
+            font-size: 1.4rem;
+          }
+          
+          .quantum-circle {
+            width: 400px;
+            height: 400px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .hero-title {
+            font-size: 2.5rem;
+          }
+          
+          .hero-subtitle {
+            font-size: 1.2rem;
+          }
+          
+          .quantum-circle {
+            width: 300px;
+            height: 300px;
+          }
+        }
+      `}</style>
+      
+      {/* Hero section with particles and quantum circle */}
+      <section className="hero">
+        {/* Particle visual effect */}
+        <div className="particle-visual">
+          {particles.map(particle => (
+            <div
+              key={particle.id}
+              className="particle"
+              style={{
+                left: particle.left,
+                top: particle.top,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+                animation: `float ${particle.duration}s linear ${particle.delay}s infinite`
+              }}
+            />
+          ))}
+        </div>
+        
+        <div className="hero-content">
+          {/* Quantum circle animation */}
+          <div className="quantum-circle"></div>
+          
+          <h1 className="hero-title">Welcome to Gameday+</h1>
+          <p className="hero-subtitle">The Ultimate College Football Intelligence Platform</p>
+          <Link to="/explore" className="explore-btn">Explore Features</Link>
         </div>
       </section>
-
-      {/* Two-Column Layout for Polls & Top Recruits */}
-      <div className="polls-recruits-container">
-        {/* Left Column: Polls */}
-        <section className="polls-section left-column">
-          <div className="polls-grid">
-            {polls.map((poll) => (
-              <div key={poll.id} className="poll-card">
-                <h3 className="poll-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
-                  <img
-                    src="/photos/committee.png"
-                    alt="Committee Logo"
-                    className="poll-logo"
-                  />
-                  {poll.name}
-                </h3>
-                <div className="rankings-list">
-                  {/* Display top teams inline */}
-                  {poll.rankings.slice(0, 25).map((team) => {
-                    const teamData = teams.find(
-                      (t) => t.school.toLowerCase() === team.school.toLowerCase()
-                    );
-                    const logo = getTeamLogo(team.school);
-                    return (
-                      <div key={team.school} className="ranking-item">
-                        <span className="poll-rank">#{team.rank}</span>
-                        {teamData ? (
-                          <Link to={`/teams/${teamData.id}`}>
-                            <img
-                              src={logo}
-                              alt={team.school}
-                              className="team-poll-logo"
-                            />
-                          </Link>
-                        ) : (
-                          <img
-                            src={logo}
-                            alt={team.school}
-                            className="team-poll-logo"
-                          />
-                        )}
-                        <span className="poll-team-name">{team.school}</span>
-                        <span className="poll-points">{team.points} pts</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Right Column: Top 20 Recruits */}
-        <section className="recruits-section right-column">
-          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>Top 20 Recruits</h2>
-          <div className="recruits-list">
-            {topRecruits.slice(0, 20).map((prospect) => (
-              <div key={prospect.id} className="recruit-item">
-                <span className="recruit-rank">#{prospect.ranking}</span>
-                <span className="recruit-name">{prospect.name}</span>
-                <span className="recruit-position">({prospect.position})</span>
-                {prospect.stars && renderStars(prospect.stars)}
-                {prospect.committedTo && (
-                  <span className="recruit-commit">
-                    <img
-                      src={getTeamLogo(prospect.committedTo)}
-                      alt={`${prospect.committedTo} Logo`}
-                      className="committed-team-logo"
-                    />
-                    <FaCheckCircle className="commit-check" />
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
     </div>
   );
 };
