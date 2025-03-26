@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaTv, FaStar, FaCheckCircle } from "react-icons/fa";
+import { FaTv, FaStar, FaCheckCircle, FaTrophy, FaUserGraduate, FaArrowRight } from "react-icons/fa";
 import teamsService, { getAllRecruits } from "../services/teamsService";
 import "../styles/Home.css";
 import { useWeek } from "../context/WeekContext"; // Global week state
@@ -14,6 +14,17 @@ const Home = () => {
   const [topRecruits, setTopRecruits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [animationIndex, setAnimationIndex] = useState(0);
+
+  // Animation for staggered fade-in
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimationIndex(prev => prev + 1);
+      if (animationIndex > 10) clearInterval(interval);
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -93,17 +104,30 @@ const Home = () => {
     </div>
   );
 
-  if (isLoading) return <div className="loading-container">Loading...</div>;
-  if (error) return <div className="error-container">Error: {error}</div>;
+  if (isLoading) return (
+    <div className="loading-container">
+      <div className="loader"></div>
+      <p>Loading latest college football data...</p>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="error-container">
+      <p>Error: {error}</p>
+      <button onClick={() => window.location.reload()} className="retry-btn">
+        Try Again
+      </button>
+    </div>
+  );
 
   return (
     <div className="home-container">
-      <header className="hero-header">
+      <header className="hero-header animate-fade-in">
         <h1 style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>GAMEDAY+</h1>
       </header>
 
       {/* Featured Section */}
-      <section className="featured-section">
+      <section className="featured-section animate-fade-in">
         <div className="featured-grid">
           {/* Big Hero Card */}
           <div className="featured-card big-card">
@@ -111,7 +135,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h2>Ohio State Triumph</h2>
               <p>
-                Discover how Ohio State clinched the championship in a thrilling matchup. Read more
+                Discover how Ohio State clinched the championship in a thrilling matchup.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -122,7 +147,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Arch Manning Buzz</h3>
               <p>
-                Arch Manning is poised for a breakout season as excitement builds around his potential. Read more
+                Arch Manning is poised for a breakout season as excitement builds around his potential.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -131,7 +157,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Oregon's Next Move</h3>
               <p>
-                Get the latest on Oregon's strategic decisions that could reshape the program's future. Read more
+                Get the latest on Oregon's strategic decisions that could reshape the program's future.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -140,7 +167,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Colorado on the Rise</h3>
               <p>
-                A detailed look into Colorado's evolving game plan and rising expectations this season. Read more
+                A detailed look into Colorado's evolving game plan and rising expectations this season.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -149,7 +177,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Penn State Prospects</h3>
               <p>
-                Explore early roster insights and what they mean for the future of the Nittany Lions. Read more
+                Explore early roster insights and what they mean for the future of the Nittany Lions.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -158,7 +187,8 @@ const Home = () => {
             <div className="featured-overlay">
               <h3>Georgia's Offseason</h3>
               <p>
-                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward. Read more
+                An in-depth look at the Bulldogs' offseason adjustments and their plans moving forward.
+                <FaArrowRight style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
               </p>
             </div>
           </div>
@@ -166,9 +196,13 @@ const Home = () => {
       </section>
 
       {/* Two-Column Layout for Polls & Top Recruits */}
-      <div className="polls-recruits-container">
+      <div className="polls-recruits-container animate-fade-in">
         {/* Left Column: Polls */}
         <section className="polls-section left-column">
+          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
+            <FaTrophy style={{ marginRight: '10px' }} />
+            Top 25 Rankings
+          </h2>
           <div className="polls-grid">
             {polls.map((poll) => (
               <div key={poll.id} className="poll-card">
@@ -218,13 +252,23 @@ const Home = () => {
 
         {/* Right Column: Top 20 Recruits */}
         <section className="recruits-section right-column">
-          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>Top 20 Recruits</h2>
+          <h2 className="section-title" style={{ fontFamily: '"Orbitron", "Titillium Web", sans-serif' }}>
+            <FaUserGraduate style={{ marginRight: '10px' }} />
+            Top 20 Recruits
+          </h2>
           <div className="recruits-list">
-            {topRecruits.slice(0, 20).map((prospect) => (
-              <div key={prospect.id} className="recruit-item">
+            {topRecruits.slice(0, 20).map((prospect, index) => (
+              <div 
+                key={prospect.id} 
+                className="recruit-item"
+                style={{ 
+                  animation: `fadeIn 0.3s ease forwards ${index * 0.05}s`,
+                  opacity: 0
+                }}
+              >
                 <span className="recruit-rank">#{prospect.ranking}</span>
                 <span className="recruit-name">{prospect.name}</span>
-                <span className="recruit-position">({prospect.position})</span>
+                <span className="recruit-position">{prospect.position}</span>
                 {prospect.stars && renderStars(prospect.stars)}
                 {prospect.committedTo && (
                   <span className="recruit-commit">
