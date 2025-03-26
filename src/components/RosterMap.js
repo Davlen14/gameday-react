@@ -96,9 +96,9 @@ function easeInOutCubic(t) {
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
+const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
   const [teamData, setTeamData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stadiumLocation, setStadiumLocation] = useState(null);
   const [animationComplete, setAnimationComplete] = useState(false);
@@ -120,17 +120,18 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   const zoomAnimationRef = useRef(null);
   const initialCameraPositionRef = useRef(null);
   const targetCameraPositionRef = useRef(null);
+  const textureLoaderRef = useRef(null);
 
   // Constants for the globe
   const GLOBE_RADIUS = 100;
   const MARKER_SIZE = 3.5;
 
-  // Texture URLs - centralized for easier management
+  // Texture URLs - with fallbacks and CORS-friendly sources
   const TEXTURE_URLS = {
-    earth: 'https://threejs.org/examples/textures/planets/earth_atmos_4k.jpg',
-    specular: 'https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',
-    normal: 'https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',
-    clouds: 'https://threejs.org/examples/textures/planets/earth_clouds_2048.png',
+    earth: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-blue-marble.jpg',
+    specular: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-water.png',
+    normal: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-topology.png',
+    clouds: 'https://unpkg.com/three-globe@2.24.10/example/img/clouds.png',
   };
 
   // Style for card headers
@@ -159,7 +160,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
             setStadiumLocation(coordinates);
           } else {
             console.warn("Team location data missing or incomplete:", team);
-            // Use a default location for the team if not provided
+            // Use a default location for the team if not provided (US center)
             setStadiumLocation([39.8283, -98.5795]);
           }
 
@@ -176,6 +177,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
               undefined,
               (err) => {
                 console.error("Error loading team logo:", err);
+                // Continue without logo
               }
             );
           }
@@ -196,7 +198,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
   // Initialize Three.js scene
   useEffect(() => {
-    if (!containerRef.current || isLoading || error) return;
+    if (!containerRef.current) return;
 
     // Create scene
     const scene = new THREE.Scene();
@@ -230,7 +232,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       logarithmicDepthBuffer: true
     });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     containerRef.current.appendChild(renderer.domElement);
@@ -247,10 +249,146 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     controls.enabled = false; // Disabled until initial animation completes
     controlsRef.current = controls;
 
-    // Create globe
+    // Create textureLoader for reuse
     const textureLoader = new THREE.TextureLoader();
     textureLoader.crossOrigin = "anonymous";
+    textureLoaderRef.current = textureLoader;
 
+    // Create stars background first so there's always something visible
+    createStarsBackground();
+
+    // Load the earth with a simple pre-rendered version first, then enhance
+    createBasicEarth();
+    loadDetailedEarth();
+
+    // Start animation loop
+    animate();
+
+    // Handle window resize
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+
+      rendererRef.current.setSize(width, height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+
+      if (zoomAnimationRef.current) {
+        cancelAnimationFrame(zoomAnimationRef.current);
+      }
+
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+      }
+
+      // Clear all allocated THREE.js resources
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+          if (object.texture) {
+            object.texture.dispose();
+          }
+        });
+      }
+
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
+  }, []);
+
+  // Create a basic Earth immediately for fast initial rendering
+  const createBasicEarth = () => {
+    if (!sceneRef.current) return;
+    
+    const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 32, 32);
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2244aa,
+      specular: 0x333333,
+      shininess: 15,
+    });
+    
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    sceneRef.current.add(earth);
+    earthRef.current = earth;
+    globeRef.current = earth;
+  };
+
+  // Create stars background
+  const createStarsBackground = () => {
+    if (!sceneRef.current) return;
+    
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsCount = 7000;
+    const positions = new Float32Array(starsCount * 3);
+    const colors = new Float32Array(starsCount * 3);
+
+    for (let i = 0; i < starsCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 2000;
+      positions[i + 1] = (Math.random() - 0.5) * 2000;
+      positions[i + 2] = (Math.random() - 0.5) * 2000;
+
+      // Randomize star colors for more realism
+      const colorChoice = Math.random();
+      if (colorChoice < 0.2) {
+        // Bluish stars
+        colors[i] = 0.7 + Math.random() * 0.3;
+        colors[i + 1] = 0.7 + Math.random() * 0.3;
+        colors[i + 2] = 1.0;
+      } else if (colorChoice < 0.4) {
+        // Yellow-white stars
+        colors[i] = 1.0;
+        colors[i + 1] = 0.9 + Math.random() * 0.1;
+        colors[i + 2] = 0.7 + Math.random() * 0.3;
+      } else {
+        // White stars
+        colors[i] = 0.9 + Math.random() * 0.1;
+        colors[i + 1] = 0.9 + Math.random() * 0.1;
+        colors[i + 2] = 0.9 + Math.random() * 0.1;
+      }
+    }
+
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const starsMaterial = new THREE.PointsMaterial({
+      size: 1.2,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8
+    });
+
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    sceneRef.current.add(stars);
+  };
+
+  // Load detailed Earth with textures
+  const loadDetailedEarth = () => {
+    if (!sceneRef.current || !textureLoaderRef.current) return;
+    
+    const textureLoader = textureLoaderRef.current;
+    
     // Improved texture loading with better error handling
     const loadTexture = (url) => {
       return new Promise((resolve, reject) => {
@@ -266,49 +404,56 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       });
     };
 
-    // Load earth textures - using high quality NASA textures with updated URLs
+    // Load earth textures with realistic fallbacks
     Promise.all([
-      loadTexture(TEXTURE_URLS.earth),
-      loadTexture(TEXTURE_URLS.specular),
-      loadTexture(TEXTURE_URLS.normal),
-      loadTexture(TEXTURE_URLS.clouds),
-      loadTexture(TEXTURE_URLS.specular), // Using specular as bump map too
-    ]).then(([earthMap, earthSpecular, earthNormal, cloudsTexture, bumpMap]) => {
-      // Create Earth globe with high detail for realistic appearance
-      const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
-      const earthMaterial = new THREE.MeshPhongMaterial({
-        map: earthMap,
-        specularMap: earthSpecular,
-        normalMap: earthNormal,
-        bumpMap: bumpMap,
-        bumpScale: 0.8,
-        specular: new THREE.Color(0x444444),
-        shininess: 25,
-      });
+      loadTexture(TEXTURE_URLS.earth).catch(() => null),
+      loadTexture(TEXTURE_URLS.specular).catch(() => null),
+      loadTexture(TEXTURE_URLS.normal).catch(() => null),
+      loadTexture(TEXTURE_URLS.clouds).catch(() => null),
+    ]).then(([earthMap, earthSpecular, earthNormal, cloudsTexture]) => {
+      // Remove the basic earth if it exists
+      if (earthRef.current && sceneRef.current) {
+        sceneRef.current.remove(earthRef.current);
+      }
 
+      // Create Earth globe with available textures
+      const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+      const earthMaterialOptions = {
+        shininess: 25,
+      };
+      
+      // Add textures if they loaded successfully
+      if (earthMap) earthMaterialOptions.map = earthMap;
+      if (earthSpecular) earthMaterialOptions.specularMap = earthSpecular;
+      if (earthNormal) earthMaterialOptions.normalMap = earthNormal;
+      
+      const earthMaterial = new THREE.MeshPhongMaterial(earthMaterialOptions);
       const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+      
       earth.castShadow = true;
       earth.receiveShadow = true;
       earth.rotation.y = Math.PI; // Adjust initial rotation to align properly
-      scene.add(earth);
+      sceneRef.current.add(earth);
       earthRef.current = earth;
-      globeRef.current = earth; // For compatibility with animation code
+      globeRef.current = earth;
 
-      // Add cloud layer
-      const cloudsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.5, 96, 96);
-      const cloudsMaterial = new THREE.MeshPhongMaterial({
-        map: cloudsTexture,
-        transparent: true,
-        opacity: 0.4,
-        side: THREE.DoubleSide
-      });
+      // Add cloud layer if texture loaded
+      if (cloudsTexture) {
+        const cloudsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.5, 64, 64);
+        const cloudsMaterial = new THREE.MeshPhongMaterial({
+          map: cloudsTexture,
+          transparent: true,
+          opacity: 0.4,
+          side: THREE.DoubleSide
+        });
 
-      const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
-      scene.add(clouds);
-      cloudsRef.current = clouds;
+        const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
+        sceneRef.current.add(clouds);
+        cloudsRef.current = clouds;
+      }
 
-      // Create atmosphere glow for beautiful outer edge effect
-      const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.025, 64, 64);
+      // Create atmosphere glow
+      const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.025, 32, 32);
       const atmosphereMaterial = new THREE.ShaderMaterial({
         vertexShader: `
           varying vec3 vNormal;
@@ -333,193 +478,47 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       });
 
       const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-      scene.add(atmosphere);
-
-      // Stars background
-      const starsGeometry = new THREE.BufferGeometry();
-      const starsCount = 7000;
-      const positions = new Float32Array(starsCount * 3);
-      const colors = new Float32Array(starsCount * 3);
-
-      for (let i = 0; i < starsCount * 3; i += 3) {
-        positions[i] = (Math.random() - 0.5) * 2000;
-        positions[i + 1] = (Math.random() - 0.5) * 2000;
-        positions[i + 2] = (Math.random() - 0.5) * 2000;
-
-        // Randomize star colors for more realism
-        const colorChoice = Math.random();
-        if (colorChoice < 0.2) {
-          // Bluish stars
-          colors[i] = 0.7 + Math.random() * 0.3;
-          colors[i + 1] = 0.7 + Math.random() * 0.3;
-          colors[i + 2] = 1.0;
-        } else if (colorChoice < 0.4) {
-          // Yellow-white stars
-          colors[i] = 1.0;
-          colors[i + 1] = 0.9 + Math.random() * 0.1;
-          colors[i + 2] = 0.7 + Math.random() * 0.3;
-        } else {
-          // White stars
-          colors[i] = 0.9 + Math.random() * 0.1;
-          colors[i + 1] = 0.9 + Math.random() * 0.1;
-          colors[i + 2] = 0.9 + Math.random() * 0.1;
-        }
-      }
-
-      starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      starsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-      const starsMaterial = new THREE.PointsMaterial({
-        size: 1.2,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.8
-      });
-
-      const stars = new THREE.Points(starsGeometry, starsMaterial);
-      scene.add(stars);
+      sceneRef.current.add(atmosphere);
 
       // Add team logo marker if we have the location
       if (stadiumLocation) {
         addTeamLogoMarker();
-      }
-
-      // Start animation loop
-      animate();
-
-      // Start initial zoom animation - from space view to team location
-      if (stadiumLocation) {
+        
+        // Start initial zoom animation after everything is loaded
         startZoomSequence();
       }
     }).catch(err => {
-      console.error("Error loading globe textures:", err);
-      setError("Failed to load globe textures. Please try refreshing the page.");
+      console.error("Error in detailed Earth setup:", err);
+      // The basic earth is already visible, so we can still continue
       
-      // Create a fallback earth if textures fail to load
-      createFallbackEarth();
-    });
-
-    // Create a simple fallback earth if textures fail to load
-    const createFallbackEarth = () => {
-      const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 32, 32);
-      const earthMaterial = new THREE.MeshPhongMaterial({
-        color: 0x2244aa,
-        specular: 0x333333,
-        shininess: 15,
-      });
-      
-      const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-      scene.add(earth);
-      earthRef.current = earth;
-      globeRef.current = earth;
-      
-      // Add continents as simple geometry
-      const continentsMaterial = new THREE.MeshBasicMaterial({ color: 0x44aa66 });
-      
-      // Simplified continent representation
-      const continentsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.2, 32, 32);
-      const continents = new THREE.Mesh(continentsGeometry, continentsMaterial);
-      
-      // Only show parts of the sphere for continents
-      const noise = new SimplexNoise();
-      const positionAttribute = continentsGeometry.attributes.position;
-      const vertex = new THREE.Vector3();
-      
-      for (let i = 0; i < positionAttribute.count; i++) {
-        vertex.fromBufferAttribute(positionAttribute, i);
-        const normalized = vertex.normalize();
-        
-        // Use noise to determine which parts to show (rough continent shapes)
-        const n = 0.5 * noise.noise(2 * normalized.x, 2 * normalized.y, 2 * normalized.z);
-        
-        if (n < 0.1) {
-          // This is an "ocean" vertex
-          positionAttribute.setXYZ(i, 0, 0, 0);
-        }
-      }
-      
-      scene.add(continents);
-      
-      // Start animation
-      animate();
-      
+      // Add team logo marker with basic earth
       if (stadiumLocation) {
         addTeamLogoMarker();
         startZoomSequence();
       }
-    };
-    
-    // SimplexNoise implementation for fallback earth
-    function SimplexNoise() {
-      this.noise = function(x, y, z) {
-        // Very simple random noise function for fallback
-        return Math.random() * 2 - 1;
-      };
-    }
+    });
+  };
 
-    // Cleanup on unmount
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-
-      if (zoomAnimationRef.current) {
-        cancelAnimationFrame(zoomAnimationRef.current);
-      }
-
-      if (rendererRef.current && containerRef.current) {
-        containerRef.current.removeChild(rendererRef.current.domElement);
-      }
-
-      // Clear all allocated THREE.js resources
-      if (sceneRef.current) {
-        sceneRef.current.traverse((object) => {
-          if (object.geometry) object.geometry.dispose();
-          if (object.material) {
-            if (Array.isArray(object.material)) {
-              object.material.forEach(material => material.dispose());
-            } else {
-              object.material.dispose();
-            }
-          }
-        });
-      }
-
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-    };
-  }, [isLoading, error]);
-
-  // Add team logo marker when stadium location or logo texture updates
+  // Add team logo marker when stadiumLocation changes
   useEffect(() => {
-    if (stadiumLocation && !isLoading && !error && sceneRef.current && globeRef.current) {
+    if (stadiumLocation && !isLoading && sceneRef.current && globeRef.current) {
+      addTeamLogoMarker();
+      
+      // Only start zoom sequence if it hasn't been completed yet
+      if (!animationComplete) {
+        startZoomSequence();
+      }
+    }
+  }, [stadiumLocation, isLoading]);
+
+  // Update marker when logoTexture changes
+  useEffect(() => {
+    if (logoTexture && stadiumLocation && sceneRef.current) {
       addTeamLogoMarker();
     }
-  }, [stadiumLocation, logoTexture, isLoading, error]);
+  }, [logoTexture]);
 
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
-
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
-
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-
-      rendererRef.current.setSize(width, height);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Add team logo marker in a glassy effect
+  // Add team logo marker
   const addTeamLogoMarker = () => {
     if (!sceneRef.current || !stadiumLocation) return;
 
@@ -536,21 +535,21 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
     const markerGroup = new THREE.Group();
 
     // Create a glassy base effect
-    const glassGeometry = new THREE.SphereGeometry(MARKER_SIZE * 1.5, 32, 32);
+    const glassGeometry = new THREE.SphereGeometry(MARKER_SIZE * 1.5, 24, 24);
     const glassMaterial = new THREE.MeshPhysicalMaterial({
       color: hexToThreeColor(teamColor),
       metalness: 0.1,
       roughness: 0.1,
       transmission: 0.9, // Glass-like transparency
       thickness: 1.0,    // Glass thickness
-      envMapIntensity: 1.0,
       clearcoat: 1.0,    // Clear coat layer
       clearcoatRoughness: 0.1
     });
 
     const glassMarker = new THREE.Mesh(glassGeometry, glassMaterial);
+    markerGroup.add(glassMarker);
 
-    // Create a team logo plane inside the glass sphere
+    // Create a team logo plane inside the glass sphere if we have a texture
     if (logoTexture) {
       const logoSize = MARKER_SIZE * 1.8;
       const logoGeometry = new THREE.PlaneGeometry(logoSize, logoSize);
@@ -569,11 +568,8 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       markerGroup.add(logoMesh);
     }
 
-    // Add glass sphere to marker group
-    markerGroup.add(glassMarker);
-
     // Add glow effect
-    const glowGeometry = new THREE.SphereGeometry(MARKER_SIZE * 2.0, 32, 32);
+    const glowGeometry = new THREE.SphereGeometry(MARKER_SIZE * 2.0, 24, 24);
     const glowMaterial = new THREE.ShaderMaterial({
       uniforms: {
         c: { value: 0.2 },
@@ -625,6 +621,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
     // Orient the marker to point away from center
     markerGroup.lookAt(0, 0, 0);
+    markerGroup.rotateY(Math.PI); // Rotate to face outward
 
     // Add marker to scene
     sceneRef.current.add(markerGroup);
@@ -634,6 +631,11 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
   // Start zoom sequence animation
   const startZoomSequence = () => {
     if (!stadiumLocation || !cameraRef.current) return;
+    
+    // Cancel any existing zoom animation
+    if (zoomAnimationRef.current) {
+      cancelAnimationFrame(zoomAnimationRef.current);
+    }
 
     setZoomLevel(0); // Start at space view
 
@@ -680,6 +682,38 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       const duration = nextStage.duration;
       const startPosition = new THREE.Vector3().copy(cameraRef.current.position);
 
+      // Rotate the globe to show the stadium location
+      if (globeRef.current && currentStage >= 1) {
+        const globeRotation = globeRef.current.rotation.clone();
+        const targetRotation = new THREE.Euler();
+        
+        // Calculate the rotation needed to bring the stadium point to the front
+        const targetLatLon = new THREE.Vector3();
+        targetLatLon.copy(latLongToVector3(lat, lon, GLOBE_RADIUS));
+        targetLatLon.normalize();
+        
+        // Animate globe rotation
+        const rotateGlobe = (time) => {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeInOutCubic(progress);
+          
+          if (globeRef.current) {
+            // Rotate globe to face the target location
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 90) * (Math.PI / 180);
+            
+            globeRef.current.rotation.y = Math.PI + theta * easedProgress;
+          }
+          
+          if (progress < 1) {
+            requestAnimationFrame(rotateGlobe);
+          }
+        };
+        
+        requestAnimationFrame(rotateGlobe);
+      }
+
       const animate = (time) => {
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -719,7 +753,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
   // Animation loop
   const animate = () => {
-    if (!globeRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
 
     // Gentle clouds rotation
     if (cloudsRef.current) {
@@ -736,16 +770,14 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       // Find the logo plane within the marker group
       teamMarkerRef.current.children.forEach(child => {
         if (child.geometry instanceof THREE.PlaneGeometry) {
-          // Calculate the direction from the marker to the camera
+          // Make the logo look at the camera position
           const markerPosition = new THREE.Vector3();
           teamMarkerRef.current.getWorldPosition(markerPosition);
-
-          const cameraDirection = new THREE.Vector3();
-          cameraRef.current.getWorldPosition(cameraDirection);
-          cameraDirection.sub(markerPosition);
-
-          // Make the logo look at the camera, but maintain its up direction
-          child.lookAt(cameraDirection.add(markerPosition));
+          
+          const cameraPosition = new THREE.Vector3();
+          cameraRef.current.getWorldPosition(cameraPosition);
+          
+          child.lookAt(cameraPosition);
         }
       });
     }
@@ -764,7 +796,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
 
   // Reset view
   const resetView = () => {
-    if (animationComplete && cameraRef.current) {
+    if (cameraRef.current) {
       // Cancel ongoing animations
       if (zoomAnimationRef.current) {
         cancelAnimationFrame(zoomAnimationRef.current);
@@ -779,6 +811,10 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
       if (controlsRef.current) {
         controlsRef.current.enabled = false;
       }
+
+      // Reset camera position
+      cameraRef.current.position.set(0, 0, 300);
+      cameraRef.current.lookAt(0, 0, 0);
 
       // Start zoom sequence again
       startZoomSequence();
@@ -820,7 +856,7 @@ const RosterMap = ({ teamName, teamColor, year = 2024 }) => {
             </div>
 
             <div className="globe-container" ref={containerRef}>
-              {showStadiumDetails && (
+              {showStadiumDetails && teamData && (
                 <div
                   className="stadium-info-panel"
                   style={{
