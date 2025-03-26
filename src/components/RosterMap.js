@@ -126,7 +126,13 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
   const GLOBE_RADIUS = 100;
   const MARKER_SIZE = 3.5;
 
-  // Simplify - let's not rely on external textures that might fail
+  // Texture URLs - with fallbacks and CORS-friendly sources
+  const TEXTURE_URLS = {
+    earth: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-blue-marble.jpg',
+    specular: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-water.png',
+    normal: 'https://unpkg.com/three-globe@2.24.10/example/img/earth-topology.png',
+    clouds: 'https://unpkg.com/three-globe@2.24.10/example/img/clouds.png',
+  };
 
   // Style for card headers
   const cardHeaderStyle = {
@@ -135,41 +141,35 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
     color: darkenColor(teamColor, 20)
   };
 
-  // Direct team data use (skipping fetch when we already have the data)
+  // Fetch team data
   useEffect(() => {
-    setIsLoading(true);
-    setError(null);
-    
-    // Skip API call if we already have explicit team data or just use the name to fetch
-    if (teamName) {
+    const fetchTeam = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        // For Ohio State hardcoded data
-        if (teamName === "Ohio State") {
-          const teamData = {
-            school: "Ohio State",
-            mascot: "Buckeyes",
-            abbreviation: "OSU",
-            conference: "Big Ten",
-            color: "#ce1141",
-            logos: ["http://a.espncdn.com/i/teamlogos/ncaa/500/194.png"],
-            location: {
-              name: "Ohio Stadium",
-              city: "Columbus",
-              state: "OH",
-              latitude: 40.0016447,
-              longitude: -83.0197266
-            }
-          };
-          
-          setTeamData(teamData);
-          setStadiumLocation([teamData.location.latitude, teamData.location.longitude]);
-          
-          // Preload team logo
-          if (teamData.logos && teamData.logos[0]) {
+        // Fetch team location data
+        const teamsData = await teamsService.getTeams();
+        const team = teamsData.find(t => t.school === teamName);
+
+        if (team) {
+          setTeamData(team);
+
+          // Set stadium location using the team's actual location data
+          if (team.location && team.location.latitude && team.location.longitude) {
+            const coordinates = [team.location.latitude, team.location.longitude];
+            setStadiumLocation(coordinates);
+          } else {
+            console.warn("Team location data missing or incomplete:", team);
+            // Use a default location for the team if not provided (US center)
+            setStadiumLocation([39.8283, -98.5795]);
+          }
+
+          // Preload team logo if available
+          if (team.logos && team.logos[0]) {
             const textureLoader = new THREE.TextureLoader();
             textureLoader.crossOrigin = "anonymous";
             textureLoader.load(
-              teamData.logos[0],
+              team.logos[0],
               (texture) => {
                 texture.minFilter = THREE.LinearFilter;
                 setLogoTexture(texture);
@@ -177,251 +177,163 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
               undefined,
               (err) => {
                 console.error("Error loading team logo:", err);
+                // Continue without logo
               }
             );
           }
         } else {
-          // Fetch team data from service for other teams
-          const fetchTeam = async () => {
-            try {
-              const teamsData = await teamsService.getTeams();
-              const team = teamsData.find(t => t.school === teamName);
-              
-              if (team) {
-                setTeamData(team);
-                
-                if (team.location && team.location.latitude && team.location.longitude) {
-                  setStadiumLocation([team.location.latitude, team.location.longitude]);
-                } else {
-                  console.warn("Team location data missing or incomplete:", team);
-                  setStadiumLocation([39.8283, -98.5795]); // US center fallback
-                }
-                
-                // Preload team logo
-                if (team.logos && team.logos[0]) {
-                  const textureLoader = new THREE.TextureLoader();
-                  textureLoader.crossOrigin = "anonymous";
-                  textureLoader.load(
-                    team.logos[0],
-                    (texture) => {
-                      texture.minFilter = THREE.LinearFilter;
-                      setLogoTexture(texture);
-                    },
-                    undefined,
-                    (err) => {
-                      console.error("Error loading team logo:", err);
-                    }
-                  );
-                }
-              } else {
-                console.warn("Team not found:", teamName);
-                setError("Team not found");
-              }
-            } catch (err) {
-              console.error("Error fetching team:", err.message);
-              setError("Failed to load team information.");
-            }
-          };
-          
-          fetchTeam();
+          console.warn("Team not found:", teamName);
+          setError("Team not found");
         }
       } catch (err) {
-        console.error("Error setting up team data:", err.message);
+        console.error("Error fetching team:", err.message);
         setError("Failed to load team information.");
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      setError("No team name provided");
-    }
-    
-    setIsLoading(false);
+    };
+
+    fetchTeam();
   }, [teamName, year]);
 
-  // Initial setup for THREE.js scene
+  // Initialize Three.js scene
   useEffect(() => {
     if (!containerRef.current) return;
-    
-    try {
-      // Clear any previous errors
-      setError(null);
-      console.log("Initializing 3D globe for", teamName);
+
+    // Create scene
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    scene.background = new THREE.Color(0x000000);
+
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    // Add directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    directionalLight.position.set(5, 3, 5);
+    scene.add(directionalLight);
+
+    // Create camera
+    const camera = new THREE.PerspectiveCamera(
+      45, // FOV
+      containerRef.current.clientWidth / containerRef.current.clientHeight, // aspect ratio
+      0.1, // near plane
+      10000 // far plane
+    );
+    camera.position.set(0, 0, 300);
+    initialCameraPositionRef.current = new THREE.Vector3(0, 0, 300);
+    cameraRef.current = camera;
+
+    // Create renderer
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      logarithmicDepthBuffer: true
+    });
+    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    containerRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // Add orbit controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.3;
+    controls.enablePan = false;
+    controls.minDistance = GLOBE_RADIUS * 1.1;
+    controls.maxDistance = GLOBE_RADIUS * 10;
+    controls.enabled = false; // Disabled until initial animation completes
+    controlsRef.current = controls;
+
+    // Create textureLoader for reuse
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.crossOrigin = "anonymous";
+    textureLoaderRef.current = textureLoader;
+
+    // Create stars background first so there's always something visible
+    createStarsBackground();
+
+    // Load the earth with a simple pre-rendered version first, then enhance
+    createBasicEarth();
+    loadDetailedEarth();
+
+    // Start animation loop
+    animate();
+
+    // Handle window resize
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+
+      rendererRef.current.setSize(width, height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
       
-      // Create scene
-      const scene = new THREE.Scene();
-      sceneRef.current = scene;
-      scene.background = new THREE.Color(0x000000);
-      
-      // Create camera
-      const camera = new THREE.PerspectiveCamera(
-        45,
-        containerRef.current.clientWidth / containerRef.current.clientHeight,
-        0.1,
-        1000
-      );
-      camera.position.set(0, 0, 300);
-      cameraRef.current = camera;
-      
-      // Create renderer with basic settings (no fancy features that might fail)
-      const renderer = new THREE.WebGLRenderer({ 
-        antialias: true
-      });
-      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-      renderer.setPixelRatio(1); // Force to 1 for reliability
-      containerRef.current.appendChild(renderer.domElement);
-      rendererRef.current = renderer;
-      
-      // Add basic lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambientLight);
-      
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(5, 3, 5);
-      scene.add(directionalLight);
-      
-      // Create controls
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.rotateSpeed = 0.5;
-      controls.enablePan = false;
-      controls.minDistance = GLOBE_RADIUS * 1.2;
-      controls.maxDistance = GLOBE_RADIUS * 5;
-      controls.enabled = false; // Disabled until animation completes
-      controlsRef.current = controls;
-      
-      // Create basic Earth with oceans and continents
-      createBasicEarth();
-      
-      // Create stars background
-      createStarsBackground();
-      
-      // Start animation loop
-      const animateLoop = () => {
-        if (globeRef.current) {
-          globeRef.current.rotation.y += 0.001;
-        }
-        
-        if (controlsRef.current && controlsRef.current.enabled) {
-          controlsRef.current.update();
-        }
-        
-        if (rendererRef.current && sceneRef.current && cameraRef.current) {
-          rendererRef.current.render(sceneRef.current, cameraRef.current);
-        }
-        
-        animationRef.current = requestAnimationFrame(animateLoop);
-      };
-      
-      animateLoop();
-      
-      // Handle window resize
-      const handleResize = () => {
-        if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
-        const width = containerRef.current.clientWidth;
-        const height = containerRef.current.clientHeight;
-        cameraRef.current.aspect = width / height;
-        cameraRef.current.updateProjectionMatrix();
-        rendererRef.current.setSize(width, height);
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      // Cleanup
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-        
-        if (rendererRef.current && containerRef.current) {
-          containerRef.current.removeChild(rendererRef.current.domElement);
-        }
-        
-        if (sceneRef.current) {
-          // Dispose of resources
-          sceneRef.current.traverse((obj) => {
-            if (obj.geometry) obj.geometry.dispose();
-            if (obj.material) {
-              if (Array.isArray(obj.material)) {
-                obj.material.forEach(m => m.dispose());
-              } else {
-                obj.material.dispose();
-              }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+
+      if (zoomAnimationRef.current) {
+        cancelAnimationFrame(zoomAnimationRef.current);
+      }
+
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+      }
+
+      // Clear all allocated THREE.js resources
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
             }
-          });
-        }
-      };
-    } catch (err) {
-      console.error("Error initializing 3D scene:", err);
-      setError("Failed to initialize 3D visualization. Please try a different browser.");
-    }
+          }
+          if (object.texture) {
+            object.texture.dispose();
+          }
+        });
+      }
+
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
   }, []);
-  
-  // Create a basic Earth that will always work
+
+  // Create a basic Earth immediately for fast initial rendering
   const createBasicEarth = () => {
     if (!sceneRef.current) return;
     
-    // Remove any existing earth
-    if (earthRef.current) {
-      sceneRef.current.remove(earthRef.current);
-    }
-    
-    // Create the basic ocean sphere
-    const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+    const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 32, 32);
     const earthMaterial = new THREE.MeshPhongMaterial({
-      color: 0x0077be,  // Ocean blue
-      shininess: 25
+      color: 0x2244aa,
+      specular: 0x333333,
+      shininess: 15,
     });
     
     const earth = new THREE.Mesh(earthGeometry, earthMaterial);
     sceneRef.current.add(earth);
     earthRef.current = earth;
     globeRef.current = earth;
-    
-    // Create the landmass layer
-    const continentsGeometry = new THREE.SphereGeometry(GLOBE_RADIUS + 0.1, 64, 64);
-    const continentsMaterial = new THREE.MeshPhongMaterial({
-      color: 0x3d9942,  // Land green
-      opacity: 0.9,
-      transparent: true
-    });
-    
-    // Create landmass shapes
-    // This is a simplified approximation of continents using displacement
-    const vertices = continentsGeometry.attributes.position;
-    const vector = new THREE.Vector3();
-    
-    for (let i = 0; i < vertices.count; i++) {
-      vector.fromBufferAttribute(vertices, i);
-      vector.normalize();
-      
-      // Use noise function to create continent-like shapes
-      const lat = Math.asin(vector.y) / Math.PI + 0.5;
-      const lon = Math.atan2(vector.z, vector.x) / Math.PI / 2 + 0.5;
-      
-      // Simplified noise function (can't use SimplexNoise directly)
-      const noise = Math.sin(lat * 12) * Math.cos(lon * 12) * 0.2 + 
-                    Math.sin(lat * 20 + 3) * Math.cos(lon * 15 + 5) * 0.15;
-      
-      // Make water areas disappear by setting radius to less than earth
-      if (noise < 0.1) {
-        vertices.setXYZ(
-          i, 
-          vector.x * (GLOBE_RADIUS - 0.5), 
-          vector.y * (GLOBE_RADIUS - 0.5), 
-          vector.z * (GLOBE_RADIUS - 0.5)
-        );
-      }
-    }
-    
-    const continents = new THREE.Mesh(continentsGeometry, continentsMaterial);
-    sceneRef.current.add(continents);
   };
-  
-  // Removed duplicate createStarsBackground function
-
-  // Create a basic Earth immediately for fast initial rendering
-  // Removed duplicate createBasicEarth function
 
   // Create stars background
   const createStarsBackground = () => {
@@ -587,215 +499,256 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
     });
   };
 
-  // Add team marker when stadiumLocation changes
+  // Add team logo marker when stadiumLocation changes
   useEffect(() => {
-    if (stadiumLocation && sceneRef.current) {
-      console.log("Stadium location set, adding marker:", stadiumLocation);
-      addSimpleTeamMarker();
+    if (stadiumLocation && !isLoading && sceneRef.current && globeRef.current) {
+      addTeamLogoMarker();
       
       // Only start zoom sequence if it hasn't been completed yet
       if (!animationComplete) {
         startZoomSequence();
       }
     }
-  }, [stadiumLocation]);
+  }, [stadiumLocation, isLoading]);
 
   // Update marker when logoTexture changes
   useEffect(() => {
     if (logoTexture && stadiumLocation && sceneRef.current) {
-      console.log("Logo texture loaded, updating marker");
-      addFancyTeamMarker();
+      addTeamLogoMarker();
     }
   }, [logoTexture]);
 
-  // Add marker when stadiumLocation is set
-  useEffect(() => {
-    if (stadiumLocation && sceneRef.current && globeRef.current) {
-      console.log("Adding team marker at", stadiumLocation);
-      addTeamMarker();
-      
-      // Start zoom animation
-      if (!animationComplete) {
-        startZoomAnimation();
-      }
-    }
-  }, [stadiumLocation, sceneRef.current, globeRef.current]);
-  
-  // Update marker when team logo is loaded
-  useEffect(() => {
-    if (logoTexture && stadiumLocation && sceneRef.current) {
-      console.log("Logo loaded, updating marker");
-      addTeamMarker();
-    }
-  }, [logoTexture]);
-  
-  // Add team marker to the globe
-  const addTeamMarker = () => {
+  // Add team logo marker
+  const addTeamLogoMarker = () => {
     if (!sceneRef.current || !stadiumLocation) return;
-    
-    try {
-      // Remove existing marker if any
-      if (teamMarkerRef.current) {
-        sceneRef.current.remove(teamMarkerRef.current);
-        teamMarkerRef.current = null;
-      }
-      
-      const [lat, lon] = stadiumLocation;
-      const position = latLongToVector3(lat, lon, GLOBE_RADIUS);
-      
-      // Create a group to hold marker elements
-      const markerGroup = new THREE.Group();
-      
-      // Add base marker (always visible)
-      const markerGeometry = new THREE.SphereGeometry(MARKER_SIZE, 16, 16);
-      const markerMaterial = new THREE.MeshBasicMaterial({
-        color: hexToThreeColor(teamColor), 
-        transparent: true,
-        opacity: 0.8
-      });
-      
-      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-      markerGroup.add(marker);
-      
-      // If logo is available, add it as a billboard
-      if (logoTexture) {
-        const logoSize = MARKER_SIZE * 2.5;
-        const logoGeometry = new THREE.PlaneGeometry(logoSize, logoSize);
-        const logoMaterial = new THREE.MeshBasicMaterial({
-          map: logoTexture,
-          transparent: true,
-          side: THREE.DoubleSide,
-          depthWrite: false
-        });
-        
-        const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
-        logoMesh.position.set(0, 0, MARKER_SIZE * 1.2); // Position in front of marker
-        markerGroup.add(logoMesh);
-      }
-      
-      // Position the marker group on the globe
-      const markerPosition = position.clone().normalize().multiplyScalar(GLOBE_RADIUS + 0.5);
-      markerGroup.position.copy(markerPosition);
-      
-      // Orient marker to face outward from the globe center
-      markerGroup.lookAt(0, 0, 0);
-      markerGroup.rotateY(Math.PI); // Rotate 180° to face outward
-      
-      // Add marker to scene
-      sceneRef.current.add(markerGroup);
-      teamMarkerRef.current = markerGroup;
-    } catch (err) {
-      console.error("Error adding team marker:", err);
+
+    // Remove existing marker if any
+    if (teamMarkerRef.current) {
+      sceneRef.current.remove(teamMarkerRef.current);
+      teamMarkerRef.current = null;
     }
+
+    const [stadiumLat, stadiumLon] = stadiumLocation;
+    const stadiumPosition = latLongToVector3(stadiumLat, stadiumLon, GLOBE_RADIUS);
+
+    // Create marker group
+    const markerGroup = new THREE.Group();
+
+    // Create a glassy base effect
+    const glassGeometry = new THREE.SphereGeometry(MARKER_SIZE * 1.5, 24, 24);
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+      color: hexToThreeColor(teamColor),
+      metalness: 0.1,
+      roughness: 0.1,
+      transmission: 0.9, // Glass-like transparency
+      thickness: 1.0,    // Glass thickness
+      clearcoat: 1.0,    // Clear coat layer
+      clearcoatRoughness: 0.1
+    });
+
+    const glassMarker = new THREE.Mesh(glassGeometry, glassMaterial);
+    markerGroup.add(glassMarker);
+
+    // Create a team logo plane inside the glass sphere if we have a texture
+    if (logoTexture) {
+      const logoSize = MARKER_SIZE * 1.8;
+      const logoGeometry = new THREE.PlaneGeometry(logoSize, logoSize);
+      const logoMaterial = new THREE.MeshBasicMaterial({
+        map: logoTexture,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+
+      const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+
+      // Position the logo so it always faces the camera
+      logoMesh.lookAt(new THREE.Vector3(0, 0, 0));
+
+      // Add logo to marker group
+      markerGroup.add(logoMesh);
+    }
+
+    // Add glow effect
+    const glowGeometry = new THREE.SphereGeometry(MARKER_SIZE * 2.0, 24, 24);
+    const glowMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        c: { value: 0.2 },
+        p: { value: 1.8 },
+        glowColor: { value: new THREE.Color(teamColor) }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float c;
+        uniform float p;
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+          gl_FragColor = vec4(glowColor, intensity);
+        }
+      `,
+      side: THREE.FrontSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    markerGroup.add(glow);
+
+    // Create light beam pointing up from marker
+    const beamGeometry = new THREE.CylinderGeometry(0.5, 0, 15, 16, 1, true);
+    const beamMaterial = new THREE.MeshBasicMaterial({
+      color: hexToThreeColor(teamColor),
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide
+    });
+
+    const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+    beam.position.y = 10;
+    beam.rotation.x = Math.PI;
+    markerGroup.add(beam);
+
+    // Position the marker on the globe surface
+    const markerPosition = stadiumPosition.clone().normalize().multiplyScalar(GLOBE_RADIUS + 0.5);
+    markerGroup.position.copy(markerPosition);
+
+    // Orient the marker to point away from center
+    markerGroup.lookAt(0, 0, 0);
+    markerGroup.rotateY(Math.PI); // Rotate to face outward
+
+    // Add marker to scene
+    sceneRef.current.add(markerGroup);
+    teamMarkerRef.current = markerGroup;
   };
-  
-  // Zoom animation to team location
-  const startZoomAnimation = () => {
-    if (!stadiumLocation || !cameraRef.current || !globeRef.current) return;
+
+  // Start zoom sequence animation
+  const startZoomSequence = () => {
+    if (!stadiumLocation || !cameraRef.current) return;
     
-    try {
-      console.log("Starting zoom animation to", stadiumLocation);
-      
-      // Cancel any existing animation
-      if (zoomAnimationRef.current) {
-        cancelAnimationFrame(zoomAnimationRef.current);
+    // Cancel any existing zoom animation
+    if (zoomAnimationRef.current) {
+      cancelAnimationFrame(zoomAnimationRef.current);
+    }
+
+    setZoomLevel(0); // Start at space view
+
+    // Define zoom stages
+    const [lat, lon] = stadiumLocation;
+    const zoomStages = [
+      { distance: 300, duration: 0, position: new THREE.Vector3(0, 0, 300) }, // Initial space view
+      { distance: 200, duration: 1000, position: new THREE.Vector3(0, 0, 200) }, // Approaching Earth
+      { distance: 150, duration: 1000 }, // Continent view
+      { distance: 120, duration: 1000 }, // Country view
+      { distance: 3 * GLOBE_RADIUS, duration: 1000 } // Final stadium view
+    ];
+
+    // Start animation sequence
+    let currentStage = 0;
+    const startAnimation = () => {
+      if (currentStage >= zoomStages.length - 1) {
+        setAnimationComplete(true);
+        setShowStadiumDetails(true);
+        if (controlsRef.current) {
+          controlsRef.current.enabled = true;
+        }
+        return;
       }
-      
-      const [lat, lon] = stadiumLocation;
-      
-      // Rotate globe to show the location
-      // For US teams, rotate to show North America
-      if (globeRef.current) {
-        // US-centric rotation for better viewing of US teams
-        globeRef.current.rotation.set(0, Math.PI / 2, 0);
+
+      const stage = zoomStages[currentStage];
+      const nextStage = zoomStages[currentStage + 1];
+
+      // Calculate target position based on stadium location for closer views
+      let targetPosition;
+      if (currentStage >= 1) {
+        const stadiumVector = latLongToVector3(lat, lon, GLOBE_RADIUS);
+        const distanceFromCenter = nextStage.distance;
+        targetPosition = stadiumVector.clone().normalize().multiplyScalar(distanceFromCenter);
+      } else {
+        targetPosition = nextStage.position;
       }
-      
-      // Calculate target position for camera
-      const targetPosition = latLongToVector3(lat, lon, GLOBE_RADIUS * 2.5);
-      const startPosition = new THREE.Vector3(0, 0, 300);
-      
-      // Animation settings
-      const duration = 2000; // ms
+
+      // Update zoom level
+      setZoomLevel(currentStage + 1);
+
+      // Start animation between stages
       const startTime = performance.now();
-      
-      // Animation function
+      const duration = nextStage.duration;
+      const startPosition = new THREE.Vector3().copy(cameraRef.current.position);
+
+      // Rotate the globe to show the stadium location
+      if (globeRef.current && currentStage >= 1) {
+        const globeRotation = globeRef.current.rotation.clone();
+        const targetRotation = new THREE.Euler();
+        
+        // Calculate the rotation needed to bring the stadium point to the front
+        const targetLatLon = new THREE.Vector3();
+        targetLatLon.copy(latLongToVector3(lat, lon, GLOBE_RADIUS));
+        targetLatLon.normalize();
+        
+        // Animate globe rotation
+        const rotateGlobe = (time) => {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeInOutCubic(progress);
+          
+          if (globeRef.current) {
+            // Rotate globe to face the target location
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 90) * (Math.PI / 180);
+            
+            globeRef.current.rotation.y = Math.PI + theta * easedProgress;
+          }
+          
+          if (progress < 1) {
+            requestAnimationFrame(rotateGlobe);
+          }
+        };
+        
+        requestAnimationFrame(rotateGlobe);
+      }
+
       const animate = (time) => {
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Ease in/out function for smoother animation
-        const eased = progress < 0.5 ? 
-          2 * progress * progress : 
-          -1 + (4 - 2 * progress) * progress;
-        
+        const easedProgress = easeInOutCubic(progress);
+
         // Interpolate camera position
-        if (cameraRef.current) {
-          const newPos = new THREE.Vector3().lerpVectors(
-            startPosition, 
-            targetPosition, 
-            eased
-          );
-          
-          cameraRef.current.position.copy(newPos);
-          cameraRef.current.lookAt(0, 0, 0);
-        }
-        
+        const newPosition = new THREE.Vector3().lerpVectors(
+          startPosition,
+          targetPosition,
+          easedProgress
+        );
+
+        cameraRef.current.position.copy(newPosition);
+        cameraRef.current.lookAt(0, 0, 0);
+
         if (progress < 1) {
           zoomAnimationRef.current = requestAnimationFrame(animate);
         } else {
-          // Animation complete
-          setAnimationComplete(true);
-          setShowStadiumDetails(true);
-          
-          // Enable controls after animation
-          if (controlsRef.current) {
-            controlsRef.current.enabled = true;
+          currentStage++;
+          if (currentStage < zoomStages.length - 1) {
+            startAnimation();
+          } else {
+            setAnimationComplete(true);
+            setShowStadiumDetails(true);
+            if (controlsRef.current) {
+              controlsRef.current.enabled = true;
+            }
           }
         }
       };
-      
-      // Start animation
-      zoomAnimationRef.current = requestAnimationFrame(animate);
-      
-    } catch (err) {
-      console.error("Error in zoom animation:", err);
-      
-      // If animation fails, still show details and enable controls
-      setAnimationComplete(true);
-      setShowStadiumDetails(true);
-      
-      if (controlsRef.current) {
-        controlsRef.current.enabled = true;
-      }
-    }
-  };
 
-  // Reset view function (for the Replay button)
-  const resetView = () => {
-    if (cameraRef.current && stadiumLocation) {
-      console.log("Resetting view");
-      
-      // Cancel any existing animation
-      if (zoomAnimationRef.current) {
-        cancelAnimationFrame(zoomAnimationRef.current);
-      }
-      
-      // Reset animation state
-      setAnimationComplete(false);
-      setShowStadiumDetails(false);
-      
-      // Disable controls during animation
-      if (controlsRef.current) {
-        controlsRef.current.enabled = false;
-      }
-      
-      // Reset camera to initial position
-      cameraRef.current.position.set(0, 0, 300);
-      cameraRef.current.lookAt(0, 0, 0);
-      
-      // Start new zoom animation
-      startZoomAnimation();
-    }
+      zoomAnimationRef.current = requestAnimationFrame(animate);
+    };
+
+    startAnimation();
   };
 
   // Animation loop
@@ -842,7 +795,31 @@ const RosterMap = ({ teamName, teamColor = "#0088ce", year = 2024 }) => {
   };
 
   // Reset view
-  // Removed duplicate resetView function to avoid redeclaration error
+  const resetView = () => {
+    if (cameraRef.current) {
+      // Cancel ongoing animations
+      if (zoomAnimationRef.current) {
+        cancelAnimationFrame(zoomAnimationRef.current);
+      }
+
+      // Reset zoom level
+      setZoomLevel(0);
+      setShowStadiumDetails(false);
+      setAnimationComplete(false);
+
+      // Disable controls during animation
+      if (controlsRef.current) {
+        controlsRef.current.enabled = false;
+      }
+
+      // Reset camera position
+      cameraRef.current.position.set(0, 0, 300);
+      cameraRef.current.lookAt(0, 0, 0);
+
+      // Start zoom sequence again
+      startZoomSequence();
+    }
+  };
 
   return (
     <div className="dashboard-card full-width-card">
