@@ -38,6 +38,7 @@ const PlayerGrade = () => {
   const [pageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [dataInitialized, setDataInitialized] = useState(false);
+  const [collapseFilters, setCollapseFilters] = useState(false);
   
   // Only load position-specific data when a position filter is applied
   const shouldLoadPositionData = (position) => {
@@ -1040,6 +1041,68 @@ const PlayerGrade = () => {
     setCurrentPage(newPage);
   };
 
+  // Helper for extracting key stats
+  const getKeyPlayerStat = (player) => {
+    if (!player || !player.seasonStats || player.seasonStats.length === 0) {
+      return null;
+    }
+    
+    // Different stats based on position
+    if (player.position === "QB") {
+      const passingStats = player.seasonStats.find(s => s.category === "passing");
+      if (passingStats) {
+        return {
+          label: "Passing Yards",
+          value: passingStats.yards || 0,
+          secondaryLabel: "TDs",
+          secondaryValue: passingStats.touchdowns || 0,
+        };
+      }
+    } else if (player.position === "RB" || player.position === "FB") {
+      const rushingStats = player.seasonStats.find(s => s.category === "rushing");
+      if (rushingStats) {
+        return {
+          label: "Rushing Yards",
+          value: rushingStats.yards || 0,
+          secondaryLabel: "YPC",
+          secondaryValue: rushingStats.yardsPerCarry?.toFixed(1) || 0,
+        };
+      }
+    } else if (player.position === "WR" || player.position === "TE") {
+      const receivingStats = player.seasonStats.find(s => s.category === "receiving");
+      if (receivingStats) {
+        return {
+          label: "Receiving Yards",
+          value: receivingStats.yards || 0,
+          secondaryLabel: "Receptions",
+          secondaryValue: receivingStats.receptions || 0,
+        };
+      }
+    } else if (defensiveFront.includes(player.position) || linebackers.includes(player.position)) {
+      const defensiveStats = player.seasonStats.find(s => s.category === "defensive");
+      if (defensiveStats) {
+        return {
+          label: "Tackles",
+          value: defensiveStats.totalTackles || 0,
+          secondaryLabel: "TFLs",
+          secondaryValue: defensiveStats.tacklesForLoss || 0,
+        };
+      }
+    } else if (defensiveBack.includes(player.position)) {
+      const defensiveStats = player.seasonStats.find(s => s.category === "defensive");
+      if (defensiveStats) {
+        return {
+          label: "Tackles",
+          value: defensiveStats.totalTackles || 0,
+          secondaryLabel: "INTs",
+          secondaryValue: defensiveStats.interceptions || 0,
+        };
+      }
+    }
+    
+    return null;
+  };
+
   if (error) {
     return (
       <div className="player-grade-error">
@@ -1061,58 +1124,69 @@ const PlayerGrade = () => {
   return (
     <div className="player-grade-container">
       <div className="player-grade-header">
-        <h1>{team.school} Player Grades {gameId ? "- Game Analysis" : "- Season Analysis"}</h1>
-        <p className="player-grade-subtitle">
-          Advanced player evaluation system using PPA, traditional stats, and proprietary algorithms
-        </p>
-        
-        <div className="player-grade-controls">
-          {/* Team Selector */}
-          <div className="filter-group team-filter-group">
-            <label>Team:</label>
-            <select 
-              value={teamId} 
-              onChange={(e) => handleTeamChange(e.target.value)}
-              className="team-filter"
-            >
-              {teams.map(t => (
-                <option key={t.id} value={t.id}>{t.school}</option>
-              ))}
-            </select>
+        <div className="header-top">
+          <div>
+            <h1>{team.school} Player Grades</h1>
+            <p className="player-grade-subtitle">
+              {gameId ? "Game Analysis" : "Season Analysis"} | {year} Season
+            </p>
           </div>
-          
-          <div className="filter-group">
-            <label>Position:</label>
-            <select 
-              value={positionFilter} 
-              onChange={(e) => handlePositionChange(e.target.value)}
-              className="position-filter"
-            >
-              <option value="all">All Positions</option>
-              {positionOptions.map(pos => (
-                <option key={pos} value={pos}>{pos}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Year:</label>
-            <select 
-              value={year} 
-              onChange={(e) => handleYearChange(e.target.value)}
-              className="year-filter"
-            >
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-            </select>
-          </div>
+          <button 
+            className="toggle-filters-btn"
+            onClick={() => setCollapseFilters(!collapseFilters)}
+          >
+            {collapseFilters ? "Show Filters" : "Hide Filters"}
+          </button>
         </div>
+        
+        {!collapseFilters && (
+          <div className="player-grade-controls card">
+            <div className="filter-group team-filter-group">
+              <label>Team:</label>
+              <select 
+                value={teamId} 
+                onChange={(e) => handleTeamChange(e.target.value)}
+                className="team-filter"
+              >
+                {teams.map(t => (
+                  <option key={t.id} value={t.id}>{t.school}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Position:</label>
+              <select 
+                value={positionFilter} 
+                onChange={(e) => handlePositionChange(e.target.value)}
+                className="position-filter"
+              >
+                <option value="all">All Positions</option>
+                {positionOptions.map(pos => (
+                  <option key={pos} value={pos}>{pos}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Year:</label>
+              <select 
+                value={year} 
+                onChange={(e) => handleYearChange(e.target.value)}
+                className="year-filter"
+              >
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="player-grade-content">
-        <div className="players-list">
+        <div className="players-list card">
           <div className="players-list-header">
             <div className="header-name">Player</div>
             <div className="header-position">Pos</div>
@@ -1170,249 +1244,638 @@ const PlayerGrade = () => {
           )}
         </div>
         
-        {selectedPlayer && (
+        {selectedPlayer ? (
           <div className="player-detail">
-            <div className="player-detail-header">
-              <h2>{selectedPlayer.fullName}</h2>
-              <div className="player-info">
-                <span className="player-position-detail">{selectedPlayer.position}</span>
-                <span className="player-year-detail">{selectedPlayer.year}</span>
-                <span className="player-hometown">{selectedPlayer.homeCity}, {selectedPlayer.homeState}</span>
-              </div>
-              <div className={`player-overall-grade ${getGradeColorClass(selectedPlayer.grade)}`}>
-                <div className="grade-value">{selectedPlayer.grade.toFixed(1)}</div>
-                <div className="grade-letter">{getLetterGrade(selectedPlayer.grade)}</div>
+            <div className="card">
+              <div className="player-detail-header">
+                <div className="player-name-container">
+                  <h2>{selectedPlayer.fullName}</h2>
+                  <div className="player-info">
+                    <span className="player-position-detail">{selectedPlayer.position}</span>
+                    <span className="player-year-detail">{selectedPlayer.year}</span>
+                    <span className="player-hometown">{selectedPlayer.homeCity}, {selectedPlayer.homeState}</span>
+                  </div>
+                </div>
+                <div className={`player-overall-grade ${getGradeColorClass(selectedPlayer.grade)}`}>
+                  <div className="grade-value">{selectedPlayer.grade.toFixed(1)}</div>
+                  <div className="grade-letter">{getLetterGrade(selectedPlayer.grade)}</div>
+                </div>
               </div>
             </div>
             
-            <div className="player-detail-body">
-              <div className="grade-breakdown">
-                <h3>Grade Breakdown</h3>
-                <div className="breakdown-categories">
-                  {selectedPlayer.position === "QB" && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Passing Efficiency</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 10))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 10)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Decision Making</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.1) - 5))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.1) - 5)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {(selectedPlayer.position === "RB" || selectedPlayer.position === "FB") && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Rushing Effectiveness</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Pass Protection</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 5))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 5)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Similar patterns for other positions */}
-                  {(selectedPlayer.position === "WR" || selectedPlayer.position === "TE") && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Route Running</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Hands/Catching</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Add breakdowns for defensive positions */}
-                  {(defensiveFront.includes(selectedPlayer.position)) && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Pass Rush</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 3))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 3)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Run Defense</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {(linebackers.includes(selectedPlayer.position)) && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Run Support</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 7))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 7)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Coverage</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {(defensiveBack.includes(selectedPlayer.position)) && (
-                    <>
-                      <div className="breakdown-category">
-                        <div className="category-name">Coverage</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2)).toFixed(1)}</div>
-                      </div>
-                      <div className="breakdown-category">
-                        <div className="category-name">Tackling</div>
-                        <div className="category-bar">
-                          <div 
-                            className="category-fill" 
-                            style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 3))}%` }}
-                          ></div>
-                        </div>
-                        <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 3)).toFixed(1)}</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              <div className="player-stats">
-                <h3>Key Statistics</h3>
-                <div className="stats-container">
-                  {selectedPlayer.seasonStats && selectedPlayer.seasonStats.length > 0 ? (
-                    <div className="stats-table">
-                      {selectedPlayer.seasonStats.map((stat, index) => (
-                        <div key={index} className="stat-category">
-                          <h4>{stat.category.charAt(0).toUpperCase() + stat.category.slice(1)}</h4>
-                          <div className="stat-rows">
-                            {Object.entries(stat)
-                              .filter(([key]) => key !== "category" && key !== "player" && key !== "teamName")
-                              .map(([key, value]) => (
-                                <div key={key} className="stat-row">
-                                  <div className="stat-name">
-                                    {key.replace(/([A-Z])/g, ' $1')
-                                      .replace(/^./, str => str.toUpperCase())
-                                      .replace(/([a-z])([A-Z])/g, '$1 $2')}
-                                  </div>
-                                  <div className="stat-value">{value}</div>
-                                </div>
-                              ))
-                          }
-                          </div>
-                        </div>
-                      ))}
+            {/* Key Stats Metrics */}
+            <div className="metrics-grid">
+              {selectedPlayer.position === "QB" && (
+                <>
+                  <div className="metric-card">
+                    <div className="metric-title">Passing Yards</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "passing")?.yards?.toLocaleString() || "0"}
                     </div>
-                  ) : (
-                    <p>No detailed statistics available for this player.</p>
-                  )}
-                </div>
-              </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">TD - INT</div>
+                    <div className="metric-value">
+                      {(selectedPlayer.seasonStats?.find(s => s.category === "passing")?.touchdowns || "0") + " - " + 
+                       (selectedPlayer.seasonStats?.find(s => s.category === "passing")?.interceptions || "0")}
+                    </div>
+                    <div className="metric-subtitle">Season Ratio</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Completion %</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "passing")?.completionPercentage?.toFixed(1) || "0"}%
+                    </div>
+                    <div className="metric-subtitle">Season Average</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Yards/Attempt</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "passing")?.yardsPerAttempt?.toFixed(1) || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Average</div>
+                  </div>
+                </>
+              )}
               
-              <div className="player-comparison">
-                <h3>Position Ranking</h3>
-                <div className="comparison-chart">
-                  {/* Simple visual showing where this player ranks among team peers */}
-                  {(() => {
-                    const positionPlayers = playerGrades.filter(p => p.position === selectedPlayer.position);
-                    const sortedPositionPlayers = [...positionPlayers].sort((a, b) => b.grade - a.grade);
-                    const playerRank = sortedPositionPlayers.findIndex(p => p.id === selectedPlayer.id) + 1;
-                    const totalPositionPlayers = sortedPositionPlayers.length;
-                    
-                    return (
-                      <div className="position-rank-indicator">
-                        <div className="rank-text">
-                          Ranked <span className="highlight">{playerRank}</span> of {totalPositionPlayers} {selectedPlayer.position}s
-                        </div>
-                        <div className="rank-bar">
-                          <div 
-                            className="rank-position" 
-                            style={{ 
-                              left: `${(playerRank - 1) / Math.max(1, totalPositionPlayers - 1) * 100}%` 
-                            }}
-                          ></div>
-                        </div>
-                        <div className="rank-labels">
-                          <span>Top</span>
-                          <span>Bottom</span>
-                        </div>
+              {(selectedPlayer.position === "RB" || selectedPlayer.position === "FB") && (
+                <>
+                  <div className="metric-card">
+                    <div className="metric-title">Rushing Yards</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "rushing")?.yards?.toLocaleString() || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Touchdowns</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "rushing")?.touchdowns || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Yards/Carry</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "rushing")?.yardsPerCarry?.toFixed(1) || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Average</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Carries</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "rushing")?.carries || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                </>
+              )}
+              
+              {(selectedPlayer.position === "WR" || selectedPlayer.position === "TE") && (
+                <>
+                  <div className="metric-card">
+                    <div className="metric-title">Receiving Yards</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "receiving")?.yards?.toLocaleString() || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Receptions</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "receiving")?.receptions || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Touchdowns</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "receiving")?.touchdowns || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Yards/Reception</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "receiving")?.yardsPerReception?.toFixed(1) || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Average</div>
+                  </div>
+                </>
+              )}
+              
+              {/* Defensive metrics */}
+              {(defensiveFront.includes(selectedPlayer.position) || linebackers.includes(selectedPlayer.position) || defensiveBack.includes(selectedPlayer.position)) && (
+                <>
+                  <div className="metric-card">
+                    <div className="metric-title">Total Tackles</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "defensive")?.totalTackles || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Tackles For Loss</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "defensive")?.tacklesForLoss || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Sacks</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "defensive")?.sacks || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Interceptions</div>
+                    <div className="metric-value">
+                      {selectedPlayer.seasonStats?.find(s => s.category === "defensive")?.interceptions || "0"}
+                    </div>
+                    <div className="metric-subtitle">Season Total</div>
+                  </div>
+                </>
+              )}
+              
+              {/* For special teams or other positions - use some default metrics */}
+              {!offensiveSkill.includes(selectedPlayer.position) && 
+               !defensiveFront.includes(selectedPlayer.position) && 
+               !linebackers.includes(selectedPlayer.position) && 
+               !defensiveBack.includes(selectedPlayer.position) && (
+                <>
+                  <div className="metric-card">
+                    <div className="metric-title">Position</div>
+                    <div className="metric-value">
+                      {selectedPlayer.position}
+                    </div>
+                    <div className="metric-subtitle">Primary Role</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Experience</div>
+                    <div className="metric-value">
+                      {selectedPlayer.year}
+                    </div>
+                    <div className="metric-subtitle">Academic Year</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Height/Weight</div>
+                    <div className="metric-value">
+                      {selectedPlayer.height || "N/A"} / {selectedPlayer.weight || "N/A"}
+                    </div>
+                    <div className="metric-subtitle">Physical Profile</div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-title">Hometown</div>
+                    <div className="metric-value">
+                      {selectedPlayer.homeCity}, {selectedPlayer.homeState}
+                    </div>
+                    <div className="metric-subtitle">Origin</div>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <div className="grade-breakdown">
+              <h3>Grade Breakdown</h3>
+              <div className="breakdown-categories">
+                {selectedPlayer.position === "QB" && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Passing Efficiency</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 10))}%` }}
+                        ></div>
                       </div>
-                    );
-                  })()} 
-                </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 10)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Decision Making</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.1) - 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.1) - 5)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Arm Strength</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Mobility</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.92) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.92) + 5)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(selectedPlayer.position === "RB" || selectedPlayer.position === "FB") && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Rushing Effectiveness</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Pass Protection</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 5)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Elusiveness</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Receiving</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 7))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.9) + 7)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(selectedPlayer.position === "WR" || selectedPlayer.position === "TE") && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Route Running</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Hands/Catching</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">YAC Ability</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.96) + 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.96) + 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Blocking</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.92) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.92) + 5)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(offensiveLine.includes(selectedPlayer.position)) && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Pass Blocking</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 1))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 1)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Run Blocking</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.96) + 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.96) + 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Technique</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 4))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 4)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Power/Strength</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 4))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 4)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(defensiveFront.includes(selectedPlayer.position)) && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Pass Rush</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Run Defense</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 5)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Technique</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Strength</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.97) + 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.97) + 3)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(linebackers.includes(selectedPlayer.position)) && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Run Support</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 7))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.95) + 7)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Coverage</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Tackling</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Blitzing</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.04) - 4))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.04) - 4)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(defensiveBack.includes(selectedPlayer.position)) && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Coverage</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Tackling</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Ball Skills</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.03) - 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Run Support</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.94) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.94) + 5)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
+                
+                {(specialTeams.includes(selectedPlayer.position)) && (
+                  <>
+                    <div className="breakdown-category">
+                      <div className="category-name">Accuracy</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.05) - 2)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Power</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 4))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.98) + 4)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Consistency</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 3))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 1.02) - 3)).toFixed(1)}</div>
+                    </div>
+                    <div className="breakdown-category">
+                      <div className="category-name">Pressure Handling</div>
+                      <div className="category-bar">
+                        <div 
+                          className="category-fill" 
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedPlayer.grade * 0.94) + 5))}%` }}
+                        ></div>
+                      </div>
+                      <div className="category-value">{Math.min(100, Math.max(0, (selectedPlayer.grade * 0.94) + 5)).toFixed(1)}</div>
+                    </div>
+                  </>
+                )}
               </div>
+            </div>
+            
+            <div className="player-stats">
+              <h3>Key Statistics</h3>
+              <div className="stats-container">
+                {selectedPlayer.seasonStats && selectedPlayer.seasonStats.length > 0 ? (
+                  selectedPlayer.seasonStats.map((stat, index) => (
+                    <div key={index} className="stat-category">
+                      <h4>{stat.category.charAt(0).toUpperCase() + stat.category.slice(1)}</h4>
+                      <div className="stat-rows">
+                        {Object.entries(stat)
+                          .filter(([key]) => key !== "category" && key !== "player" && key !== "teamName")
+                          .map(([key, value]) => (
+                            <div key={key} className="stat-row">
+                              <div className="stat-name">
+                                {key.replace(/([A-Z])/g, ' $1')
+                                  .replace(/^./, str => str.toUpperCase())
+                                  .replace(/([a-z])([A-Z])/g, '$1 $2')}
+                              </div>
+                              <div className="stat-value">{value}</div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p>No detailed statistics available for this player.</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="player-comparison">
+              <h3>Position Ranking</h3>
+              <div className="comparison-chart">
+                {/* Simple visual showing where this player ranks among team peers */}
+                {(() => {
+                  const positionPlayers = playerGrades.filter(p => p.position === selectedPlayer.position);
+                  const sortedPositionPlayers = [...positionPlayers].sort((a, b) => b.grade - a.grade);
+                  const playerRank = sortedPositionPlayers.findIndex(p => p.id === selectedPlayer.id) + 1;
+                  const totalPositionPlayers = sortedPositionPlayers.length;
+                  
+                  return (
+                    <div className="position-rank-indicator">
+                      <div className="rank-text">
+                        Ranked <span className="highlight">{playerRank}</span> of {totalPositionPlayers} {selectedPlayer.position}s
+                      </div>
+                      <div className="rank-bar">
+                        <div 
+                          className="rank-position" 
+                          style={{ 
+                            left: `${(playerRank - 1) / Math.max(1, totalPositionPlayers - 1) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                      <div className="rank-labels">
+                        <span>Top</span>
+                        <span>Bottom</span>
+                      </div>
+                    </div>
+                  );
+                })()} 
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="player-detail-placeholder card">
+            <div className="placeholder-content">
+              <h3>Select a Player</h3>
+              <p>Click on any player in the list to view detailed analytics and grades.</p>
             </div>
           </div>
         )}
       </div>
       
-      <div className="methodology-section">
+      <div className="methodology-section card">
         <h3>Grading Methodology</h3>
         <p>
           Our player grading system combines advanced metrics, traditional statistics, and contextual analysis to provide 
