@@ -13,6 +13,7 @@ const PlayerGrade = () => {
   
   // State variables
   const [team, setTeam] = useState(null);
+  const [teams, setTeams] = useState([]);
   const [roster, setRoster] = useState([]);
   const [loadingRoster, setLoadingRoster] = useState(true);
   const [ppaPassing, setPpaPassing] = useState([]);
@@ -26,22 +27,65 @@ const PlayerGrade = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Load team data
+  const [pageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dataInitialized, setDataInitialized] = useState(false);
+  
+  // Only load position-specific data when a position filter is applied
+  const shouldLoadPositionData = (position) => {
+    // Load QB data
+    if (position === "QB") return ["passing"];
+    // Load RB/FB data
+    if (position === "RB" || position === "FB") return ["rushing"];
+    // Load WR/TE data
+    if (position === "WR" || position === "TE") return ["receiving"];
+    // Load defensive players data
+    if (["DL", "DE", "DT", "NT", "EDGE", "LB", "ILB", "OLB", "MLB", "DB", "CB", "S", "FS", "SS"].includes(position)) 
+      return ["defensive"];
+    // Load kicking specialists data
+    if (["K", "P", "LS"].includes(position)) return ["kicking"];
+    // For "all" or other positions, return nothing initially
+    return [];
+  };
+  
+  // Load all teams first
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await teamsService.getTeams(year);
+        setTeams(teamsData);
+        
+        // If no teamId is provided, redirect to a default team
+        if (!teamId && teamsData.length > 0) {
+          // Use a popular team as default
+          const popularTeams = ["Alabama", "Ohio State", "Georgia", "Michigan"];
+          const defaultTeam = teamsData.find(t => popularTeams.includes(t.school)) || teamsData[0];
+          navigate(`/player-grade/${defaultTeam.id}${location.search}`);
+        }
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+        setError("Failed to load teams");
+      }
+    };
+    fetchTeams();
+  }, [year, teamId, navigate, location.search]);
+  
+  // Load team data after teams are loaded
   useEffect(() => {
     const fetchTeamData = async () => {
       try {
-        if (!teamId) return;
+        if (!teamId || teams.length === 0) return;
         const teamData = await teamsService.getTeamById(teamId, year);
         setTeam(teamData);
+        setDataInitialized(true);
       } catch (err) {
         console.error("Error fetching team data:", err);
         setError("Failed to load team information");
       }
     };
     fetchTeamData();
-  }, [teamId, year]);
-
+  }, [teamId, year, teams]);
+  
   // Load roster data
   useEffect(() => {
     const fetchRosterData = async () => {
@@ -65,39 +109,83 @@ const PlayerGrade = () => {
     fetchRosterData();
   }, [team, year]);
 
-  // Load PPA data
+  // Load PPA data only when needed
   useEffect(() => {
     const fetchPpaData = async () => {
-      if (!team) return;
+      if (!team || !dataInitialized) return;
+      
       try {
+        // Only load PPA data for the selected position or when a player is selected
+        const categoriesToLoad = shouldLoadPositionData(positionFilter);
+        
+        if (selectedPlayer) {
+          // If a player is selected, load their specific position data
+          const playerCategories = shouldLoadPositionData(selectedPlayer.position);
+          playerCategories.forEach(cat => {
+            if (!categoriesToLoad.includes(cat)) categoriesToLoad.push(cat);
+          });
+        }
+        
+        // If no categories to load and no specific player selected, skip loading PPA data
+        if (categoriesToLoad.length === 0 && !selectedPlayer) return;
+        
         const ppaData = await teamsService.getPPAPlayers(team.school, year);
         
         // Split PPA data by category
-        const passData = ppaData.filter(p => p.type === "passing");
-        const rushData = ppaData.filter(p => p.type === "rushing");
-        const recvData = ppaData.filter(p => p.type === "receiving");
-        const defData = ppaData.filter(p => p.type === "defense");
+        if (categoriesToLoad.includes("passing") || selectedPlayer) {
+          const passData = ppaData.filter(p => p.type === "passing");
+          setPpaPassing(passData);
+        }
         
-        setPpaPassing(passData);
-        setPpaRushing(rushData);
-        setPpaReceiving(recvData);
-        setPpaDefense(defData);
+        if (categoriesToLoad.includes("rushing") || selectedPlayer) {
+          const rushData = ppaData.filter(p => p.type === "rushing");
+          setPpaRushing(rushData);
+        }
+        
+        if (categoriesToLoad.includes("receiving") || selectedPlayer) {
+          const recvData = ppaData.filter(p => p.type === "receiving");
+          setPpaReceiving(recvData);
+        }
+        
+        if (categoriesToLoad.includes("defensive") || selectedPlayer) {
+          const defData = ppaData.filter(p => p.type === "defense");
+          setPpaDefense(defData);
+        }
       } catch (err) {
         console.error("Error fetching PPA data:", err);
         // Don't set error - PPA data is optional
       }
     };
     fetchPpaData();
-  }, [team, year]);
-
-  // Load player season stats
+  }, [team, positionFilter, selectedPlayer, dataInitialized, year]);
+  
+  // Load season stats only for specific positions or when a player is selected
   useEffect(() => {
     const fetchSeasonStats = async () => {
-      if (!team) return;
+      if (!team || !dataInitialized) return;
+      
       try {
-        const categories = ["passing", "rushing", "receiving", "defensive", "kicking"];
-        const statsPromises = categories.map(category => 
-          teamsService.getPlayerSeasonStats(year, category)
+        // Only load stats for the selected position or when a player is selected
+        let categoriesToLoad = shouldLoadPositionData(positionFilter);
+        
+        if (selectedPlayer) {
+          // If a player is selected, load their specific position data
+          const playerCategories = shouldLoadPositionData(selectedPlayer.position);
+          playerCategories.forEach(cat => {
+            if (!categoriesToLoad.includes(cat)) categoriesToLoad.push(cat);
+          });
+        }
+        
+        // Always include "passing" for basic team context, but with smaller limit
+        if (!categoriesToLoad.includes("passing")) {
+          categoriesToLoad.push("passing");
+        }
+        
+        const limit = selectedPlayer ? 100 : 50; // Use smaller limit when no player selected
+        
+        // Fetch stats for each category in parallel
+        const statsPromises = categoriesToLoad.map(category => 
+          teamsService.getPlayerSeasonStats(year, category, "regular", limit)
         );
         
         const results = await Promise.all(statsPromises);
@@ -115,8 +203,8 @@ const PlayerGrade = () => {
       }
     };
     fetchSeasonStats();
-  }, [team, year]);
-
+  }, [team, positionFilter, selectedPlayer, dataInitialized, year]);
+  
   // Load player game stats if gameId is provided
   useEffect(() => {
     const fetchGameStats = async () => {
@@ -138,38 +226,6 @@ const PlayerGrade = () => {
     };
     if (gameId) fetchGameStats();
   }, [team, gameId, year]);
-
-  // Calculate player grades
-  useEffect(() => {
-    if (loadingRoster || !roster.length) return;
-    
-    // Function to calculate grades based on position and stats
-    const calculateGrades = () => {
-      const grades = roster.map(player => {
-        // Find stats for this player
-        const playerPPA = findPlayerStats(player, ppaPassing, ppaRushing, ppaReceiving, ppaDefense);
-        const playerSeasonStats = findSeasonStats(player, seasonStats);
-        const playerGameStats = gameId ? findGameStats(player, gameStats) : null;
-        
-        // Calculate position-specific grade
-        const grade = calculatePositionGrade(player.position, playerPPA, playerSeasonStats, playerGameStats);
-        
-        return {
-          ...player,
-          grade,
-          ppa: playerPPA,
-          seasonStats: playerSeasonStats,
-          gameStats: playerGameStats
-        };
-      });
-      
-      return grades;
-    };
-    
-    const grades = calculateGrades();
-    setPlayerGrades(grades);
-    setLoading(false);
-  }, [roster, ppaPassing, ppaRushing, ppaReceiving, ppaDefense, seasonStats, gameStats, loadingRoster, gameId]);
 
   // Helper functions
   const findPlayerStats = (player, passing, rushing, receiving, defense) => {
@@ -213,6 +269,69 @@ const PlayerGrade = () => {
     
     return Object.keys(playerGameStats).length > 0 ? playerGameStats : null;
   };
+  
+  // Calculate player grades only for the current page
+  useEffect(() => {
+    if (loadingRoster || !roster.length) return;
+    
+    // Function to calculate grades based on position and stats
+    const calculateGrades = () => {
+      // Start with empty grades array
+      let grades = [];
+      
+      // For initial data load, only calculate grades for the first page of players
+      // or for the current position filter
+      let filteredRoster = roster;
+      if (positionFilter !== "all") {
+        filteredRoster = roster.filter(player => player.position === positionFilter);
+      }
+      
+      // Filter by position if needed
+      const playerCount = filteredRoster.length;
+      const totalPages = Math.ceil(playerCount / pageSize);
+      
+      // Get the subset of players for the current page
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, playerCount);
+      const currentPageRoster = filteredRoster.slice(startIndex, endIndex);
+      
+      // Only calculate grades for visible players + selected player if not in current page
+      let playersToGrade = [...currentPageRoster];
+      
+      // Always include selected player if not in current page
+      if (selectedPlayer && !currentPageRoster.find(p => p.id === selectedPlayer.id)) {
+        const selectedPlayerData = roster.find(p => p.id === selectedPlayer.id);
+        if (selectedPlayerData) {
+          playersToGrade.push(selectedPlayerData);
+        }
+      }
+      
+      // Calculate grades for the visible players
+      grades = playersToGrade.map(player => {
+        // Find stats for this player
+        const playerPPA = findPlayerStats(player, ppaPassing, ppaRushing, ppaReceiving, ppaDefense);
+        const playerSeasonStats = findSeasonStats(player, seasonStats);
+        const playerGameStats = gameId ? findGameStats(player, gameStats) : null;
+        
+        // Calculate position-specific grade
+        const grade = calculatePositionGrade(player.position, playerPPA, playerSeasonStats, playerGameStats);
+        
+        return {
+          ...player,
+          grade,
+          ppa: playerPPA,
+          seasonStats: playerSeasonStats,
+          gameStats: playerGameStats
+        };
+      });
+      
+      return grades;
+    };
+    
+    const grades = calculateGrades();
+    setPlayerGrades(grades);
+    setLoading(false);
+  }, [roster, ppaPassing, ppaRushing, ppaReceiving, ppaDefense, seasonStats, gameStats, loadingRoster, gameId, positionFilter, currentPage, pageSize, selectedPlayer]);
   
   const calculatePositionGrade = (position, ppa, seasonStats, gameStats) => {
     // Position groups
@@ -464,6 +583,50 @@ const PlayerGrade = () => {
     return "F";
   };
   
+  // Filter and paginate players
+  const getFilteredAndPaginatedPlayers = () => {
+    // First filter by position
+    const positionFiltered = positionFilter === "all" 
+      ? roster
+      : roster.filter(player => player.position === positionFilter);
+    
+    // Calculate total pages
+    const totalPlayers = positionFiltered.length;
+    const totalPages = Math.ceil(totalPlayers / pageSize);
+    
+    // Ensure current page is valid
+    const validPage = Math.max(1, Math.min(currentPage, totalPages));
+    if (validPage !== currentPage) {
+      setCurrentPage(validPage);
+    }
+    
+    // Get the slice for the current page
+    const startIndex = (validPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalPlayers);
+    const paginatedPlayers = positionFiltered.slice(startIndex, endIndex);
+    
+    // Find grade data for these players
+    const playersWithGrades = paginatedPlayers.map(player => {
+      const gradeData = playerGrades.find(p => p.id === player.id);
+      return gradeData || {
+        ...player,
+        grade: 65 // Default "C" grade if not calculated yet
+      };
+    });
+    
+    // Sort by grade (highest first)
+    return [...playersWithGrades].sort((a, b) => b.grade - a.grade);
+  };
+  
+  // Get the actual players to display
+  const displayPlayers = getFilteredAndPaginatedPlayers();
+  
+  // Calculate pagination information
+  const totalPlayers = positionFilter === "all" 
+    ? roster.length 
+    : roster.filter(player => player.position === positionFilter).length;
+  const totalPages = Math.ceil(totalPlayers / pageSize);
+  
   // Handler for position filter change
   const handlePositionChange = (position) => {
     const newParams = new URLSearchParams(location.search);
@@ -482,18 +645,25 @@ const PlayerGrade = () => {
     navigate(`${location.pathname}?${newParams.toString()}`);
   };
   
+  // Handler for team change
+  const handleTeamChange = (newTeamId) => {
+    // Reset pagination and selected player
+    setCurrentPage(1);
+    setSelectedPlayer(null);
+    
+    // Navigate to new team
+    navigate(`/player-grade/${newTeamId}${location.search}`);
+  };
+  
   // Handler for player selection
   const handlePlayerSelect = (player) => {
     setSelectedPlayer(player);
   };
-
-  // Filter players based on position
-  const filteredPlayers = positionFilter === "all" 
-    ? playerGrades 
-    : playerGrades.filter(player => player.position === positionFilter);
   
-  // Sort players by grade (highest first)
-  const sortedPlayers = [...filteredPlayers].sort((a, b) => b.grade - a.grade);
+  // Handle page change for pagination
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   if (error) {
     return (
@@ -522,6 +692,20 @@ const PlayerGrade = () => {
         </p>
         
         <div className="player-grade-controls">
+          {/* New Team Selector */}
+          <div className="filter-group team-filter-group">
+            <label>Team:</label>
+            <select 
+              value={teamId} 
+              onChange={(e) => handleTeamChange(e.target.value)}
+              className="team-filter"
+            >
+              {teams.map(t => (
+                <option key={t.id} value={t.id}>{t.school}</option>
+              ))}
+            </select>
+          </div>
+          
           <div className="filter-group">
             <label>Position:</label>
             <select 
@@ -562,8 +746,8 @@ const PlayerGrade = () => {
           </div>
           
           <div className="players-list-body">
-            {sortedPlayers.length > 0 ? (
-              sortedPlayers.map(player => (
+            {displayPlayers.length > 0 ? (
+              displayPlayers.map(player => (
                 <div 
                   key={player.id || player.fullName} 
                   className={`player-row ${selectedPlayer?.id === player.id ? 'selected' : ''}`}
@@ -584,6 +768,31 @@ const PlayerGrade = () => {
               </div>
             )}
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pagination-controls">
+              <button 
+                className="pagination-button" 
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                &laquo; Prev
+              </button>
+              
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button 
+                className="pagination-button" 
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next &raquo;
+              </button>
+            </div>
+          )}
         </div>
         
         {selectedPlayer && (

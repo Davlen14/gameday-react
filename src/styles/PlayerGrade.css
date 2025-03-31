@@ -40,6 +40,16 @@
   gap: 0.5rem;
 }
 
+.team-filter-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.team-filter {
+  width: 100%;
+  max-width: 250px;
+}
+
 .filter-group label {
   font-weight: 600;
   color: #444;
@@ -163,6 +173,42 @@
 .letter-grade {
   font-size: 0.8rem;
   opacity: 0.8;
+  font-weight: 600;
+}
+
+/* Pagination styles */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  background-color: #f8f8f8;
+}
+
+.pagination-button {
+  background-color: #990014;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #D4001C;
+}
+
+.pagination-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #666;
   font-weight: 600;
 }
 
