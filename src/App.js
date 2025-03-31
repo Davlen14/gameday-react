@@ -515,8 +515,10 @@ function App() {
               {/* NEW: Coach Overview Route */}
               <Route path="/coach-overview" element={<CoachOverview />} />
               
-              {/* NEW: Player Grade Route */}
+              {/* NEW: Player Grade Routes */}
               <Route path="/player-grade" element={<PlayerGrade />} />
+              <Route path="/player-grade/:teamId" element={<PlayerGrade />} />
+              <Route path="/player-grade/:teamId/:gameId" element={<PlayerGrade />} />
 
               {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
