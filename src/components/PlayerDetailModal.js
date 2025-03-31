@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import "../styles/PlayerDetailModal.css";
 
@@ -113,6 +113,9 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId }) => {
   const weeklyData = getWeeklyData();
   const careerData = getCareerData();
   const COLORS = ['#1a4d80', '#3895d3'];
+  
+  // Use gameId to determine if we're in a game-specific view
+  const isGameSpecific = !!gameId;
 
   // Get the background gradient based on team color
   const getTeamGradient = () => {
@@ -200,6 +203,7 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId }) => {
           
           <div className="team-name">
             <span>{team.school} {team.mascot || ''}</span>
+            {isGameSpecific && <div className="game-specific-badge">Game Analysis</div>}
           </div>
         </div>
 
