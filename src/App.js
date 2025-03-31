@@ -24,6 +24,9 @@ import ArbitrageEV from "./components/ArbitrageEV";
 // NEW: Import CoachOverview Component
 import CoachOverview from "./components/CoachOverview";
 
+// NEW: Import PlayerGrade Component
+import PlayerGrade from "./components/PlayerGrade";
+
 // NEW: Import VisualizeTrends Component (for Visualize Trends route)
 import VisualizeTrends from "./components/VisualizeTrends";
 
@@ -310,6 +313,8 @@ function App() {
                         <Link to="/transfer-portal">Transfer Portal</Link>
                         {/* NEW: Coach Overview link */}
                         <Link to="/coach-overview">Coach Overview</Link>
+                        {/* NEW: Player Grade link */}
+                        <Link to="/player-grade">Player Grading</Link>
                       </div>
                     )}
                   </div>
@@ -446,6 +451,7 @@ function App() {
                   <Link to="/commitments" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Commitments</Link>
                   <Link to="/transfer-portal" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Transfer Portal</Link>
                   <Link to="/coach-overview" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Coach Overview</Link>
+                  <Link to="/player-grade" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Player Grading</Link>
                 </>
               )}
             </div>
@@ -508,6 +514,9 @@ function App() {
 
               {/* NEW: Coach Overview Route */}
               <Route path="/coach-overview" element={<CoachOverview />} />
+              
+              {/* NEW: Player Grade Route */}
+              <Route path="/player-grade" element={<PlayerGrade />} />
 
               {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
