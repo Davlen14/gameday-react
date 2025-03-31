@@ -12,13 +12,15 @@ const PlayerGrade = () => {
   const positionFilter = queryParams.get("position") || "all";
   const year = parseInt(queryParams.get("year") || 2024);
   
-  // Position group definitions
-  const offensiveSkill = ["QB", "RB", "FB", "WR", "TE"];
-  const offensiveLine = ["OL", "OT", "OG", "C"];
-  const defensiveFront = ["DL", "DE", "DT", "NT", "EDGE"];
-  const linebackers = ["LB", "ILB", "OLB", "MLB"];
-  const defensiveBack = ["DB", "CB", "S", "FS", "SS"];
-  const specialTeams = ["K", "P", "LS"];
+  // Position group definitions - shared across component
+  const POSITION_GROUPS = {
+    offensiveSkill: ["QB", "RB", "FB", "WR", "TE"],
+    offensiveLine: ["OL", "OT", "OG", "C"],
+    defensiveFront: ["DL", "DE", "DT", "NT", "EDGE"],
+    linebackers: ["LB", "ILB", "OLB", "MLB"],
+    defensiveBack: ["DB", "CB", "S", "FS", "SS"],
+    specialTeams: ["K", "P", "LS"]
+  };
   
   // State variables
   const [team, setTeam] = useState(null);
@@ -46,17 +48,19 @@ const PlayerGrade = () => {
   
   // Only load position-specific data when a position filter is applied
   const shouldLoadPositionData = (position) => {
+    const { offensiveSkill, defensiveFront, linebackers, defensiveBack, specialTeams } = POSITION_GROUPS;
+    
     // Load QB data
     if (position === "QB") return ["passing"];
     // Load RB/FB data
-    if (position === "RB" || position === "FB") return ["rushing"];
+    if (["RB", "FB"].includes(position)) return ["rushing"];
     // Load WR/TE data
-    if (position === "WR" || position === "TE") return ["receiving"];
+    if (["WR", "TE"].includes(position)) return ["receiving"];
     // Load defensive players data
-    if (["DL", "DE", "DT", "NT", "EDGE", "LB", "ILB", "OLB", "MLB", "DB", "CB", "S", "FS", "SS"].includes(position)) 
+    if ([...defensiveFront, ...linebackers, ...defensiveBack].includes(position)) 
       return ["defensive"];
     // Load kicking specialists data
-    if (["K", "P", "LS"].includes(position)) return ["kicking"];
+    if (specialTeams.includes(position)) return ["kicking"];
     // For "all" or other positions, return nothing initially
     return [];
   };
@@ -417,13 +421,8 @@ const PlayerGrade = () => {
   
   // IMPROVED version of calculatePositionGrade
   const calculatePositionGrade = (player, ppa, seasonStats, gameStats) => {
-    // Position groups
-    const offensiveSkill = ["QB", "RB", "FB", "WR", "TE"];
-    const offensiveLine = ["OL", "OT", "OG", "C"];
-    const defensiveFront = ["DL", "DE", "DT", "NT", "EDGE"];
-    const linebackers = ["LB", "ILB", "OLB", "MLB"];
-    const defensiveBack = ["DB", "CB", "S", "FS", "SS"];
-    const specialTeams = ["K", "P", "LS"];
+    // Use the position groups defined at the component level
+    const { offensiveSkill, offensiveLine, defensiveFront, linebackers, defensiveBack, specialTeams } = POSITION_GROUPS;
     
     // Base grade - adjust based on player year
     let baseGrade = 65; // Default "replacement level" grade

@@ -3,9 +3,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import "../styles/PlayerDetailModal.css";
 
 const PlayerDetailModal = ({ player, team, onClose, year, gameId }) => {
-  if (!player || !team) return null;
-  
   const [activeTab, setActiveTab] = useState("season");
+  
+  if (!player || !team) return null;
   
   // Helper functions
   const getGradeColorClass = (grade) => {
