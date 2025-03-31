@@ -11,6 +11,14 @@ const PlayerGrade = () => {
   const positionFilter = queryParams.get("position") || "all";
   const year = parseInt(queryParams.get("year") || 2024);
   
+  // Position group definitions
+  const offensiveSkill = ["QB", "RB", "FB", "WR", "TE"];
+  const offensiveLine = ["OL", "OT", "OG", "C"];
+  const defensiveFront = ["DL", "DE", "DT", "NT", "EDGE"];
+  const linebackers = ["LB", "ILB", "OLB", "MLB"];
+  const defensiveBack = ["DB", "CB", "S", "FS", "SS"];
+  const specialTeams = ["K", "P", "LS"];
+  
   // State variables
   const [team, setTeam] = useState(null);
   const [teams, setTeams] = useState([]);
