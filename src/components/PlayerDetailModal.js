@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import "./PlayerDetailModal.css";
+import "../styles/PlayerDetailModal.css";
 
 const PlayerDetailModal = ({ player, team, onClose, year, gameId }) => {
   if (!player || !team) return null;
