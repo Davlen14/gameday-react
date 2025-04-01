@@ -411,7 +411,7 @@
 .coach-cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    gap: 2rem;
     padding: 0 1rem;
     margin-bottom: 2rem;
   }
@@ -424,6 +424,9 @@
     transition: all var(--transition-speed) ease;
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.04);
+    height: 350px; /* Fixed height for consistency */
+    display: flex;
+    flex-direction: column;
   }
   
   .coach-card:hover {
@@ -441,6 +444,7 @@
     background-color: #fff;
     position: relative;
     border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    height: 120px; /* Fixed height for consistency */
   }
   
   .coach-team-logo {
@@ -559,9 +563,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 130px;   /* Increased width */
-    height: 40px;   /* Increased height */
-    border-radius: 6px;
+    width: 130px;   /* Standardized width */
+    height: 40px;   /* Standardized height */
+    border-radius: 8px;
     font-weight: bold;
     font-size: 0.9rem;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -569,6 +573,9 @@
                 0 2px 4px rgba(0, 0, 0, 0.2);
     color: #fff;
     text-align: center;
+    position: absolute;
+    top: 20px;
+    right: 80px;
   }
   
 /* Premiere Coach badge - Kept as is */
@@ -715,8 +722,8 @@
   
   .card-actions {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 20px;
+    right: 16px;
   }
   
   .select-coach-btn {
@@ -743,8 +750,9 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
-    padding: 0.5rem 1.25rem 1.25rem;
+    padding: 0.75rem 1.25rem 1.25rem;
     margin-top: 0.5rem;
+    height: 180px; /* Fixed height for consistency */
   }
   
   .stat-item {
@@ -754,6 +762,10 @@
     position: relative;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
+    height: 75px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   
   .stat-item:hover {
@@ -765,7 +777,7 @@
     display: block;
     font-size: 0.8rem;
     color: #777;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
   }
   
   .stat-value {
@@ -774,6 +786,7 @@
     font-weight: 700;
     color: #000;
     margin-top: 2px;
+    line-height: 1.2;
 }
   
   .rank-badge {
@@ -795,12 +808,15 @@
     display: inline-block;
     background: linear-gradient(145deg, #00ff66, #009933);
     color: #fff;
-    padding: 2px 8px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-    font-size: 0.9em;
+    font-size: 0.8em;
+    position: absolute;
+    right: 10px;
+    margin-top: 2px;
   }
   
   .view-details-btn {
@@ -814,6 +830,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
+    height: 50px;
   }
   
   .view-details-btn:hover {
@@ -829,13 +846,15 @@
   .details-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.25rem;
+    row-gap: 1.5rem;
   }
   
   .detail-item {
     display: flex;
     flex-direction: column;
     position: relative;
+    min-height: 60px;
   }
   
   .detail-label {

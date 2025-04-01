@@ -756,11 +756,8 @@ if (filterTerm) {
                           
                           <div className="stats-grid">
                             {/* Win % */}
-                            <div 
-                              className="stat-item" 
-                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="stat-item">
+                              <div>
                                 <span className="stat-label">Win %</span>
                                 <span className="stat-value" style={{ color: '#222' }}>{item.winPct.toFixed(1)}%</span>
                               </div>
@@ -772,11 +769,8 @@ if (filterTerm) {
                             </div>
 
                             {/* Record */}
-                            <div 
-                              className="stat-item" 
-                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="stat-item">
+                              <div>
                                 <span className="stat-label">Record</span>
                                 <span className="stat-value" style={{ color: '#222' }}>
                                   {item.wins}-{item.losses}
@@ -785,11 +779,8 @@ if (filterTerm) {
                             </div>
 
                             {/* SP Overall */}
-                            <div 
-                              className="stat-item" 
-                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="stat-item">
+                              <div>
                                 <span className="stat-label">SP Overall</span>
                                 <span className="stat-value" style={{ color: '#222' }}>{item.spOverall.toFixed(1)}</span>
                               </div>
@@ -801,11 +792,8 @@ if (filterTerm) {
                             </div>
 
                             {/* Experience */}
-                            <div 
-                              className="stat-item" 
-                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="stat-item">
+                              <div>
                                 <span className="stat-label">Experience</span>
                                 <span className="stat-value" style={{ color: '#222' }}>{getYearsOfExperience(item.coach)} yrs</span>
                               </div>
