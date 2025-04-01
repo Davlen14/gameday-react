@@ -1,5 +1,5 @@
 import React from "react";
-import { FaChartLine, FaInfoCircle } from "react-icons/fa";
+import { FaChartLine, FaInfoCircle, FaFutbol } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent";
 
 const TeamOverview = ({ team, teamColor, year = 2024 }) => {
@@ -15,6 +15,17 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   (B < 255 ? B : 255)).toString(16).slice(1);
   };
 
+  // Get contrast color for text based on background color
+  const getContrastColor = (hexColor) => {
+    if (!hexColor) return "#ffffff";
+    hexColor = hexColor.replace('#', '');
+    const r = parseInt(hexColor.substr(0, 2), 16);
+    const g = parseInt(hexColor.substr(2, 2), 16);
+    const b = parseInt(hexColor.substr(4, 2), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+  };
+  
   // Helper function to darken a color
   const darkenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16),
@@ -25,6 +36,47 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     return '#' + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
                   (G > 0 ? G : 0) * 0x100 +
                   (B > 0 ? B : 0)).toString(16).slice(1);
+  };
+  
+  // Get team initial letter(s) - handles special cases like "USC", "UCLA", etc.
+  const getTeamInitial = (schoolName) => {
+    if (!schoolName) return "T";
+    
+    // Check for common abbreviations/special cases
+    const specialCases = {
+      "Southern California": "USC",
+      "UCLA": "UCLA",
+      "North Carolina": "NC",
+      "Louisiana State": "LSU",
+      "Texas Christian": "TCU",
+      "Central Florida": "UCF",
+      "Miami": "UM",
+      "Mississippi": "Ole Miss",
+      "Mississippi State": "MSU",
+      "Southern Methodist": "SMU",
+      "Brigham Young": "BYU"
+    };
+    
+    // Handle special cases
+    for (const [fullName, abbr] of Object.entries(specialCases)) {
+      if (schoolName.includes(fullName)) {
+        // Return first letter if abbreviation is too long
+        return abbr.length <= 2 ? abbr : abbr.charAt(0);
+      }
+    }
+    
+    // Check if the name itself is an abbreviation (all caps)
+    if (schoolName === schoolName.toUpperCase() && schoolName.length <= 4) {
+      return schoolName.charAt(0);
+    }
+    
+    // For schools with "University of X" format
+    if (schoolName.startsWith("University of ")) {
+      return schoolName.replace("University of ", "").charAt(0);
+    }
+    
+    // Default to first letter
+    return schoolName.charAt(0);
   };
 
   // Style for card headers
@@ -93,6 +145,42 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               <tr>
                 <td>Location:</td>
                 <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
+              </tr>
+              <tr>
+                <td>Team Spirit:</td>
+                <td>
+                  <div className="team-spirit-items">
+                    {/* Team Logo Block */}
+                    <div className="spirit-item logo-block" style={{ backgroundColor: "#ffffff", padding: "2px" }}>
+                      <img 
+                        src={team.logos ? team.logos[team.logos.length > 1 ? 1 : 0] : ''} 
+                        alt={team.mascot || 'Team Logo'}
+                        className="team-logo-stick"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/photos/default_team.png";
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Modern Foam Finger */}
+                    <div className="spirit-item modern-finger" style={{ backgroundColor: teamColor }}>
+                      <div className="finger-hand" style={{ backgroundColor: teamColor }}>
+                        <div className="finger-thumb" style={{ backgroundColor: teamColor }}></div>
+                      </div>
+                      <div className="finger-text" style={{ color: getContrastColor(teamColor) }}>
+                        #1
+                      </div>
+                    </div>
+                    
+                    {/* Team Pennant */}
+                    <div className="spirit-item modern-pennant" style={{ background: teamColor }}>
+                      <span style={{ color: getContrastColor(teamColor) }}>
+                        {team.mascot}
+                      </span>
+                    </div>
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td>Conference:</td>
@@ -181,6 +269,152 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               margin-top: 0;
               margin-bottom: 0.75rem;
               color: ${teamColor};
+            }
+            
+            /* Team Spirit Items Styling */
+            .team-spirit-items {
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              gap: 20px;
+              padding: 10px 0;
+            }
+            
+            .spirit-item {
+              position: relative;
+              cursor: pointer;
+              transition: transform 0.3s ease;
+              filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+              animation: subtle-sway 3s ease-in-out infinite;
+            }
+            
+            .spirit-item:hover {
+              transform: translateY(-5px) rotate(5deg);
+              filter: drop-shadow(3px 6px 10px rgba(0,0,0,0.25));
+              animation-play-state: paused;
+            }
+            
+            @keyframes subtle-sway {
+              0%, 100% { transform: rotate(0deg); }
+              25% { transform: rotate(2deg); }
+              75% { transform: rotate(-2deg); }
+            }
+            
+            /* Logo Block */
+            .logo-block {
+              width: 40px;
+              height: 40px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border-radius: 4px;
+              position: relative;
+              transform-origin: bottom center;
+              border: 1px solid rgba(0,0,0,0.1);
+              overflow: hidden;
+              animation-delay: 0.2s;
+            }
+            
+            .team-logo-stick {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+            
+            .logo-block:after {
+              content: '';
+              width: 6px;
+              height: 25px;
+              background-color: #8b4513; /* Wood color */
+              position: absolute;
+              bottom: -24px;
+              border-radius: 3px;
+            }
+            
+            /* Modern Foam Finger */
+            .modern-finger {
+              position: relative;
+              width: 42px;
+              height: 46px;
+              border-radius: 8px 8px 14px 14px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              transform-origin: bottom center;
+              box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+              animation-delay: 0.5s;
+            }
+            
+            .finger-hand {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              height: 65%;
+              border-radius: 8px 8px 14px 14px;
+            }
+            
+            .finger-thumb {
+              position: absolute;
+              left: -8px;
+              top: 50%;
+              width: 12px;
+              height: 18px;
+              border-radius: 6px;
+              transform: translateY(-50%);
+              box-shadow: inset -2px 0 0 rgba(0,0,0,0.2);
+            }
+            
+            .finger-text {
+              font-weight: bold;
+              font-size: 18px;
+              text-align: center;
+              margin-top: -10px;
+              text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+              position: relative;
+              z-index: 2;
+            }
+            
+            .modern-finger:after {
+              content: '';
+              width: 6px;
+              height: 25px;
+              background-color: #8b4513; /* Wood color */
+              position: absolute;
+              bottom: -24px;
+              border-radius: 3px;
+            }
+            
+            /* Modern Pennant */
+            .modern-pennant {
+              position: relative;
+              width: 100px;
+              height: 40px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              transform-origin: left center;
+              clip-path: polygon(0 0, 100% 0, 80% 50%, 100% 100%, 0 100%);
+              animation-delay: 0.8s;
+            }
+            
+            .modern-pennant span {
+              font-size: 12px;
+              font-weight: bold;
+              white-space: nowrap;
+              margin-left: -10px;
+              text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            }
+            
+            .modern-pennant:after {
+              content: '';
+              width: 6px;
+              height: 60px;
+              background-color: #8b4513; /* Wood color */
+              position: absolute;
+              left: -5px;
+              top: -10px;
+              border-radius: 3px;
+              z-index: -1;
             }
           `}</style>
         </div>
