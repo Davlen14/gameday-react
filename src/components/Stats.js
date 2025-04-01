@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import teamsService from "../services/teamsService";
 import "../styles/Stats.css";
 
@@ -77,6 +77,173 @@ const aggregateTeamStats = (data, statName) => {
   }));
 };
 
+// Component for player stat card
+const PlayerStatCard = ({ title, data, loading, statAbbr = "YDS", getTeamLogo, getTeamAbbreviation }) => {
+  if (loading) {
+    return (
+      <div className="leaders-card">
+        <h3>{title}</h3>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Loading stats...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!data.length) {
+    return (
+      <div className="leaders-card">
+        <h3>{title}</h3>
+        <div className="stat-placeholder">No data available</div>
+      </div>
+    );
+  }
+  
+  const top = data[0];
+  const rest = data.slice(1);
+
+  return (
+    <div className="leaders-card">
+      <h3>{title}</h3>
+
+      {/* Featured player (top ranked) */}
+      <div className="featured-player">
+        <div className="featured-rank">1</div>
+        <div className="featured-logo-container">
+          <img
+            src={getTeamLogo(top.team)}
+            alt={getTeamAbbreviation(top.team)}
+            className="featured-logo"
+          />
+          <div className="shine-effect"></div>
+        </div>
+        <div className="featured-info">
+          <div className="featured-name">{top.playerName}</div>
+          <div className="featured-team">{getTeamAbbreviation(top.team)}</div>
+        </div>
+        <div className="featured-stat">
+          <span className="stat-value">{top.statValue}</span>
+          <span className="stat-label">{statAbbr}</span>
+        </div>
+      </div>
+
+      {/* Rest of the leaders */}
+      <div className="leaders-list">
+        {rest.map((player, idx) => (
+          <div className="leader-row" key={idx}>
+            <div className="leader-rank">{idx + 2}</div>
+            <img
+              src={getTeamLogo(player.team)}
+              alt={getTeamAbbreviation(player.team)}
+              className="leader-logo"
+            />
+            <div className="leader-info">
+              <div className="leader-name">{player.playerName}</div>
+              <div className="leader-team">{getTeamAbbreviation(player.team)}</div>
+            </div>
+            <div className="leader-stat">{player.statValue}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="view-all">
+        <button className="view-all-btn">
+          View Complete {title} Leaders
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Component for team stat card
+const TeamStatCard = ({ title, data, loading, statAbbr = "YDS", isDefense = false, getTeamLogo, getTeamAbbreviation }) => {
+  if (loading) {
+    return (
+      <div className="leaders-card">
+        <h3>{title}</h3>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Loading stats...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!data.length) {
+    return (
+      <div className="leaders-card">
+        <h3>{title}</h3>
+        <div className="stat-placeholder">No data available</div>
+      </div>
+    );
+  }
+  
+  const top = data[0];
+  const rest = data.slice(1);
+  
+  // For defense stats, indicate that lower is better
+  const defenseLabel = isDefense ? "(lower is better)" : "";
+
+  return (
+    <div className="leaders-card">
+      <h3>{title} {defenseLabel}</h3>
+
+      {/* Featured team (top ranked) */}
+      <div className="featured-player">
+        <div className="featured-rank">1</div>
+        <div className="featured-logo-container">
+          <img
+            src={getTeamLogo(top.team)}
+            alt={getTeamAbbreviation(top.team)}
+            className="featured-logo"
+          />
+          <div className="shine-effect"></div>
+        </div>
+        <div className="featured-info">
+          <div className="featured-name">{top.team}</div>
+          <div className="featured-team">{top.conference}</div>
+        </div>
+        <div className="featured-stat">
+          <span className="stat-value">{top.statValue}</span>
+          <span className="stat-label">{statAbbr}</span>
+        </div>
+      </div>
+
+      {/* Rest of the leaders */}
+      <div className="leaders-list">
+        {rest.map((team, idx) => (
+          <div className="leader-row" key={idx}>
+            <div className="leader-rank">{idx + 2}</div>
+            <img
+              src={getTeamLogo(team.team)}
+              alt={getTeamAbbreviation(team.team)}
+              className="leader-logo"
+            />
+            <div className="leader-info">
+              <div className="leader-name">{team.team}</div>
+              <div className="leader-team">{team.conference}</div>
+            </div>
+            <div className="leader-stat">{team.statValue}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="view-all">
+        <button className="view-all-btn">
+          View Complete {title} Leaders
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Stats = () => {
   const [playerStats, setPlayerStats] = useState({
     passing: [],
@@ -112,6 +279,28 @@ const Stats = () => {
   // Tabs
   const [activeTab, setActiveTab] = useState("playerLeaders");
 
+  // Memoized team mapping for faster lookups
+  const teamMap = useMemo(() => {
+    return teams.reduce((acc, t) => {
+      if (t.school) {
+        acc[t.school.toLowerCase()] = t;
+      }
+      return acc;
+    }, {});
+  }, [teams]);
+
+  // Optimized team logo lookup
+  const getTeamLogo = useCallback((teamName) => {
+    if (!teamName) return "/photos/default_team.png";
+    return teamMap[teamName.toLowerCase()]?.logos?.[0] || "/photos/default_team.png";
+  }, [teamMap]);
+
+  // Optimized team abbreviation lookup
+  const getTeamAbbreviation = useCallback((teamName) => {
+    if (!teamName) return "";
+    return teamMap[teamName.toLowerCase()]?.abbreviation?.toUpperCase() || teamName.toUpperCase();
+  }, [teamMap]);
+
   // Fetch teams for logos and abbreviations
   useEffect(() => {
     const fetchTeams = async () => {
@@ -125,25 +314,7 @@ const Stats = () => {
     fetchTeams();
   }, []);
 
-  // Helper for logos
-  const getTeamLogo = (teamName) => {
-    const foundTeam = teams.find(
-      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
-    );
-    return foundTeam?.logos?.[0] || "/photos/default_team.png";
-  };
-
-  // Helper for team abbreviation
-  const getTeamAbbreviation = (teamName) => {
-    const foundTeam = teams.find(
-      (t) => t.school?.toLowerCase() === teamName?.toLowerCase()
-    );
-    return foundTeam?.abbreviation
-      ? foundTeam.abbreviation.toUpperCase()
-      : teamName?.toUpperCase() || "";
-  };
-
-  // Helper for fetch player stats
+  // Helper for fetch player stats with abort controller
   const fetchCategory = async (year, category, statType, setLoading, key) => {
     const controller = new AbortController();
     try {
@@ -165,7 +336,7 @@ const Stats = () => {
     } finally {
       setLoading(false);
     }
-    return () => controller.abort();
+    return controller;
   };
   
   // Updated helper for fetch team stats - Now fetching actual data
@@ -329,196 +500,55 @@ const Stats = () => {
     } finally {
       setLoadingTeamStats(false);
     }
-    return () => controller.abort();
+    return controller;
   };
 
-  // Fetch player data
+  // OPTIMIZATION 1: Parallelize player data fetches
   useEffect(() => {
-    fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "rushing", "YDS", setLoadingRushing, "rushing");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "receiving", "YDS", setLoadingReceiving, "receiving");
-  }, []);
-  useEffect(() => {
-    fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions");
+    const fetchAllPlayerStats = async () => {
+      const controllers = [];
+      try {
+        controllers.push(
+          fetchCategory(2024, "passing", "YDS", setLoadingPassing, "passing"),
+          fetchCategory(2024, "rushing", "YDS", setLoadingRushing, "rushing"),
+          fetchCategory(2024, "receiving", "YDS", setLoadingReceiving, "receiving"),
+          fetchCategory(2024, "interceptions", "INT", setLoadingInterceptions, "interceptions")
+        );
+      } catch (error) {
+        console.error("Error fetching player stats:", error);
+        setError("Failed to load player stats.");
+      }
+      
+      // Return cleanup function to abort all controllers
+      return () => controllers.forEach(controller => controller?.abort());
+    };
+    
+    fetchAllPlayerStats();
   }, []);
   
-  // Fetch team data
+  // OPTIMIZATION 4: Conditional fetch for team data
   useEffect(() => {
+    let controller = null;
     if (activeTab === "teamLeaders") {
-      fetchTeamStats(2024);
+      // Use requestIdleCallback for non-critical fetch when browser is idle
+      const fetchTeamData = () => {
+        controller = fetchTeamStats(2024);
+      };
+      
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(fetchTeamData);
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(fetchTeamData, 100);
+      }
     }
+    
+    return () => {
+      if (controller) {
+        controller.abort();
+      }
+    };
   }, [activeTab]);
-
-  // Render player stat card
-  const renderPlayerStatCard = (title, data, loading, statAbbr = "YDS") => {
-    if (loading) {
-      return (
-        <div className="leaders-card">
-          <h3>{title}</h3>
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <div className="loading-text">Loading stats...</div>
-          </div>
-        </div>
-      );
-    }
-    
-    if (!data.length) {
-      return (
-        <div className="leaders-card">
-          <h3>{title}</h3>
-          <div className="stat-placeholder">No data available</div>
-        </div>
-      );
-    }
-    
-    const top = data[0];
-    const rest = data.slice(1);
-
-    return (
-      <div className="leaders-card">
-        <h3>{title}</h3>
-
-        {/* Featured player (top ranked) */}
-        <div className="featured-player">
-          <div className="featured-rank">1</div>
-          <div className="featured-logo-container">
-            <img
-              src={getTeamLogo(top.team)}
-              alt={getTeamAbbreviation(top.team)}
-              className="featured-logo"
-            />
-            <div className="shine-effect"></div>
-          </div>
-          <div className="featured-info">
-            <div className="featured-name">{top.playerName}</div>
-            <div className="featured-team">{getTeamAbbreviation(top.team)}</div>
-          </div>
-          <div className="featured-stat">
-            <span className="stat-value">{top.statValue}</span>
-            <span className="stat-label">{statAbbr}</span>
-          </div>
-        </div>
-
-        {/* Rest of the leaders */}
-        <div className="leaders-list">
-          {rest.map((player, idx) => (
-            <div className="leader-row" key={idx}>
-              <div className="leader-rank">{idx + 2}</div>
-              <img
-                src={getTeamLogo(player.team)}
-                alt={getTeamAbbreviation(player.team)}
-                className="leader-logo"
-              />
-              <div className="leader-info">
-                <div className="leader-name">{player.playerName}</div>
-                <div className="leader-team">{getTeamAbbreviation(player.team)}</div>
-              </div>
-              <div className="leader-stat">{player.statValue}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="view-all">
-          <button className="view-all-btn">
-            View Complete {title} Leaders
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    );
-  };
-  
-  // Render team stat card
-  const renderTeamStatCard = (title, data, loading, statAbbr = "YDS", isDefense = false) => {
-    if (loading) {
-      return (
-        <div className="leaders-card">
-          <h3>{title}</h3>
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <div className="loading-text">Loading stats...</div>
-          </div>
-        </div>
-      );
-    }
-    
-    if (!data.length) {
-      return (
-        <div className="leaders-card">
-          <h3>{title}</h3>
-          <div className="stat-placeholder">No data available</div>
-        </div>
-      );
-    }
-    
-    const top = data[0];
-    const rest = data.slice(1);
-    
-    // For defense stats, indicate that lower is better
-    const defenseLabel = isDefense ? "(lower is better)" : "";
-
-    return (
-      <div className="leaders-card">
-        <h3>{title} {defenseLabel}</h3>
-
-        {/* Featured team (top ranked) */}
-        <div className="featured-player">
-          <div className="featured-rank">1</div>
-          <div className="featured-logo-container">
-            <img
-              src={getTeamLogo(top.team)}
-              alt={getTeamAbbreviation(top.team)}
-              className="featured-logo"
-            />
-            <div className="shine-effect"></div>
-          </div>
-          <div className="featured-info">
-            <div className="featured-name">{top.team}</div>
-            <div className="featured-team">{top.conference}</div>
-          </div>
-          <div className="featured-stat">
-            <span className="stat-value">{top.statValue}</span>
-            <span className="stat-label">{statAbbr}</span>
-          </div>
-        </div>
-
-        {/* Rest of the leaders */}
-        <div className="leaders-list">
-          {rest.map((team, idx) => (
-            <div className="leader-row" key={idx}>
-              <div className="leader-rank">{idx + 2}</div>
-              <img
-                src={getTeamLogo(team.team)}
-                alt={getTeamAbbreviation(team.team)}
-                className="leader-logo"
-              />
-              <div className="leader-info">
-                <div className="leader-name">{team.team}</div>
-                <div className="leader-team">{team.conference}</div>
-              </div>
-              <div className="leader-stat">{team.statValue}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="view-all">
-          <button className="view-all-btn">
-            View Complete {title} Leaders
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="stats-container">
@@ -569,24 +599,154 @@ const Stats = () => {
         </div>
       )}
 
-      {/* Content */}
+      {/* Content - OPTIMIZATION 3: Using Extracted Components */}
       {activeTab === "playerLeaders" && (
         <div className="cards-container">
-          {renderPlayerStatCard("Passing Yards", playerStats.passing, loadingPassing, "YDS")}
-          {renderPlayerStatCard("Rushing Yards", playerStats.rushing, loadingRushing, "YDS")}
-          {renderPlayerStatCard("Receiving Yards", playerStats.receiving, loadingReceiving, "YDS")}
-          {renderPlayerStatCard("Interceptions", playerStats.interceptions, loadingInterceptions, "INT")}
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading passing stats...</div>
+          </div>}>
+            <PlayerStatCard 
+              title="Passing Yards" 
+              data={playerStats.passing} 
+              loading={loadingPassing} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading rushing stats...</div>
+          </div>}>
+            <PlayerStatCard 
+              title="Rushing Yards" 
+              data={playerStats.rushing} 
+              loading={loadingRushing} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading receiving stats...</div>
+          </div>}>
+            <PlayerStatCard 
+              title="Receiving Yards" 
+              data={playerStats.receiving} 
+              loading={loadingReceiving} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading interception stats...</div>
+          </div>}>
+            <PlayerStatCard 
+              title="Interceptions" 
+              data={playerStats.interceptions} 
+              loading={loadingInterceptions} 
+              statAbbr="INT" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
         </div>
       )}
       
       {activeTab === "teamLeaders" && (
         <div className="cards-container">
-          {renderTeamStatCard("Total Offense", teamStats.totalOffense, loadingTeamStats, "YDS")}
-          {renderTeamStatCard("Scoring Offense", teamStats.scoringOffense, loadingTeamStats, "PPG")}
-          {renderTeamStatCard("Rushing Offense", teamStats.rushingOffense, loadingTeamStats, "YDS")}
-          {renderTeamStatCard("Passing Offense", teamStats.passingOffense, loadingTeamStats, "YDS")}
-          {renderTeamStatCard("Total Defense", teamStats.totalDefense, loadingTeamStats, "YDS", true)}
-          {renderTeamStatCard("Scoring Defense", teamStats.scoringDefense, loadingTeamStats, "PPG", true)}
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading team offense stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Total Offense" 
+              data={teamStats.totalOffense} 
+              loading={loadingTeamStats} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading team scoring stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Scoring Offense" 
+              data={teamStats.scoringOffense} 
+              loading={loadingTeamStats} 
+              statAbbr="PPG" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading rushing offense stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Rushing Offense" 
+              data={teamStats.rushingOffense} 
+              loading={loadingTeamStats} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading passing offense stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Passing Offense" 
+              data={teamStats.passingOffense} 
+              loading={loadingTeamStats} 
+              statAbbr="YDS" 
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading total defense stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Total Defense" 
+              data={teamStats.totalDefense} 
+              loading={loadingTeamStats} 
+              statAbbr="YDS" 
+              isDefense={true}
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
+          
+          <Suspense fallback={<div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading scoring defense stats...</div>
+          </div>}>
+            <TeamStatCard 
+              title="Scoring Defense" 
+              data={teamStats.scoringDefense} 
+              loading={loadingTeamStats} 
+              statAbbr="PPG" 
+              isDefense={true}
+              getTeamLogo={getTeamLogo}
+              getTeamAbbreviation={getTeamAbbreviation}
+            />
+          </Suspense>
         </div>
       )}
       
