@@ -10,34 +10,12 @@ import teamsService from "../services/teamsService"; // getCoaches is here
 import youtubeService from "../services/youtubeService";
 import "../styles/CoachOverview.css";
 
-// Helper to aggregate season data for a coach
-const aggregateCoachData = (seasons) => {
-  return seasons.reduce(
-    (acc, season) => {
-      acc.games += season.games || 0;
-      acc.wins += season.wins || 0;
-      acc.losses += season.losses || 0;
-      // Ties still counted internally but not displayed:
-      acc.ties += season.ties || 0;
-      acc.srs += season.srs || 0;
-      acc.spOverall += season.spOverall || 0;
-      acc.spOffense += season.spOffense || 0;
-      acc.spDefense += season.spDefense || 0;
-      acc.count++;
-      return acc;
-    },
-    {
-      games: 0,
-      wins: 0,
-      losses: 0,
-      ties: 0,
-      srs: 0,
-      spOverall: 0,
-      spOffense: 0,
-      spDefense: 0,
-      count: 0,
-    }
-  );
+// Helper to find the most recent season for a coach
+const getMostRecentSeason = (seasons) => {
+  if (!seasons || !seasons.length) return null;
+  return seasons.reduce((latest, current) => {
+    return (!latest || current.year > latest.year) ? current : latest;
+  }, null);
 };
 
 // Enhanced coach evaluation system
@@ -210,6 +188,15 @@ const CoachOverview = () => {
     );
     return team?.logos?.[0] || "/photos/default_team.png";
   };
+  
+  // Get the current team for a coach (most recent season)
+  const getCurrentTeam = (coach) => {
+    if (!coach.seasons || coach.seasons.length === 0) return null;
+    
+    // Sort seasons by year, descending (most recent first)
+    const sortedSeasons = [...coach.seasons].sort((a, b) => b.year - a.year);
+    return sortedSeasons[0].school;
+  };
 
   // Toggle selection of a single coach
   const handleSelectCoach = (coach) => {
@@ -278,6 +265,9 @@ const CoachOverview = () => {
 
   // Process coaches for display
   const processedCoaches = coachInfo.map((coach) => {
+    // Get current team based on most recent season
+    const currentTeam = getCurrentTeam(coach);
+    
     const agg = aggregateCoachData(coach.seasons);
     const lastSeason = coach.seasons[coach.seasons.length - 1] || {};
     const avgSrs = agg.count > 0 ? (agg.srs / agg.count).toFixed(1) : "N/A";
@@ -327,7 +317,7 @@ const CoachOverview = () => {
     
     // Get team/program data for context
     const teamData = teams.find(
-      (t) => t.school.toLowerCase() === (lastSeason.school || "").toLowerCase()
+      (t) => t.school.toLowerCase() === (currentTeam || "").toLowerCase()
     );
     const conference = teamData ? teamData.conference : "";
     
