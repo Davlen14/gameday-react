@@ -211,7 +211,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   <div className="team-spirit-items">
                     {/* Team Logo Block */}
                     <div className="spirit-item logo-block">
-                      <div className="logo-container" style={{ backgroundColor: team.alt_color || lightenColor(teamColor, 20) }}>
+                      <div className="logo-container" style={{ backgroundColor: team.alt_color }}>
                         <img 
                           src={team.logos ? team.logos[0] : ''} 
                           alt={team.mascot || 'Team Logo'}
