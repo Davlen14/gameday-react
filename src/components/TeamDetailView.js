@@ -756,13 +756,190 @@ const TeamDetail = () => {
         ))}
       </div>
 
-      {/* Dashboard Content with animation */}
-      <div className="dashboard-content" ref={contentRef}>
-        {renderTabContent()}
+      {/* Layout container for main content and sidebar */}
+      <div className="dashboard-layout">
+        {/* Dashboard Content with animation */}
+        <div className="dashboard-content" ref={contentRef}>
+          {renderTabContent()}
+        </div>
+        
+        {/* About Team Sidebar */}
+        <div className="team-sidebar">
+          <div className="dashboard-card">
+            <div className="card-header" style={cardHeaderStyle}>
+              <FaInfoCircle style={{ marginRight: "12px", color: teamColor }} />
+              About {team.school} {team.mascot}
+            </div>
+            <div className="card-body about-team-content">
+              <div className="team-logo-container">
+                <img
+                  src={getTeamLogo(team.school)}
+                  alt={team.school}
+                  className="team-about-logo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/photos/default_team.png";
+                  }}
+                />
+              </div>
+              
+              <div className="about-team-details">
+                <div className="detail-item">
+                  <div className="detail-label">Location:</div>
+                  <div className="detail-value">{team.location?.city}, {team.location?.state}</div>
+                </div>
+                
+                <div className="detail-item">
+                  <div className="detail-label">Conference:</div>
+                  <div className="detail-value">{teamConference}</div>
+                </div>
+                
+                <div className="detail-item">
+                  <div className="detail-label">Division:</div>
+                  <div className="detail-value">Division I ({team.classification})</div>
+                </div>
+                
+                <div className="detail-item">
+                  <div className="detail-label">Mascot:</div>
+                  <div className="detail-value">{team.mascot}</div>
+                </div>
+                
+                {team.coach && (
+                  <div className="detail-item">
+                    <div className="detail-label">Head Coach:</div>
+                    <div className="detail-value">{team.coach}</div>
+                  </div>
+                )}
+                
+                {team.coach_record && (
+                  <div className="detail-item">
+                    <div className="detail-label">Coach Record:</div>
+                    <div className="detail-value">{team.coach_record}</div>
+                  </div>
+                )}
+                
+                {team.stadium && (
+                  <div className="detail-item">
+                    <div className="detail-label">Stadium:</div>
+                    <div className="detail-value">{team.stadium}</div>
+                  </div>
+                )}
+                
+                {team.record && (
+                  <div className="detail-item">
+                    <div className="detail-label">Record (2024):</div>
+                    <div className="detail-value">{team.record}</div>
+                  </div>
+                )}
+                
+                <div className="detail-item">
+                  <div className="detail-label">Team Colors:</div>
+                  <div className="detail-value color-display">
+                    <div className="color-swatch" style={{ backgroundColor: teamColor }}></div>
+                    <span>{teamColor}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+        
+        /* Dashboard layout */
+        .dashboard-layout {
+          display: flex;
+          flex-direction: row;
+          gap: 20px;
+          margin-top: 20px;
+        }
+        
+        .dashboard-content {
+          flex: 1;
+          min-width: 0; /* Ensures content can shrink below min-content width */
+        }
+        
+        .team-sidebar {
+          width: 300px;
+          flex-shrink: 0;
+        }
+        
+        .about-team-content {
+          padding: 15px;
+        }
+        
+        .team-logo-container {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 20px;
+        }
+        
+        .team-about-logo {
+          width: 120px;
+          height: 120px;
+          object-fit: contain;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+          transition: transform 0.3s ease;
+        }
+        
+        .team-about-logo:hover {
+          transform: scale(1.05);
+        }
+        
+        .about-team-details {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .detail-item {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-item:last-child {
+          border-bottom: none;
+        }
+        
+        .detail-label {
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: #666;
+        }
+        
+        .detail-value {
+          font-size: 1rem;
+        }
+        
+        .color-display {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .color-swatch {
+          width: 24px;
+          height: 24px;
+          border-radius: 4px;
+          border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+          .dashboard-layout {
+            flex-direction: column;
+          }
+          
+          .team-sidebar {
+            width: 100%;
+            margin-top: 20px;
+          }
+        }
         
         /* Basic styles */
         .tab-item:hover {
