@@ -730,6 +730,10 @@ if (filterTerm) {
                               <p>{item.school}</p>
                             </div>
                             
+                            <div className={`coach-status ${item.status.className}`}>
+                              {item.status.icon} {item.status.text}
+                            </div>
+                            
                             <div className="card-actions">
                               <button 
                                 className={`select-coach-btn ${isCoachSelected(item.coach) ? 'selected' : ''}`}
@@ -737,10 +741,6 @@ if (filterTerm) {
                               >
                                 {isCoachSelected(item.coach) ? 'Selected' : 'Select'}
                               </button>
-                            </div>
-
-                            <div className={`coach-status ${item.status.className}`}>
-                              {item.status.icon} {item.status.text}
                             </div>
                           </div>
                           

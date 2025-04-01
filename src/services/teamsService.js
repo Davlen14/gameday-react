@@ -431,10 +431,9 @@ export const getCalendar = async (year = 2024) => {
   };
   
   // GET /coaches - Fetch coaches information
-  export const getCoaches = async (year = 2024) => {
+  export const getCoaches = async () => {
     const endpoint = "/coaches";
-    const params = { year };
-    return await fetchData(endpoint, params);
+    return await fetchData(endpoint);
   };
   
 // GET /player/search - Search for players based on a query
