@@ -10,12 +10,34 @@ import teamsService from "../services/teamsService"; // getCoaches is here
 import youtubeService from "../services/youtubeService";
 import "../styles/CoachOverview.css";
 
-// Helper to find the most recent season for a coach
-const getMostRecentSeason = (seasons) => {
-  if (!seasons || !seasons.length) return null;
-  return seasons.reduce((latest, current) => {
-    return (!latest || current.year > latest.year) ? current : latest;
-  }, null);
+// Helper to aggregate season data for a coach
+const aggregateCoachData = (seasons) => {
+  return seasons.reduce(
+    (acc, season) => {
+      acc.games += season.games || 0;
+      acc.wins += season.wins || 0;
+      acc.losses += season.losses || 0;
+      // Ties still counted internally but not displayed:
+      acc.ties += season.ties || 0;
+      acc.srs += season.srs || 0;
+      acc.spOverall += season.spOverall || 0;
+      acc.spOffense += season.spOffense || 0;
+      acc.spDefense += season.spDefense || 0;
+      acc.count++;
+      return acc;
+    },
+    {
+      games: 0,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      srs: 0,
+      spOverall: 0,
+      spOffense: 0,
+      spDefense: 0,
+      count: 0,
+    }
+  );
 };
 
 // Enhanced coach evaluation system
