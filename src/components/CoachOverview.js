@@ -143,11 +143,8 @@ const CoachOverview = () => {
 
         setTeams(teamsData);
 
-        // Filter for active coaches only (must have a 2024 season)
-        const activeCoaches = coachesData.filter((coach) =>
-          coach.seasons.some((season) => season.year === 2024)
-        );
-        setCoachInfo(activeCoaches);
+        // Get all coaches, not just those with 2024 seasons
+        setCoachInfo(coachesData);
 
         const combinedNews = [
           ...(coachNewsData.articles || []),
@@ -651,7 +648,7 @@ if (filterTerm) {
                             >
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span className="stat-label">Win %</span>
-                                <span className="stat-value">{item.winPct.toFixed(1)}%</span>
+                                <span className="stat-value" style={{ color: '#222' }}>{item.winPct.toFixed(1)}%</span>
                               </div>
                               {rankWinPct <= 5 && (
                                 <span className="glassy-metal">
@@ -667,7 +664,7 @@ if (filterTerm) {
                             >
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span className="stat-label">Record</span>
-                                <span className="stat-value">
+                                <span className="stat-value" style={{ color: '#222' }}>
                                   {item.wins}-{item.losses}
                                 </span>
                               </div>
@@ -680,7 +677,7 @@ if (filterTerm) {
                             >
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span className="stat-label">SP Overall</span>
-                                <span className="stat-value">{item.spOverall.toFixed(1)}</span>
+                                <span className="stat-value" style={{ color: '#222' }}>{item.spOverall.toFixed(1)}</span>
                               </div>
                               {rankOverall <= 5 && (
                                 <span className="glassy-metal">
@@ -696,7 +693,7 @@ if (filterTerm) {
                             >
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span className="stat-label">Experience</span>
-                                <span className="stat-value">{getYearsOfExperience(item.coach)} yrs</span>
+                                <span className="stat-value" style={{ color: '#222' }}>{getYearsOfExperience(item.coach)} yrs</span>
                               </div>
                             </div>
                           </div>
@@ -717,11 +714,11 @@ if (filterTerm) {
                               <div className="details-grid">
                                 <div className="detail-item">
                                   <span className="detail-label">Hire Date</span>
-                                  <span className="detail-value">{item.hireDateFormatted}</span>
+                                  <span className="detail-value" style={{ color: '#222' }}>{item.hireDateFormatted}</span>
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">SRS</span>
-                                  <span className="detail-value">{item.srs.toFixed(1)}</span>
+                                  <span className="detail-value" style={{ color: '#222' }}>{item.srs.toFixed(1)}</span>
                                   <button 
                                     className="info-tooltip-trigger"
                                     onMouseEnter={() => setTooltipVisible("srs")}
@@ -737,7 +734,7 @@ if (filterTerm) {
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">SP Offense</span>
-                                  <span className="detail-value">{item.spOffense.toFixed(1)}</span>
+                                  <span className="detail-value" style={{ color: '#222' }}>{item.spOffense.toFixed(1)}</span>
                                   <button 
                                     className="info-tooltip-trigger"
                                     onMouseEnter={() => setTooltipVisible("spOffense")}
@@ -753,7 +750,7 @@ if (filterTerm) {
                                 </div>
                                 <div className="detail-item">
                                   <span className="detail-label">SP Defense</span>
-                                  <span className="detail-value">{item.spDefense.toFixed(1)}</span>
+                                  <span className="detail-value" style={{ color: '#222' }}>{item.spDefense.toFixed(1)}</span>
                                   <button 
                                     className="info-tooltip-trigger"
                                     onMouseEnter={() => setTooltipVisible("spDefense")}

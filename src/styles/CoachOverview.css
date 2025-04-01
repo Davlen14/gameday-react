@@ -399,15 +399,16 @@
   .coach-card {
     background-color: var(--card-bg);
     border-radius: var(--card-radius);
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     transition: all var(--transition-speed) ease;
     position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.04);
   }
   
   .coach-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   }
   
   .coach-card.selected {
@@ -416,9 +417,10 @@
   
   .coach-card-header {
     display: flex;
-    padding: 1.25rem;
+    padding: 1.5rem 1.25rem 1rem;
     background-color: #fff;
     position: relative;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
   }
   
   .coach-team-logo {
@@ -523,11 +525,13 @@
     margin: 0 0 0.25rem 0;
     font-size: 1.3rem;
     font-weight: 600;
+    color: #222;
   }
   
   .coach-info p {
     margin: 0 0 0.5rem 0;
-    color: #555;
+    color: #444;
+    font-weight: 500;
   }
   
 /* Base styling for the status display */
@@ -692,14 +696,22 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
-    padding: 0 1.25rem 1.25rem;
+    padding: 0.5rem 1.25rem 1.25rem;
+    margin-top: 0.5rem;
   }
   
   .stat-item {
-    padding: 0.75rem;
+    padding: 0.85rem;
     background-color: rgba(0, 0, 0, 0.02);
-    border-radius: 6px;
+    border-radius: 8px;
     position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+  
+  .stat-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
   }
   
   .stat-label {
@@ -714,6 +726,7 @@
     font-size: 1.2rem;
     font-weight: 700;
     color: #000;
+    margin-top: 2px;
 }
   
   .rank-badge {
@@ -747,12 +760,13 @@
     width: 100%;
     background: none;
     border: none;
-    border-top: 1px solid var(--border-color);
-    padding: 0.75rem;
-    color: #666;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.85rem;
+    color: #555;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 0.9rem;
   }
   
   .view-details-btn:hover {
@@ -760,9 +774,9 @@
   }
   
   .coach-details {
-    border-top: 1px dashed var(--border-color);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding: 1.25rem;
-    background-color: var(--hover-bg);
+    background-color: rgba(0, 0, 0, 0.01);
   }
   
   .details-grid {
@@ -884,7 +898,7 @@
   .stat-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--accent-color);
+    color: #000;
   }
   
   .comparison-chart-container {
