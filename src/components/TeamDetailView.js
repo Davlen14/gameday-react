@@ -330,18 +330,20 @@ const TeamDetail = () => {
   
 
   
-  // Generate team color gradient for metallic effect
-  const getTeamColorGradient = (hexColor) => {
-    if (!hexColor) return "linear-gradient(145deg, #1a1a1a, #333333)";
-    const lighterColor = lightenColor(hexColor, 20);
-    return `linear-gradient(145deg, ${hexColor}, ${lighterColor})`;
+  // Generate team color metallic effect
+  const getTeamMetallicStyle = (hexColor) => {
+    if (!hexColor) return "#333333";
+    // We'll use the solid color and add a shine effect with CSS
+    return hexColor;
   };
 
-  // Top bar style using team color with glass effect
+  // Top bar style using team color with metallic effect
   const topBarStyle = {
-    background: getTeamColorGradient(teamColor),
+    background: getTeamMetallicStyle(teamColor),
     color: getContrastColor(teamColor),
-    boxShadow: `0 4px 20px ${teamColor}50`
+    boxShadow: `0 4px 20px ${teamColor}50`,
+    position: 'relative',
+    overflow: 'hidden' // For the shine effect
   };
 
   // Style for card headers
@@ -1001,6 +1003,53 @@ const TeamDetail = () => {
         
         .stats-chart .recharts-dot {
           fill: ${teamColor} !important;
+        }
+        
+        /* Metallic top bar effect */
+        .team-top-bar::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -150%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: skewX(-25deg);
+          animation: shine 4s infinite;
+          z-index: 1;
+        }
+        
+        .team-top-bar::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(0, 0, 0, 0.05) 100%
+          );
+          z-index: 0;
+        }
+        
+        .team-top-bar * {
+          position: relative;
+          z-index: 2;
+        }
+        
+        @keyframes shine {
+          0% { left: -150%; }
+          40% { left: -150%; }
+          60% { left: 150%; }
+          100% { left: 150%; }
         }
       `}</style>
     </div>
