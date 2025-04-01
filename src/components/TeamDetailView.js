@@ -272,9 +272,9 @@ const TeamDetail = () => {
       document.documentElement.style.setProperty('--team-color-rgb', hexToRgb(teamColor));
       
       // Add new CSS variables specifically for stats components
-      document.documentElement.style.setProperty('--stats-header-bg', lightenColor(teamColor, 95));
+      document.documentElement.style.setProperty('--stats-header-bg', '#ffffff');
       document.documentElement.style.setProperty('--stats-header-border', teamColor);
-      document.documentElement.style.setProperty('--stats-highlight', lightenColor(teamColor, 85));
+      document.documentElement.style.setProperty('--stats-highlight', lightenColor(teamColor, 90));
       document.documentElement.style.setProperty('--stats-accent', teamColor);
     }
     
@@ -348,7 +348,7 @@ const TeamDetail = () => {
 
   // Style for card headers
   const cardHeaderStyle = {
-    background: lightenColor(teamColor, 90),
+    background: '#ffffff',
     borderBottom: `2px solid ${teamColor}`,
     color: darkenColor(teamColor, 20)
   };
@@ -905,7 +905,7 @@ const TeamDetail = () => {
         
         /* Stats specific styling */
         .stats-card .stat-header {
-          background-color: ${lightenColor(teamColor, 95)} !important;
+          background-color: #ffffff !important;
           border-bottom: 2px solid ${teamColor} !important;
           color: ${darkenColor(teamColor, 20)} !important;
         }
@@ -930,7 +930,7 @@ const TeamDetail = () => {
         
         /* Team Stats specific styling */
         .team-stats-table th {
-          background-color: ${lightenColor(teamColor, 90)} !important;
+          background-color: #ffffff !important;
           color: ${darkenColor(teamColor, 20)} !important;
         }
         
@@ -949,7 +949,7 @@ const TeamDetail = () => {
         
         /* Player Stats specific styling */
         .player-stats-table th {
-          background-color: ${lightenColor(teamColor, 90)} !important;
+          background-color: #ffffff !important;
           color: ${darkenColor(teamColor, 15)} !important;
           border-bottom: 2px solid ${teamColor} !important;
         }
@@ -959,7 +959,7 @@ const TeamDetail = () => {
         }
         
         .player-stats-table .player-highlighted {
-          background-color: ${lightenColor(teamColor, 90)} !important;
+          background-color: ${lightenColor(teamColor, 95)} !important;
           font-weight: bold;
         }
         

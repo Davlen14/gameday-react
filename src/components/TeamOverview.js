@@ -81,7 +81,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
 
   // Style for card headers
   const cardHeaderStyle = {
-    background: lightenColor(teamColor, 90),
+    background: '#ffffff',
     borderBottom: `2px solid ${teamColor}`,
     color: darkenColor(teamColor, 20)
   };
@@ -153,7 +153,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                     {/* Team Logo Block */}
                     <div className="spirit-item logo-block" style={{ backgroundColor: "#ffffff", padding: "2px" }}>
                       <img 
-                        src={team.logos ? team.logos[team.logos.length > 1 ? 1 : 0] : ''} 
+                        src={team.logos ? team.logos[0] : ''} 
                         alt={team.mascot || 'Team Logo'}
                         className="team-logo-stick"
                         onError={(e) => {
@@ -277,7 +277,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               justify-content: flex-start;
               align-items: center;
               gap: 20px;
-              padding: 10px 0;
+              padding: 10px 0 35px; /* Added bottom padding to make room for sticks */
             }
             
             .spirit-item {
@@ -321,14 +321,17 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               object-fit: contain;
             }
             
+            /* Create wood stick */
             .logo-block:after {
               content: '';
               width: 6px;
               height: 25px;
               background-color: #8b4513; /* Wood color */
               position: absolute;
-              bottom: -24px;
+              bottom: -25px; /* Position it below the element */
+              left: calc(50% - 3px); /* Center it */
               border-radius: 3px;
+              z-index: -1; /* Put it behind so logo is visible */
             }
             
             /* Modern Foam Finger */
@@ -380,8 +383,10 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               height: 25px;
               background-color: #8b4513; /* Wood color */
               position: absolute;
-              bottom: -24px;
+              bottom: -25px;
+              left: calc(50% - 3px); /* Center it */
               border-radius: 3px;
+              z-index: -1; /* Put it behind so finger is visible */
             }
             
             /* Modern Pennant */
@@ -411,10 +416,10 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               height: 60px;
               background-color: #8b4513; /* Wood color */
               position: absolute;
-              left: -5px;
+              left: -3px; /* Position at left edge with half width overlap */
               top: -10px;
               border-radius: 3px;
-              z-index: -1;
+              z-index: -1; /* Keep it behind the pennant */
             }
           `}</style>
         </div>
