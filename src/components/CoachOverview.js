@@ -173,8 +173,12 @@ const CoachOverview = () => {
 
         setTeams(teamsData);
 
-        // Get all coaches, not just those with 2024 seasons
-        setCoachInfo(coachesData);
+        // Get all coaches first, then filter to only active ones (with 2024 seasons)
+        const allCoaches = coachesData;
+        const activeCoaches = allCoaches.filter((coach) =>
+          coach.seasons.some((season) => season.year === 2024)
+        );
+        setCoachInfo(activeCoaches);
 
         const combinedNews = [
           ...(coachNewsData.articles || []),
