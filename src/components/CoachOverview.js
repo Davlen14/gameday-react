@@ -721,29 +721,15 @@ if (filterTerm) {
                           custom={index}
                           layoutId={item.coachName}
                         >
-                          <div
-                            className="coach-card-header"
-                            style={{ display: 'flex', alignItems: 'center' }}
-                          >
-                            {/* Left side: Team logo + Coach name/school */}
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <div className="coach-team-logo">
-                                <img src={getTeamLogo(item.school)} alt={item.school} />
-                              </div>
-                              <div className="coach-info" style={{ marginLeft: '1rem' }}>
-                                <h3>{item.coachName}</h3>
-                                <p>{item.school}</p>
-                              </div>
+                          <div className="coach-card-header">
+                            <div className="coach-team-logo">
+                              <img src={getTeamLogo(item.school)} alt={item.school} />
                             </div>
-
-                            {/* Status on the right of the coach info */}
-                            <div style={{ marginLeft: 'auto', marginRight: '1rem' }}>
-                              <div className={`coach-status ${item.status.className}`}>
-                                {item.status.icon} {item.status.text}
-                              </div>
+                            <div className="coach-info">
+                              <h3 data-length={item.coachName.length > 20 ? 'very-long' : item.coachName.length > 15 ? 'long' : 'normal'}>{item.coachName}</h3>
+                              <p>{item.school}</p>
                             </div>
-
-                            {/* 'Select' button remains in top-right */}
+                            
                             <div className="card-actions">
                               <button 
                                 className={`select-coach-btn ${isCoachSelected(item.coach) ? 'selected' : ''}`}
@@ -751,6 +737,10 @@ if (filterTerm) {
                               >
                                 {isCoachSelected(item.coach) ? 'Selected' : 'Select'}
                               </button>
+                            </div>
+
+                            <div className={`coach-status ${item.status.className}`}>
+                              {item.status.icon} {item.status.text}
                             </div>
                           </div>
                           
@@ -762,9 +752,9 @@ if (filterTerm) {
                                 <span className="stat-value" style={{ color: '#222' }}>{item.winPct.toFixed(1)}%</span>
                               </div>
                               {rankWinPct <= 5 && (
-                                <span className="glassy-metal">
+                                <div className="glassy-metal">
                                   Top 5
-                                </span>
+                                </div>
                               )}
                             </div>
 
@@ -785,9 +775,9 @@ if (filterTerm) {
                                 <span className="stat-value" style={{ color: '#222' }}>{item.spOverall.toFixed(1)}</span>
                               </div>
                               {rankOverall <= 5 && (
-                                <span className="glassy-metal">
+                                <div className="glassy-metal">
                                   Top 5
-                                </span>
+                                </div>
                               )}
                             </div>
 
