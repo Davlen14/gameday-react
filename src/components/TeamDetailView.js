@@ -328,6 +328,47 @@ const TeamDetail = () => {
     return (yiq >= 128) ? '#000000' : '#ffffff';
   };
   
+  // Get team initial letter(s) - handles special cases like "USC", "UCLA", etc.
+  const getTeamInitial = (schoolName) => {
+    if (!schoolName) return "T";
+    
+    // Check for common abbreviations/special cases
+    const specialCases = {
+      "Southern California": "USC",
+      "UCLA": "UCLA",
+      "North Carolina": "NC",
+      "Louisiana State": "LSU",
+      "Texas Christian": "TCU",
+      "Central Florida": "UCF",
+      "Miami": "UM",
+      "Mississippi": "Ole Miss",
+      "Mississippi State": "MSU",
+      "Southern Methodist": "SMU",
+      "Brigham Young": "BYU"
+    };
+    
+    // Handle special cases
+    for (const [fullName, abbr] of Object.entries(specialCases)) {
+      if (schoolName.includes(fullName)) {
+        // Return first letter if abbreviation is too long
+        return abbr.length <= 2 ? abbr : abbr.charAt(0);
+      }
+    }
+    
+    // Check if the name itself is an abbreviation (all caps)
+    if (schoolName === schoolName.toUpperCase() && schoolName.length <= 4) {
+      return schoolName.charAt(0);
+    }
+    
+    // For schools with "University of X" format
+    if (schoolName.startsWith("University of ")) {
+      return schoolName.replace("University of ", "").charAt(0);
+    }
+    
+    // Default to first letter
+    return schoolName.charAt(0);
+  };
+  
   // Generate team color gradient for metallic effect
   const getTeamColorGradient = (hexColor) => {
     if (!hexColor) return "linear-gradient(145deg, #1a1a1a, #333333)";
@@ -839,6 +880,32 @@ const TeamDetail = () => {
                     <span>{teamColor}</span>
                   </div>
                 </div>
+                
+                {/* Team Spirit Items */}
+                <div className="detail-item team-spirit-section">
+                  <div className="detail-label">Team Spirit:</div>
+                  <div className="team-spirit-items">
+                    {/* Team Letter */}
+                    <div className="spirit-item letter-block" style={{ backgroundColor: teamColor, color: getContrastColor(teamColor) }}>
+                      {getTeamInitial(team.school)}
+                    </div>
+                    
+                    {/* Foam Finger */}
+                    <div className="spirit-item foam-finger" style={{ backgroundColor: teamColor }}>
+                      <div className="finger-top" style={{ backgroundColor: teamColor }}></div>
+                      <div className="finger-text" style={{ color: getContrastColor(teamColor) }}>
+                        #1
+                      </div>
+                    </div>
+                    
+                    {/* Team Pennant */}
+                    <div className="spirit-item pennant" style={{ borderLeft: `100px solid ${teamColor}` }}>
+                      <span style={{ color: getContrastColor(teamColor) }}>
+                        {team.mascot}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -927,6 +994,145 @@ const TeamDetail = () => {
           height: 24px;
           border-radius: 4px;
           border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* Team Spirit Items */
+        .team-spirit-section {
+          margin-top: 10px;
+        }
+        
+        .team-spirit-items {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          padding: 15px 0;
+          gap: 10px;
+        }
+        
+        .spirit-item {
+          cursor: pointer;
+          transition: transform 0.3s ease;
+          filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+          animation: subtle-sway 3s ease-in-out infinite;
+        }
+        
+        .spirit-item:hover {
+          transform: translateY(-5px) rotate(5deg);
+          filter: drop-shadow(3px 6px 10px rgba(0,0,0,0.25));
+          animation-play-state: paused;
+        }
+        
+        .letter-block {
+          animation-delay: 0.2s;
+        }
+        
+        .foam-finger {
+          animation-delay: 0.5s;
+        }
+        
+        .pennant {
+          animation-delay: 0.8s;
+        }
+        
+        @keyframes subtle-sway {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(2deg); }
+          75% { transform: rotate(-2deg); }
+        }
+        
+        /* Letter Block */
+        .letter-block {
+          width: 40px;
+          height: 45px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 26px;
+          font-weight: bold;
+          font-family: 'Orbitron', sans-serif;
+          border-radius: 4px;
+          position: relative;
+          transform-origin: bottom center;
+        }
+        
+        .letter-block:after {
+          content: '';
+          width: 6px;
+          height: 20px;
+          background-color: #8b4513; /* Wood color */
+          position: absolute;
+          bottom: -18px;
+          border-radius: 3px;
+        }
+        
+        /* Foam Finger */
+        .foam-finger {
+          position: relative;
+          width: 30px;
+          height: 40px;
+          border-radius: 6px 6px 12px 12px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transform-origin: bottom center;
+        }
+        
+        .finger-top {
+          position: absolute;
+          top: -15px;
+          width: 18px;
+          height: 25px;
+          border-radius: 5px 5px 0 0;
+        }
+        
+        .finger-text {
+          font-weight: bold;
+          font-size: 14px;
+          text-align: center;
+          margin-top: 8px;
+        }
+        
+        .foam-finger:after {
+          content: '';
+          width: 6px;
+          height: 20px;
+          background-color: #8b4513; /* Wood color */
+          position: absolute;
+          bottom: -18px;
+          border-radius: 3px;
+        }
+        
+        /* Pennant */
+        .pennant {
+          position: relative;
+          width: 0;
+          height: 0;
+          border-top: 20px solid transparent;
+          border-bottom: 20px solid transparent;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transform-origin: left center;
+        }
+        
+        .pennant span {
+          position: absolute;
+          left: -90px;
+          font-size: 10px;
+          font-weight: bold;
+          white-space: nowrap;
+          transform: rotate(0deg);
+        }
+        
+        .pennant:after {
+          content: '';
+          width: 6px;
+          height: 60px;
+          background-color: #8b4513; /* Wood color */
+          position: absolute;
+          left: -105px;
+          top: -20px;
+          border-radius: 3px;
         }
         
         /* Responsive adjustments */
