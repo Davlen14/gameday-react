@@ -1,8 +1,71 @@
-import React from "react";
-import { FaChartLine, FaInfoCircle, FaFutbol } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaChartLine, FaInfoCircle, FaFutbol, FaTrophy, FaUserTie, FaClipboardList } from "react-icons/fa";
 import GaugeComponent from "./GaugeComponent";
+import teamsService from "../services/teamsService";
 
 const TeamOverview = ({ team, teamColor, year = 2024 }) => {
+  // State for coach and record data
+  const [coachData, setCoachData] = useState(null);
+  const [recordData, setRecordData] = useState(null);
+  const [talentData, setTalentData] = useState(null);
+  const [loading, setLoading] = useState({
+    coach: false,
+    record: false,
+    talent: false
+  });
+  
+  // Fetch coach data, record data, and talent data
+  useEffect(() => {
+    const fetchCoachData = async () => {
+      try {
+        setLoading(prev => ({ ...prev, coach: true }));
+        const data = await teamsService.getCoaches();
+        const teamCoach = data.find(coach => 
+          coach.seasons.some(season => 
+            season.school === team.school && season.year === year
+          )
+        );
+        setCoachData(teamCoach);
+      } catch (err) {
+        console.error("Error fetching coach data:", err.message);
+      } finally {
+        setLoading(prev => ({ ...prev, coach: false }));
+      }
+    };
+
+    const fetchRecordData = async () => {
+      try {
+        setLoading(prev => ({ ...prev, record: true }));
+        const data = await teamsService.getTeamRecords(year);
+        const teamRecord = data.find(record => record.team === team.school);
+        setRecordData(teamRecord);
+      } catch (err) {
+        console.error("Error fetching record data:", err.message);
+      } finally {
+        setLoading(prev => ({ ...prev, record: false }));
+      }
+    };
+
+    const fetchTalentData = async () => {
+      try {
+        setLoading(prev => ({ ...prev, talent: true }));
+        const data = await teamsService.getTalentRankings(year);
+        const teamTalent = data.find(talent => talent.team === team.school);
+        setTalentData(teamTalent);
+      } catch (err) {
+        console.error("Error fetching talent data:", err.message);
+      } finally {
+        setLoading(prev => ({ ...prev, talent: false }));
+      }
+    };
+
+    if (team?.school) {
+      fetchCoachData();
+      fetchRecordData();
+      fetchTalentData();
+    }
+  }, [team?.school, year]);
+  
   // Helper function to lighten a color
   const lightenColor = (color, percent) => {
     const num = parseInt(color.replace('#', ''), 16),
@@ -151,26 +214,21 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 <td>
                   <div className="team-spirit-items">
                     {/* Team Logo Block */}
-                    <div className="spirit-item logo-block" style={{ backgroundColor: "#ffffff", padding: "2px" }}>
-                      <img 
-                        src={team.logos ? team.logos[0] : ''} 
-                        alt={team.mascot || 'Team Logo'}
-                        className="team-logo-stick"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
+                    <div className="spirit-item logo-block" style={{ backgroundColor: teamColor }}>
+                      <div className="logo-content">
+                        <div className="team-letter" style={{ color: getContrastColor(teamColor) }}>
+                          {getTeamInitial(team.school)}
+                        </div>
+                      </div>
+                      <div className="wood-stick"></div>
                     </div>
                     
                     {/* Modern Foam Finger */}
                     <div className="spirit-item modern-finger" style={{ backgroundColor: teamColor }}>
-                      <div className="finger-hand" style={{ backgroundColor: teamColor }}>
-                        <div className="finger-thumb" style={{ backgroundColor: teamColor }}></div>
-                      </div>
                       <div className="finger-text" style={{ color: getContrastColor(teamColor) }}>
                         #1
                       </div>
+                      <div className="wood-stick"></div>
                     </div>
                     
                     {/* Team Pennant */}
@@ -178,6 +236,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                       <span style={{ color: getContrastColor(teamColor) }}>
                         {team.mascot}
                       </span>
+                      <div className="wood-stick pennant-stick"></div>
                     </div>
                   </div>
                 </td>
@@ -190,6 +249,59 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 <td>Division:</td>
                 <td><strong>Division I ({team.classification})</strong></td>
               </tr>
+              {coachData && (
+                <tr>
+                  <td>
+                    <div className="flex-align-center">
+                      <FaUserTie size={14} style={{ marginRight: "6px", color: teamColor }} />
+                      Coach:
+                    </div>
+                  </td>
+                  <td>
+                    <strong>
+                      {coachData.firstName} {coachData.lastName}
+                      {coachData.hireDate && (
+                        <span className="coach-tenure">
+                          Since {new Date(coachData.hireDate).getFullYear()}
+                        </span>
+                      )}
+                    </strong>
+                  </td>
+                </tr>
+              )}
+              {recordData && (
+                <tr>
+                  <td>
+                    <div className="flex-align-center">
+                      <FaClipboardList size={14} style={{ marginRight: "6px", color: teamColor }} />
+                      Record ({year}):
+                    </div>
+                  </td>
+                  <td>
+                    <strong className="record-display">
+                      {recordData.total.wins}-{recordData.total.losses}
+                      <span className="record-detail">
+                        (Conf: {recordData.conferenceGames.wins}-{recordData.conferenceGames.losses})
+                      </span>
+                    </strong>
+                  </td>
+                </tr>
+              )}
+              {talentData && (
+                <tr>
+                  <td>
+                    <div className="flex-align-center">
+                      <FaTrophy size={14} style={{ marginRight: "6px", color: teamColor }} />
+                      Talent Rating:
+                    </div>
+                  </td>
+                  <td>
+                    <strong>
+                      {talentData.talent.toFixed(2)}
+                    </strong>
+                  </td>
+                </tr>
+              )}
               <tr>
                 <td>Team Colors:</td>
                 <td>
@@ -275,151 +387,118 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             .team-spirit-items {
               display: flex;
               justify-content: flex-start;
-              align-items: center;
-              gap: 20px;
-              padding: 10px 0 35px; /* Added bottom padding to make room for sticks */
+              align-items: flex-end;
+              gap: 30px;
+              padding: 20px 0;
+              margin-top: 10px;
             }
             
             .spirit-item {
               position: relative;
               cursor: pointer;
-              transition: transform 0.3s ease;
-              filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
-              animation: subtle-sway 3s ease-in-out infinite;
+              transition: transform 0.3s ease-out;
+              filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.25));
             }
             
             .spirit-item:hover {
-              transform: translateY(-5px) rotate(5deg);
-              filter: drop-shadow(3px 6px 10px rgba(0,0,0,0.25));
-              animation-play-state: paused;
+              transform: translateY(-5px);
             }
-            
-            @keyframes subtle-sway {
-              0%, 100% { transform: rotate(0deg); }
-              25% { transform: rotate(2deg); }
-              75% { transform: rotate(-2deg); }
+
+            /* Wooden sticks styling */
+            .wood-stick {
+              position: absolute;
+              width: 8px;
+              height: 60px;
+              background-color: #8b4513; /* Wood color */
+              bottom: -60px;
+              left: calc(50% - 4px);
+              border-radius: 2px;
+            }
+
+            .pennant-stick {
+              left: 0;
+              bottom: -58px;
             }
             
             /* Logo Block */
             .logo-block {
-              width: 40px;
-              height: 40px;
+              width: 60px;
+              height: 60px;
+              border-radius: 8px;
               display: flex;
               justify-content: center;
               align-items: center;
-              border-radius: 4px;
-              position: relative;
-              transform-origin: bottom center;
-              border: 1px solid rgba(0,0,0,0.1);
               overflow: hidden;
-              animation-delay: 0.2s;
             }
-            
-            .team-logo-stick {
+
+            .logo-content {
+              display: flex;
+              justify-content: center;
+              align-items: center;
               width: 100%;
               height: 100%;
-              object-fit: contain;
             }
-            
-            /* Create wood stick */
-            .logo-block:after {
-              content: '';
-              width: 6px;
-              height: 25px;
-              background-color: #8b4513; /* Wood color */
-              position: absolute;
-              bottom: -25px; /* Position it below the element */
-              left: calc(50% - 3px); /* Center it */
-              border-radius: 3px;
-              z-index: -1; /* Put it behind so logo is visible */
+
+            .team-letter {
+              font-weight: bold;
+              font-size: 36px;
+              font-family: sans-serif;
             }
             
             /* Modern Foam Finger */
             .modern-finger {
-              position: relative;
-              width: 42px;
-              height: 46px;
-              border-radius: 8px 8px 14px 14px;
+              width: 50px;
+              height: 70px;
+              border-radius: 12px 12px 8px 8px;
               display: flex;
               justify-content: center;
               align-items: center;
-              transform-origin: bottom center;
-              box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
-              animation-delay: 0.5s;
-            }
-            
-            .finger-hand {
-              position: absolute;
-              bottom: 0;
-              width: 100%;
-              height: 65%;
-              border-radius: 8px 8px 14px 14px;
-            }
-            
-            .finger-thumb {
-              position: absolute;
-              left: -8px;
-              top: 50%;
-              width: 12px;
-              height: 18px;
-              border-radius: 6px;
-              transform: translateY(-50%);
-              box-shadow: inset -2px 0 0 rgba(0,0,0,0.2);
+              position: relative;
             }
             
             .finger-text {
               font-weight: bold;
-              font-size: 18px;
-              text-align: center;
-              margin-top: -10px;
-              text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-              position: relative;
-              z-index: 2;
-            }
-            
-            .modern-finger:after {
-              content: '';
-              width: 6px;
-              height: 25px;
-              background-color: #8b4513; /* Wood color */
-              position: absolute;
-              bottom: -25px;
-              left: calc(50% - 3px); /* Center it */
-              border-radius: 3px;
-              z-index: -1; /* Put it behind so finger is visible */
+              font-size: 22px;
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+              color: white;
             }
             
             /* Modern Pennant */
             .modern-pennant {
               position: relative;
-              width: 100px;
-              height: 40px;
+              width: 120px;
+              height: 50px;
               display: flex;
               justify-content: center;
               align-items: center;
-              transform-origin: left center;
-              clip-path: polygon(0 0, 100% 0, 80% 50%, 100% 100%, 0 100%);
-              animation-delay: 0.8s;
+              clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
             }
             
             .modern-pennant span {
-              font-size: 12px;
+              font-size: 16px;
               font-weight: bold;
               white-space: nowrap;
-              margin-left: -10px;
-              text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             }
             
-            .modern-pennant:after {
-              content: '';
-              width: 6px;
-              height: 60px;
-              background-color: #8b4513; /* Wood color */
-              position: absolute;
-              left: -3px; /* Position at left edge with half width overlap */
-              top: -10px;
-              border-radius: 3px;
-              z-index: -1; /* Keep it behind the pennant */
+            /* Additional styling for new elements */
+            .flex-align-center {
+              display: flex;
+              align-items: center;
+            }
+
+            .coach-tenure {
+              font-size: 0.8rem;
+              opacity: 0.8;
+              margin-left: 8px;
+              font-weight: normal;
+            }
+
+            .record-detail {
+              font-size: 0.85rem;
+              opacity: 0.8;
+              margin-left: 8px;
+              font-weight: normal;
             }
           `}</style>
         </div>
