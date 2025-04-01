@@ -214,11 +214,17 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 <td>
                   <div className="team-spirit-items">
                     {/* Team Logo Block */}
-                    <div className="spirit-item logo-block" style={{ backgroundColor: teamColor }}>
+                    <div className="spirit-item logo-block" style={{ backgroundColor: team.alt_color || lightenColor(teamColor, 20) }}>
                       <div className="logo-content">
-                        <div className="team-letter" style={{ color: getContrastColor(teamColor) }}>
-                          {getTeamInitial(team.school)}
-                        </div>
+                        <img 
+                          src={team.logos ? team.logos[0] : ''} 
+                          alt={team.mascot || 'Team Logo'}
+                          className="team-logo-stick"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/photos/default_team.png";
+                          }}
+                        />
                       </div>
                       <div className="wood-stick"></div>
                     </div>
@@ -437,12 +443,14 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               align-items: center;
               width: 100%;
               height: 100%;
+              padding: 6px;
             }
 
-            .team-letter {
-              font-weight: bold;
-              font-size: 36px;
-              font-family: sans-serif;
+            .team-logo-stick {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+              filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
             }
             
             /* Modern Foam Finger */
