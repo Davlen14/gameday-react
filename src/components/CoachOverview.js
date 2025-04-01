@@ -40,10 +40,10 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-// Enhanced coach evaluation system
+// Enhanced coach evaluation system with improved thresholds
 const getCoachStatus = (coach, metrics) => {
-  // Minimum games threshold for reliable evaluation
-  const MIN_GAMES_THRESHOLD = 12;
+  // Minimum games threshold for reliable evaluation - increased from 12 to 18
+  const MIN_GAMES_THRESHOLD = 18;
   
   // Extract metrics from the passed object
   const { winPct, composite, trend, games, programStrength, expectations } = metrics;
@@ -62,15 +62,15 @@ const getCoachStatus = (coach, metrics) => {
   // Higher number means overperforming expectations
   const performanceVsExpectations = composite - (expectations * 0.8);
   
-  // Factor in trending performance
-  const trendAdjustedScore = composite + (trend * 5);
+  // Factor in trending performance with reduced weight to prevent volatility
+  const trendAdjustedScore = composite + (trend * 3); // Reduced from 5 to 3
   
   // Determine final rating with context-aware thresholds
   // Programs with strong history have higher expectations
   const premiereThreshold = 35 + (programStrength * 0.3);
-  const hotSeatThreshold = 28 + (programStrength * 0.2);
+  const hotSeatThreshold = 25 + (programStrength * 0.2); // Lowered from 28 to 25
   
-  // Final decision logic with multiple factors considered
+  // Final decision logic with more stringent conditions
   if (trendAdjustedScore >= premiereThreshold || performanceVsExpectations > 8) {
     return {
       text: "Premiere",
@@ -78,8 +78,12 @@ const getCoachStatus = (coach, metrics) => {
       icon: <FaTrophy />,
       className: "status-badge-premiere"
     };
-  } else if (trendAdjustedScore < hotSeatThreshold || performanceVsExpectations < -5 || 
-            (winPct < 40 && games > 24)) {
+  } else if (
+    // More stringent conditions for Hot Seat designation to prevent false positives
+    (trendAdjustedScore < hotSeatThreshold && performanceVsExpectations < -7) || 
+    (winPct < 35 && games > 36) || // Must have very low win percentage AND multiple seasons
+    (trend < -2 && games > 30 && winPct < 45) // Strongly trending downward with enough games and poor performance
+  ) {
     return {
       text: "Hot Seat",
       color: "var(--danger-color)",
@@ -211,11 +215,25 @@ const CoachOverview = () => {
     return team?.logos?.[0] || "/photos/default_team.png";
   };
   
-  // Get the current team for a coach (most recent season)
+  // Get the current team for a coach (most recent season or override)
   const getCurrentTeam = (coach) => {
     if (!coach.seasons || coach.seasons.length === 0) return null;
     
-    // Sort seasons by year, descending (most recent first)
+    // First check if coach has a currentTeam override property (for coaches who changed teams)
+    if (coach.currentTeam) {
+      return coach.currentTeam;
+    }
+    
+    // Special case handling for known coach transfers
+    const coachName = `${coach.firstName} ${coach.lastName}`.toLowerCase();
+    
+    // Add specific coach overrides here
+    if (coachName === "jason campbell") {
+      return "Iowa State";
+    }
+    // Add more coach overrides as needed
+    
+    // Otherwise use most recent season's school
     const sortedSeasons = [...coach.seasons].sort((a, b) => b.year - a.year);
     return sortedSeasons[0].school;
   };
@@ -287,7 +305,7 @@ const CoachOverview = () => {
 
   // Process coaches for display
   const processedCoaches = coachInfo.map((coach) => {
-    // Get current team based on most recent season
+    // Get current team based on most recent season or override
     const currentTeam = getCurrentTeam(coach);
     
     const agg = aggregateCoachData(coach.seasons);
@@ -343,8 +361,16 @@ const CoachOverview = () => {
     );
     const conference = teamData ? teamData.conference : "";
     
-    // Program strength assessment (1-10 scale) - placeholder value until we have historical data
-    const programStrength = teamData?.historicalPrestige || 5; // Would come from team database
+    // Program strength assessment (1-10 scale) with special overrides for elite programs
+    let programStrength = teamData?.historicalPrestige || 5; // Default value
+    
+    // Override program strength for elite programs
+    const schoolLower = currentTeam?.toLowerCase() || "";
+    if (["ohio state", "georgia", "oregon", "alabama", "michigan", "oklahoma", "clemson", "texas", "lsu", "usc", "notre dame", "penn state", "florida", "miami"].includes(schoolLower)) {
+      programStrength = Math.max(programStrength, 8); // Ensure these are at least 8 (elite programs)
+    } else if (["auburn", "texas a&m", "wisconsin", "utah", "washington", "florida state", "tennessee", "nebraska", "michigan state"].includes(schoolLower)) {
+      programStrength = Math.max(programStrength, 7); // Ensure these are at least 7 (strong programs)
+    }
     
     // Program expectations based on historical performance (normalized to same scale as composite)
     const expectations = programStrength * 5; // 1-10 scale converted to same scale as composite (0-50)
@@ -387,9 +413,9 @@ const CoachOverview = () => {
     
     return {
       coach,
-      team: lastSeason.school || "",
+      team: currentTeam || "", // Use currentTeam here instead of lastSeason.school
       coachName: coach.firstName + " " + coach.lastName,
-      school: lastSeason.school || "",
+      school: currentTeam || "", // Use currentTeam here instead of lastSeason.school
       conference,
       hireDate: coach.hireDate ? new Date(coach.hireDate) : null,
       games: agg.games,
@@ -417,17 +443,17 @@ const CoachOverview = () => {
   // Apply filters to coaches
   let displayedCoaches = [...processedCoaches];
   
-  // Apply search filter
-// Apply search filter (by name, school, or conference)
-if (filterTerm) {
-  const searchTerm = filterTerm.toLowerCase();
-  displayedCoaches = displayedCoaches.filter(
-    coach => 
-      coach.coachName.toLowerCase().includes(searchTerm) ||
-      coach.school.toLowerCase().includes(searchTerm) ||
-      (coach.conference && coach.conference.toLowerCase().includes(searchTerm))
-  );
-}
+  // Apply search filter (by name, school, or conference)
+  if (filterTerm) {
+    const searchTerm = filterTerm.toLowerCase();
+    displayedCoaches = displayedCoaches.filter(
+      coach => 
+        coach.coachName.toLowerCase().includes(searchTerm) ||
+        coach.school.toLowerCase().includes(searchTerm) ||
+        (coach.conference && coach.conference.toLowerCase().includes(searchTerm))
+    );
+  }
+  
   // Apply status filter
   if (statusFilter !== "all") {
     displayedCoaches = displayedCoaches.filter(coach => {
@@ -466,7 +492,11 @@ if (filterTerm) {
   ];
   const rankingMap = {};
   categoriesForRanking.forEach((cat) => {
-    const sorted = [...processedCoaches].sort((a, b) => {
+    // Filter coaches with enough games before ranking
+    const MIN_GAMES_FOR_RANKING = 24; // About 2 seasons minimum
+    const eligibleCoaches = processedCoaches.filter(coach => coach.games >= MIN_GAMES_FOR_RANKING);
+    
+    const sorted = [...eligibleCoaches].sort((a, b) => {
       if (cat.better === "higher") {
         return b[cat.key] - a[cat.key];
       } else {
@@ -768,7 +798,7 @@ if (filterTerm) {
                                 <span className="stat-label">Win %</span>
                                 <span className="stat-value" style={{ color: '#222' }}>{item.winPct.toFixed(1)}%</span>
                               </div>
-                              {rankWinPct <= 5 && (
+                              {rankWinPct <= 5 && item.games >= 24 && (
                                 <div className="glassy-metal">
                                   Top 5
                                 </div>
@@ -791,7 +821,7 @@ if (filterTerm) {
                                 <span className="stat-label">SP Overall</span>
                                 <span className="stat-value" style={{ color: '#222' }}>{item.spOverall.toFixed(1)}</span>
                               </div>
-                              {rankOverall <= 5 && (
+                              {rankOverall <= 5 && item.games >= 24 && (
                                 <div className="glassy-metal">
                                   Top 5
                                 </div>
