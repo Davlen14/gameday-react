@@ -725,6 +725,11 @@ if (filterTerm) {
                           custom={index}
                           layoutId={item.coachName}
                         >
+                          {/* Status badge positioned absolutely in top-right corner */}
+                          <div className={`gameday_coach_status_badge ${item.status.className}`}>
+                            {item.status.icon} {item.status.text}
+                          </div>
+                          
                           <div className="coach-card-header">
                             <div className="coach-team-logo">
                               <img src={getTeamLogo(item.school)} alt={item.school} />
@@ -732,10 +737,6 @@ if (filterTerm) {
                             <div className="coach-info">
                               <h3 data-length={item.coachName.length > 20 ? 'very-long' : item.coachName.length > 15 ? 'long' : 'normal'}>{item.coachName}</h3>
                               <p>{item.school}</p>
-                            </div>
-                            
-                            <div className={`coach-status ${item.status.className}`}>
-                              {item.status.icon} {item.status.text}
                             </div>
                             
                             <div className="card-actions">
