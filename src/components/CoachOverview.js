@@ -40,28 +40,58 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
-// Determine coach status based on composite score (thresholds 60 / 40)
-const getCoachStatus = (score) => {
-  if (score >= 38) {
-    return { 
-      text: "Premiere", 
-      color: "var(--success-color)", 
-      icon: <FaTrophy />, 
-      className: "status-badge-premiere" 
+// Enhanced coach evaluation system
+const getCoachStatus = (coach, metrics) => {
+  // Minimum games threshold for reliable evaluation
+  const MIN_GAMES_THRESHOLD = 12;
+  
+  // Extract metrics from the passed object
+  const { winPct, composite, trend, games, programStrength, expectations } = metrics;
+  
+  // If coach doesn't have enough games, mark as "Unproven"
+  if (games < MIN_GAMES_THRESHOLD) {
+    return {
+      text: "Unproven",
+      color: "#6c757d",
+      icon: <FaInfoCircle />,
+      className: "status-badge-unproven"
     };
-  } else if (score < 30) {
-    return { 
-      text: "On Hot Seat", 
-      color: "var(--danger-color)", 
-      icon: <FaExclamationTriangle />, 
-      className: "status-badge-hotseat" 
+  }
+  
+  // Calculate performance vs expectations
+  // Higher number means overperforming expectations
+  const performanceVsExpectations = composite - (expectations * 0.8);
+  
+  // Factor in trending performance
+  const trendAdjustedScore = composite + (trend * 5);
+  
+  // Determine final rating with context-aware thresholds
+  // Programs with strong history have higher expectations
+  const premiereThreshold = 35 + (programStrength * 0.3);
+  const hotSeatThreshold = 28 + (programStrength * 0.2);
+  
+  // Final decision logic with multiple factors considered
+  if (trendAdjustedScore >= premiereThreshold || performanceVsExpectations > 8) {
+    return {
+      text: "Premiere",
+      color: "var(--success-color)",
+      icon: <FaTrophy />,
+      className: "status-badge-premiere"
+    };
+  } else if (trendAdjustedScore < hotSeatThreshold || performanceVsExpectations < -5 || 
+            (winPct < 40 && games > 24)) {
+    return {
+      text: "Hot Seat",
+      color: "var(--danger-color)",
+      icon: <FaExclamationTriangle />,
+      className: "status-badge-hotseat"
     };
   } else {
-    return { 
-      text: "Average", 
-      color: "var(--info-color)", 
-      icon: <FaTachometerAlt />, 
-      className: "status-badge-average" 
+    return {
+      text: "Average",
+      color: "var(--info-color)",
+      icon: <FaTachometerAlt />,
+      className: "status-badge-average"
     };
   }
 };
@@ -251,26 +281,100 @@ const CoachOverview = () => {
     const avgSpOffense = agg.count > 0 ? (agg.spOffense / agg.count).toFixed(1) : "N/A";
     const avgSpDefense = agg.count > 0 ? (agg.spDefense / agg.count).toFixed(1) : "N/A";
     const winPct = agg.games > 0 ? ((agg.wins / agg.games) * 100).toFixed(1) : "N/A";
-  
-    // Weighted composite approach:
-    const baseAvg = agg.count > 0
-      ? (parseFloat(avgSrs) + parseFloat(avgSpOverall) + parseFloat(avgSpOffense) + parseFloat(avgSpDefense)) / 4
-      : 0;
-    const wPct = winPct === "N/A" ? 0 : parseFloat(winPct);
-    const composite = (baseAvg * 0.6) + (wPct * 0.4);
-  
-    // Get conference info from teams data:
+    
+    // Calculate trending performance over last 3 seasons (positive = improving)
+    let trend = 0;
+    const sortedSeasons = [...coach.seasons].sort((a, b) => b.year - a.year);
+    if (sortedSeasons.length >= 3) {
+      const recentSrsTrend = ((sortedSeasons[0].srs || 0) - (sortedSeasons[2].srs || 0)) / 3;
+      const recentSpTrend = ((sortedSeasons[0].spOverall || 0) - (sortedSeasons[2].spOverall || 0)) / 3;
+      const recentWinPctTrend = (
+        ((sortedSeasons[0].wins || 0) / Math.max(1, (sortedSeasons[0].games || 1))) -
+        ((sortedSeasons[2].wins || 0) / Math.max(1, (sortedSeasons[2].games || 1)))
+      ) * 100 / 3;
+      trend = (recentSrsTrend + recentSpTrend + recentWinPctTrend) / 3;
+    }
+
+    // Normalize metrics for better comparison
+    const normalizedSrs = avgSrs === "N/A" ? 0 : Math.min(100, Math.max(0, parseFloat(avgSrs) * 10));
+    const normalizedSpOverall = avgSpOverall === "N/A" ? 0 : Math.min(100, Math.max(0, parseFloat(avgSpOverall) * 10));
+    const normalizedSpOffense = avgSpOffense === "N/A" ? 0 : Math.min(100, Math.max(0, parseFloat(avgSpOffense) * 10));
+    const normalizedSpDefense = avgSpDefense === "N/A" ? 0 : Math.min(100, Math.max(0, (10 - parseFloat(avgSpDefense)) * 10)); // Invert defense (lower is better)
+    
+    // Weight recent seasons more heavily
+    const currentYear = new Date().getFullYear();
+    let weightedStats = {srs: 0, spOverall: 0, spOffense: 0, spDefense: 0, totalWeight: 0};
+    coach.seasons.forEach(season => {
+      const yearDiff = currentYear - season.year;
+      const weight = Math.max(0, 1 - (yearDiff * 0.15)); // Decreasing weight for older seasons
+      
+      if (season.srs) weightedStats.srs += season.srs * weight;
+      if (season.spOverall) weightedStats.spOverall += season.spOverall * weight;
+      if (season.spOffense) weightedStats.spOffense += season.spOffense * weight;
+      if (season.spDefense) weightedStats.spDefense += season.spDefense * weight;
+      weightedStats.totalWeight += weight;
+    });
+    
+    // Calculate recency-weighted metrics if we have valid weights
+    const recentSrs = weightedStats.totalWeight > 0 ? weightedStats.srs / weightedStats.totalWeight : 0;
+    const recentSpOverall = weightedStats.totalWeight > 0 ? weightedStats.spOverall / weightedStats.totalWeight : 0;
+    const recentSpOffense = weightedStats.totalWeight > 0 ? weightedStats.spOffense / weightedStats.totalWeight : 0;
+    const recentSpDefense = weightedStats.totalWeight > 0 ? weightedStats.spDefense / weightedStats.totalWeight : 0;
+    
+    // Get team/program data for context
     const teamData = teams.find(
       (t) => t.school.toLowerCase() === (lastSeason.school || "").toLowerCase()
     );
     const conference = teamData ? teamData.conference : "";
+    
+    // Program strength assessment (1-10 scale) - placeholder value until we have historical data
+    const programStrength = teamData?.historicalPrestige || 5; // Would come from team database
+    
+    // Program expectations based on historical performance (normalized to same scale as composite)
+    const expectations = programStrength * 5; // 1-10 scale converted to same scale as composite (0-50)
+    
+    // Enhanced weighted composite approach using normalized and recency-weighted metrics
+    const wPct = winPct === "N/A" ? 0 : parseFloat(winPct);
+    const normalizedComposite = (
+      normalizedSrs * 0.2 + 
+      normalizedSpOverall * 0.3 + 
+      normalizedSpOffense * 0.2 + 
+      normalizedSpDefense * 0.2 + 
+      wPct * 0.3
+    ) / 10; // Scale down to 0-50 range
+    
+    // Final composite also factors in recency-weighted metrics
+    const composite = normalizedComposite * 0.7 + 
+      ((recentSrs + recentSpOverall + (10 - recentSpDefense) + recentSpOffense) / 4) * 3; // Scale to match
   
+    // Create metrics object for status calculation
+    const metricsForStatus = {
+      winPct: wPct,
+      composite,
+      trend,
+      games: agg.games,
+      programStrength,
+      expectations,
+      recentPerformance: {
+        srs: recentSrs,
+        spOverall: recentSpOverall,
+        spOffense: recentSpOffense,
+        spDefense: recentSpDefense
+      },
+      normalized: {
+        srs: normalizedSrs,
+        spOverall: normalizedSpOverall,
+        spOffense: normalizedSpOffense,
+        spDefense: normalizedSpDefense
+      }
+    };
+    
     return {
       coach,
       team: lastSeason.school || "",
       coachName: coach.firstName + " " + coach.lastName,
       school: lastSeason.school || "",
-      conference, // NEW property for filtering by conference
+      conference,
       hireDate: coach.hireDate ? new Date(coach.hireDate) : null,
       games: agg.games,
       wins: agg.wins,
@@ -281,7 +385,10 @@ const CoachOverview = () => {
       spOffense: avgSpOffense === "N/A" ? 0 : parseFloat(avgSpOffense),
       spDefense: avgSpDefense === "N/A" ? 0 : parseFloat(avgSpDefense),
       composite,
-      status: getCoachStatus(composite),
+      trend,
+      programStrength,
+      expectations,
+      status: getCoachStatus(coach, metricsForStatus),
       hireDateFormatted: coach.hireDate
         ? new Date(coach.hireDate).toLocaleDateString("en-US", {
             month: "2-digit",
@@ -308,13 +415,14 @@ if (filterTerm) {
   // Apply status filter
   if (statusFilter !== "all") {
     displayedCoaches = displayedCoaches.filter(coach => {
-      // NOTE: now checking "Premiere", "Average", "On Hot Seat" 
       if (statusFilter === "premiere") {
         return coach.status.text === "Premiere";
       } else if (statusFilter === "average") {
         return coach.status.text === "Average";
       } else if (statusFilter === "hotseat") {
-        return coach.status.text === "On Hot Seat";
+        return coach.status.text === "Hot Seat";
+      } else if (statusFilter === "unproven") {
+        return coach.status.text === "Unproven";
       }
       return true;
     });
@@ -568,6 +676,12 @@ if (filterTerm) {
                   >
                     <FaExclamationTriangle /> Hot Seat
                   </button>
+                  <button 
+                    className={`status-filter unproven ${statusFilter === "unproven" ? "active" : ""}`}
+                    onClick={() => handleStatusFilter("unproven")}
+                  >
+                    <FaInfoCircle /> Unproven
+                  </button>
                 </div>
                 {(filterTerm || statusFilter !== "all") && (
                   <button className="clear-filters" onClick={clearFilters}>
@@ -763,6 +877,48 @@ if (filterTerm) {
                                       {getTooltipContent("spDefense")}
                                     </div>
                                   )}
+                                </div>
+                                {/* Trend indicator */}
+                                <div className="detail-item">
+                                  <span className="detail-label">Performance Trend</span>
+                                  <div className="trend-indicator">
+                                    {item.trend > 1 ? (
+                                      <span className="trend-positive">
+                                        <FaSortUp /> Strong Improvement ({item.trend.toFixed(1)})
+                                      </span>
+                                    ) : item.trend > 0.2 ? (
+                                      <span className="trend-positive">
+                                        <FaSortUp /> Improving ({item.trend.toFixed(1)})
+                                      </span>
+                                    ) : item.trend > -0.2 ? (
+                                      <span className="trend-neutral">
+                                        <FaSort /> Stable ({item.trend.toFixed(1)})
+                                      </span>
+                                    ) : item.trend > -1 ? (
+                                      <span className="trend-negative">
+                                        <FaSortDown /> Declining ({item.trend.toFixed(1)})
+                                      </span>
+                                    ) : (
+                                      <span className="trend-negative">
+                                        <FaSortDown /> Strong Decline ({item.trend.toFixed(1)})
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                {/* Program context */}
+                                <div className="detail-item">
+                                  <span className="detail-label">Program Expectations</span>
+                                  <div className="program-context">
+                                    {item.programStrength > 7 ? (
+                                      <span className="program-elite">Elite Program</span>
+                                    ) : item.programStrength > 5 ? (
+                                      <span className="program-strong">Strong Program</span>
+                                    ) : item.programStrength > 3 ? (
+                                      <span className="program-average">Average Program</span>
+                                    ) : (
+                                      <span className="program-building">Building Program</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </motion.div>
