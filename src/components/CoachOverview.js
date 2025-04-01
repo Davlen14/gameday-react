@@ -40,9 +40,113 @@ const aggregateCoachData = (seasons) => {
   );
 };
 
+// Mapping of all 134 FBS teams to their program tiers based on research
+const PROGRAM_TIERS = {
+  // Elite Programs (9-10 scale)
+  "alabama": { tier: "Elite Program", value: 9.5 },
+  "ohio state": { tier: "Elite Program", value: 9.5 },
+  "georgia": { tier: "Elite Program", value: 9.5 },
+  "clemson": { tier: "Elite Program", value: 9.0 },
+
+  // Strong Programs (7-8 scale)
+  "auburn": { tier: "Strong Program", value: 7.8 },
+  "boise state": { tier: "Strong Program", value: 7.0 },
+  "florida": { tier: "Strong Program", value: 7.5 },
+  "florida state": { tier: "Strong Program", value: 7.3 },
+  "lsu": { tier: "Strong Program", value: 8.5 },
+  "miami (fl)": { tier: "Strong Program", value: 7.2 },
+  "miami": { tier: "Strong Program", value: 7.2 }, // Alternative name
+  "michigan": { tier: "Strong Program", value: 8.5 },
+  "notre dame": { tier: "Strong Program", value: 8.0 },
+  "oklahoma": { tier: "Strong Program", value: 8.3 },
+  "oregon": { tier: "Strong Program", value: 7.8 },
+  "penn state": { tier: "Strong Program", value: 7.5 },
+  "tennessee": { tier: "Strong Program", value: 7.2 },
+  "texas": { tier: "Strong Program", value: 8.0 },
+  "texas a&m": { tier: "Strong Program", value: 7.4 },
+  "ucla": { tier: "Strong Program", value: 7.0 },
+  "usc": { tier: "Strong Program", value: 8.2 },
+  "utah": { tier: "Strong Program", value: 7.2 },
+  "washington": { tier: "Strong Program", value: 7.2 },
+  "wisconsin": { tier: "Strong Program", value: 7.2 },
+
+  // Building Programs (1-3 scale) - listing a few key ones, the rest default to Average if not listed
+  "akron": { tier: "Building Program", value: 2.0 },
+  "arkansas state": { tier: "Building Program", value: 2.5 },
+  "ball state": { tier: "Building Program", value: 2.0 },
+  "bowling green": { tier: "Building Program", value: 2.0 },
+  "buffalo": { tier: "Building Program", value: 2.5 },
+  "central michigan": { tier: "Building Program", value: 2.5 },
+  "charlotte": { tier: "Building Program", value: 1.5 },
+  "colorado": { tier: "Building Program", value: 3.0 },
+  "colorado state": { tier: "Building Program", value: 2.5 },
+  "connecticut": { tier: "Building Program", value: 2.0 },
+  "uconn": { tier: "Building Program", value: 2.0 }, // Alternative name
+  "east carolina": { tier: "Building Program", value: 2.5 },
+  "eastern michigan": { tier: "Building Program", value: 2.0 },
+  "florida atlantic": { tier: "Building Program", value: 2.5 },
+  "florida international": { tier: "Building Program", value: 1.5 },
+  "georgia southern": { tier: "Building Program", value: 2.5 },
+  "georgia state": { tier: "Building Program", value: 2.0 },
+  "hawaii": { tier: "Building Program", value: 2.5 },
+  "indiana": { tier: "Building Program", value: 3.0 },
+  "jacksonville state": { tier: "Building Program", value: 1.0 },
+  "kennesaw state": { tier: "Building Program", value: 1.0 },
+  "kent state": { tier: "Building Program", value: 1.5 },
+  "louisiana tech": { tier: "Building Program", value: 2.5 },
+  "massachusetts": { tier: "Building Program", value: 1.0 },
+  "miami (oh)": { tier: "Building Program", value: 2.5 },
+  "middle tennessee": { tier: "Building Program", value: 2.5 },
+  "middle tennessee state": { tier: "Building Program", value: 2.5 },
+  "missouri state": { tier: "Building Program", value: 1.0 },
+  "nevada": { tier: "Building Program", value: 2.5 },
+  "new mexico": { tier: "Building Program", value: 1.5 },
+  "new mexico state": { tier: "Building Program", value: 1.0 },
+  "north texas": { tier: "Building Program", value: 2.5 },
+  "northern illinois": { tier: "Building Program", value: 2.5 },
+  "ohio": { tier: "Building Program", value: 2.5 },
+  "old dominion": { tier: "Building Program", value: 1.5 },
+  "rice": { tier: "Building Program", value: 2.0 },
+  "rutgers": { tier: "Building Program", value: 3.0 },
+  "sam houston": { tier: "Building Program", value: 1.0 },
+  "sam houston state": { tier: "Building Program", value: 1.0 },
+  "san jose state": { tier: "Building Program", value: 2.0 },
+  "south alabama": { tier: "Building Program", value: 2.0 },
+  "south florida": { tier: "Building Program", value: 2.5 },
+  "southern miss": { tier: "Building Program", value: 2.5 },
+  "temple": { tier: "Building Program", value: 2.5 },
+  "texas state": { tier: "Building Program", value: 2.0 },
+  "tulsa": { tier: "Building Program", value: 2.5 },
+  "uab": { tier: "Building Program", value: 2.5 },
+  "ul monroe": { tier: "Building Program", value: 1.5 },
+  "louisiana monroe": { tier: "Building Program", value: 1.5 },
+  "unlv": { tier: "Building Program", value: 2.0 },
+  "utah state": { tier: "Building Program", value: 2.5 },
+  "utep": { tier: "Building Program", value: 1.5 },
+  "utsa": { tier: "Building Program", value: 2.5 },
+  "vanderbilt": { tier: "Building Program", value: 3.0 },
+  "virginia": { tier: "Building Program", value: 3.0 },
+  "western kentucky": { tier: "Building Program", value: 2.5 },
+  "western michigan": { tier: "Building Program", value: 2.5 },
+  "wyoming": { tier: "Building Program", value: 2.5 }
+};
+
+// Function to get program tier and strength based on school name
+const getProgramTierAndStrength = (school) => {
+  const schoolLower = school?.toLowerCase() || "";
+  
+  // Check if the school is explicitly in our mapping
+  if (schoolLower in PROGRAM_TIERS) {
+    return PROGRAM_TIERS[schoolLower];
+  }
+  
+  // Default to Average Program (4-6 scale) if not explicitly categorized
+  return { tier: "Average Program", value: 5.0 };
+};
+
 // Enhanced coach evaluation system with improved thresholds
 const getCoachStatus = (coach, metrics) => {
-  // Minimum games threshold for reliable evaluation - increased from 12 to 18
+  // Minimum games threshold for reliable evaluation
   const MIN_GAMES_THRESHOLD = 18;
   
   // Extract metrics from the passed object
@@ -227,11 +331,21 @@ const CoachOverview = () => {
     // Special case handling for known coach transfers
     const coachName = `${coach.firstName} ${coach.lastName}`.toLowerCase();
     
-    // Add specific coach overrides here
-    if (coachName === "jason campbell") {
-      return "Iowa State";
+    // Coach team overrides - add more as needed
+    const COACH_TEAM_OVERRIDES = {
+      "jason campbell": "Iowa State",
+      "deion sanders": "Colorado",
+      "matt rhule": "Nebraska",
+      "jeff lebby": "Mississippi State",
+      "mike elko": "Texas A&M",
+      "curt cignetti": "Indiana",
+      "jamey chadwell": "Liberty",
+      "kalen deboer": "Alabama"
+    };
+    
+    if (coachName in COACH_TEAM_OVERRIDES) {
+      return COACH_TEAM_OVERRIDES[coachName];
     }
-    // Add more coach overrides as needed
     
     // Otherwise use most recent season's school
     const sortedSeasons = [...coach.seasons].sort((a, b) => b.year - a.year);
@@ -361,19 +475,13 @@ const CoachOverview = () => {
     );
     const conference = teamData ? teamData.conference : "";
     
-    // Program strength assessment (1-10 scale) with special overrides for elite programs
-    let programStrength = teamData?.historicalPrestige || 5; // Default value
-    
-    // Override program strength for elite programs
-    const schoolLower = currentTeam?.toLowerCase() || "";
-    if (["ohio state", "georgia", "oregon", "alabama", "michigan", "oklahoma", "clemson", "texas", "lsu", "usc", "notre dame", "penn state", "florida", "miami"].includes(schoolLower)) {
-      programStrength = Math.max(programStrength, 8); // Ensure these are at least 8 (elite programs)
-    } else if (["auburn", "texas a&m", "wisconsin", "utah", "washington", "florida state", "tennessee", "nebraska", "michigan state"].includes(schoolLower)) {
-      programStrength = Math.max(programStrength, 7); // Ensure these are at least 7 (strong programs)
-    }
+    // Get program tier and strength using our comprehensive mapping
+    const programInfo = getProgramTierAndStrength(currentTeam);
+    const programTier = programInfo.tier;
+    const programStrength = programInfo.value;
     
     // Program expectations based on historical performance (normalized to same scale as composite)
-    const expectations = programStrength * 5; // 1-10 scale converted to same scale as composite (0-50)
+    const expectations = programStrength * 5; // Scale to match composite (0-50)
     
     // Enhanced weighted composite approach using normalized and recency-weighted metrics
     const wPct = winPct === "N/A" ? 0 : parseFloat(winPct);
@@ -429,6 +537,7 @@ const CoachOverview = () => {
       composite,
       trend,
       programStrength,
+      programTier,
       expectations,
       status: getCoachStatus(coach, metricsForStatus),
       hireDateFormatted: coach.hireDate
@@ -591,6 +700,17 @@ const CoachOverview = () => {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
     exit: { opacity: 0, scale: 0.9 }
+  };
+
+  // Program tier CSS class helper
+  const getProgramTierClass = (tier) => {
+    switch (tier) {
+      case "Elite Program": return "program-elite";
+      case "Strong Program": return "program-strong";
+      case "Average Program": return "program-average";
+      case "Building Program": return "program-building";
+      default: return "program-average";
+    }
   };
 
   return (
@@ -932,17 +1052,11 @@ const CoachOverview = () => {
                                 </div>
                                 {/* Program context */}
                                 <div className="detail-item">
-                                  <span className="detail-label">Program Expectations</span>
+                                  <span className="detail-label">Program Tier</span>
                                   <div className="program-context">
-                                    {item.programStrength > 7 ? (
-                                      <span className="program-elite">Elite Program</span>
-                                    ) : item.programStrength > 5 ? (
-                                      <span className="program-strong">Strong Program</span>
-                                    ) : item.programStrength > 3 ? (
-                                      <span className="program-average">Average Program</span>
-                                    ) : (
-                                      <span className="program-building">Building Program</span>
-                                    )}
+                                    <span className={getProgramTierClass(item.programTier)}>
+                                      {item.programTier}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
