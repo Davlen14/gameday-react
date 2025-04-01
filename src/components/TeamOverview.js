@@ -206,16 +206,12 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
           <table className="info-table">
             <tbody>
               <tr>
-                <td>Location:</td>
-                <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
-              </tr>
-              <tr>
                 <td>Team Spirit:</td>
                 <td>
                   <div className="team-spirit-items">
                     {/* Team Logo Block */}
-                    <div className="spirit-item logo-block" style={{ backgroundColor: team.alt_color || lightenColor(teamColor, 20) }}>
-                      <div className="logo-content">
+                    <div className="spirit-item logo-block">
+                      <div className="logo-container" style={{ backgroundColor: team.alt_color || lightenColor(teamColor, 20) }}>
                         <img 
                           src={team.logos ? team.logos[0] : ''} 
                           alt={team.mascot || 'Team Logo'}
@@ -230,22 +226,30 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                     </div>
                     
                     {/* Modern Foam Finger */}
-                    <div className="spirit-item modern-finger" style={{ backgroundColor: teamColor }}>
-                      <div className="finger-text" style={{ color: getContrastColor(teamColor) }}>
-                        #1
+                    <div className="spirit-item modern-finger">
+                      <div className="finger-container" style={{ backgroundColor: teamColor }}>
+                        <div className="finger-text" style={{ color: getContrastColor(teamColor) }}>
+                          #1
+                        </div>
                       </div>
                       <div className="wood-stick"></div>
                     </div>
                     
                     {/* Team Pennant */}
-                    <div className="spirit-item modern-pennant" style={{ background: teamColor }}>
-                      <span style={{ color: getContrastColor(teamColor) }}>
-                        {team.mascot}
-                      </span>
+                    <div className="spirit-item modern-pennant">
+                      <div className="pennant-container" style={{ background: teamColor }}>
+                        <span style={{ color: getContrastColor(teamColor) }}>
+                          {team.mascot}
+                        </span>
+                      </div>
                       <div className="wood-stick pennant-stick"></div>
                     </div>
                   </div>
                 </td>
+              </tr>
+              <tr>
+                <td>Location:</td>
+                <td><strong>{team.location?.city}, {team.location?.state}</strong></td>
               </tr>
               <tr>
                 <td>Conference:</td>
@@ -272,6 +276,24 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                         </span>
                       )}
                     </strong>
+                    {coachData.seasons && coachData.seasons.length > 0 && (
+                      <div className="coach-record">
+                        <span className="record-detail">
+                          Record: {coachData.seasons[0].wins}-{coachData.seasons[0].losses}
+                        </span>
+                        {(coachData.seasons[0].preseasonRank || coachData.seasons[0].postseasonRank) && (
+                          <span className="rank-detail">
+                            {coachData.seasons[0].preseasonRank && (
+                              <span className="preseason-rank">Preseason: #{coachData.seasons[0].preseasonRank}</span>
+                            )}
+                            {coachData.seasons[0].preseasonRank && coachData.seasons[0].postseasonRank && ' • '}
+                            {coachData.seasons[0].postseasonRank && (
+                              <span className="postseason-rank">Final: #{coachData.seasons[0].postseasonRank}</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               )}
@@ -395,7 +417,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               justify-content: flex-start;
               align-items: flex-end;
               gap: 30px;
-              padding: 20px 0;
+              padding: 20px 0 60px;
               margin-top: 10px;
             }
             
@@ -404,10 +426,17 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               cursor: pointer;
               transition: transform 0.3s ease-out;
               filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.25));
+              animation: subtle-float 3s ease-in-out infinite;
             }
             
             .spirit-item:hover {
-              transform: translateY(-5px);
+              transform: translateY(-8px);
+              animation-play-state: paused;
+            }
+
+            @keyframes subtle-float {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-4px); }
             }
 
             /* Wooden sticks styling */
@@ -419,6 +448,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               bottom: -60px;
               left: calc(50% - 4px);
               border-radius: 2px;
+              box-shadow: 1px 2px 3px rgba(0,0,0,0.2);
             }
 
             .pennant-stick {
@@ -426,41 +456,53 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               bottom: -58px;
             }
             
+            
             /* Logo Block */
             .logo-block {
               width: 60px;
               height: 60px;
-              border-radius: 8px;
               display: flex;
               justify-content: center;
               align-items: center;
+            }
+
+            .logo-container {
+              width: 100%;
+              height: 100%;
+              border-radius: 10px;
+              padding: 6px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+              background-color: white;
               overflow: hidden;
             }
 
-            .logo-content {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 100%;
-              height: 100%;
-              padding: 6px;
-            }
-
             .team-logo-stick {
-              width: 100%;
-              height: 100%;
+              width: 85%;
+              height: 85%;
               object-fit: contain;
-              filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+              filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
             }
             
             /* Modern Foam Finger */
             .modern-finger {
-              width: 50px;
+              width: 55px;
               height: 70px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+
+            .finger-container {
+              width: 100%;
+              height: 100%;
               border-radius: 12px 12px 8px 8px;
               display: flex;
               justify-content: center;
               align-items: center;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
               position: relative;
             }
             
@@ -468,18 +510,25 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: bold;
               font-size: 22px;
               text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-              color: white;
             }
             
             /* Modern Pennant */
             .modern-pennant {
-              position: relative;
               width: 120px;
-              height: 50px;
+              height: 55px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+
+            .pennant-container {
+              width: 100%;
+              height: 100%;
               display: flex;
               justify-content: center;
               align-items: center;
               clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
             
             .modern-pennant span {
@@ -502,11 +551,34 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: normal;
             }
 
+            .coach-record {
+              margin-top: 5px;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            }
+
             .record-detail {
               font-size: 0.85rem;
               opacity: 0.8;
-              margin-left: 8px;
               font-weight: normal;
+              display: inline-block;
+            }
+
+            .rank-detail {
+              display: flex;
+              gap: 10px;
+              font-size: 0.8rem;
+              color: #555;
+              margin-top: 2px;
+            }
+
+            .preseason-rank, .postseason-rank {
+              background-color: ${lightenColor(teamColor, 95)};
+              border: 1px solid ${lightenColor(teamColor, 85)};
+              border-radius: 3px;
+              padding: 2px 5px;
+              font-size: 0.75rem;
             }
           `}</style>
         </div>
