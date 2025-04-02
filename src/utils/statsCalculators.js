@@ -642,7 +642,9 @@ export const calculateEmptyTeamStats = () => ({
 
 export const processDriveData = (drivesData, homeTeam, awayTeam) => {
   if (!drivesData || !Array.isArray(drivesData)) return [];
-  return drivesData.map((drive) => {
+  
+  // Process each drive
+  const processedDrives = drivesData.map((drive) => {
     let result = "Unknown";
     if (drive.scoring) {
       if (drive.scoringType === "TD") result = "Touchdown";
@@ -656,19 +658,131 @@ export const processDriveData = (drivesData, homeTeam, awayTeam) => {
       result = "Turnover on Downs";
     } else if (drive.endReason === "END OF HALF" || drive.endReason === "END OF GAME") {
       result = "End of Half";
+    } else if (drive.result === "Touchdown" || drive.result === "Field Goal" || 
+               drive.result === "Punt" || drive.result === "Downs" || 
+               drive.result === "End of Half") {
+      // For the new API format that has the result directly
+      result = drive.result;
     } else {
-      result = drive.endReason || "Unknown";
+      result = drive.endReason || drive.result || "Unknown";
     }
     return {
-      team: drive.offenseTeam,
-      quarter: drive.quarter || 1,
+      team: drive.offenseTeam || drive.offense,
+      quarter: drive.quarter || drive.startPeriod || 1,
       result,
       yards: drive.yards || 0,
-      timeOfPossession: drive.timeOfPossession || "0:00",
-      plays: drive.plays || 0,
-      startPosition: drive.startYard ? `${drive.startSide} ${drive.startYard}` : "Unknown",
+      timeOfPossession: drive.timeOfPossession || drive.duration || "0:00",
+      plays: drive.plays || drive.playCount || 0,
+      startPosition: drive.startYard ? `${drive.startSide} ${drive.startYard}` : 
+                    drive.startYardsToGoal ? `Own ${100 - drive.startYardsToGoal}` : "Unknown",
+      scoringOpportunity: drive.scoringOpportunity || (result === "Touchdown" || result === "Field Goal"),
+      pointsGained: drive.pointsGained || (result === "Touchdown" ? 7 : (result === "Field Goal" ? 3 : 0)),
+      playDetails: Array.isArray(drive.plays) ? drive.plays : []
     };
   });
+  
+  return processedDrives;
+};
+
+// Extract team stats from drive data when API stats aren't available
+export const extractStatsFromDrives = (drivesData, teamName) => {
+  if (!drivesData || !Array.isArray(drivesData) || drivesData.length === 0) {
+    return null;
+  }
+  
+  // Filter drives for this team
+  const teamDrives = drivesData.filter(drive => {
+    return drive.team === teamName || drive.offense === teamName || drive.offenseTeam === teamName;
+  });
+  
+  if (teamDrives.length === 0) return null;
+  
+  // Initialize stats
+  const extractedStats = {
+    firstDowns: 0,
+    thirdDowns: { attempts: 0, conversions: 0 },
+    redZone: { attempts: 0, conversions: 0 },
+    turnovers: 0,
+    timeOfPossession: 0,
+    explosivePlays: 0
+  };
+  
+  // Process each drive
+  teamDrives.forEach(drive => {
+    // Count red zone attempts (drives that reach the opponent's 20 yard line)
+    if (drive.scoringOpportunity) {
+      extractedStats.redZone.attempts++;
+      
+      // Count conversions (touchdowns or field goals)
+      if (drive.result === "Touchdown" || drive.result === "Field Goal") {
+        extractedStats.redZone.conversions++;
+      }
+    }
+    
+    // Count turnovers
+    if (drive.result === "Turnover" || drive.result === "Fumble" || drive.result === "Interception") {
+      extractedStats.turnovers++;
+    }
+    
+    // Parse time of possession
+    if (drive.timeOfPossession) {
+      const [minutes, seconds] = drive.timeOfPossession.split(':').map(Number);
+      if (!isNaN(minutes) && !isNaN(seconds)) {
+        extractedStats.timeOfPossession += minutes + (seconds / 60);
+      }
+    }
+    
+    // Process play details if available
+    if (Array.isArray(drive.playDetails) && drive.playDetails.length > 0) {
+      drive.playDetails.forEach(play => {
+        // Count first downs from play descriptions
+        if (play.playText && play.playText.includes("1ST down")) {
+          extractedStats.firstDowns++;
+        }
+        
+        // Count third downs and conversions
+        if (play.down === 3) {
+          extractedStats.thirdDowns.attempts++;
+          
+          // Check for conversion (next play is 1st down or scoring play)
+          const nextPlayIndex = drive.playDetails.indexOf(play) + 1;
+          if (nextPlayIndex < drive.playDetails.length) {
+            const nextPlay = drive.playDetails[nextPlayIndex];
+            if (nextPlay.down === 1 || nextPlay.playType === "Touchdown" || nextPlay.playType === "Rushing Touchdown" || nextPlay.playType === "Passing Touchdown") {
+              extractedStats.thirdDowns.conversions++;
+            }
+          }
+        }
+        
+        // Count explosive plays (20+ yard gains)
+        if (play.yardsGained >= 20) {
+          extractedStats.explosivePlays++;
+        } else if (play.playText) {
+          // Try to detect yards gained from play text
+          const yardPatterns = [
+            /for (\d+) yds/i,     // "for 25 yds"
+            /gain of (\d+)/i,     // "gain of 30"
+            /for (\d+) yards/i,   // "for 22 yards" 
+            /run for (\d+) yds/i, // "run for 35 yds"
+            /pass.+for (\d+) yds/i // "pass complete... for 24 yds"
+          ];
+          
+          for (const pattern of yardPatterns) {
+            const match = play.playText.match(pattern);
+            if (match && match[1]) {
+              const yards = parseInt(match[1]);
+              if (yards >= 20) {
+                extractedStats.explosivePlays++;
+                break;
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+  
+  return extractedStats;
 };
 
 // ----------------------------------------------------------------------------
@@ -918,8 +1032,11 @@ export const processPlayerStats = (playersData, ppaData) => {
  */
 export const processTeamStatsFromAPI = (teamData) => {
   if (!teamData || !teamData.stats) {
+    console.warn("No team stats data available");
     return calculateEmptyTeamStats();
   }
+
+  console.log("Processing team stats from API for team:", teamData.team, teamData);
 
   // Create an easy-to-access map of stats by category
   const statsByCategory = {};
@@ -936,7 +1053,7 @@ export const processTeamStatsFromAPI = (teamData) => {
     if (typeof statValue === 'string' && statValue.includes('/')) {
       const [made, attempted] = statValue.split('/');
       return {
-        completions: parseInt(made, 10) || 0,
+        conversions: parseInt(made, 10) || 0,
         attempts: parseInt(attempted, 10) || 0
       };
     }
@@ -976,29 +1093,69 @@ export const processTeamStatsFromAPI = (teamData) => {
     };
   };
 
+  // Extract data based on the API format seen in provided examples
+  // Look for both camelCase and lowercase versions of field names
+  const totalYards = parseStatSafely('totalYards');
+  const passingYards = parseStatSafely('netPassingYards');
+  const rushingYards = parseStatSafely('rushingYards');
+  const firstDowns = parseStatSafely('firstDowns');
+
+  // Parse third down efficiency which can be in format "5/13"
+  let thirdDowns = { attempts: 0, conversions: 0 };
+  const thirdDownEff = parseStatSafely('thirdDownEff');
+  if (typeof thirdDownEff === 'object' && thirdDownEff.attempts) {
+    thirdDowns = thirdDownEff;
+  } else if (typeof thirdDownEff === 'string' && thirdDownEff.includes('/')) {
+    const [made, attempted] = thirdDownEff.split('/');
+    thirdDowns = {
+      conversions: parseInt(made, 10) || 0,
+      attempts: parseInt(attempted, 10) || 0
+    };
+  }
+
+  // Parse fourth down efficiency
+  let fourthDowns = { attempts: 0, conversions: 0 };
+  const fourthDownEff = parseStatSafely('fourthDownEff');
+  if (typeof fourthDownEff === 'object' && fourthDownEff.attempts) {
+    fourthDowns = fourthDownEff;
+  } else if (typeof fourthDownEff === 'string' && fourthDownEff.includes('/')) {
+    const [made, attempted] = fourthDownEff.split('/');
+    fourthDowns = {
+      conversions: parseInt(made, 10) || 0,
+      attempts: parseInt(attempted, 10) || 0
+    };
+  }
+
+  // Parse red zone efficiency
+  let redZone = { attempts: 0, conversions: 0 };
+  const redZoneEff = parseStatSafely('redZoneEff');
+  if (typeof redZoneEff === 'object' && redZoneEff.attempts) {
+    redZone = redZoneEff;
+  } else if (typeof redZoneEff === 'string' && redZoneEff.includes('/')) {
+    const [made, attempted] = redZoneEff.split('/');
+    redZone = {
+      conversions: parseInt(made, 10) || 0,
+      attempts: parseInt(attempted, 10) || 0
+    };
+  }
+
   // Build team stats object from API data
   const teamStats = {
-    totalYards: parseStatSafely('totalYards'),
-    passingYards: parseStatSafely('netPassingYards'),
-    rushingYards: parseStatSafely('rushingYards'),
-    firstDowns: parseStatSafely('firstDowns'),
-    thirdDowns: typeof parseStatSafely('thirdDownEff') === 'object' 
-      ? parseStatSafely('thirdDownEff') 
-      : { attempts: 0, conversions: 0 },
-    fourthDowns: typeof parseStatSafely('fourthDownEff') === 'object'
-      ? parseStatSafely('fourthDownEff')
-      : { attempts: 0, conversions: 0 },
+    totalYards: totalYards,
+    passingYards: passingYards,
+    rushingYards: rushingYards,
+    firstDowns: firstDowns,
+    thirdDowns: thirdDowns,
+    fourthDowns: fourthDowns,
     turnovers: parseStatSafely('turnovers'),
     timeOfPossession: parsePossessionTime(parseStatSafely('possessionTime', '30:00')),
-    redZone: typeof parseStatSafely('redZoneEff') === 'object'
-      ? parseStatSafely('redZoneEff')
-      : { attempts: 0, conversions: 0 },
+    redZone: redZone,
     penalties: parsePenalties(parseStatSafely('totalPenaltiesYards', '0-0')),
     sacks: { 
       count: parseStatSafely('sacks', 0),
       yards: parseStatSafely('sackYards', 0)
     },
-    explosivePlays: 0, // Not directly available in API, would need to calculate from plays
+    explosivePlays: 0, // Will count this from play-by-play data
     ppa: { 
       total: 0, 
       passing: 0, 
@@ -1013,40 +1170,32 @@ export const processTeamStatsFromAPI = (teamData) => {
     }
   };
 
-  // Handle third down efficiency if in format "X/Y"
-  if (typeof teamStats.thirdDowns === 'string') {
-    const thirdDownStr = teamStats.thirdDowns;
-    const thirdDownParts = thirdDownStr.split('/');
-    if (thirdDownParts.length === 2) {
-      teamStats.thirdDowns = {
-        conversions: parseInt(thirdDownParts[0], 10) || 0,
-        attempts: parseInt(thirdDownParts[1], 10) || 0
-      };
-    }
-  }
-
-  // Handle fourth down efficiency if in format "X/Y"
-  if (typeof teamStats.fourthDowns === 'string') {
-    const fourthDownStr = teamStats.fourthDowns;
-    const fourthDownParts = fourthDownStr.split('/');
-    if (fourthDownParts.length === 2) {
-      teamStats.fourthDowns = {
-        conversions: parseInt(fourthDownParts[0], 10) || 0,
-        attempts: parseInt(fourthDownParts[1], 10) || 0
-      };
-    }
-  }
+  // Count explosive plays from game data if available
+  // For now, estimate based on total yards
+  teamStats.explosivePlays = Math.round(totalYards / 100); // Rough estimate
 
   // Calculate efficiency metrics
   // These would ideally come from API but we can estimate based on stats
-  const totalPlays = parseStatSafely('rushingAttempts', 0) + 
-                    (typeof parseStatSafely('completionAttempts') === 'object' ? 
-                      parseStatSafely('completionAttempts').attempts : 0);
+  const rushingAttempts = parseStatSafely('rushingAttempts', 0);
+  const completionAttempts = parseStatSafely('completionAttempts');
+  let passAttempts = 0;
+  
+  if (typeof completionAttempts === 'string' && completionAttempts.includes('/')) {
+    const [_, attempted] = completionAttempts.split('/');
+    passAttempts = parseInt(attempted, 10) || 0;
+  } else if (typeof completionAttempts === 'object') {
+    passAttempts = completionAttempts.attempts || 0;
+  }
+  
+  const totalPlays = rushingAttempts + passAttempts;
                       
   if (totalPlays > 0) {
     const yardsPerPlay = teamStats.totalYards / totalPlays;
     teamStats.efficiency.offensive = Math.min(0.95, Math.max(0.1, 0.3 + (yardsPerPlay / 10)));
   }
+
+  // Log the derived team stats 
+  console.log("Derived team stats for", teamData.team, teamStats);
 
   return teamStats;
 };
