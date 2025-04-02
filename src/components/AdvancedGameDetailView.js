@@ -5,6 +5,7 @@ import graphqlTeamsService from "../services/graphqlTeamsService";
 import youtubeService from "../services/youtubeService";
 import WinProb from "./WinProb";
 import "../styles/AdvancedGameDetailView.css";
+import AdvancedStatistics from "./AdvancedStatistics";
 
 // Modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
@@ -421,6 +422,7 @@ const AdvancedGameDetailView = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [advancedStats, setAdvancedStats] = useState(null);
   
   // States for video content
   const [videos, setVideos] = useState([]);
@@ -1215,6 +1217,28 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  const renderAdvancedStats = () => (
+    <div className="tab-content advanced-stats">
+      <h2>Advanced Statistics</h2>
+      {gameData ? (
+        <AdvancedStatistics 
+          gameData={gameData} 
+          homeTeam={homeTeam} 
+          awayTeam={awayTeam} 
+          homeTeamColor={homeTeamColor} 
+          awayTeamColor={awayTeamColor} 
+          homeLogo={homeLogo} 
+          awayLogo={awayLogo} 
+        />
+      ) : (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading advanced statistics...</p>
+        </div>
+      )}
+    </div>
+  );
+
   const renderTabs = () => (
     <div className="tabs">
       <button className={`tab-button ${activeTab === "overview" ? "active" : ""}`} onClick={() => setActiveTab("overview")}>
@@ -1289,6 +1313,15 @@ const AdvancedGameDetailView = () => {
         </svg>
         <span>Metrics</span>
       </button>
+      <button className={`tab-button ${activeTab === "advancedStats" ? "active" : ""}`} onClick={() => setActiveTab("advancedStats")}>
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z"
+          />
+        </svg>
+        <span>Advanced Stats</span>
+      </button>
     </div>
   );
 
@@ -1315,6 +1348,7 @@ const AdvancedGameDetailView = () => {
       {activeTab === "venue" && renderVenue()}
       {activeTab === "details" && renderDetails()}
       {activeTab === "winMetrics" && renderWinMetrics()}
+      {activeTab === "advancedStats" && renderAdvancedStats()}
     </div>
   );
 };
