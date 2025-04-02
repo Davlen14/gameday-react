@@ -26,7 +26,7 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         setIsLoading(true);
         let playersData, ppaData, drivesData;
 
-        // Attempt to fetch using teamsService first
+        // Try to fetch data using teamsService first.
         try {
           console.log("Fetching player data using teamsService for game", gameData.id);
           playersData = await teamsService.getGamePlayers(gameData.id);
@@ -38,7 +38,7 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           drivesData = (await teamsService.getGameDrives(gameData.id)) || [];
         } catch (primaryError) {
           console.error("teamsService error:", primaryError);
-          // Fallback to graphqlTeamsService if available
+          // Fallback: use graphqlTeamsService if available.
           if (graphqlTeamsService && typeof graphqlTeamsService.getGamePlayers === "function") {
             console.log("Fetching player data using graphqlTeamsService for game", gameData.id);
             playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
@@ -56,11 +56,11 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log("PPA data fetched:", ppaData);
         console.log("Drive data fetched:", drivesData);
 
-        // Process player-level statistics and calculate grades.
+        // Process player-level stats and calculate grades.
         const processedPlayers = processPlayerStats(playersData, ppaData);
         setPlayerStats(processedPlayers);
 
-        // Calculate team-level stats using processed player data.
+        // Calculate team-level statistics using processed player stats.
         const homeStats = calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam);
         const awayStats = calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam);
 
@@ -69,6 +69,7 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
 
         // Build the final advancedData object.
         const advancedDataObj = {
+          gameInfo: gameData, // Include raw game data for additional context
           homeTeamStats: homeStats,
           awayTeamStats: awayStats,
           players: processedPlayers,

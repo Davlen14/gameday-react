@@ -10,17 +10,33 @@ const OverviewView = ({
   homeLogo, 
   awayLogo 
 }) => {
-  const { homeTeamStats, awayTeamStats } = advancedData;
-  
+  const { homeTeamStats, awayTeamStats } = advancedData || {};
+
+  // Defensive checks for required team stats
+  if (!homeTeamStats || !awayTeamStats) {
+    return <div>No team statistics available.</div>;
+  }
+
   // Calculate percentages for visual display
-  const totalYards = homeTeamStats.totalYards + awayTeamStats.totalYards;
-  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100) || 50;
+  const totalYards = (homeTeamStats.totalYards || 0) + (awayTeamStats.totalYards || 0);
+  // If totalYards is 0, show a message so you can debug
+  if (totalYards === 0) {
+    return <div>Team total yards data not available. Please check your API data.</div>;
+  }
+  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100);
   const awayYardsPercentage = 100 - homeYardsPercentage;
-  
-  const totalTime = homeTeamStats.timeOfPossession + awayTeamStats.timeOfPossession;
-  const homePossessionPercentage = Math.round((homeTeamStats.timeOfPossession / totalTime) * 100) || 50;
+
+  // For timeOfPossession, assume values are numbers (or use default if not)
+  const homePossession = typeof homeTeamStats.timeOfPossession === 'number'
+    ? homeTeamStats.timeOfPossession
+    : 30;
+  const awayPossession = typeof awayTeamStats.timeOfPossession === 'number'
+    ? awayTeamStats.timeOfPossession
+    : 30;
+  const totalTime = homePossession + awayPossession;
+  const homePossessionPercentage = Math.round((homePossession / totalTime) * 100);
   const awayPossessionPercentage = 100 - homePossessionPercentage;
-  
+
   return (
     <div className="advanced-stats-overview">
       <h3 className="section-title">Team Statistics Comparison</h3>
@@ -39,11 +55,11 @@ const OverviewView = ({
         
         {/* Total Yards */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.totalYards}
+          {homeTeamStats.totalYards || 0}
         </div>
         <div className="stat-label">Total Yards</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.totalYards}
+          {awayTeamStats.totalYards || 0}
         </div>
         
         {/* Yards Bar */}
@@ -68,86 +84,86 @@ const OverviewView = ({
         
         {/* Passing Yards */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.passingYards}
+          {homeTeamStats.passingYards || 0}
         </div>
         <div className="stat-label">Passing Yards</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.passingYards}
+          {awayTeamStats.passingYards || 0}
         </div>
         
         {/* Rushing Yards */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.rushingYards}
+          {homeTeamStats.rushingYards || 0}
         </div>
         <div className="stat-label">Rushing Yards</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.rushingYards}
+          {awayTeamStats.rushingYards || 0}
         </div>
         
         {/* First Downs */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.firstDowns}
+          {homeTeamStats.firstDowns || 0}
         </div>
         <div className="stat-label">First Downs</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.firstDowns}
+          {awayTeamStats.firstDowns || 0}
         </div>
         
         {/* Third Down Efficiency */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.thirdDowns.conversions}/{homeTeamStats.thirdDowns.attempts} ({Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100) || 0}%)
+          {homeTeamStats.thirdDowns?.conversions || 0}/{homeTeamStats.thirdDowns?.attempts || 0} ({homeTeamStats.thirdDowns?.attempts ? Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100) : 0}%)
         </div>
         <div className="stat-label">Third Down</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.thirdDowns.conversions}/{awayTeamStats.thirdDowns.attempts} ({Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100) || 0}%)
+          {awayTeamStats.thirdDowns?.conversions || 0}/{awayTeamStats.thirdDowns?.attempts || 0} ({awayTeamStats.thirdDowns?.attempts ? Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100) : 0}%)
         </div>
         
         {/* Red Zone Efficiency */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.redZone.conversions}/{homeTeamStats.redZone.attempts} ({Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100) || 0}%)
+          {homeTeamStats.redZone?.conversions || 0}/{homeTeamStats.redZone?.attempts || 0} ({homeTeamStats.redZone?.attempts ? Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100) : 0}%)
         </div>
         <div className="stat-label">Red Zone</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.redZone.conversions}/{awayTeamStats.redZone.attempts} ({Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100) || 0}%)
+          {awayTeamStats.redZone?.conversions || 0}/{awayTeamStats.redZone?.attempts || 0} ({awayTeamStats.redZone?.attempts ? Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100) : 0}%)
         </div>
         
         {/* Turnovers */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.turnovers}
+          {homeTeamStats.turnovers || 0}
         </div>
         <div className="stat-label">Turnovers</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.turnovers}
+          {awayTeamStats.turnovers || 0}
         </div>
         
         {/* Penalties */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.penalties.count}-{homeTeamStats.penalties.yards}
+          {homeTeamStats.penalties?.count || 0}-{homeTeamStats.penalties?.yards || 0}
         </div>
         <div className="stat-label">Penalties</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.penalties.count}-{awayTeamStats.penalties.yards}
+          {awayTeamStats.penalties?.count || 0}-{awayTeamStats.penalties?.yards || 0}
         </div>
         
         {/* Explosive Plays */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.explosivePlays}
+          {homeTeamStats.explosivePlays || 0}
         </div>
         <div className="stat-label tooltip-container">
           Explosive Plays
           <span className="tooltip-text">Plays of 20+ yards</span>
         </div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.explosivePlays}
+          {awayTeamStats.explosivePlays || 0}
         </div>
         
         {/* Time of Possession */}
         <div className="stat-value home" style={{ backgroundColor: `${homeTeamColor}20` }}>
-          {Math.floor(homeTeamStats.timeOfPossession)}:{Math.round((homeTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}
+          {Math.floor(homePossession)}:{Math.round((homePossession % 1) * 60).toString().padStart(2, '0')}
         </div>
         <div className="stat-label">Time of Possession</div>
         <div className="stat-value away" style={{ backgroundColor: `${awayTeamColor}20` }}>
-          {Math.floor(awayTeamStats.timeOfPossession)}:{Math.round((awayTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}
+          {Math.floor(awayPossession)}:{Math.round((awayPossession % 1) * 60).toString().padStart(2, '0')}
         </div>
         
         {/* Possession Bar */}
@@ -186,7 +202,7 @@ const OverviewView = ({
             </div>
             
             <div className="key-player-cards">
-              {advancedData.keyPlayers[homeTeam].slice(0, 4).map((player, index) => (
+              {advancedData.keyPlayers?.[homeTeam]?.slice(0, 4).map((player, index) => (
                 <div 
                   key={index} 
                   className="key-player-card"
@@ -217,7 +233,7 @@ const OverviewView = ({
             </div>
             
             <div className="key-player-cards">
-              {advancedData.keyPlayers[awayTeam].slice(0, 4).map((player, index) => (
+              {advancedData.keyPlayers?.[awayTeam]?.slice(0, 4).map((player, index) => (
                 <div 
                   key={index} 
                   className="key-player-card"
