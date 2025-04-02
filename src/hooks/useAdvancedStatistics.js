@@ -24,9 +24,9 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
     const fetchAdvancedStats = async () => {
       try {
         setIsLoading(true);
-
         let playersData, ppaData, drivesData;
 
+        // Attempt to fetch using teamsService first
         try {
           console.log("Fetching player data using teamsService for game", gameData.id);
           playersData = await teamsService.getGamePlayers(gameData.id);
@@ -37,14 +37,15 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           console.log("Fetching drive data using teamsService for game", gameData.id);
           drivesData = (await teamsService.getGameDrives(gameData.id)) || [];
         } catch (primaryError) {
-          console.error("Error in teamsService:", primaryError);
-          try {
-            console.log("Attempting fallback via graphqlTeamsService for game", gameData.id);
+          console.error("teamsService error:", primaryError);
+          // Fallback to graphqlTeamsService if available
+          if (graphqlTeamsService && typeof graphqlTeamsService.getGamePlayers === "function") {
+            console.log("Fetching player data using graphqlTeamsService for game", gameData.id);
             playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
             ppaData = (await graphqlTeamsService.getGamePPA(gameData.id)) || [];
             drivesData = (await graphqlTeamsService.getGameDrives(gameData.id)) || [];
-          } catch (fallbackError) {
-            console.error("Fallback error in graphqlTeamsService:", fallbackError);
+          } else {
+            console.warn("No fallback available; setting empty data for game", gameData.id);
             playersData = [];
             ppaData = [];
             drivesData = [];
@@ -55,18 +56,18 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log("PPA data fetched:", ppaData);
         console.log("Drive data fetched:", drivesData);
 
-        // Process player-level stats using the helper function.
+        // Process player-level statistics and calculate grades.
         const processedPlayers = processPlayerStats(playersData, ppaData);
         setPlayerStats(processedPlayers);
 
-        // Calculate team-level stats using the processed player stats.
+        // Calculate team-level stats using processed player data.
         const homeStats = calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam);
         const awayStats = calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam);
 
         // Process drive data.
         const processedDrives = processDriveData(drivesData, homeTeam, awayTeam);
 
-        // Build the advancedData object that OverviewView expects.
+        // Build the final advancedData object.
         const advancedDataObj = {
           homeTeamStats: homeStats,
           awayTeamStats: awayStats,
