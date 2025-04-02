@@ -328,12 +328,13 @@ export const calculateRushingSuccessRate = (teamStats, teamPlayers) => {
   return 0.4 + (ypc - 3) * 0.1;
 };
 
-export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
+export const calculateTeamStats = (players, teamName, gameData, homeTeam, drivesData) => {
   // Log important input parameters to help with troubleshooting
   console.log(`Calculating team stats for ${teamName}:`, {
     totalPlayers: players.length,
     teamPlayers: players.filter(p => p.team === teamName).length,
-    gameDataAvailable: !!gameData
+    gameDataAvailable: !!gameData,
+    drivesDataAvailable: !!drivesData && Array.isArray(drivesData)
   });
   
   const teamPlayers = players.filter((p) => p.team === teamName);
@@ -354,27 +355,106 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
     efficiency: { offensive: 0, defensive: 0, passingSuccess: 0, rushingSuccess: 0 },
   };
   
-  // If we don't have any team players, use default estimated team values
-  if (teamPlayers.length === 0) {
-    console.warn(`No players found for team ${teamName}. Using estimated values.`);
-    // Default to reasonable values for an average college football game
-    teamStats.totalYards = 380;
-    teamStats.passingYards = 220;
-    teamStats.rushingYards = 160;
-    teamStats.firstDowns = 22;
-    teamStats.explosivePlays = 4;
-    teamStats.thirdDowns = { attempts: 12, conversions: 5 };
-    teamStats.fourthDowns = { attempts: 2, conversions: 1 };
-    teamStats.redZone = { attempts: 4, conversions: 2 };
-    teamStats.turnovers = 1;
-    teamStats.timeOfPossession = 30;
-    teamStats.ppa.total = 0.05;
-    teamStats.ppa.passing = 0.08;
-    teamStats.ppa.rushing = 0.03;
-    teamStats.ppa.defense = -0.02;
-  } else {
+  // If we have valid drive data, use it for accurate yardage calculations
+  if (drivesData && Array.isArray(drivesData) && drivesData.length > 0) {
+    // Filter drives for the current team
+    const teamDrives = drivesData.filter(drive => {
+      // Match by team name or ID
+      return (drive.offense === teamName || drive.offenseId === teamName);
+    });
+    
+    console.log(`Found ${teamDrives.length} drives for ${teamName}`);
+    
+    let totalYards = 0;
+    let passingYards = 0;
+    let rushingYards = 0;
+    let firstDowns = 0;
+    
+    // Process each drive to extract statistics
+    teamDrives.forEach(drive => {
+      // Add drive yards to total
+      if (typeof drive.yards === 'number') {
+        totalYards += drive.yards;
+      }
+      
+      // Process plays in each drive if available
+      if (drive.plays && Array.isArray(drive.plays)) {
+        drive.plays.forEach(play => {
+          // Skip special plays that shouldn't count toward offensive stats
+          const specialPlayTypes = ["Kickoff", "Punt", "Timeout", "End Period", "End of Half", "End of Game"];
+          if (specialPlayTypes.includes(play.playType)) {
+            return;
+          }
+          
+          // Count passing yards
+          if (play.playType === "Pass Reception" || play.playType === "Pass Completion") {
+            if (typeof play.yardsGained === 'number') {
+              passingYards += play.yardsGained;
+            }
+          }
+          // Count rushing yards
+          else if (play.playType === "Rush" || play.playType === "Rushing Touchdown") {
+            if (typeof play.yardsGained === 'number') {
+              rushingYards += play.yardsGained;
+            }
+          }
+          
+          // Count first downs
+          if (play.playText && play.playText.includes("1ST down")) {
+            firstDowns++;
+          }
+          
+          // Count explosive plays (plays of 20+ yards)
+          if (play.yardsGained >= 20) {
+            teamStats.explosivePlays++;
+          }
+        });
+      }
+    });
+    
+    // If we have valid play-by-play data, use these totals
+    if (totalYards > 0) {
+      teamStats.totalYards = totalYards;
+      teamStats.passingYards = passingYards;
+      teamStats.rushingYards = rushingYards;
+      teamStats.firstDowns = firstDowns;
+    }
+    // Otherwise, fall back to summing up player stats
+    else {
+      console.log(`No valid play data for ${teamName}, falling back to player stats`);
+      calculateStatsFromPlayers(teamPlayers, teamStats);
+    }
+  }
+  // If no drive data, fall back to player stats
+  else {
+    console.log(`No drives data for ${teamName}, using player stats`);
+    // If we don't have any team players, use default estimated team values
+    if (teamPlayers.length === 0) {
+      console.warn(`No players found for team ${teamName}. Using estimated values.`);
+      // Default to reasonable values for an average college football game
+      teamStats.totalYards = 380;
+      teamStats.passingYards = 220;
+      teamStats.rushingYards = 160;
+      teamStats.firstDowns = 22;
+      teamStats.explosivePlays = 4;
+      teamStats.thirdDowns = { attempts: 12, conversions: 5 };
+      teamStats.fourthDowns = { attempts: 2, conversions: 1 };
+      teamStats.redZone = { attempts: 4, conversions: 2 };
+      teamStats.turnovers = 1;
+      teamStats.timeOfPossession = 30;
+      teamStats.ppa.total = 0.05;
+      teamStats.ppa.passing = 0.08;
+      teamStats.ppa.rushing = 0.03;
+      teamStats.ppa.defense = -0.02;
+    } else {
+      calculateStatsFromPlayers(teamPlayers, teamStats);
+    }
+  }
+
+  // Helper function to calculate stats from player data
+  function calculateStatsFromPlayers(players, stats) {
     // Process player stats if we have players
-    teamPlayers.forEach((player) => {
+    players.forEach((player) => {
       if (player.stats) {
         console.log(`Processing stats for player: ${player.name}, position: ${player.position}`);
         console.log("Player stats structure:", player.stats);
@@ -400,7 +480,7 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
           }
         }
         if (pYds && !isNaN(pYds)) {
-          teamStats.passingYards += pYds;
+          stats.passingYards += pYds;
           console.log(`Added ${pYds} passing yards for ${player.name}`);
         }
 
@@ -423,7 +503,7 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
           }
         }
         if (rYds && !isNaN(rYds)) {
-          teamStats.rushingYards += rYds;
+          stats.rushingYards += rYds;
           console.log(`Added ${rYds} rushing yards for ${player.name}`);
         }
 
@@ -431,12 +511,12 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
         if (player.stats.firstdowns) {
           const firstDowns = parseFloat(player.stats.firstdowns);
           if (!isNaN(firstDowns)) {
-            teamStats.firstDowns += firstDowns;
+            stats.firstDowns += firstDowns;
           }
         } else if (player.stats.firstDowns) {
           const firstDowns = parseFloat(player.stats.firstDowns);
           if (!isNaN(firstDowns)) {
-            teamStats.firstDowns += firstDowns;
+            stats.firstDowns += firstDowns;
           }
         }
 
@@ -445,14 +525,14 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
         if (player.stats.passing) {
           const passYards = parseFloat(player.stats.passing.yards || player.stats.passing.yds || 0);
           if (passYards >= 20) {
-            teamStats.explosivePlays += 1;
+            stats.explosivePlays += 1;
             hasExplosivePlay = true;
           }
         }
         if (!hasExplosivePlay && player.stats.rushing) {
           const rushYards = parseFloat(player.stats.rushing.yards || player.stats.rushing.yds || 0);
           if (rushYards >= 20) {
-            teamStats.explosivePlays += 1;
+            stats.explosivePlays += 1;
           }
         }
 
@@ -465,14 +545,14 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
         }
         
         if (!isNaN(interceptions)) {
-          teamStats.turnovers += interceptions;
+          stats.turnovers += interceptions;
         }
         
         // Check for fumbles too
         if (player.stats.fumbles) {
           const fumbles = parseFloat(player.stats.fumbles);
           if (!isNaN(fumbles)) {
-            teamStats.turnovers += fumbles;
+            stats.turnovers += fumbles;
           }
         }
 
@@ -480,38 +560,36 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
         if (player.stats.defense && player.stats.defense.sacks) {
           const sacks = parseFloat(player.stats.defense.sacks);
           if (!isNaN(sacks)) {
-            teamStats.sacks.count += sacks;
-            teamStats.sacks.yards += sacks * 7; // Estimate 7 yards per sack
+            stats.sacks.count += sacks;
+            stats.sacks.yards += sacks * 7; // Estimate 7 yards per sack
           }
         }
 
         // PPA values
         if (player.ppa && !isNaN(parseFloat(player.ppa))) {
           const ppaValue = parseFloat(player.ppa);
-          teamStats.ppa.total += ppaValue;
+          stats.ppa.total += ppaValue;
           
           if (["QB", "RB", "WR", "TE"].includes(player.position)) {
             if (player.position === "QB") {
-              teamStats.ppa.passing += ppaValue * 0.8;
-              teamStats.ppa.rushing += ppaValue * 0.2;
+              stats.ppa.passing += ppaValue * 0.8;
+              stats.ppa.rushing += ppaValue * 0.2;
             } else if (player.position === "RB") {
-              teamStats.ppa.rushing += ppaValue * 0.7;
-              teamStats.ppa.passing += ppaValue * 0.3;
+              stats.ppa.rushing += ppaValue * 0.7;
+              stats.ppa.passing += ppaValue * 0.3;
             } else {
-              teamStats.ppa.passing += ppaValue;
+              stats.ppa.passing += ppaValue;
             }
           } else {
-            teamStats.ppa.defense += ppaValue;
+            stats.ppa.defense += ppaValue;
           }
         }
       }
     });
+    
+    // Calculate total yards as sum of passing and rushing
+    stats.totalYards = stats.passingYards + stats.rushingYards;
   }
-  
-  // Calculate total yards as sum of passing and rushing
-  teamStats.totalYards = teamStats.passingYards + teamStats.rushingYards;
-
-  teamStats.totalYards = teamStats.passingYards + teamStats.rushingYards;
 
   if (gameData) {
     if (teamName === homeTeam) {
