@@ -11,7 +11,6 @@
 export const parseStatValue = (statValue) => {
   if (typeof statValue === "number") return statValue;
   if (!statValue) return 0;
-
   if (statValue.includes("/")) {
     const [made, attempted] = statValue.split("/");
     return {
@@ -19,7 +18,6 @@ export const parseStatValue = (statValue) => {
       attempts: parseInt(attempted, 10) || 0,
     };
   }
-
   const parsed = parseFloat(statValue);
   return isNaN(parsed) ? statValue : parsed;
 };
@@ -57,14 +55,8 @@ export const inferPositionFromCategory = (category, statName) => {
 
 export const calculateQuarterbackGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.passing) {
-    let completions = 0,
-      attempts = 0,
-      yards = 0,
-      touchdowns = 0,
-      interceptions = 0;
-
+    let completions = 0, attempts = 0, yards = 0, touchdowns = 0, interceptions = 0;
     if (player.stats.passing.c_att || player.stats.passing["c/att"]) {
       const parts = (player.stats.passing.c_att || player.stats.passing["c/att"])
         .toString()
@@ -75,25 +67,21 @@ export const calculateQuarterbackGrade = (player, ppaData) => {
       completions = player.stats.passing.completions || 0;
       attempts = player.stats.passing.attempts || 0;
     }
-
     yards = player.stats.passing.yards || player.stats.passing.yds || 0;
     touchdowns = player.stats.passing.touchdowns || player.stats.passing.td || 0;
     interceptions = player.stats.passing.interceptions || player.stats.passing.int || 0;
-
     if (attempts > 0) {
       const completionPct = (completions / attempts) * 100;
       if (completionPct < 50) grade -= 10;
       else if (completionPct >= 70) grade += 15;
       else if (completionPct >= 60) grade += 10;
     }
-
     if (attempts > 0) {
       const ypa = yards / attempts;
       if (ypa < 6) grade -= 5;
       else if (ypa > 10) grade += 10;
       else if (ypa > 8) grade += 5;
     }
-
     if (interceptions === 0 && touchdowns > 0) {
       grade += 10 + Math.min(5, touchdowns);
     } else if (interceptions > 0) {
@@ -102,11 +90,9 @@ export const calculateQuarterbackGrade = (player, ppaData) => {
       else if (tdIntRatio > 3) grade += 10;
       else if (tdIntRatio > 2) grade += 5;
     }
-
     grade += Math.min(5, touchdowns);
     grade -= Math.min(21, interceptions * 7);
   }
-
   if (player.stats.rushing) {
     const rushYards = player.stats.rushing.yards || 0;
     const rushTDs = player.stats.rushing.touchdowns || 0;
@@ -114,18 +100,15 @@ export const calculateQuarterbackGrade = (player, ppaData) => {
     else if (rushYards > 25) grade += 3;
     grade += Math.min(5, rushTDs * 2);
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(15, Math.max(-10, ppaData.ppa * 10));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculateRunningBackGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.rushing) {
     const { attempts, yards, touchdowns } = player.stats.rushing;
     if (attempts > 0) {
@@ -139,7 +122,6 @@ export const calculateRunningBackGrade = (player, ppaData) => {
     else if (yards > 75) grade += 5;
     grade += Math.min(15, touchdowns * 5);
   }
-
   if (player.stats.receiving) {
     const recYards = player.stats.receiving.yards || 0;
     const recTDs = player.stats.receiving.touchdowns || 0;
@@ -147,18 +129,15 @@ export const calculateRunningBackGrade = (player, ppaData) => {
     else if (recYards > 25) grade += 5;
     grade += Math.min(10, recTDs * 5);
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(15, Math.max(-10, ppaData.ppa * 10));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculateReceiverGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.receiving) {
     const { receptions, yards, touchdowns, targets } = player.stats.receiving;
     if (receptions > 0) {
@@ -178,18 +157,15 @@ export const calculateReceiverGrade = (player, ppaData) => {
       else if (catchRate > 0.65) grade += 5;
     }
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(15, Math.max(-10, ppaData.ppa * 10));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculateDefensiveLineGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.defense) {
     const { tackles, tacklesForLoss, sacks } = player.stats.defense;
     const totalTackles = tackles || 0;
@@ -200,18 +176,15 @@ export const calculateDefensiveLineGrade = (player, ppaData) => {
     grade += Math.min(15, tfl * 5);
     grade += Math.min(20, sackCount * 10);
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(20, Math.max(-10, -ppaData.ppa * 15));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculateLinebackerGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.defense) {
     const { tackles, tacklesForLoss, sacks, interceptions, passesDefended } = player.stats.defense;
     const totalTackles = tackles || 0;
@@ -227,18 +200,15 @@ export const calculateLinebackerGrade = (player, ppaData) => {
     grade += Math.min(30, ints * 15);
     grade += Math.min(9, pbus * 3);
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(20, Math.max(-10, -ppaData.ppa * 15));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculateDefensiveBackGrade = (player, ppaData) => {
   let grade = 50;
-
   if (player.stats.defense) {
     const { tackles, interceptions, passesDefended } = player.stats.defense;
     const totalTackles = tackles || 0;
@@ -250,21 +220,17 @@ export const calculateDefensiveBackGrade = (player, ppaData) => {
     grade += Math.min(30, ints * 15);
     grade += Math.min(20, pbus * 5);
   }
-
   if (ppaData && ppaData.ppa) {
     const ppaContribution = Math.min(20, Math.max(-10, -ppaData.ppa * 15));
     grade += ppaContribution;
   }
-
   return Math.min(100, Math.max(0, Math.round(grade)));
 };
 
 export const calculatePlayerGrade = (player, ppaData) => {
   let grade = 50;
   const ppaWeight = 10;
-
   if (!player.stats) return grade;
-
   switch (player.position) {
     case "QB":
       return calculateQuarterbackGrade(player, ppaData);
@@ -304,21 +270,18 @@ export const estimateTotalPlays = (teamStats, teamPlayers) => {
       passAttempts += qb.stats.passing.attempts || 0;
     }
   });
-
   let rushAttempts = 0;
   teamPlayers.forEach((player) => {
     if (player.stats && player.stats.rushing) {
       rushAttempts += player.stats.rushing.attempts || 0;
     }
   });
-
-  return passAttempts + rushAttempts + 10; // Adding buffer for other plays
+  return passAttempts + rushAttempts + 10;
 };
 
 export const calculateOffensiveEfficiency = (teamStats, teamPlayers) => {
   const totalPlays = estimateTotalPlays(teamStats, teamPlayers);
   const yardsPerPlay = totalPlays > 0 ? teamStats.totalYards / totalPlays : 0;
-
   if (yardsPerPlay < 3) return 0.3;
   if (yardsPerPlay > 7) return Math.min(0.95, 0.8 + (yardsPerPlay - 7) * 0.05);
   if (yardsPerPlay > 5) return 0.6 + (yardsPerPlay - 5) * 0.1;
@@ -327,13 +290,11 @@ export const calculateOffensiveEfficiency = (teamStats, teamPlayers) => {
 
 export const calculateDefensiveEfficiency = (teamStats, teamPlayers) => {
   let efficiency = 0.5;
-
   if (teamStats.ppa.defense < 0) {
     efficiency += Math.min(0.3, Math.abs(teamStats.ppa.defense) * 0.1);
   } else if (teamStats.ppa.defense > 0) {
     efficiency -= Math.min(0.3, teamStats.ppa.defense * 0.1);
   }
-
   efficiency += Math.min(0.15, teamStats.sacks.count * 0.03);
   return Math.min(0.95, Math.max(0.1, efficiency));
 };
@@ -369,7 +330,6 @@ export const calculateRushingSuccessRate = (teamStats, teamPlayers) => {
 
 export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
   const teamPlayers = players.filter((p) => p.team === teamName);
-
   const teamStats = {
     totalYards: 0,
     passingYards: 0,
@@ -389,42 +349,68 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
 
   teamPlayers.forEach((player) => {
     if (player.stats) {
-      // Passing stats
-      if (player.stats.passing) {
-        teamStats.passingYards += player.stats.passing.yards || 0;
-        teamStats.turnovers += player.stats.passing.interceptions || 0;
-        if ((player.stats.passing.yards || 0) >= 20) {
-          teamStats.explosivePlays += 1;
-        }
+      // For flat stats structure (from new API), check for common keys.
+      // Passing yards: try netpassingyards then passingyards.
+      let pYds = 0;
+      if (player.stats.passing && player.stats.passing.yards) {
+        pYds = parseFloat(player.stats.passing.yards);
+      } else if (player.stats.netpassingyards) {
+        pYds = parseFloat(player.stats.netpassingyards);
+      } else if (player.stats.passingyards) {
+        pYds = parseFloat(player.stats.passingyards);
       }
-      // Rushing stats
-      if (player.stats.rushing) {
-        teamStats.rushingYards += player.stats.rushing.yards || 0;
-        if ((player.stats.rushing.yards || 0) >= 20) {
-          teamStats.explosivePlays += 1;
-        }
-      }
-      // Defensive stats
-      if (player.stats.defense) {
-        teamStats.sacks.count += player.stats.defense.sacks || 0;
-        teamStats.sacks.yards += (player.stats.defense.sacks || 0) * 7;
-      }
-    }
+      teamStats.passingYards += pYds;
 
-    if (player.ppa) {
-      teamStats.ppa.total += player.ppa;
-      if (["QB", "RB", "WR", "TE"].includes(player.position)) {
-        if (player.position === "QB") {
-          teamStats.ppa.passing += player.ppa * 0.8;
-          teamStats.ppa.rushing += player.ppa * 0.2;
-        } else if (player.position === "RB") {
-          teamStats.ppa.rushing += player.ppa * 0.7;
-          teamStats.ppa.passing += player.ppa * 0.3;
+      // Rushing yards:
+      let rYds = 0;
+      if (player.stats.rushing && player.stats.rushing.yards) {
+        rYds = parseFloat(player.stats.rushing.yards);
+      } else if (player.stats.rushingyards) {
+        rYds = parseFloat(player.stats.rushingyards);
+      }
+      teamStats.rushingYards += rYds;
+
+      // First downs:
+      if (player.stats.firstdowns) {
+        teamStats.firstDowns += parseFloat(player.stats.firstdowns);
+      }
+
+      // Explosive plays (if yards in passing or rushing is at least 20):
+      if (
+        (player.stats.passing && parseFloat(player.stats.passing.yards || 0) >= 20) ||
+        (player.stats.rushing && parseFloat(player.stats.rushing.yards || 0) >= 20)
+      ) {
+        teamStats.explosivePlays += 1;
+      }
+
+      // Turnovers: use interceptions from passing if available.
+      if (player.stats.passing && player.stats.passing.interceptions) {
+        teamStats.turnovers += parseFloat(player.stats.passing.interceptions);
+      }
+
+      // Defensive stats: count sacks.
+      if (player.stats.defense && player.stats.defense.sacks) {
+        const sacks = parseFloat(player.stats.defense.sacks);
+        teamStats.sacks.count += sacks;
+        teamStats.sacks.yards += sacks * 7;
+      }
+
+      // PPA values
+      if (player.ppa) {
+        teamStats.ppa.total += player.ppa;
+        if (["QB", "RB", "WR", "TE"].includes(player.position)) {
+          if (player.position === "QB") {
+            teamStats.ppa.passing += player.ppa * 0.8;
+            teamStats.ppa.rushing += player.ppa * 0.2;
+          } else if (player.position === "RB") {
+            teamStats.ppa.rushing += player.ppa * 0.7;
+            teamStats.ppa.passing += player.ppa * 0.3;
+          } else {
+            teamStats.ppa.passing += player.ppa;
+          }
         } else {
-          teamStats.ppa.passing += player.ppa;
+          teamStats.ppa.defense += player.ppa;
         }
-      } else {
-        teamStats.ppa.defense += player.ppa;
       }
     }
   });
@@ -451,11 +437,8 @@ export const calculateTeamStats = (players, teamName, gameData, homeTeam) => {
   const totalPlays = estimateTotalPlays(teamStats, teamPlayers);
   teamStats.thirdDowns.attempts = Math.round(totalPlays * 0.15);
   teamStats.thirdDowns.conversions = Math.round(teamStats.thirdDowns.attempts * 0.4);
-
   teamStats.fourthDowns.attempts = Math.round(totalPlays * 0.03);
   teamStats.fourthDowns.conversions = Math.round(teamStats.fourthDowns.attempts * 0.5);
-
-  // Estimate red zone stats (if no direct data, we use rough estimates)
   teamStats.redZone.attempts = Math.round(totalPlays * 0.08);
   teamStats.redZone.conversions = Math.round(teamStats.redZone.attempts * 0.6);
 
@@ -485,7 +468,6 @@ export const calculateEmptyTeamStats = () => ({
 
 export const processDriveData = (drivesData, homeTeam, awayTeam) => {
   if (!drivesData || !Array.isArray(drivesData)) return [];
-  
   return drivesData.map((drive) => {
     let result = "Unknown";
     if (drive.scoring) {
@@ -503,7 +485,6 @@ export const processDriveData = (drivesData, homeTeam, awayTeam) => {
     } else {
       result = drive.endReason || "Unknown";
     }
-    
     return {
       team: drive.offenseTeam,
       quarter: drive.quarter || 1,
@@ -556,7 +537,6 @@ export const getGradeColor = (grade) => {
 
 export const renderPlayerKeyStat = (player) => {
   if (!player.stats) return "No stats";
-
   switch (player.position) {
     case "QB":
       if (player.stats.passing) {
@@ -616,12 +596,14 @@ export const processPlayerStats = (playersData, ppaData) => {
 
   let allPlayers = [];
 
+  // Check if data uses the nested categories structure...
   if (playersData[0]?.teams && Array.isArray(playersData[0].teams)) {
     playersData.forEach((game) => {
       game.teams.forEach((teamData) => {
         const teamName = teamData.team;
         const conference = teamData.conference;
-        // Loop through each category (e.g., passing, rushing, etc.)
+        const homeAway = teamData.homeAway;
+        // If the old structure exists:
         if (teamData.categories && Array.isArray(teamData.categories)) {
           teamData.categories.forEach((category) => {
             const categoryName = category.name;
@@ -636,8 +618,8 @@ export const processPlayerStats = (playersData, ppaData) => {
                         id: athlete.id,
                         name: athlete.name,
                         team: teamName,
-                        conference: conference,
-                        homeAway: teamData.homeAway,
+                        conference,
+                        homeAway,
                         position: inferPositionFromCategory(categoryName, statName),
                         stats: {},
                       };
@@ -653,15 +635,45 @@ export const processPlayerStats = (playersData, ppaData) => {
             }
           });
         }
+        // Else if using the new flat "stats" array
+        else if (teamData.stats && Array.isArray(teamData.stats)) {
+          // Create a flat stats object for this team/player
+          let flatStats = {};
+          teamData.stats.forEach((statObj) => {
+            // Use the lowercased category name as key
+            flatStats[statObj.category.toLowerCase()] = parseStatValue(statObj.stat);
+          });
+          // Create a new player entry using this flat structure
+          // (Assuming one entry per team here; adjust if your data contains multiple athletes per team)
+          let player = {
+            id: teamData.teamId, // Using teamId as id in this flat structure
+            name: teamData.team,
+            team: teamData.team,
+            conference,
+            homeAway,
+            // For flat stats, we directly assign the flatStats object
+            stats: flatStats,
+          };
+          // Optionally, set grade if PPA data is available (this may require mapping from team-level PPA if provided)
+          const playerPPA = ppaData?.find(
+            (p) => p.team === teamData.team || p.name === teamData.team
+          );
+          player.grade = calculatePlayerGrade(player, playerPPA);
+          player.ppa = playerPPA?.ppa || 0;
+          allPlayers.push(player);
+        }
       });
     });
   } else {
     allPlayers = playersData;
   }
 
+  // For each processed player, calculate grade using PPA data if available
   return allPlayers.map((player) => {
     const playerPPA = ppaData?.find(
-      (p) => p.playerId === player.id || (p.name === player.name && p.team === player.team)
+      (p) =>
+        p.playerId === player.id ||
+        (p.name === player.name && p.team === player.team)
     );
     const grade = calculatePlayerGrade(player, playerPPA);
     return {
