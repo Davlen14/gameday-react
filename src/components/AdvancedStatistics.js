@@ -26,14 +26,29 @@ const AdvancedStatistics = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayT
           return;
         }
         
+        // Check if teamsService has the required methods
+        if (!teamsService || typeof teamsService.getGamePlayers !== 'function') {
+          console.error("teamsService.getGamePlayers is not a function. Using graphqlTeamsService as fallback.");
+          // Try using graphqlTeamsService as fallback if available
+          if (!graphqlTeamsService || typeof graphqlTeamsService.getGamePlayers !== 'function') {
+            throw new Error("getGamePlayers is not available in either teamsService or graphqlTeamsService");
+          }
+        }
+        
         // Fetch player statistics for the game
-        const playersData = await teamsService.getGamePlayers(gameData.id);
+        const playersData = typeof teamsService.getGamePlayers === 'function' ?
+          await teamsService.getGamePlayers(gameData.id) :
+          await graphqlTeamsService.getGamePlayers(gameData.id);
         
         // Fetch PPA (Predicted Points Added) data
-        const ppaData = await teamsService.getGamePPA(gameData.id);
+        const ppaData = typeof teamsService.getGamePPA === 'function' ?
+          await teamsService.getGamePPA(gameData.id) :
+          await graphqlTeamsService.getGamePPA?.(gameData.id) || [];
         
         // Fetch drive data
-        const drivesData = await teamsService.getGameDrives(gameData.id);
+        const drivesData = typeof teamsService.getGameDrives === 'function' ?
+          await teamsService.getGameDrives(gameData.id) :
+          await graphqlTeamsService.getGameDrives?.(gameData.id) || [];
         
         // Process player statistics and calculate grades
         const processedPlayers = processPlayerStats(playersData, ppaData);
@@ -69,6 +84,14 @@ const AdvancedStatistics = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayT
         console.error("Error fetching advanced stats:", err);
         setError("Failed to load advanced statistics. " + err.message);
         setIsLoading(false);
+        // In case of error, provide fallback empty data to prevent further errors
+        setPlayerStats([]);
+        setTeamStats({
+          [homeTeam]: calculateEmptyTeamStats(),
+          [awayTeam]: calculateEmptyTeamStats()
+        });
+        setDriveData([]);
+        setAdvancedData(null);
       }
     };
     
@@ -77,6 +100,24 @@ const AdvancedStatistics = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayT
     }
   }, [gameData, homeTeam, awayTeam]);
   
+  // Create empty team stats object for fallback
+  const calculateEmptyTeamStats = () => ({
+    totalYards: 0,
+    passingYards: 0,
+    rushingYards: 0,
+    firstDowns: 0,
+    thirdDowns: { attempts: 0, conversions: 0 },
+    fourthDowns: { attempts: 0, conversions: 0 },
+    turnovers: 0,
+    timeOfPossession: 0,
+    redZone: { attempts: 0, conversions: 0 },
+    penalties: { count: 0, yards: 0 },
+    sacks: { count: 0, yards: 0 },
+    explosivePlays: 0,
+    ppa: { total: 0, passing: 0, rushing: 0, defense: 0 },
+    efficiency: { offensive: 0, defensive: 0, passingSuccess: 0, rushingSuccess: 0 }
+  });
+
   // Process player statistics and calculate grades
   const processPlayerStats = (playersData, ppaData) => {
     if (!playersData || !Array.isArray(playersData)) return [];

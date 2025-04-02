@@ -396,6 +396,11 @@ export const getCalendar = async (year = 2024) => {
     const params = { gameId, year };
     return await fetchData(endpoint, params);
   };
+
+  // Alias for getDrives
+export const getGameDrives = async (gameId, year = 2024) => {
+  return await getDrives(gameId, year);
+};
   
   // GET /plays - Fetch general play-by-play data for a given game
   export const getPlays = async (gameId, year = 2024) => {
@@ -410,6 +415,18 @@ export const getCalendar = async (year = 2024) => {
     return await fetchData(endpoint);
   };
   
+  export const getGamePlayers = async (gameId, year = 2024) => {
+    return await getPlayerGameStats(gameId, year);
+  };
+
+  // Create a function that calls PPA endpoints for a specific game
+export const getGamePPA = async (gameId, year = 2024) => {
+  // You might need to modify this based on what data you actually need
+  const allGamePPA = await getPPAPlayersGames(year);
+  // Filter for the specific game
+  return allGamePPA.filter(item => item.gameId === gameId || item.game_id === gameId);
+};
+
   // GET /plays/stats - Fetch statistics for plays in a given game
   export const getPlaysStats = async (gameId, year = 2024) => {
     const endpoint = "/plays/stats";
@@ -680,6 +697,9 @@ const teamsService = {
     getMetricsWP,
     getMetricsWPPregame,
     getMetricsFGEP,
+    getGameDrives,
+    getGamePlayers,
+    getGamePPA,
     getStatsCategories,
     getStatsGameAdvanced,
     getDraftTeams,
