@@ -22,7 +22,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
+  border-top: 4px solid #d4001c;;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -59,11 +59,11 @@
 }
 
 .tab-button:hover {
-  color: #3498db;
+  color: #d4001c;
 }
 
 .tab-button.active {
-  color: #3498db;
+  color: #d4001c;
   font-weight: 600;
 }
 
@@ -74,7 +74,7 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background-color: #3498db;
+  background-color: #d4001c;
 }
 
 /* Section Titles */
