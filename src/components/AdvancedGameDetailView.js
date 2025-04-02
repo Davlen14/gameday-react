@@ -6,6 +6,7 @@ import youtubeService from "../services/youtubeService";
 import WinProb from "./WinProb";
 import "../styles/AdvancedGameDetailView.css";
 import AdvancedStatistics from "./AdvancedStatistics";
+import GameStats from "./GameStats"; // Import the GameStats component
 
 // Modern WeatherIcon component
 const WeatherIcon = ({ condition, temperature }) => {
@@ -832,35 +833,24 @@ const AdvancedGameDetailView = () => {
     </div>
   );
 
+  // MODIFIED: Now using GameStats component for the statistics tab
   const renderStatisticsTab = () => (
     <div className="tab-content statistics">
-      <div className="stat-section">
-        <h2>Scoring by Quarter</h2>
-        {renderLineScores()}
-      </div>
-      <div className="elo-section">
-        <h2>Elo Ratings</h2>
-        <div className="elo-container">
-          <div className="elo-team-container" style={{ borderTop: `4px solid ${homeTeamColor}` }}>
-            <div className="elo-team-header">
-              <img src={homeLogo} alt={homeTeam} className="team-logo-small" />
-              <span>{homeTeam}</span>
-            </div>
-            <EloRating startElo={homeStartElo} endElo={homeEndElo} label="Elo Change" />
-          </div>
-          <div className="elo-team-container" style={{ borderTop: `4px solid ${awayTeamColor}` }}>
-            <div className="elo-team-header">
-              <img src={awayLogo} alt={awayTeam} className="team-logo-small" />
-              <span>{awayTeam}</span>
-            </div>
-            <EloRating startElo={awayStartElo} endElo={awayEndElo} label="Elo Change" />
-          </div>
-        </div>
-      </div>
-      {lastPlay && (
-        <div className="last-play-container">
-          <div className="last-play-label">Last Play</div>
-          <div className="last-play-text">{lastPlay}</div>
+      <h2>Game Statistics</h2>
+      {gameData ? (
+        <GameStats 
+          gameData={gameData} 
+          homeTeam={homeTeam} 
+          awayTeam={awayTeam} 
+          homeTeamColor={homeTeamColor} 
+          awayTeamColor={awayTeamColor} 
+          homeLogo={homeLogo} 
+          awayLogo={awayLogo} 
+        />
+      ) : (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading statistics...</p>
         </div>
       )}
     </div>
