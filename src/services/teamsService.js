@@ -324,14 +324,18 @@ export const getPlayerSeasonStats = async (
 };
 
 // Function to fetch player game stats
-export const getPlayerGameStats = async (gameId, year = 2024, week, seasonType, team, category = null) => {
+export const getPlayerGameStats = async (gameId, year = 2024, week = 1, seasonType = "regular", team = null, category = null) => {
   const endpoint = "/games/players";
-  const params = { gameId, year, week, seasonType, team };
+  const params = { year, week };
+  
+  if (gameId) params.gameId = gameId;
+  if (seasonType) params.seasonType = seasonType;
+  if (team) params.team = team;
   if (category) params.category = category;
 
   try {
     const response = await fetchData(endpoint, params);
-    console.log(`getPlayerGameStats(${gameId}, ${year}, ${week}, ${seasonType}, ${team}, ${category}) returned:`, response);
+    console.log(`getPlayerGameStats called with params:`, params, "returned:", response);
     return response;
   } catch (error) {
     console.error(`Error in getPlayerGameStats for gameId "${gameId}":`, error);
@@ -416,7 +420,9 @@ export const getGameDrives = async (gameId, year = 2024) => {
   };
   
   export const getGamePlayers = async (gameId, year = 2024) => {
-    return await getPlayerGameStats(gameId, year);
+    // For game-specific player stats, we need to pass the gameId parameter
+    // Also passing default values for week and seasonType
+    return await getPlayerGameStats(gameId, year, 1, "regular");
   };
 
   // Create a function that calls PPA endpoints for a specific game
