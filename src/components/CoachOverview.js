@@ -256,7 +256,7 @@ const CoachOverview = () => {
   const [filterTerm, setFilterTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("profiles");
-  const [detailsVisible, setDetailsVisible] = useState(null);
+  const [detailsVisible, setDetailsVisible] = useState({});
   const [showComparisonSection, setShowComparisonSection] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(null);
 
@@ -409,7 +409,10 @@ const CoachOverview = () => {
 
   // Toggle coach details
   const toggleDetails = (coachName) => {
-    setDetailsVisible(detailsVisible === coachName ? null : coachName);
+    setDetailsVisible(prevState => ({
+      ...prevState,
+      [coachName]: !prevState[coachName]
+    }));
   };
 
   // Handle tab change
@@ -960,10 +963,10 @@ const CoachOverview = () => {
                             className="view-details-btn"
                             onClick={() => toggleDetails(item.coachName)}
                           >
-                            {detailsVisible === item.coachName ? 'Hide Details' : 'View Details'}
+                            {detailsVisible[item.coachName] ? 'Hide Details' : 'View Details'}
                           </button>
                           
-                          {detailsVisible === item.coachName && (
+                          {detailsVisible[item.coachName] && (
                             <motion.div 
                               className="coach-details"
                               initial={{ opacity: 0, height: 0 }}
