@@ -6,6 +6,7 @@ import {
   calculateTeamStats,
   processDriveData,
   getKeyPlayers,
+  calculateEmptyTeamStats,
 } from "../utils/statsCalculators";
 
 const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
