@@ -10,18 +10,17 @@ const OverviewView = ({
   homeLogo, 
   awayLogo 
 }) => {
-  const { homeTeamStats, awayTeamStats } = advancedData || {};
+  // Destructure both the processed stats and official stats
+  const { homeTeamStats, awayTeamStats, officialHomeStats, officialAwayStats, keyPlayers } = advancedData || {};
 
-  // Defensive checks for required team stats
+  // Defensive checks for required team stats (from processed data)
   if (!homeTeamStats || !awayTeamStats) {
     return <div>No team statistics available.</div>;
   }
 
-  // Calculate percentages for visual display
+  // Calculate percentages for visual display (using processed stats)
   const totalYards = (homeTeamStats.totalYards || 0) + (awayTeamStats.totalYards || 0);
   
-  // Handle case where totalYards might be 0 by setting default percentages
-  // instead of showing an error message
   let homeYardsPercentage = 50;
   let awayYardsPercentage = 50;
   
@@ -31,7 +30,6 @@ const OverviewView = ({
   } else {
     console.warn("Total yards is zero. Using default 50/50 split for display.");
   }
-  // Note: homeYardsPercentage and awayYardsPercentage are already defined above
 
   // For timeOfPossession, assume values are numbers (or use default if not)
   const homePossession = typeof homeTeamStats.timeOfPossession === 'number'
@@ -43,6 +41,37 @@ const OverviewView = ({
   const totalTime = homePossession + awayPossession;
   const homePossessionPercentage = Math.round((homePossession / totalTime) * 100);
   const awayPossessionPercentage = 100 - homePossessionPercentage;
+
+  // Render the official stats table if the data is available.
+  const renderOfficialStatsTable = () => {
+    if (!officialHomeStats || !officialAwayStats) return null;
+    // Exclude metadata keys from the official stats object.
+    const skipKeys = new Set(["teamId", "team", "conference", "homeAway", "points", "stats"]);
+    const categories = Object.keys(officialHomeStats).filter(key => !skipKeys.has(key));
+    return (
+      <div className="official-stats-section">
+        <h3 className="section-title">Official Team Stats</h3>
+        <table className="official-stats-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>{homeTeam} (pts: {officialHomeStats.points})</th>
+              <th>{awayTeam} (pts: {officialAwayStats.points})</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map(category => (
+              <tr key={category}>
+                <td>{category}</td>
+                <td>{officialHomeStats[category]}</td>
+                <td>{officialAwayStats[category]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="advanced-stats-overview">
@@ -197,6 +226,33 @@ const OverviewView = ({
           </div>
         </div>
       </div>
+      
+      {/* Official Stats Table Section */}
+      {officialHomeStats && officialAwayStats && (
+        <div className="official-stats-section">
+          <h3 className="section-title">Official Team Stats</h3>
+          <table className="official-stats-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>{homeTeam} (pts: {officialHomeStats.points})</th>
+                <th>{awayTeam} (pts: {officialAwayStats.points})</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(officialHomeStats)
+                .filter(key => !["teamId", "team", "conference", "homeAway", "points", "stats"].includes(key))
+                .map(category => (
+                <tr key={category}>
+                  <td>{category}</td>
+                  <td>{officialHomeStats[category]}</td>
+                  <td>{officialAwayStats[category]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       
       <div className="key-players-section">
         <h3 className="section-title">Key Performers</h3>

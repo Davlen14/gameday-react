@@ -22,12 +22,24 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
       return;
     }
 
+    // Helper: Transform the stats array into an object with key/value pairs.
+    const transformOfficialStats = (teamData) => {
+      if (!teamData) return {};
+      const transformed = { ...teamData };
+      if (teamData.stats && Array.isArray(teamData.stats)) {
+        teamData.stats.forEach(item => {
+          transformed[item.category] = item.stat;
+        });
+      }
+      return transformed;
+    };
+
     const fetchAdvancedStats = async () => {
       try {
         setIsLoading(true);
         let playersData, ppaData, drivesData;
 
-        // Try to fetch data using teamsService first.
+        // Fetch player, PPA, and drive data
         try {
           console.log("Fetching player data using teamsService for game", gameData.id);
           playersData = await teamsService.getGamePlayers(gameData.id);
@@ -39,7 +51,6 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           drivesData = (await teamsService.getGameDrives(gameData.id)) || [];
         } catch (primaryError) {
           console.error("teamsService error:", primaryError);
-          // Fallback: use graphqlTeamsService if available.
           if (graphqlTeamsService && typeof graphqlTeamsService.getGamePlayers === "function") {
             console.log("Fetching player data using graphqlTeamsService for game", gameData.id);
             playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
@@ -57,9 +68,6 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log("PPA data fetched:", ppaData);
         console.log("Drive data fetched:", drivesData);
 
-        console.log("Starting to process player and team stats...");
-        // Process player-level stats and calculate grades.
-        // Ensure we have valid playersData before processing
         const processedPlayers = Array.isArray(playersData) && playersData.length > 0 
           ? processPlayerStats(playersData, ppaData)
           : [];
@@ -67,8 +75,6 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log(`Processed ${processedPlayers.length} players`);
         setPlayerStats(processedPlayers);
 
-        // Calculate team-level statistics using processed player stats.
-        // If processed players data is empty, use calculateEmptyTeamStats as fallback
         const homeStats = processedPlayers.length > 0
           ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
           : calculateEmptyTeamStats();
@@ -80,12 +86,22 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log("Home team stats processed:", homeStats);
         console.log("Away team stats processed:", awayStats);
 
-        // Process drive data.
         const processedDrives = processDriveData(drivesData, homeTeam, awayTeam);
 
-        // Build the final advancedData object.
+        // Fetch the official team stats from the API
+        const officialStatsData = await teamsService.getTeamGameStats(gameData.id, null, 2024);
+        let officialHomeStats = {};
+        let officialAwayStats = {};
+        if (officialStatsData && officialStatsData.length > 0) {
+          const teamsData = officialStatsData[0].teams;
+          officialHomeStats = teamsData.find(team => team.team === homeTeam);
+          officialAwayStats = teamsData.find(team => team.team === awayTeam);
+        }
+        const transformedHomeStats = transformOfficialStats(officialHomeStats);
+        const transformedAwayStats = transformOfficialStats(officialAwayStats);
+
         const advancedDataObj = {
-          gameInfo: gameData, // Include raw game data for additional context
+          gameInfo: gameData,
           homeTeamStats: homeStats,
           awayTeamStats: awayStats,
           players: processedPlayers,
@@ -94,6 +110,9 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
             [homeTeam]: getKeyPlayers(processedPlayers, homeTeam),
             [awayTeam]: getKeyPlayers(processedPlayers, awayTeam),
           },
+          // Include the official team stats (transformed)
+          officialHomeStats: transformedHomeStats,
+          officialAwayStats: transformedAwayStats,
         };
 
         setAdvancedData(advancedDataObj);
