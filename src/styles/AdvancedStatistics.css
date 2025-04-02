@@ -1,9 +1,20 @@
 /* Advanced Statistics Component Styles */
 .advanced-statistics-container {
   font-family: Arial, sans-serif;
-  max-width: 1200px;
+  width: 98%;
   margin: 0 auto;
   padding: 0 0 20px 0;
+}
+
+/* Team Comparison Statistics Grid - make sure values have appropriate styling */
+.team-comparison-grid .stat-value {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+  color: #000;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
 }
 
 /* Loading and Error States */
@@ -84,6 +95,14 @@
   border-bottom: 2px solid #eee;
   padding-bottom: 8px;
   margin: 20px 0 15px;
+  color: #000;
+}
+
+/* Advanced Stats Heading */
+.advanced-stats-overview h3.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
 }
 
 /* Team Comparison Grid */
@@ -132,6 +151,8 @@
   border-radius: 4px;
   font-weight: 500;
   text-align: center;
+  color: #000;
+  font-size: 16px;
 }
 
 .stat-value.home {
@@ -142,11 +163,20 @@
   text-align: left;
 }
 
+/* Stats Labels */
+.stat-label-cell {
+  text-align: center;
+  font-weight: 500;
+  color: #666;
+  padding: 8px 0;
+}
+
 .stat-label {
   text-align: center;
   font-weight: 500;
   color: #666;
   padding: 8px 0;
+  font-family: Arial, sans-serif;
 }
 
 .full-width-cell {
