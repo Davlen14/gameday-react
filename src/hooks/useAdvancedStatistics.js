@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 import {
+  processTeamStatsFromAPI,
   processPlayerStats,
   calculateTeamStats,
   processDriveData,
@@ -25,10 +26,13 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
     const fetchAdvancedStats = async () => {
       try {
         setIsLoading(true);
-        let playersData, ppaData, drivesData;
+        let playersData = [], ppaData = [], drivesData = [], teamStatsData = [];
 
         // Try to fetch data using teamsService first.
         try {
+          console.log("Fetching team stats using teamsService for game", gameData.id);
+          teamStatsData = await teamsService.getTeamGameStats(gameData.id);
+          
           console.log("Fetching player data using teamsService for game", gameData.id);
           playersData = await teamsService.getGamePlayers(gameData.id);
 
@@ -53,6 +57,7 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           }
         }
 
+        console.log("Team stats data fetched:", teamStatsData);
         console.log("Player data fetched:", playersData);
         console.log("PPA data fetched:", ppaData);
         console.log("Drive data fetched:", drivesData);
@@ -67,15 +72,26 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log(`Processed ${processedPlayers.length} players`);
         setPlayerStats(processedPlayers);
 
-        // Calculate team-level statistics using processed player stats.
-        // If processed players data is empty, use calculateEmptyTeamStats as fallback
-        const homeStats = processedPlayers.length > 0
-          ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
-          : calculateEmptyTeamStats();
+        // Use team stats from API when available, otherwise calculate from player stats
+        let homeStats, awayStats;
+        
+        if (teamStatsData && teamStatsData.length > 0) {
+          const homeTeamData = teamStatsData.find(t => t.team === homeTeam);
+          const awayTeamData = teamStatsData.find(t => t.team === awayTeam);
           
-        const awayStats = processedPlayers.length > 0
-          ? calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam)
-          : calculateEmptyTeamStats();
+          // Use the direct stats from API when available
+          homeStats = homeTeamData ? processTeamStatsFromAPI(homeTeamData) : calculateEmptyTeamStats();
+          awayStats = awayTeamData ? processTeamStatsFromAPI(awayTeamData) : calculateEmptyTeamStats();
+        } else {
+          // Fallback to calculating from player stats
+          homeStats = processedPlayers.length > 0
+            ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
+            : calculateEmptyTeamStats();
+            
+          awayStats = processedPlayers.length > 0
+            ? calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam)
+            : calculateEmptyTeamStats();
+        }
           
         console.log("Home team stats processed:", homeStats);
         console.log("Away team stats processed:", awayStats);

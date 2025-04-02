@@ -912,6 +912,145 @@ export const processPlayerStats = (playersData, ppaData) => {
   });
 };
 
+/**
+ * Process team statistics directly from the /games/teams API response
+ * This provides more accurate stats than calculating from individual player stats
+ */
+export const processTeamStatsFromAPI = (teamData) => {
+  if (!teamData || !teamData.stats) {
+    return calculateEmptyTeamStats();
+  }
+
+  // Create an easy-to-access map of stats by category
+  const statsByCategory = {};
+  teamData.stats.forEach(stat => {
+    statsByCategory[stat.category] = stat.stat;
+  });
+
+  // Helper to safely parse stats that might be in various formats
+  const parseStatSafely = (category, defaultValue = 0) => {
+    const statValue = statsByCategory[category];
+    if (statValue === undefined) return defaultValue;
+    
+    // If the value contains a slash (like "5/10"), we want to extract the values
+    if (typeof statValue === 'string' && statValue.includes('/')) {
+      const [made, attempted] = statValue.split('/');
+      return {
+        completions: parseInt(made, 10) || 0,
+        attempts: parseInt(attempted, 10) || 0
+      };
+    }
+    
+    // For numeric strings, parse them as numbers
+    if (typeof statValue === 'string') {
+      const parsed = parseFloat(statValue);
+      return isNaN(parsed) ? statValue : parsed;
+    }
+    
+    return statValue;
+  };
+
+  // Parse time of possession which is in format "MM:SS"
+  const parsePossessionTime = (posTimeStr) => {
+    if (!posTimeStr) return 30; // Default to 30 minutes
+    
+    const parts = posTimeStr.split(':');
+    if (parts.length !== 2) return 30;
+    
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    
+    return minutes + (seconds / 60);
+  };
+
+  // Parse penalties which are in format "X-Y" (count-yards)
+  const parsePenalties = (penaltiesStr) => {
+    if (!penaltiesStr) return { count: 0, yards: 0 };
+    
+    const parts = penaltiesStr.split('-');
+    if (parts.length !== 2) return { count: 0, yards: 0 };
+    
+    return {
+      count: parseInt(parts[0], 10) || 0,
+      yards: parseInt(parts[1], 10) || 0
+    };
+  };
+
+  // Build team stats object from API data
+  const teamStats = {
+    totalYards: parseStatSafely('totalYards'),
+    passingYards: parseStatSafely('netPassingYards'),
+    rushingYards: parseStatSafely('rushingYards'),
+    firstDowns: parseStatSafely('firstDowns'),
+    thirdDowns: typeof parseStatSafely('thirdDownEff') === 'object' 
+      ? parseStatSafely('thirdDownEff') 
+      : { attempts: 0, conversions: 0 },
+    fourthDowns: typeof parseStatSafely('fourthDownEff') === 'object'
+      ? parseStatSafely('fourthDownEff')
+      : { attempts: 0, conversions: 0 },
+    turnovers: parseStatSafely('turnovers'),
+    timeOfPossession: parsePossessionTime(parseStatSafely('possessionTime', '30:00')),
+    redZone: typeof parseStatSafely('redZoneEff') === 'object'
+      ? parseStatSafely('redZoneEff')
+      : { attempts: 0, conversions: 0 },
+    penalties: parsePenalties(parseStatSafely('totalPenaltiesYards', '0-0')),
+    sacks: { 
+      count: parseStatSafely('sacks', 0),
+      yards: parseStatSafely('sackYards', 0)
+    },
+    explosivePlays: 0, // Not directly available in API, would need to calculate from plays
+    ppa: { 
+      total: 0, 
+      passing: 0, 
+      rushing: 0, 
+      defense: 0 
+    },
+    efficiency: {
+      offensive: 0.5, 
+      defensive: 0.5, 
+      passingSuccess: 0.5, 
+      rushingSuccess: 0.5
+    }
+  };
+
+  // Handle third down efficiency if in format "X/Y"
+  if (typeof teamStats.thirdDowns === 'string') {
+    const thirdDownStr = teamStats.thirdDowns;
+    const thirdDownParts = thirdDownStr.split('/');
+    if (thirdDownParts.length === 2) {
+      teamStats.thirdDowns = {
+        conversions: parseInt(thirdDownParts[0], 10) || 0,
+        attempts: parseInt(thirdDownParts[1], 10) || 0
+      };
+    }
+  }
+
+  // Handle fourth down efficiency if in format "X/Y"
+  if (typeof teamStats.fourthDowns === 'string') {
+    const fourthDownStr = teamStats.fourthDowns;
+    const fourthDownParts = fourthDownStr.split('/');
+    if (fourthDownParts.length === 2) {
+      teamStats.fourthDowns = {
+        conversions: parseInt(fourthDownParts[0], 10) || 0,
+        attempts: parseInt(fourthDownParts[1], 10) || 0
+      };
+    }
+  }
+
+  // Calculate efficiency metrics
+  // These would ideally come from API but we can estimate based on stats
+  const totalPlays = parseStatSafely('rushingAttempts', 0) + 
+                    (typeof parseStatSafely('completionAttempts') === 'object' ? 
+                      parseStatSafely('completionAttempts').attempts : 0);
+                      
+  if (totalPlays > 0) {
+    const yardsPerPlay = teamStats.totalYards / totalPlays;
+    teamStats.efficiency.offensive = Math.min(0.95, Math.max(0.1, 0.3 + (yardsPerPlay / 10)));
+  }
+
+  return teamStats;
+};
+
 export default {
   parseStatValue,
   inferPositionFromCategory,
@@ -935,4 +1074,5 @@ export default {
   calculateDefensiveEfficiency,
   calculatePassingSuccessRate,
   calculateRushingSuccessRate,
+  processTeamStatsFromAPI,
 };
