@@ -420,17 +420,47 @@ export const getGameDrives = async (gameId, year = 2024) => {
   };
   
   export const getGamePlayers = async (gameId, year = 2024) => {
-    // For game-specific player stats, we need to pass the gameId parameter
-    // Also passing default values for week and seasonType
-    return await getPlayerGameStats(gameId, year, 1, "regular");
+    try {
+      console.log(`Fetching player data specifically for game ${gameId}`);
+      
+      // Direct endpoint for game-specific player stats
+      const endpoint = "/games/players";
+      const params = { gameId, year };
+      
+      const playerData = await fetchData(endpoint, params);
+      
+      if (!playerData || !Array.isArray(playerData) || playerData.length === 0) {
+        console.warn(`No player data found for game ${gameId}, trying alternative endpoint`);
+        // Fallback to the original implementation if the direct endpoint fails
+        return await getPlayerGameStats(gameId, year, 1, "regular");
+      }
+      
+      return playerData;
+    } catch (error) {
+      console.error(`Error fetching player data for game ${gameId}:`, error);
+      // Try fallback approach
+      try {
+        console.log(`Attempting fallback player data fetch for game ${gameId}`);
+        return await getPlayerGameStats(gameId, year, 1, "regular");
+      } catch (fallbackError) {
+        console.error(`Fallback player data fetch also failed:`, fallbackError);
+        return []; // Return empty array to prevent null references
+      }
+    }
   };
 
   // Create a function that calls PPA endpoints for a specific game
 export const getGamePPA = async (gameId, year = 2024) => {
-  // You might need to modify this based on what data you actually need
-  const allGamePPA = await getPPAPlayersGames(year);
-  // Filter for the specific game
-  return allGamePPA.filter(item => item.gameId === gameId || item.game_id === gameId);
+  try {
+    console.log(`Fetching PPA data specifically for game ${gameId}`);
+    // Use a more targeted endpoint for game-specific PPA data
+    const endpoint = "/ppa/players/games";
+    const params = { gameId, year }; // Pass gameId directly as a parameter
+    return await fetchData(endpoint, params);
+  } catch (error) {
+    console.error(`Error fetching PPA data for game ${gameId}:`, error);
+    return []; // Return empty array on error to prevent null references
+  }
 };
 
   // GET /plays/stats - Fetch statistics for plays in a given game

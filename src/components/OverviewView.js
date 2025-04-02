@@ -19,12 +19,19 @@ const OverviewView = ({
 
   // Calculate percentages for visual display
   const totalYards = (homeTeamStats.totalYards || 0) + (awayTeamStats.totalYards || 0);
-  // If totalYards is 0, show a message so you can debug
-  if (totalYards === 0) {
-    return <div>Team total yards data not available. Please check your API data.</div>;
+  
+  // Handle case where totalYards might be 0 by setting default percentages
+  // instead of showing an error message
+  let homeYardsPercentage = 50;
+  let awayYardsPercentage = 50;
+  
+  if (totalYards > 0) {
+    homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100);
+    awayYardsPercentage = 100 - homeYardsPercentage;
+  } else {
+    console.warn("Total yards is zero. Using default 50/50 split for display.");
   }
-  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100);
-  const awayYardsPercentage = 100 - homeYardsPercentage;
+  // Note: homeYardsPercentage and awayYardsPercentage are already defined above
 
   // For timeOfPossession, assume values are numbers (or use default if not)
   const homePossession = typeof homeTeamStats.timeOfPossession === 'number'

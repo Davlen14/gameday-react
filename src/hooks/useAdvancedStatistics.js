@@ -56,13 +56,28 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.log("PPA data fetched:", ppaData);
         console.log("Drive data fetched:", drivesData);
 
+        console.log("Starting to process player and team stats...");
         // Process player-level stats and calculate grades.
-        const processedPlayers = processPlayerStats(playersData, ppaData);
+        // Ensure we have valid playersData before processing
+        const processedPlayers = Array.isArray(playersData) && playersData.length > 0 
+          ? processPlayerStats(playersData, ppaData)
+          : [];
+        
+        console.log(`Processed ${processedPlayers.length} players`);
         setPlayerStats(processedPlayers);
 
         // Calculate team-level statistics using processed player stats.
-        const homeStats = calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam);
-        const awayStats = calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam);
+        // If processed players data is empty, use calculateEmptyTeamStats as fallback
+        const homeStats = processedPlayers.length > 0
+          ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
+          : calculateEmptyTeamStats();
+          
+        const awayStats = processedPlayers.length > 0
+          ? calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam)
+          : calculateEmptyTeamStats();
+          
+        console.log("Home team stats processed:", homeStats);
+        console.log("Away team stats processed:", awayStats);
 
         // Process drive data.
         const processedDrives = processDriveData(drivesData, homeTeam, awayTeam);
