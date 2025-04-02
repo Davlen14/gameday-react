@@ -26,32 +26,53 @@ const AdvancedStatistics = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayT
           return;
         }
         
+        // Declare variables to hold our data
         let playersData, ppaData, drivesData;
         
         try {
           // Fetch player statistics for the game
+          console.log("Fetching player data with teamsService");
           playersData = await teamsService.getGamePlayers(gameData.id);
           
           // Fetch PPA (Predicted Points Added) data
+          console.log("Fetching PPA data with teamsService");
           ppaData = await teamsService.getGamePPA(gameData.id) || [];
           
           // Fetch drive data
+          console.log("Fetching drive data with teamsService");
           drivesData = await teamsService.getGameDrives(gameData.id) || [];
+          
         } catch (serviceError) {
           console.error("Error with teamsService, trying graphqlTeamsService:", serviceError);
+          
           // If teamsService fails, try graphqlTeamsService as fallback
           if (typeof graphqlTeamsService?.getGamePlayers === 'function') {
+            console.log("Trying to get player data from graphqlTeamsService");
             playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
           } else {
             throw new Error("No available service to get game players");
           }
           
-          ppaData = typeof graphqlTeamsService?.getGamePPA === 'function' ?
-            await graphqlTeamsService.getGamePPA(gameData.id) : [];
+          if (typeof graphqlTeamsService?.getGamePPA === 'function') {
+            console.log("Trying to get PPA data from graphqlTeamsService");
+            ppaData = await graphqlTeamsService.getGamePPA(gameData.id);
+          } else {
+            console.log("No PPA data source available, using empty array");
+            ppaData = [];
+          }
           
-          drivesData = typeof graphqlTeamsService?.getGameDrives === 'function' ?
-            await graphqlTeamsService.getGameDrives(gameData.id) : [];
+          if (typeof graphqlTeamsService?.getGameDrives === 'function') {
+            console.log("Trying to get drive data from graphqlTeamsService");
+            drivesData = await graphqlTeamsService.getGameDrives(gameData.id);
+          } else {
+            console.log("No drive data source available, using empty array");
+            drivesData = [];
+          }
         }
+        
+        console.log("Player data:", playersData);
+        console.log("PPA data:", ppaData);
+        console.log("Drive data:", drivesData);
         
         // Process player statistics and calculate grades
         const processedPlayers = processPlayerStats(playersData, ppaData);
