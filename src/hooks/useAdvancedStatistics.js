@@ -29,34 +29,33 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         let playersData, ppaData, drivesData;
 
         try {
-          console.log("Fetching player data with teamsService for game", gameData.id);
-          const isFSUHome = homeTeam === "Florida State";
-          const isFSUAway = awayTeam === "Florida State";
+          console.log("Fetching player data using teamsService for game", gameData.id);
 
-          if (isFSUHome || isFSUAway) {
-            console.log("FSU detected, setting team parameter to Florida State");
-            playersData = await teamsService.getPlayerGameStats(
-              null,   // No gameId when using team parameter
-              2024,   // Default year
-              1,      // Default week (assume week 1)
-              "regular",
-              "Florida State"
-            );
-          } else {
+          // Uncomment the next lines if you need special handling for Florida State.
+          // const isFSUHome = homeTeam === "Florida State";
+          // const isFSUAway = awayTeam === "Florida State";
+          // if (isFSUHome || isFSUAway) {
+          //   console.log("FSU detected, using FSU-specific API call");
+          //   playersData = await teamsService.getPlayerGameStats(
+          //     null, 2024, 1, "regular", "Florida State"
+          //   );
+          // } else {
             playersData = await teamsService.getGamePlayers(gameData.id);
-          }
+          // }
 
-          console.log("Fetching PPA data with teamsService");
+          console.log("Fetching PPA data using teamsService for game", gameData.id);
           ppaData = (await teamsService.getGamePPA(gameData.id)) || [];
-          console.log("Fetching drive data with teamsService");
+
+          console.log("Fetching drive data using teamsService for game", gameData.id);
           drivesData = (await teamsService.getGameDrives(gameData.id)) || [];
         } catch (serviceError) {
           console.error("teamsService error, trying graphqlTeamsService:", serviceError);
+
           if (typeof graphqlTeamsService?.getGamePlayers === "function") {
-            console.log("Fetching player data from graphqlTeamsService");
+            console.log("Fetching player data using graphqlTeamsService for game", gameData.id);
             playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
           } else {
-            console.log("Fallback: using mock player data");
+            console.log("Fallback: using empty mock player data");
             playersData = [{
               id: gameData.id,
               teams: [
@@ -79,15 +78,15 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           }
 
           if (typeof graphqlTeamsService?.getGamePPA === "function") {
-            console.log("Fetching PPA data from graphqlTeamsService");
+            console.log("Fetching PPA data using graphqlTeamsService for game", gameData.id);
             ppaData = await graphqlTeamsService.getGamePPA(gameData.id);
           } else {
-            console.log("No PPA source available; using empty array");
+            console.log("No PPA data source available; using empty array");
             ppaData = [];
           }
 
           if (typeof graphqlTeamsService?.getGameDrives === "function") {
-            console.log("Fetching drive data from graphqlTeamsService");
+            console.log("Fetching drive data using graphqlTeamsService for game", gameData.id);
             drivesData = await graphqlTeamsService.getGameDrives(gameData.id);
           } else {
             console.log("No drive data source available; using empty array");
@@ -95,22 +94,22 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           }
         }
 
-        console.log("Player data:", playersData);
-        console.log("PPA data:", ppaData);
-        console.log("Drive data:", drivesData);
+        console.log("Player data fetched:", playersData);
+        console.log("PPA data fetched:", ppaData);
+        console.log("Drive data fetched:", drivesData);
 
-        // Process player statistics
+        // Process the player statistics with PPA data.
         const processedPlayers = processPlayerStats(playersData, ppaData);
         setPlayerStats(processedPlayers);
 
-        // Calculate team-level statistics (if gameData is available)
+        // Calculate team-level statistics.
         const homeStats = calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam);
         const awayStats = calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam);
 
-        // Process drive data
+        // Process drive data.
         const processedDrives = processDriveData(drivesData, homeTeam, awayTeam);
 
-        // Create advancedData object
+        // Create the final advancedData object.
         const advancedDataObj = {
           homeTeamStats: homeStats,
           awayTeamStats: awayStats,
@@ -128,7 +127,7 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
         console.error("Error fetching advanced stats:", err);
         setError("Failed to load advanced statistics. " + err.message);
         setIsLoading(false);
-        // Fallback to prevent further errors
+        // Fallback: set empty data to prevent downstream errors.
         setPlayerStats([]);
         setAdvancedData(null);
       }
