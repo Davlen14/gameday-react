@@ -26,29 +26,32 @@ const AdvancedStatistics = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayT
           return;
         }
         
-        // Check if teamsService has the required methods
-        if (!teamsService || typeof teamsService.getGamePlayers !== 'function') {
-          console.error("teamsService.getGamePlayers is not a function. Using graphqlTeamsService as fallback.");
-          // Try using graphqlTeamsService as fallback if available
-          if (!graphqlTeamsService || typeof graphqlTeamsService.getGamePlayers !== 'function') {
-            throw new Error("getGamePlayers is not available in either teamsService or graphqlTeamsService");
+        let playersData, ppaData, drivesData;
+        
+        try {
+          // Fetch player statistics for the game
+          playersData = await teamsService.getGamePlayers(gameData.id);
+          
+          // Fetch PPA (Predicted Points Added) data
+          ppaData = await teamsService.getGamePPA(gameData.id) || [];
+          
+          // Fetch drive data
+          drivesData = await teamsService.getGameDrives(gameData.id) || [];
+        } catch (serviceError) {
+          console.error("Error with teamsService, trying graphqlTeamsService:", serviceError);
+          // If teamsService fails, try graphqlTeamsService as fallback
+          if (typeof graphqlTeamsService?.getGamePlayers === 'function') {
+            playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
+          } else {
+            throw new Error("No available service to get game players");
           }
+          
+          ppaData = typeof graphqlTeamsService?.getGamePPA === 'function' ?
+            await graphqlTeamsService.getGamePPA(gameData.id) : [];
+          
+          drivesData = typeof graphqlTeamsService?.getGameDrives === 'function' ?
+            await graphqlTeamsService.getGameDrives(gameData.id) : [];
         }
-        
-        // Fetch player statistics for the game
-        const playersData = typeof teamsService.getGamePlayers === 'function' ?
-          await teamsService.getGamePlayers(gameData.id) :
-          await graphqlTeamsService.getGamePlayers(gameData.id);
-        
-        // Fetch PPA (Predicted Points Added) data
-        const ppaData = typeof teamsService.getGamePPA === 'function' ?
-          await teamsService.getGamePPA(gameData.id) :
-          await graphqlTeamsService.getGamePPA?.(gameData.id) || [];
-        
-        // Fetch drive data
-        const drivesData = typeof teamsService.getGameDrives === 'function' ?
-          await teamsService.getGameDrives(gameData.id) :
-          await graphqlTeamsService.getGameDrives?.(gameData.id) || [];
         
         // Process player statistics and calculate grades
         const processedPlayers = processPlayerStats(playersData, ppaData);
