@@ -372,201 +372,309 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const [advancedData, setAdvancedData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamStats, setTeamStats] = useState(null);
+  const [drives, setDrives] = useState([]);
+  const [playerStats, setPlayerStats] = useState({});
+  const [winProbabilities, setWinProbabilities] = useState(null);
   
-  // Mock data for the component until real API is implemented
+  // Fetch real data from the API
   useEffect(() => {
-    // This would be replaced with a real API call in production
-    const fetchAdvancedStats = async () => {
+    const fetchAllGameData = async () => {
       try {
         setIsLoading(true);
-        // Simulate API call with timeout
-        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock data for demonstration
-        const mockAdvancedData = {
-          gameId: gameData.id,
-          homeTeamStats: {
-            totalYards: 423,
-            passingYards: 284,
-            rushingYards: 139,
-            firstDowns: 24,
-            thirdDowns: { attempts: 14, conversions: 8 },
-            fourthDowns: { attempts: 2, conversions: 1 },
-            turnovers: 1,
-            timeOfPossession: 31.5, // in minutes
-            redZone: { attempts: 4, conversions: 3 },
-            penalties: { count: 6, yards: 55 },
-            sacks: { count: 3, yards: 22 },
-            explosivePlays: 6, // plays over 20 yards
-            epa: {
-              total: 8.75,
-              passing: 5.24,
-              rushing: 3.51,
-              defense: -2.3
-            },
-            efficiency: {
-              offensive: 0.68,
-              defensive: 0.52,
-              passingSuccess: 0.59,
-              rushingSuccess: 0.48
-            }
-          },
-          awayTeamStats: {
-            totalYards: 368,
-            passingYards: 245,
-            rushingYards: 123,
-            firstDowns: 20,
-            thirdDowns: { attempts: 12, conversions: 5 },
-            fourthDowns: { attempts: 1, conversions: 0 },
-            turnovers: 2,
-            timeOfPossession: 28.5, // in minutes
-            redZone: { attempts: 3, conversions: 2 },
-            penalties: { count: 8, yards: 75 },
-            sacks: { count: 2, yards: 15 },
-            explosivePlays: 4, // plays over 20 yards
-            epa: {
-              total: 3.42,
-              passing: 2.85,
-              rushing: 0.57,
-              defense: 2.1
-            },
-            efficiency: {
-              offensive: 0.55,
-              defensive: 0.61,
-              passingSuccess: 0.51,
-              rushingSuccess: 0.41
-            }
-          },
-          drives: [
-            { 
-              team: homeTeam, 
-              quarter: 1, 
-              result: "Touchdown", 
-              yards: 75, 
-              timeOfPossession: "4:15", 
-              plays: 8, 
-              startPosition: "Own 25"
-            },
-            { 
-              team: awayTeam, 
-              quarter: 1, 
-              result: "Punt", 
-              yards: 32, 
-              timeOfPossession: "2:45", 
-              plays: 6, 
-              startPosition: "Own 20"
-            },
-            { 
-              team: homeTeam, 
-              quarter: 1, 
-              result: "Field Goal", 
-              yards: 58, 
-              timeOfPossession: "3:20", 
-              plays: 7, 
-              startPosition: "Own 35"
-            },
-            { 
-              team: awayTeam, 
-              quarter: 2, 
-              result: "Touchdown", 
-              yards: 80, 
-              timeOfPossession: "5:10", 
-              plays: 10, 
-              startPosition: "Own 20"
-            },
-            { 
-              team: homeTeam, 
-              quarter: 2, 
-              result: "Turnover", 
-              yards: 25, 
-              timeOfPossession: "1:45", 
-              plays: 4, 
-              startPosition: "Own 30"
-            },
-            { 
-              team: awayTeam, 
-              quarter: 2, 
-              result: "Field Goal", 
-              yards: 30, 
-              timeOfPossession: "2:15", 
-              plays: 5, 
-              startPosition: "Opp 45"
-            },
-            // Add more drives as needed
-          ],
-          keyPlayers: {
-            [homeTeam]: [
-              {
-                name: "John Smith",
-                position: "QB",
-                stats: {
-                  passing: { attempts: 32, completions: 24, yards: 284, touchdowns: 2, interceptions: 1 },
-                  rushing: { attempts: 4, yards: 18, touchdowns: 0 }
-                }
-              },
-              {
-                name: "Mike Johnson",
-                position: "RB",
-                stats: {
-                  rushing: { attempts: 18, yards: 95, touchdowns: 1 },
-                  receiving: { targets: 5, receptions: 4, yards: 35, touchdowns: 0 }
-                }
-              },
-              {
-                name: "Chris Davis",
-                position: "WR",
-                stats: {
-                  receiving: { targets: 10, receptions: 8, yards: 112, touchdowns: 1 }
-                }
-              }
-            ],
-            [awayTeam]: [
-              {
-                name: "Tom Wilson",
-                position: "QB",
-                stats: {
-                  passing: { attempts: 30, completions: 21, yards: 245, touchdowns: 1, interceptions: 2 },
-                  rushing: { attempts: 5, yards: 22, touchdowns: 0 }
-                }
-              },
-              {
-                name: "James Brown",
-                position: "RB",
-                stats: {
-                  rushing: { attempts: 16, yards: 85, touchdowns: 1 },
-                  receiving: { targets: 3, receptions: 2, yards: 15, touchdowns: 0 }
-                }
-              },
-              {
-                name: "Robert Garcia",
-                position: "WR",
-                stats: {
-                  receiving: { targets: 9, receptions: 6, yards: 95, touchdowns: 1 }
-                }
-              }
-            ]
-          },
-          winProbabilityByQuarter: {
-            start: { home: 0.55, away: 0.45 },
-            q1: { home: 0.62, away: 0.38 },
-            q2: { home: 0.58, away: 0.42 },
-            q3: { home: 0.65, away: 0.35 },
-            q4: { home: 0.72, away: 0.28 },
-            final: { home: 1, away: 0 }
-          }
-        };
+        // Get the year from gameData or default to current year
+        const year = gameData?.season || new Date().getFullYear();
         
-        setAdvancedData(mockAdvancedData);
+        // Fetch both team's game stats
+        const [homeTeamStats, awayTeamStats] = await Promise.all([
+          teamsService.getTeamGameStats(gameData.id, homeTeam, year),
+          teamsService.getTeamGameStats(gameData.id, awayTeam, year)
+        ]);
+        
+        // Fetch game drives
+        const drivesData = await teamsService.getGameDrives(gameData.id, year);
+        
+        // Fetch player stats for this game
+        const playersData = await teamsService.getGamePlayers(gameData.id, year);
+        
+        // Optionally fetch advanced metrics if available
+        let advancedMetrics = null;
+        try {
+          advancedMetrics = await teamsService.getAdvancedBoxScore(gameData.id, year);
+        } catch (err) {
+          console.warn("Advanced metrics not available:", err);
+        }
+        
+        // Optionally fetch win probability data if available
+        let winProbData = null;
+        try {
+          winProbData = await teamsService.getMetricsWP(gameData.id, year);
+        } catch (err) {
+          console.warn("Win probability data not available:", err);
+        }
+        
+        // Process player stats into appropriate format
+        const processedPlayerStats = processPlayerStats(playersData, homeTeam, awayTeam);
+        
+        // Process team stats data
+        const processedTeamStats = processTeamStats(homeTeamStats, awayTeamStats);
+        
+        // Set all data to state
+        setTeamStats(processedTeamStats);
+        setDrives(drivesData || []);
+        setPlayerStats(processedPlayerStats);
+        setAdvancedData(advancedMetrics);
+        setWinProbabilities(winProbData);
+        
       } catch (err) {
-        console.error("Error fetching advanced stats:", err);
-        setError("Failed to load advanced statistics");
+        console.error("Error fetching game data:", err);
+        setError("Failed to load game statistics");
       } finally {
         setIsLoading(false);
       }
     };
     
-    if (gameData) {
-      fetchAdvancedStats();
+    const processTeamStats = (homeStats, awayStats) => {
+      // Ensure we have data to process
+      if (!homeStats || !awayStats) {
+        return null;
+      }
+      
+      // Extract and structure the relevant stats for both teams
+      return {
+        homeTeamStats: {
+          totalYards: getTotalYards(homeStats),
+          passingYards: getPassingYards(homeStats),
+          rushingYards: getRushingYards(homeStats),
+          firstDowns: getFirstDowns(homeStats),
+          thirdDowns: getThirdDowns(homeStats),
+          fourthDowns: getFourthDowns(homeStats),
+          turnovers: getTurnovers(homeStats),
+          timeOfPossession: getTimeOfPossession(homeStats),
+          redZone: getRedZone(homeStats),
+          penalties: getPenalties(homeStats),
+          sacks: getSacks(homeStats),
+          explosivePlays: getExplosivePlays(homeStats),
+          epa: getEPA(homeStats, advancedData),
+          efficiency: getEfficiency(homeStats, advancedData)
+        },
+        awayTeamStats: {
+          totalYards: getTotalYards(awayStats),
+          passingYards: getPassingYards(awayStats),
+          rushingYards: getRushingYards(awayStats),
+          firstDowns: getFirstDowns(awayStats),
+          thirdDowns: getThirdDowns(awayStats),
+          fourthDowns: getFourthDowns(awayStats),
+          turnovers: getTurnovers(awayStats),
+          timeOfPossession: getTimeOfPossession(awayStats),
+          redZone: getRedZone(awayStats),
+          penalties: getPenalties(awayStats),
+          sacks: getSacks(awayStats),
+          explosivePlays: getExplosivePlays(awayStats),
+          epa: getEPA(awayStats, advancedData),
+          efficiency: getEfficiency(awayStats, advancedData)
+        }
+      };
+    };
+    
+    // Helper functions to extract stats from API response
+    const getTotalYards = (stats) => {
+      return (stats.netPassingYards || 0) + (stats.rushingYards || 0);
+    };
+    
+    const getPassingYards = (stats) => {
+      return stats.netPassingYards || 0;
+    };
+    
+    const getRushingYards = (stats) => {
+      return stats.rushingYards || 0;
+    };
+    
+    const getFirstDowns = (stats) => {
+      return stats.firstDowns || 0;
+    };
+    
+    const getThirdDowns = (stats) => {
+      return {
+        attempts: stats.thirdDownAttempts || 0,
+        conversions: stats.thirdDownConversions || 0
+      };
+    };
+    
+    const getFourthDowns = (stats) => {
+      return {
+        attempts: stats.fourthDownAttempts || 0,
+        conversions: stats.fourthDownConversions || 0
+      };
+    };
+    
+    const getTurnovers = (stats) => {
+      return (stats.interceptions || 0) + (stats.fumblesLost || 0);
+    };
+    
+    const getTimeOfPossession = (stats) => {
+      // Convert time format "MM:SS" to minutes as a decimal
+      if (!stats.possessionTime) return 0;
+      
+      const [minutes, seconds] = stats.possessionTime.split(':').map(Number);
+      return minutes + (seconds / 60);
+    };
+    
+    const getRedZone = (stats) => {
+      return {
+        attempts: stats.redZoneAttempts || 0,
+        conversions: stats.redZoneConversions || 0
+      };
+    };
+    
+    const getPenalties = (stats) => {
+      return {
+        count: stats.penalties || 0,
+        yards: stats.penaltyYards || 0
+      };
+    };
+    
+    const getSacks = (stats) => {
+      return {
+        count: stats.sacks || 0,
+        yards: stats.sackYards || 0
+      };
+    };
+    
+    const getExplosivePlays = (stats) => {
+      // Count plays over 20 yards - this might need to be calculated from play-by-play data
+      // For now, use a placeholder or estimated value
+      return stats.explosivePlays || 0;
+    };
+    
+    const getEPA = (stats, advancedData) => {
+      // If advanced data is available, use it
+      if (advancedData && advancedData.teams) {
+        const teamData = advancedData.teams.find(t => t.team === stats.school);
+        if (teamData && teamData.epa) {
+          return {
+            total: teamData.epa.total || 0,
+            passing: teamData.epa.passing || 0,
+            rushing: teamData.epa.rushing || 0,
+            defense: teamData.epa.defense || 0
+          };
+        }
+      }
+      
+      // Fallback defaults
+      return {
+        total: 0,
+        passing: 0,
+        rushing: 0,
+        defense: 0
+      };
+    };
+    
+    const getEfficiency = (stats, advancedData) => {
+      // If advanced data is available, use it
+      if (advancedData && advancedData.teams) {
+        const teamData = advancedData.teams.find(t => t.team === stats.school);
+        if (teamData && teamData.efficiency) {
+          return {
+            offensive: teamData.efficiency.offensive || 0,
+            defensive: teamData.efficiency.defensive || 0,
+            passingSuccess: teamData.efficiency.passingSuccess || 0,
+            rushingSuccess: teamData.efficiency.rushingSuccess || 0
+          };
+        }
+      }
+      
+      // Fallback defaults using available stats - these are estimates
+      return {
+        offensive: 0.5, // Default value
+        defensive: 0.5, // Default value
+        passingSuccess: stats.completionAttempts ? stats.completions / stats.completionAttempts : 0,
+        rushingSuccess: stats.rushingYards && stats.rushingAttempts ? 
+          Math.min(0.8, stats.rushingYards / (stats.rushingAttempts * 5)) : 0
+      };
+    };
+    
+    const processPlayerStats = (playersData, homeTeam, awayTeam) => {
+      // Ensure we have data to process
+      if (!playersData || !Array.isArray(playersData)) {
+        return { [homeTeam]: [], [awayTeam]: [] };
+      }
+      
+      // Group players by team
+      const homeTeamPlayers = [];
+      const awayTeamPlayers = [];
+      
+      playersData.forEach(player => {
+        if (!player) return;
+        
+        // Determine player's team
+        const team = player.team === homeTeam ? homeTeam : awayTeam;
+        
+        // Create player object with key stats
+        const playerObj = {
+          name: player.name || `${player.firstName || ''} ${player.lastName || ''}`.trim(),
+          position: player.position || 'N/A',
+          stats: {}
+        };
+        
+        // Add passing stats if available
+        if (player.passing) {
+          playerObj.stats.passing = {
+            attempts: player.passing.attempts || 0,
+            completions: player.passing.completions || 0,
+            yards: player.passing.yards || 0,
+            touchdowns: player.passing.touchdowns || 0,
+            interceptions: player.passing.interceptions || 0
+          };
+        }
+        
+        // Add rushing stats if available
+        if (player.rushing) {
+          playerObj.stats.rushing = {
+            attempts: player.rushing.attempts || 0,
+            yards: player.rushing.yards || 0,
+            touchdowns: player.rushing.touchdowns || 0
+          };
+        }
+        
+        // Add receiving stats if available
+        if (player.receiving) {
+          playerObj.stats.receiving = {
+            targets: player.receiving.targets || 0,
+            receptions: player.receiving.receptions || 0,
+            yards: player.receiving.yards || 0,
+            touchdowns: player.receiving.touchdowns || 0
+          };
+        }
+        
+        // Add defensive stats if available
+        if (player.defense) {
+          playerObj.stats.defense = {
+            tackles: player.defense.tackles || 0,
+            sacks: player.defense.sacks || 0,
+            tacklesForLoss: player.defense.tacklesForLoss || 0,
+            interceptions: player.defense.interceptions || 0,
+            passesDefended: player.defense.passesDefended || 0
+          };
+        }
+        
+        // Add to appropriate team array
+        if (player.team === homeTeam) {
+          homeTeamPlayers.push(playerObj);
+        } else if (player.team === awayTeam) {
+          awayTeamPlayers.push(playerObj);
+        }
+      });
+      
+      return {
+        [homeTeam]: homeTeamPlayers,
+        [awayTeam]: awayTeamPlayers
+      };
+    };
+    
+    if (gameData && gameData.id) {
+      fetchAllGameData();
     }
   }, [gameData, homeTeam, awayTeam]);
 
@@ -594,7 +702,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     );
   }
 
-  if (!advancedData) {
+  if (!teamStats) {
     return (
       <div style={styles.noData}>
         No advanced statistics available for this game.
@@ -602,15 +710,15 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     );
   }
 
-  const { homeTeamStats, awayTeamStats, drives, keyPlayers, winProbabilityByQuarter } = advancedData;
+  const { homeTeamStats, awayTeamStats } = teamStats;
 
   // Calculate percentages for visual display
   const totalYards = homeTeamStats.totalYards + awayTeamStats.totalYards;
-  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100);
+  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100) || 50;
   const awayYardsPercentage = 100 - homeYardsPercentage;
 
   const totalTime = homeTeamStats.timeOfPossession + awayTeamStats.timeOfPossession;
-  const homePossessionPercentage = Math.round((homeTeamStats.timeOfPossession / totalTime) * 100);
+  const homePossessionPercentage = Math.round((homeTeamStats.timeOfPossession / totalTime) * 100) || 50;
   const awayPossessionPercentage = 100 - homePossessionPercentage;
 
   const renderTeamStatsComparison = () => (
@@ -675,29 +783,47 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Third Down Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.thirdDowns.conversions}/{homeTeamStats.thirdDowns.attempts} ({Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100)}%)
+          {homeTeamStats.thirdDowns.conversions}/{homeTeamStats.thirdDowns.attempts} 
+          ({homeTeamStats.thirdDowns.attempts > 0 
+            ? Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Third Down</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.thirdDowns.conversions}/{awayTeamStats.thirdDowns.attempts} ({Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100)}%)
+          {awayTeamStats.thirdDowns.conversions}/{awayTeamStats.thirdDowns.attempts}
+          ({awayTeamStats.thirdDowns.attempts > 0 
+            ? Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Fourth Down Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.fourthDowns.conversions}/{homeTeamStats.fourthDowns.attempts} ({homeTeamStats.fourthDowns.attempts > 0 ? Math.round((homeTeamStats.fourthDowns.conversions / homeTeamStats.fourthDowns.attempts) * 100) : 0}%)
+          {homeTeamStats.fourthDowns.conversions}/{homeTeamStats.fourthDowns.attempts} 
+          ({homeTeamStats.fourthDowns.attempts > 0 
+            ? Math.round((homeTeamStats.fourthDowns.conversions / homeTeamStats.fourthDowns.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Fourth Down</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.fourthDowns.conversions}/{awayTeamStats.fourthDowns.attempts} ({awayTeamStats.fourthDowns.attempts > 0 ? Math.round((awayTeamStats.fourthDowns.conversions / awayTeamStats.fourthDowns.attempts) * 100) : 0}%)
+          {awayTeamStats.fourthDowns.conversions}/{awayTeamStats.fourthDowns.attempts} 
+          ({awayTeamStats.fourthDowns.attempts > 0 
+            ? Math.round((awayTeamStats.fourthDowns.conversions / awayTeamStats.fourthDowns.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Red Zone Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.redZone.conversions}/{homeTeamStats.redZone.attempts} ({Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100)}%)
+          {homeTeamStats.redZone.conversions}/{homeTeamStats.redZone.attempts} 
+          ({homeTeamStats.redZone.attempts > 0 
+            ? Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Red Zone</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.redZone.conversions}/{awayTeamStats.redZone.attempts} ({Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100)}%)
+          {awayTeamStats.redZone.conversions}/{awayTeamStats.redZone.attempts}
+          ({awayTeamStats.redZone.attempts > 0 
+            ? Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Penalties */}
@@ -776,356 +902,424 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     </div>
   );
   
-  const renderAdvancedMetrics = () => (
-    <div style={styles.statSection}>
-      <h3 style={styles.sectionTitle}>Advanced Metrics</h3>
-      
-      <div style={styles.tabs}>
-        <div 
-          style={activeMetricTab === 'efficiency' ? {...styles.tab, ...styles.activeTab} : styles.tab}
-          onClick={() => setActiveMetricTab('efficiency')}
-        >
-          Efficiency
+  const renderAdvancedMetrics = () => {
+    if (!advancedData) {
+      return (
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Advanced Metrics</h3>
+          <div style={styles.noData}>Advanced metrics not available for this game.</div>
         </div>
-        <div 
-          style={activeMetricTab === 'epa' ? {...styles.tab, ...styles.activeTab} : styles.tab}
-          onClick={() => setActiveMetricTab('epa')}
-        >
-          EPA (Expected Points Added)
-        </div>
-      </div>
-      
-      {activeMetricTab === 'efficiency' && (
-        <div style={styles.efficiencyContainer}>
-          <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
-            <div style={{...styles.teamHeader, marginBottom: '15px'}}>
-              <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
-              <span style={styles.teamName}>{homeTeam} Efficiency</span>
-            </div>
-            
-            <EfficiencyMetric 
-              label="Offensive Efficiency" 
-              value={homeTeamStats.efficiency.offensive} 
-              maxValue={1.0} 
-              explanation="Percentage of plays that were successful based on down and distance"
-              color={homeTeamColor}
-            />
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Defensive Efficiency" 
-                value={homeTeamStats.efficiency.defensive} 
-                maxValue={1.0} 
-                explanation="Percentage of opponent plays that were stopped successfully"
-                color={homeTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Passing Success Rate" 
-                value={homeTeamStats.efficiency.passingSuccess} 
-                maxValue={1.0} 
-                explanation="Percentage of pass plays that were successful based on down and distance"
-                color={homeTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Rushing Success Rate" 
-                value={homeTeamStats.efficiency.rushingSuccess} 
-                maxValue={1.0} 
-                explanation="Percentage of rush plays that were successful based on down and distance"
-                color={homeTeamColor}
-              />
-            </div>
+      );
+    }
+    
+    return (
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Advanced Metrics</h3>
+        
+        <div style={styles.tabs}>
+          <div 
+            style={activeMetricTab === 'efficiency' ? {...styles.tab, ...styles.activeTab} : styles.tab}
+            onClick={() => setActiveMetricTab('efficiency')}
+          >
+            Efficiency
           </div>
-          
-          <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${awayTeamColor}`}}>
-            <div style={{...styles.teamHeader, marginBottom: '15px'}}>
-              <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
-              <span style={styles.teamName}>{awayTeam} Efficiency</span>
-            </div>
-            
-            <EfficiencyMetric 
-              label="Offensive Efficiency" 
-              value={awayTeamStats.efficiency.offensive} 
-              maxValue={1.0} 
-              explanation="Percentage of plays that were successful based on down and distance"
-              color={awayTeamColor}
-            />
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Defensive Efficiency" 
-                value={awayTeamStats.efficiency.defensive} 
-                maxValue={1.0} 
-                explanation="Percentage of opponent plays that were stopped successfully"
-                color={awayTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Passing Success Rate" 
-                value={awayTeamStats.efficiency.passingSuccess} 
-                maxValue={1.0} 
-                explanation="Percentage of pass plays that were successful based on down and distance"
-                color={awayTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Rushing Success Rate" 
-                value={awayTeamStats.efficiency.rushingSuccess} 
-                maxValue={1.0} 
-                explanation="Percentage of rush plays that were successful based on down and distance"
-                color={awayTeamColor}
-              />
-            </div>
+          <div 
+            style={activeMetricTab === 'epa' ? {...styles.tab, ...styles.activeTab} : styles.tab}
+            onClick={() => setActiveMetricTab('epa')}
+          >
+            EPA (Expected Points Added)
           </div>
-        </div>
-      )}
-      
-      {activeMetricTab === 'epa' && (
-        <div style={styles.efficiencyContainer}>
-          <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
-            <div style={{...styles.teamHeader, marginBottom: '15px'}}>
-              <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
-              <span style={styles.teamName}>{homeTeam} EPA</span>
-            </div>
-            
-            <EfficiencyMetric 
-              label="Total EPA" 
-              value={homeTeamStats.epa.total} 
-              maxValue={15} 
-              explanation="Expected Points Added across all plays"
-              color={homeTeamColor}
-            />
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Passing EPA" 
-                value={homeTeamStats.epa.passing} 
-                maxValue={10} 
-                explanation="Expected Points Added on passing plays"
-                color={homeTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Rushing EPA" 
-                value={homeTeamStats.epa.rushing} 
-                maxValue={8} 
-                explanation="Expected Points Added on rushing plays"
-                color={homeTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Defensive EPA" 
-                value={homeTeamStats.epa.defense} 
-                maxValue={5} 
-                explanation="Expected Points Added by defensive plays (negative is better for defense)"
-                color={homeTeamColor}
-              />
-            </div>
-          </div>
-          
-          <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${awayTeamColor}`}}>
-            <div style={{...styles.teamHeader, marginBottom: '15px'}}>
-              <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
-              <span style={styles.teamName}>{awayTeam} EPA</span>
-            </div>
-            
-            <EfficiencyMetric 
-              label="Total EPA" 
-              value={awayTeamStats.epa.total} 
-              maxValue={15} 
-              explanation="Expected Points Added across all plays"
-              color={awayTeamColor}
-            />
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Passing EPA" 
-                value={awayTeamStats.epa.passing} 
-                maxValue={10} 
-                explanation="Expected Points Added on passing plays"
-                color={awayTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Rushing EPA" 
-                value={awayTeamStats.epa.rushing} 
-                maxValue={8} 
-                explanation="Expected Points Added on rushing plays"
-                color={awayTeamColor}
-              />
-            </div>
-            
-            <div style={{marginTop: '15px'}}>
-              <EfficiencyMetric 
-                label="Defensive EPA" 
-                value={awayTeamStats.epa.defense} 
-                maxValue={5} 
-                explanation="Expected Points Added by defensive plays (negative is better for defense)"
-                color={awayTeamColor}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-  
-  const renderDrives = () => (
-    <div style={styles.statSection}>
-      <h3 style={styles.sectionTitle}>Drive Summary</h3>
-      
-      <div style={styles.drivesContainer}>
-        <div style={{...styles.driveRow, ...styles.driveHeader}}>
-          <div style={styles.driveTeam}>Team</div>
-          <div style={styles.driveQuarter}>Qtr</div>
-          <div style={styles.driveResult}>Result</div>
-          <div style={styles.driveYards}>Yards</div>
-          <div style={styles.driveTime}>Time</div>
-          <div style={styles.drivePlays}>Plays</div>
-          <div style={styles.driveStart}>Start</div>
         </div>
         
-        {drives.map((drive, index) => (
-          <div 
-            key={index} 
-            style={{
-              ...styles.driveRow,
-              backgroundColor: drive.team === homeTeam 
-                ? `${homeTeamColor}10` 
-                : `${awayTeamColor}10`
-            }}
-          >
-            <div style={styles.driveTeam}>
-              <img 
-                src={drive.team === homeTeam ? homeLogo : awayLogo} 
-                alt={drive.team} 
-                style={styles.driveLogoSmall} 
+        {activeMetricTab === 'efficiency' && (
+          <div style={styles.efficiencyContainer}>
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{homeTeam} Efficiency</span>
+              </div>
+              
+              <EfficiencyMetric 
+                label="Offensive Efficiency" 
+                value={homeTeamStats.efficiency.offensive} 
+                maxValue={1.0} 
+                explanation="Percentage of plays that were successful based on down and distance"
+                color={homeTeamColor}
               />
-              <span>{drive.team}</span>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Defensive Efficiency" 
+                  value={homeTeamStats.efficiency.defensive} 
+                  maxValue={1.0} 
+                  explanation="Percentage of opponent plays that were stopped successfully"
+                  color={homeTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Passing Success Rate" 
+                  value={homeTeamStats.efficiency.passingSuccess} 
+                  maxValue={1.0} 
+                  explanation="Percentage of pass plays that were successful based on down and distance"
+                  color={homeTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Rushing Success Rate" 
+                  value={homeTeamStats.efficiency.rushingSuccess} 
+                  maxValue={1.0} 
+                  explanation="Percentage of rush plays that were successful based on down and distance"
+                  color={homeTeamColor}
+                />
+              </div>
             </div>
-            <div style={styles.driveQuarter}>{drive.quarter}</div>
+            
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${awayTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{awayTeam} Efficiency</span>
+              </div>
+              
+              <EfficiencyMetric 
+                label="Offensive Efficiency" 
+                value={awayTeamStats.efficiency.offensive} 
+                maxValue={1.0} 
+                explanation="Percentage of plays that were successful based on down and distance"
+                color={awayTeamColor}
+              />
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Defensive Efficiency" 
+                  value={awayTeamStats.efficiency.defensive} 
+                  maxValue={1.0} 
+                  explanation="Percentage of opponent plays that were stopped successfully"
+                  color={awayTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Passing Success Rate" 
+                  value={awayTeamStats.efficiency.passingSuccess} 
+                  maxValue={1.0} 
+                  explanation="Percentage of pass plays that were successful based on down and distance"
+                  color={awayTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Rushing Success Rate" 
+                  value={awayTeamStats.efficiency.rushingSuccess} 
+                  maxValue={1.0} 
+                  explanation="Percentage of rush plays that were successful based on down and distance"
+                  color={awayTeamColor}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {activeMetricTab === 'epa' && (
+          <div style={styles.efficiencyContainer}>
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{homeTeam} EPA</span>
+              </div>
+              
+              <EfficiencyMetric 
+                label="Total EPA" 
+                value={homeTeamStats.epa.total} 
+                maxValue={15} 
+                explanation="Expected Points Added across all plays"
+                color={homeTeamColor}
+              />
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Passing EPA" 
+                  value={homeTeamStats.epa.passing} 
+                  maxValue={10} 
+                  explanation="Expected Points Added on passing plays"
+                  color={homeTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Rushing EPA" 
+                  value={homeTeamStats.epa.rushing} 
+                  maxValue={8} 
+                  explanation="Expected Points Added on rushing plays"
+                  color={homeTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Defensive EPA" 
+                  value={homeTeamStats.epa.defense} 
+                  maxValue={5} 
+                  explanation="Expected Points Added by defensive plays (negative is better for defense)"
+                  color={homeTeamColor}
+                />
+              </div>
+            </div>
+            
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${awayTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{awayTeam} EPA</span>
+              </div>
+              
+              <EfficiencyMetric 
+                label="Total EPA" 
+                value={awayTeamStats.epa.total} 
+                maxValue={15} 
+                explanation="Expected Points Added across all plays"
+                color={awayTeamColor}
+              />
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Passing EPA" 
+                  value={awayTeamStats.epa.passing} 
+                  maxValue={10} 
+                  explanation="Expected Points Added on passing plays"
+                  color={awayTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Rushing EPA" 
+                  value={awayTeamStats.epa.rushing} 
+                  maxValue={8} 
+                  explanation="Expected Points Added on rushing plays"
+                  color={awayTeamColor}
+                />
+              </div>
+              
+              <div style={{marginTop: '15px'}}>
+                <EfficiencyMetric 
+                  label="Defensive EPA" 
+                  value={awayTeamStats.epa.defense} 
+                  maxValue={5} 
+                  explanation="Expected Points Added by defensive plays (negative is better for defense)"
+                  color={awayTeamColor}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  const renderDrives = () => {
+    if (!drives || drives.length === 0) {
+      return (
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Drive Summary</h3>
+          <div style={styles.noData}>Drive data not available for this game.</div>
+        </div>
+      );
+    }
+    
+    return (
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Drive Summary</h3>
+        
+        <div style={styles.drivesContainer}>
+          <div style={{...styles.driveRow, ...styles.driveHeader}}>
+            <div style={styles.driveTeam}>Team</div>
+            <div style={styles.driveQuarter}>Qtr</div>
+            <div style={styles.driveResult}>Result</div>
+            <div style={styles.driveYards}>Yards</div>
+            <div style={styles.driveTime}>Time</div>
+            <div style={styles.drivePlays}>Plays</div>
+            <div style={styles.driveStart}>Start</div>
+          </div>
+          
+          {drives.map((drive, index) => (
             <div 
+              key={index} 
               style={{
-                ...styles.driveResult,
-                color: drive.result === "Touchdown" || drive.result === "Field Goal" 
-                  ? "#2ecc71" 
-                  : drive.result === "Turnover" 
-                    ? "#e74c3c" 
-                    : "#777"
+                ...styles.driveRow,
+                backgroundColor: drive.offense === homeTeam 
+                  ? `${homeTeamColor}10` 
+                  : `${awayTeamColor}10`
               }}
             >
-              {drive.result}
+              <div style={styles.driveTeam}>
+                <img 
+                  src={drive.offense === homeTeam ? homeLogo : awayLogo} 
+                  alt={drive.offense} 
+                  style={styles.driveLogoSmall} 
+                />
+                <span>{drive.offense}</span>
+              </div>
+              <div style={styles.driveQuarter}>{drive.period || 'N/A'}</div>
+              <div 
+                style={{
+                  ...styles.driveResult,
+                  color: drive.result === "Touchdown" || drive.result === "Field Goal" 
+                    ? "#2ecc71" 
+                    : drive.result === "Turnover" || drive.result === "Interception" || drive.result === "Fumble" 
+                      ? "#e74c3c" 
+                      : "#777"
+                }}
+              >
+                {drive.result || 'N/A'}
+              </div>
+              <div style={styles.driveYards}>{drive.yards || 0}</div>
+              <div style={styles.driveTime}>{drive.elapsed || 'N/A'}</div>
+              <div style={styles.drivePlays}>{drive.plays || 0}</div>
+              <div style={styles.driveStart}>{drive.startingPosition || 'N/A'}</div>
             </div>
-            <div style={styles.driveYards}>{drive.yards}</div>
-            <div style={styles.driveTime}>{drive.timeOfPossession}</div>
-            <div style={styles.drivePlays}>{drive.plays}</div>
-            <div style={styles.driveStart}>{drive.startPosition}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
   
-  const renderKeyPlayers = () => (
-    <div style={styles.statSection}>
-      <h3 style={styles.sectionTitle}>Key Player Statistics</h3>
-      
-      <div style={{...styles.teamHeader, marginBottom: '15px', borderBottom: `2px solid ${homeTeamColor}`}}>
-        <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
-        <span style={styles.teamName}>{homeTeam} Key Players</span>
-      </div>
-      
-      <table style={styles.playerStatsTable}>
-        <thead>
-          <tr>
-            <th style={styles.tableHeader}>Player</th>
-            <th style={styles.tableHeader}>Position</th>
-            <th style={styles.tableHeader}>Statistics</th>
-          </tr>
-        </thead>
-        <tbody>
-          {keyPlayers[homeTeam].map((player, index) => (
-            <tr key={index}>
-              <td style={styles.tableCell}>{player.name}</td>
-              <td style={styles.tableCell}>{player.position}</td>
-              <td style={styles.tableCell}>
-                {player.stats.passing && (
-                  <div>
-                    Passing: {player.stats.passing.completions}/{player.stats.passing.attempts}, {player.stats.passing.yards} yds, {player.stats.passing.touchdowns} TD, {player.stats.passing.interceptions} INT
-                  </div>
-                )}
-                {player.stats.rushing && (
-                  <div>
-                    Rushing: {player.stats.rushing.attempts} car, {player.stats.rushing.yards} yds, {player.stats.rushing.touchdowns} TD
-                  </div>
-                )}
-                {player.stats.receiving && (
-                  <div>
-                    Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
-                  </div>
-                )}
-              </td>
+  const renderKeyPlayers = () => {
+    const homeTeamPlayers = playerStats[homeTeam] || [];
+    const awayTeamPlayers = playerStats[awayTeam] || [];
+    
+    if (homeTeamPlayers.length === 0 && awayTeamPlayers.length === 0) {
+      return (
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Key Player Statistics</h3>
+          <div style={styles.noData}>Player statistics not available for this game.</div>
+        </div>
+      );
+    }
+    
+    return (
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Key Player Statistics</h3>
+        
+        <div style={{...styles.teamHeader, marginBottom: '15px', borderBottom: `2px solid ${homeTeamColor}`}}>
+          <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
+          <span style={styles.teamName}>{homeTeam} Key Players</span>
+        </div>
+        
+        <table style={styles.playerStatsTable}>
+          <thead>
+            <tr>
+              <th style={styles.tableHeader}>Player</th>
+              <th style={styles.tableHeader}>Position</th>
+              <th style={styles.tableHeader}>Statistics</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      
-      <div style={{...styles.teamHeader, margin: '25px 0 15px', borderBottom: `2px solid ${awayTeamColor}`}}>
-        <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
-        <span style={styles.teamName}>{awayTeam} Key Players</span>
-      </div>
-      
-      <table style={styles.playerStatsTable}>
-        <thead>
-          <tr>
-            <th style={styles.tableHeader}>Player</th>
-            <th style={styles.tableHeader}>Position</th>
-            <th style={styles.tableHeader}>Statistics</th>
-          </tr>
-        </thead>
-        <tbody>
-          {keyPlayers[awayTeam].map((player, index) => (
-            <tr key={index}>
-              <td style={styles.tableCell}>{player.name}</td>
-              <td style={styles.tableCell}>{player.position}</td>
-              <td style={styles.tableCell}>
-                {player.stats.passing && (
-                  <div>
-                    Passing: {player.stats.passing.completions}/{player.stats.passing.attempts}, {player.stats.passing.yards} yds, {player.stats.passing.touchdowns} TD, {player.stats.passing.interceptions} INT
-                  </div>
-                )}
-                {player.stats.rushing && (
-                  <div>
-                    Rushing: {player.stats.rushing.attempts} car, {player.stats.rushing.yards} yds, {player.stats.rushing.touchdowns} TD
-                  </div>
-                )}
-                {player.stats.receiving && (
-                  <div>
-                    Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
-                  </div>
-                )}
-              </td>
+          </thead>
+          <tbody>
+            {homeTeamPlayers.length > 0 ? (
+              homeTeamPlayers.map((player, index) => (
+                <tr key={index}>
+                  <td style={styles.tableCell}>{player.name}</td>
+                  <td style={styles.tableCell}>{player.position}</td>
+                  <td style={styles.tableCell}>
+                    {player.stats.passing && (
+                      <div>
+                        Passing: {player.stats.passing.completions}/{player.stats.passing.attempts}, 
+                        {player.stats.passing.yards} yds, {player.stats.passing.touchdowns} TD, 
+                        {player.stats.passing.interceptions} INT
+                      </div>
+                    )}
+                    {player.stats.rushing && (
+                      <div>
+                        Rushing: {player.stats.rushing.attempts} car, {player.stats.rushing.yards} yds, 
+                        {player.stats.rushing.touchdowns} TD
+                      </div>
+                    )}
+                    {player.stats.receiving && (
+                      <div>
+                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, 
+                        {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
+                      </div>
+                    )}
+                    {player.stats.defense && (
+                      <div>
+                        Defense: {player.stats.defense.tackles} tackles, 
+                        {player.stats.defense.sacks} sacks, {player.stats.defense.interceptions} INT
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" style={styles.tableCell}>No player data available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        
+        <div style={{...styles.teamHeader, margin: '25px 0 15px', borderBottom: `2px solid ${awayTeamColor}`}}>
+          <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
+          <span style={styles.teamName}>{awayTeam} Key Players</span>
+        </div>
+        
+        <table style={styles.playerStatsTable}>
+          <thead>
+            <tr>
+              <th style={styles.tableHeader}>Player</th>
+              <th style={styles.tableHeader}>Position</th>
+              <th style={styles.tableHeader}>Statistics</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+          </thead>
+          <tbody>
+            {awayTeamPlayers.length > 0 ? (
+              awayTeamPlayers.map((player, index) => (
+                <tr key={index}>
+                  <td style={styles.tableCell}>{player.name}</td>
+                  <td style={styles.tableCell}>{player.position}</td>
+                  <td style={styles.tableCell}>
+                    {player.stats.passing && (
+                      <div>
+                        Passing: {player.stats.passing.completions}/{player.stats.passing.attempts}, 
+                        {player.stats.passing.yards} yds, {player.stats.passing.touchdowns} TD, 
+                        {player.stats.passing.interceptions} INT
+                      </div>
+                    )}
+                    {player.stats.rushing && (
+                      <div>
+                        Rushing: {player.stats.rushing.attempts} car, {player.stats.rushing.yards} yds, 
+                        {player.stats.rushing.touchdowns} TD
+                      </div>
+                    )}
+                    {player.stats.receiving && (
+                      <div>
+                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, 
+                        {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
+                      </div>
+                    )}
+                    {player.stats.defense && (
+                      <div>
+                        Defense: {player.stats.defense.tackles} tackles, 
+                        {player.stats.defense.sacks} sacks, {player.stats.defense.interceptions} INT
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" style={styles.tableCell}>No player data available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
   
   return (
     <div style={styles.container}>
