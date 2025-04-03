@@ -1,6 +1,332 @@
 import React, { useState, useEffect } from "react";
 import * as teamsService from "../services/teamsService";
-import "./GameStats.css";
+
+// Inline CSS styles for the component
+const styles = {
+  container: {
+    margin: "20px 0",
+    padding: "10px",
+    backgroundColor: "#fff",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  },
+  statSection: {
+    marginBottom: "30px",
+  },
+  sectionTitle: {
+    fontSize: "1.2rem",
+    fontWeight: "600",
+    padding: "10px 0",
+    borderBottom: "2px solid #eee",
+    marginBottom: "15px",
+  },
+  teamComparisonGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    gap: "10px",
+    alignItems: "center",
+  },
+  statLabel: {
+    fontWeight: "500",
+    color: "#555",
+    gridColumn: "2",
+    textAlign: "center",
+    padding: "0 10px",
+  },
+  homeStatValue: {
+    fontWeight: "bold",
+    textAlign: "right",
+    padding: "8px 15px",
+    borderRadius: "4px",
+    backgroundColor: "#f5f5f5",
+  },
+  awayStatValue: {
+    fontWeight: "bold",
+    textAlign: "left",
+    padding: "8px 15px",
+    borderRadius: "4px",
+    backgroundColor: "#f5f5f5",
+  },
+  statBar: {
+    display: "flex",
+    height: "20px",
+    borderRadius: "10px",
+    overflow: "hidden",
+    backgroundColor: "#eee",
+    margin: "10px 0",
+  },
+  statBarInner: {
+    height: "100%",
+    transition: "width 1s ease",
+  },
+  timeOfPossessionContainer: {
+    display: "flex",
+    height: "30px",
+    borderRadius: "4px",
+    overflow: "hidden",
+    backgroundColor: "#eee",
+    margin: "10px 0",
+  },
+  timeSegment: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    fontSize: "0.8rem",
+    fontWeight: "bold",
+    transition: "width 1s ease",
+  },
+  teamHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "10px",
+  },
+  teamLogo: {
+    width: "30px",
+    height: "30px",
+    objectFit: "contain",
+  },
+  teamName: {
+    fontWeight: "bold",
+    fontSize: "1.1rem",
+  },
+  tabs: {
+    display: "flex",
+    borderBottom: "1px solid #ddd",
+    marginBottom: "20px",
+  },
+  tab: {
+    padding: "10px 20px",
+    cursor: "pointer",
+    borderBottom: "3px solid transparent",
+    fontWeight: "500",
+  },
+  activeTab: {
+    borderBottom: "3px solid #3498db",
+    color: "#3498db",
+  },
+  efficiencyContainer: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+  },
+  efficiencyCard: {
+    padding: "15px",
+    borderRadius: "8px",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    backgroundColor: "#f9f9f9",
+  },
+  progressBarContainer: {
+    width: "100%",
+    height: "8px",
+    backgroundColor: "#e0e0e0",
+    borderRadius: "4px",
+    overflow: "hidden",
+    margin: "8px 0",
+  },
+  progressBar: {
+    height: "100%",
+    borderRadius: "4px",
+  },
+  valueDisplay: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "0.9rem",
+    color: "#555",
+  },
+  drivesContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    margin: "15px 0",
+  },
+  driveRow: {
+    display: "flex",
+    padding: "10px",
+    backgroundColor: "#f5f5f5",
+    borderRadius: "4px",
+    fontSize: "0.9rem",
+  },
+  driveTeam: {
+    width: "15%",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+  },
+  driveLogoSmall: {
+    width: "20px",
+    height: "20px",
+    objectFit: "contain",
+  },
+  driveQuarter: {
+    width: "10%",
+    textAlign: "center",
+  },
+  driveResult: {
+    width: "15%",
+  },
+  driveYards: {
+    width: "12%",
+    textAlign: "center",
+  },
+  driveTime: {
+    width: "12%",
+    textAlign: "center",
+  },
+  drivePlays: {
+    width: "12%",
+    textAlign: "center",
+  },
+  driveStart: {
+    width: "12%",
+    textAlign: "center",
+  },
+  driveHeader: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+  tooltipContainer: {
+    position: "relative",
+    display: "inline-block",
+  },
+  tooltipIcon: {
+    marginLeft: "5px",
+    fontSize: "14px",
+    color: "#888",
+    cursor: "help",
+  },
+  tooltip: {
+    position: "absolute",
+    top: "100%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "8px 12px",
+    backgroundColor: "#333",
+    color: "#fff",
+    borderRadius: "4px",
+    fontSize: "0.8rem",
+    zIndex: "999",
+    width: "200px",
+    textAlign: "center",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+    opacity: "0",
+    visibility: "hidden",
+    transition: "opacity 0.3s, visibility 0.3s",
+  },
+  tooltipVisible: {
+    opacity: "1",
+    visibility: "visible",
+  },
+  playByPlayContainer: {
+    maxHeight: "400px",
+    overflowY: "auto",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    padding: "10px",
+  },
+  playRow: {
+    padding: "8px",
+    borderBottom: "1px solid #eee",
+    fontSize: "0.9rem",
+  },
+  playRowHighlight: {
+    backgroundColor: "rgba(52, 152, 219, 0.1)",
+  },
+  playTime: {
+    color: "#555",
+    fontSize: "0.8rem",
+  },
+  quarterHeader: {
+    backgroundColor: "#f0f0f0",
+    padding: "8px",
+    fontWeight: "bold",
+    position: "sticky",
+    top: "0",
+    zIndex: "1",
+  },
+  keyPlayBadge: {
+    display: "inline-block",
+    backgroundColor: "#e74c3c",
+    color: "white",
+    padding: "2px 6px",
+    borderRadius: "4px",
+    fontSize: "0.7rem",
+    marginLeft: "6px",
+  },
+  filterContainer: {
+    display: "flex",
+    gap: "10px",
+    margin: "0 0 15px 0",
+  },
+  filterButton: {
+    padding: "6px 12px",
+    borderRadius: "4px",
+    border: "1px solid #ddd",
+    background: "none",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+  },
+  filterButtonActive: {
+    backgroundColor: "#3498db",
+    color: "white",
+    border: "1px solid #3498db",
+  },
+  chartContainer: {
+    height: "250px",
+    width: "100%",
+    margin: "20px 0",
+  },
+  playerStatsTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: "15px",
+    fontSize: "0.9rem",
+  },
+  tableHeader: {
+    backgroundColor: "#f5f5f5",
+    padding: "10px",
+    textAlign: "left",
+    borderBottom: "2px solid #ddd",
+    fontWeight: "bold",
+  },
+  tableCell: {
+    padding: "8px 10px",
+    borderBottom: "1px solid #eee",
+  },
+  noData: {
+    padding: "15px",
+    textAlign: "center",
+    color: "#666",
+    backgroundColor: "#f9f9f9",
+    borderRadius: "4px",
+    margin: "10px 0",
+  },
+  metricExplanation: {
+    fontSize: "0.85rem",
+    color: "#666",
+    marginTop: "5px",
+    fontStyle: "italic",
+  },
+  viewMoreButton: {
+    cursor: 'pointer',
+    textAlign: 'center',
+    padding: '10px',
+    margin: '10px 0',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '4px',
+    color: '#3498db',
+    fontWeight: '500',
+    transition: 'background-color 0.3s'
+  }
+};
 
 // Tooltip component
 const Tooltip = ({ text, children }) => {
@@ -958,37 +1284,37 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     
     if (homeTeamPlayers.length === 0 && awayTeamPlayers.length === 0) {
       return (
-        <div className="statSection">
-          <h3 className="sectionTitle">Key Player Statistics</h3>
-          <div className="noData">Player statistics not available for this game.</div>
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Key Player Statistics</h3>
+          <div style={styles.noData}>Player statistics not available for this game.</div>
         </div>
       );
     }
     
     return (
-      <div className="statSection">
-        <h3 className="sectionTitle">Key Player Statistics</h3>
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Key Player Statistics</h3>
         
-        <div className="teamHeader" style={{marginBottom: '15px', borderBottom: `2px solid ${homeTeamColor}`}}>
-          <img src={homeLogo} alt={homeTeam} className="teamLogo" />
-          <span className="teamName">{homeTeam} Key Players</span>
+        <div style={{...styles.teamHeader, marginBottom: '15px', borderBottom: `2px solid ${homeTeamColor}`}}>
+          <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
+          <span style={styles.teamName}>{homeTeam} Key Players</span>
         </div>
         
-        <table className="playerStatsTable">
+        <table style={styles.playerStatsTable}>
           <thead>
             <tr>
-              <th className="tableHeader">Player</th>
-              <th className="tableHeader">Position</th>
-              <th className="tableHeader">Statistics</th>
+              <th style={styles.tableHeader}>Player</th>
+              <th style={styles.tableHeader}>Position</th>
+              <th style={styles.tableHeader}>Statistics</th>
             </tr>
           </thead>
           <tbody>
             {homeTeamPlayers.length > 0 ? (
               homeTeamPlayers.map((player, index) => (
                 <tr key={index}>
-                  <td className="tableCell">{player.name}</td>
-                  <td className="tableCell">{player.position}</td>
-                  <td className="tableCell">
+                  <td style={styles.tableCell}>{player.name}</td>
+                  <td style={styles.tableCell}>{player.position}</td>
+                  <td style={styles.tableCell}>
                     {player.stats.passing && (
                       <div>
                         Passing: {player.stats.passing.completions}/{player.stats.passing.attempts}, 
@@ -1019,7 +1345,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="tableCell">No player data available</td>
+                <td colSpan="3" style={styles.tableCell}>No player data available</td>
               </tr>
             )}
           </tbody>
