@@ -29,6 +29,7 @@ const TeamAnalyticsDetail = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [game, setGame] = useState(null);
   const [advancedStats, setAdvancedStats] = useState(null);
+  const [teamGameStats, setTeamGameStats] = useState(null);
   const [topPerformersPassing, setTopPerformersPassing] = useState(null);
   const [topPerformersRushing, setTopPerformersRushing] = useState(null);
   const [topPerformersReceiving, setTopPerformersReceiving] = useState(null);
@@ -169,6 +170,10 @@ const TeamAnalyticsDetail = () => {
         // 5. Fetch advanced box score stats
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
+        
+        // 6. Fetch team game stats
+        const gameStatsData = await teamsService.getTeamGameStatsByGameId(gameId, foundTeam.school, 2024);
+        setTeamGameStats(gameStatsData);
 
         // 6. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
@@ -266,75 +271,89 @@ const TeamAnalyticsDetail = () => {
       position: player.position,
     })) || [];
 
-  // Prepare team stats data (mock data if not available from API)
+  // Find home and away team data from the API response
+  const findTeamStats = (teamName) => {
+    if (!teamGameStats || !teamGameStats.length) return null;
+    
+    // Try to find the game data by gameId
+    const gameData = teamGameStats.find(game => game.id === parseInt(gameId, 10));
+    if (!gameData) return null;
+    
+    // Find team data matching this team name
+    return gameData.teams.find(team => 
+      team.team.toLowerCase() === teamName.toLowerCase());
+  };
+  
+  // Get the actual team stats data
+  const homeTeamData = findTeamStats(game.homeTeam);
+  const awayTeamData = findTeamStats(game.awayTeam);
+  
+  // Helper function to get a specific stat value from a team's stats array
+  const getStatValue = (teamData, category) => {
+    if (!teamData || !teamData.stats) return null;
+    const statItem = teamData.stats.find(stat => stat.category === category);
+    return statItem ? statItem.stat : null;
+  };
+  
+  // Prepare team stats data from API
   const teamStats = [
     {
       label: "Total yards",
-      homeValue: game.homeStats?.totalYards || 467,
-      awayValue: game.awayStats?.totalYards || 496
+      homeValue: getStatValue(homeTeamData, "totalYards") || "-",
+      awayValue: getStatValue(awayTeamData, "totalYards") || "-"
     },
     {
       label: "Passing yards",
-      homeValue: game.homeStats?.passingYards || 326,
-      awayValue: game.awayStats?.passingYards || 341
+      homeValue: getStatValue(homeTeamData, "netPassingYards") || "-",
+      awayValue: getStatValue(awayTeamData, "netPassingYards") || "-"
     },
     {
       label: "Rushing yards",
-      homeValue: game.homeStats?.rushingYards || 141,
-      awayValue: game.awayStats?.rushingYards || 155
+      homeValue: getStatValue(homeTeamData, "rushingYards") || "-",
+      awayValue: getStatValue(awayTeamData, "rushingYards") || "-"
     },
     {
       label: "Yards per play",
-      homeValue: game.homeStats?.yardsPerPlay || 6.9,
-      awayValue: game.awayStats?.yardsPerPlay || 7.6
+      homeValue: getStatValue(homeTeamData, "yardsPerPass") || "-",
+      awayValue: getStatValue(awayTeamData, "yardsPerPass") || "-"
     },
     {
       label: "First downs",
-      homeValue: game.homeStats?.firstDowns || 22,
-      awayValue: game.awayStats?.firstDowns || 18
+      homeValue: getStatValue(homeTeamData, "firstDowns") || "-",
+      awayValue: getStatValue(awayTeamData, "firstDowns") || "-"
     },
     {
       label: "3rd down efficiency",
-      homeValue: game.homeStats?.thirdDownEff || "4/12",
-      awayValue: game.awayStats?.thirdDownEff || "6/14",
+      homeValue: getStatValue(homeTeamData, "thirdDownEff") || "-",
+      awayValue: getStatValue(awayTeamData, "thirdDownEff") || "-",
       isText: true
     },
     {
       label: "4th down efficiency",
-      homeValue: game.homeStats?.fourthDownEff || "2/2",
-      awayValue: game.awayStats?.fourthDownEff || "1/2",
+      homeValue: getStatValue(homeTeamData, "fourthDownEff") || "-",
+      awayValue: getStatValue(awayTeamData, "fourthDownEff") || "-",
       isText: true
     },
     {
-      label: "Total plays",
-      homeValue: game.homeStats?.totalPlays || 68,
-      awayValue: game.awayStats?.totalPlays || 65
-    },
-    {
-      label: "Punts",
-      homeValue: game.homeStats?.punts || 3,
-      awayValue: game.awayStats?.punts || 3
-    },
-    {
-      label: "Penalties (Yards)",
-      homeValue: game.homeStats?.penalties || "8 (70)",
-      awayValue: game.awayStats?.penalties || "3 (25)",
+      label: "Total penalties",
+      homeValue: getStatValue(homeTeamData, "totalPenaltiesYards") || "-",
+      awayValue: getStatValue(awayTeamData, "totalPenaltiesYards") || "-",
       isText: true
     },
     {
       label: "Fumbles lost",
-      homeValue: game.homeStats?.fumblesLost || 2,
-      awayValue: game.awayStats?.fumblesLost || 0
+      homeValue: getStatValue(homeTeamData, "fumblesLost") || "-",
+      awayValue: getStatValue(awayTeamData, "fumblesLost") || "-"
     },
     {
-      label: "Interceptions thrown",
-      homeValue: game.homeStats?.interceptionsThrown || 0,
-      awayValue: game.awayStats?.interceptionsThrown || 0
+      label: "Interceptions",
+      homeValue: getStatValue(homeTeamData, "interceptions") || "-",
+      awayValue: getStatValue(awayTeamData, "interceptions") || "-"
     },
     {
       label: "Time of possession",
-      homeValue: game.homeStats?.timeOfPossession || "33:09",
-      awayValue: game.awayStats?.timeOfPossession || "26:51",
+      homeValue: getStatValue(homeTeamData, "possessionTime") || "-",
+      awayValue: getStatValue(awayTeamData, "possessionTime") || "-",
       isText: true
     }
   ];
@@ -343,10 +362,17 @@ const TeamAnalyticsDetail = () => {
   const calculateWidth = (home, away, isText) => {
     if (isText) return { homeWidth: 50, awayWidth: 50 };
     
-    const total = home + away;
+    // Handle string values that need to be converted to numbers
+    const homeNum = typeof home === 'string' ? parseFloat(home) : home;
+    const awayNum = typeof away === 'string' ? parseFloat(away) : away;
+    
+    // Handle non-numeric values
+    if (isNaN(homeNum) || isNaN(awayNum)) return { homeWidth: 50, awayWidth: 50 };
+    
+    const total = homeNum + awayNum;
     if (total === 0) return { homeWidth: 50, awayWidth: 50 };
     
-    const homeWidth = Math.round((home / total) * 100);
+    const homeWidth = Math.round((homeNum / total) * 100);
     const awayWidth = 100 - homeWidth;
     
     return { homeWidth, awayWidth };
@@ -433,8 +459,8 @@ const TeamAnalyticsDetail = () => {
           <div className="team-stats-metrics">
             {teamStats.map((stat, index) => {
               const { homeWidth, awayWidth } = calculateWidth(stat.homeValue, stat.awayValue, stat.isText);
-              const homeTextValue = typeof stat.homeValue === 'string' ? stat.homeValue : stat.homeValue.toLocaleString();
-              const awayTextValue = typeof stat.awayValue === 'string' ? stat.awayValue : stat.awayValue.toLocaleString();
+              const homeTextValue = stat.homeValue;
+              const awayTextValue = stat.awayValue;
               
               return (
                 <div key={index} className="team-stats-row">
