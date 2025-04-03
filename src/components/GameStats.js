@@ -387,6 +387,74 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const [playerStats, setPlayerStats] = useState({});
   const [winProbabilities, setWinProbabilities] = useState(null);
   
+  // Case insensitive string comparison helper - for team name matching
+  const isSameTeam = (team1, team2) => {
+    if (!team1 || !team2) return false;
+    return team1.toLowerCase().trim() === team2.toLowerCase().trim();
+  };
+
+  // Team name containment check
+  const teamsMatch = (team1, team2) => {
+    if (!team1 || !team2) return false;
+    const t1 = team1.toLowerCase().trim();
+    const t2 = team2.toLowerCase().trim();
+    return t1.includes(t2) || t2.includes(t1);
+  };
+
+  // Helper function to find a stat value from array of stat objects
+  const findStatValue = (stats, category) => {
+    if (!stats || !Array.isArray(stats)) return null;
+    
+    const statItem = stats.find(s => s.category === category);
+    if (!statItem) return null;
+    
+    // Try to parse as number, fall back to string if not numeric
+    const numValue = parseFloat(statItem.stat);
+    return isNaN(numValue) ? statItem.stat : numValue;
+  };
+
+  // Helper to parse fraction-like stats (e.g. "5-12")
+  const parseFractionStat = (stats, category) => {
+    const statValue = findStatValue(stats, category);
+    if (!statValue) return { attempts: 0, conversions: 0 };
+    
+    const parts = String(statValue).split('-');
+    if (parts.length !== 2) return { attempts: 0, conversions: 0 };
+    
+    return {
+      conversions: parseInt(parts[0]) || 0,
+      attempts: parseInt(parts[1]) || 0
+    };
+  };
+
+  // Parse time of possession from MM:SS format
+  const parseTimeOfPossession = (stats) => {
+    const possessionTime = findStatValue(stats, 'possessionTime');
+    if (!possessionTime) return 0;
+    
+    const parts = possessionTime.split(':');
+    if (parts.length !== 2) return 0;
+    
+    const minutes = parseInt(parts[0]) || 0;
+    const seconds = parseInt(parts[1]) || 0;
+    
+    return minutes + (seconds / 60);
+  };
+
+  // Parse penalties stats (e.g. "11-125")
+  const parsePenalties = (stats) => {
+    const penaltiesValue = findStatValue(stats, 'totalPenaltiesYards');
+    if (!penaltiesValue) return { count: 0, yards: 0 };
+    
+    const parts = String(penaltiesValue).split('-');
+    if (parts.length !== 2) return { count: 0, yards: 0 };
+    
+    return {
+      count: parseInt(parts[0]) || 0,
+      yards: parseInt(parts[1]) || 0
+    };
+  };
+  
   // Fetch real data from the API
   useEffect(() => {
     const fetchAllGameData = async () => {
@@ -397,54 +465,86 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         const year = gameData?.season || new Date().getFullYear();
         console.log(`Fetching data for game ID: ${gameData.id}, year: ${year}, teams: ${homeTeam} vs ${awayTeam}`);
         
-        // Fetch both team's game stats
-        let homeTeamStats, awayTeamStats;
+        // Fetch raw game data which includes team stats
+        let rawGameData;
         try {
-          [homeTeamStats, awayTeamStats] = await Promise.all([
-            teamsService.getTeamGameStats(gameData.id, homeTeam, year),
-            teamsService.getTeamGameStats(gameData.id, awayTeam, year)
-          ]);
-          console.log('Home team stats:', homeTeamStats);
-          console.log('Away team stats:', awayTeamStats);
+          rawGameData = await teamsService.getGameById(gameData.id, year);
+          console.log('Raw game data:', rawGameData);
         } catch (err) {
-          console.error('Error fetching team stats:', err);
-          homeTeamStats = [];
-          awayTeamStats = [];
+          console.error('Error fetching game data:', err);
+          rawGameData = null;
+        }
+        
+        // Extract team stats from raw game data
+        let homeTeamStats = null;
+        let awayTeamStats = null;
+        
+        if (rawGameData && rawGameData.teams && Array.isArray(rawGameData.teams)) {
+          const homeTeamData = rawGameData.teams.find(t => 
+            isSameTeam(t.team, homeTeam) || 
+            (t.homeAway === 'home' && !rawGameData.teams.find(ht => isSameTeam(ht.team, homeTeam)))
+          );
+          
+          const awayTeamData = rawGameData.teams.find(t => 
+            isSameTeam(t.team, awayTeam) || 
+            (t.homeAway === 'away' && !rawGameData.teams.find(at => isSameTeam(at.team, awayTeam)))
+          );
+          
+          homeTeamStats = homeTeamData?.stats || [];
+          awayTeamStats = awayTeamData?.stats || [];
+          
+          console.log('Found home team stats:', homeTeamData?.team);
+          console.log('Found away team stats:', awayTeamData?.team);
         }
         
         // Fetch game drives
         let drivesData = [];
         try {
           drivesData = await teamsService.getGameDrives(gameData.id, year);
+          console.log('All drives data:', drivesData);
+          
           // Filter drives to only include the current teams
-          drivesData = drivesData.filter(drive => 
-            drive.offense === homeTeam || drive.offense === awayTeam
-          );
-          console.log('Filtered drives data:', drivesData);
+          if (drivesData && Array.isArray(drivesData)) {
+            drivesData = drivesData.filter(drive => 
+              teamsMatch(drive.offense, homeTeam) || 
+              teamsMatch(drive.offense, awayTeam)
+            );
+            console.log('Filtered drives data:', drivesData);
+          }
         } catch (err) {
           console.error('Error fetching drives:', err);
         }
         
-        // Fetch player stats for this game
+        // Fetch player stats for this game - try multiple approaches
         let playersData = [];
         try {
-          // Try first with getGamePlayers
+          // Try first with direct game id
           try {
             playersData = await teamsService.getGamePlayers(gameData.id, year);
             console.log('Player data from getGamePlayers:', playersData);
           } catch (playerErr) {
-            console.warn('Error with getGamePlayers, trying alternative approach:', playerErr);
-            // Try alternative approach with getPlayerGameStats
+            console.warn('Error with getGamePlayers:', playerErr);
+            
+            // Try alternative approaches
             try {
-              playersData = await teamsService.getPlayerGameStats(gameData.id, year);
+              const homePlayerData = await teamsService.getPlayerGameStats(gameData.id, year, null, null, homeTeam);
+              const awayPlayerData = await teamsService.getPlayerGameStats(gameData.id, year, null, null, awayTeam);
+              
+              if (Array.isArray(homePlayerData) && homePlayerData.length > 0) {
+                playersData = [...playersData, ...homePlayerData];
+              }
+              
+              if (Array.isArray(awayPlayerData) && awayPlayerData.length > 0) {
+                playersData = [...playersData, ...awayPlayerData];
+              }
+              
               console.log('Player data from getPlayerGameStats:', playersData);
             } catch (altErr) {
-              console.error('Both player data approaches failed:', altErr);
-              playersData = [];
+              console.error('Alternative player data approach failed:', altErr);
             }
           }
         } catch (err) {
-          console.error('Error in player stats outer try block:', err);
+          console.error('Error in player stats fetching:', err);
           playersData = [];
         }
         
@@ -454,14 +554,44 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           advancedMetrics = await teamsService.getAdvancedBoxScore(gameData.id, year);
         } catch (err) {
           console.warn("Advanced metrics not available:", err);
-        }
-        
-        // Optionally fetch win probability data if available
-        let winProbData = null;
-        try {
-          winProbData = await teamsService.getMetricsWP(gameData.id, year);
-        } catch (err) {
-          console.warn("Win probability data not available:", err);
+          
+          // Create minimal advanced metrics from standard stats if possible
+          if (homeTeamStats.length > 0 && awayTeamStats.length > 0) {
+            advancedMetrics = {
+              teams: [
+                {
+                  team: homeTeam,
+                  efficiency: {
+                    offensive: 0.5,
+                    defensive: 0.5,
+                    passingSuccess: 0.5,
+                    rushingSuccess: 0.5
+                  },
+                  epa: {
+                    total: 0,
+                    passing: 0,
+                    rushing: 0,
+                    defense: 0
+                  }
+                },
+                {
+                  team: awayTeam,
+                  efficiency: {
+                    offensive: 0.5,
+                    defensive: 0.5,
+                    passingSuccess: 0.5,
+                    rushingSuccess: 0.5
+                  },
+                  epa: {
+                    total: 0,
+                    passing: 0,
+                    rushing: 0,
+                    defense: 0
+                  }
+                }
+              ]
+            };
+          }
         }
         
         // Process player stats into appropriate format
@@ -475,7 +605,6 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         setDrives(drivesData || []);
         setPlayerStats(processedPlayerStats || { [homeTeam]: [], [awayTeam]: [] });
         setAdvancedData(advancedMetrics);
-        setWinProbabilities(winProbData);
         
         // Log processed data for debugging
         console.log('Processed team stats:', processedTeamStats);
@@ -509,8 +638,8 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     
     const processTeamStats = (homeStats, awayStats) => {
       // Ensure we have data to process
-      if (!homeStats || (Array.isArray(homeStats) && homeStats.length === 0) || 
-          !awayStats || (Array.isArray(awayStats) && awayStats.length === 0)) {
+      if (!homeStats || !Array.isArray(homeStats) || 
+          !awayStats || !Array.isArray(awayStats)) {
         console.warn('Missing or invalid team stats data');
         // Return default structure with zeros
         return {
@@ -519,190 +648,104 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         };
       }
       
-      // Get the first element if arrays are returned
-      const homeStatsData = Array.isArray(homeStats) ? homeStats[0] : homeStats;
-      const awayStatsData = Array.isArray(awayStats) ? awayStats[0] : awayStats;
-      
-      console.log('Processing home stats:', homeStatsData);
-      console.log('Processing away stats:', awayStatsData);
+      console.log('Processing home stats array length:', homeStats.length);
+      console.log('Processing away stats array length:', awayStats.length);
       
       // Extract and structure the relevant stats for both teams
       return {
         homeTeamStats: {
-          totalYards: getTotalYards(homeStatsData),
-          passingYards: getPassingYards(homeStatsData),
-          rushingYards: getRushingYards(homeStatsData),
-          firstDowns: getFirstDowns(homeStatsData),
-          thirdDowns: getThirdDowns(homeStatsData),
-          fourthDowns: getFourthDowns(homeStatsData),
-          turnovers: getTurnovers(homeStatsData),
-          timeOfPossession: getTimeOfPossession(homeStatsData),
-          redZone: getRedZone(homeStatsData),
-          penalties: getPenalties(homeStatsData),
-          sacks: getSacks(homeStatsData),
-          explosivePlays: getExplosivePlays(homeStatsData),
-          epa: getEPA(homeStatsData, advancedData),
-          efficiency: getEfficiency(homeStatsData, advancedData)
+          totalYards: findStatValue(homeStats, 'totalYards') || 0,
+          passingYards: findStatValue(homeStats, 'netPassingYards') || 0,
+          rushingYards: findStatValue(homeStats, 'rushingYards') || 0,
+          firstDowns: findStatValue(homeStats, 'firstDowns') || 0,
+          thirdDowns: parseFractionStat(homeStats, 'thirdDownEff'),
+          fourthDowns: parseFractionStat(homeStats, 'fourthDownEff'),
+          turnovers: findStatValue(homeStats, 'turnovers') || 0,
+          timeOfPossession: parseTimeOfPossession(homeStats),
+          redZone: parseFractionStat(homeStats, 'redZoneEff'),
+          penalties: parsePenalties(homeStats),
+          sacks: {
+            count: findStatValue(homeStats, 'sacks') || 0,
+            yards: findStatValue(homeStats, 'sackYards') || 0
+          },
+          explosivePlays: findStatValue(homeStats, 'explosivePlays') || 0,
+          epa: {
+            total: 0,
+            passing: 0,
+            rushing: 0,
+            defense: 0
+          },
+          efficiency: {
+            offensive: 0.5,
+            defensive: 0.5,
+            passingSuccess: 0.5,
+            rushingSuccess: 0.5
+          }
         },
         awayTeamStats: {
-          totalYards: getTotalYards(awayStatsData),
-          passingYards: getPassingYards(awayStatsData),
-          rushingYards: getRushingYards(awayStatsData),
-          firstDowns: getFirstDowns(awayStatsData),
-          thirdDowns: getThirdDowns(awayStatsData),
-          fourthDowns: getFourthDowns(awayStatsData),
-          turnovers: getTurnovers(awayStatsData),
-          timeOfPossession: getTimeOfPossession(awayStatsData),
-          redZone: getRedZone(awayStatsData),
-          penalties: getPenalties(awayStatsData),
-          sacks: getSacks(awayStatsData),
-          explosivePlays: getExplosivePlays(awayStatsData),
-          epa: getEPA(awayStatsData, advancedData),
-          efficiency: getEfficiency(awayStatsData, advancedData)
+          totalYards: findStatValue(awayStats, 'totalYards') || 0,
+          passingYards: findStatValue(awayStats, 'netPassingYards') || 0,
+          rushingYards: findStatValue(awayStats, 'rushingYards') || 0,
+          firstDowns: findStatValue(awayStats, 'firstDowns') || 0,
+          thirdDowns: parseFractionStat(awayStats, 'thirdDownEff'),
+          fourthDowns: parseFractionStat(awayStats, 'fourthDownEff'),
+          turnovers: findStatValue(awayStats, 'turnovers') || 0,
+          timeOfPossession: parseTimeOfPossession(awayStats),
+          redZone: parseFractionStat(awayStats, 'redZoneEff'),
+          penalties: parsePenalties(awayStats),
+          sacks: {
+            count: findStatValue(awayStats, 'sacks') || 0,
+            yards: findStatValue(awayStats, 'sackYards') || 0
+          },
+          explosivePlays: findStatValue(awayStats, 'explosivePlays') || 0,
+          epa: {
+            total: 0,
+            passing: 0,
+            rushing: 0,
+            defense: 0
+          },
+          efficiency: {
+            offensive: 0.5,
+            defensive: 0.5,
+            passingSuccess: 0.5,
+            rushingSuccess: 0.5
+          }
         }
       };
     };
     
-    // Helper functions to extract stats from API response
-    const getTotalYards = (stats) => {
-      return (stats.netPassingYards || 0) + (stats.rushingYards || 0);
-    };
-    
-    const getPassingYards = (stats) => {
-      return stats.netPassingYards || 0;
-    };
-    
-    const getRushingYards = (stats) => {
-      return stats.rushingYards || 0;
-    };
-    
-    const getFirstDowns = (stats) => {
-      return stats.firstDowns || 0;
-    };
-    
-    const getThirdDowns = (stats) => {
-      return {
-        attempts: stats.thirdDownAttempts || 0,
-        conversions: stats.thirdDownConversions || 0
-      };
-    };
-    
-    const getFourthDowns = (stats) => {
-      return {
-        attempts: stats.fourthDownAttempts || 0,
-        conversions: stats.fourthDownConversions || 0
-      };
-    };
-    
-    const getTurnovers = (stats) => {
-      return (stats.interceptions || 0) + (stats.fumblesLost || 0);
-    };
-    
-    const getTimeOfPossession = (stats) => {
-      // Convert time format "MM:SS" to minutes as a decimal
-      if (!stats.possessionTime) return 0;
-      
-      const [minutes, seconds] = stats.possessionTime.split(':').map(Number);
-      return minutes + (seconds / 60);
-    };
-    
-    const getRedZone = (stats) => {
-      return {
-        attempts: stats.redZoneAttempts || 0,
-        conversions: stats.redZoneConversions || 0
-      };
-    };
-    
-    const getPenalties = (stats) => {
-      return {
-        count: stats.penalties || 0,
-        yards: stats.penaltyYards || 0
-      };
-    };
-    
-    const getSacks = (stats) => {
-      return {
-        count: stats.sacks || 0,
-        yards: stats.sackYards || 0
-      };
-    };
-    
-    const getExplosivePlays = (stats) => {
-      // Count plays over 20 yards - this might need to be calculated from play-by-play data
-      // For now, use a placeholder or estimated value
-      return stats.explosivePlays || 0;
-    };
-    
-    const getEPA = (stats, advancedData) => {
-      // If advanced data is available, use it
-      if (advancedData && advancedData.teams) {
-        const teamData = advancedData.teams.find(t => t.team === stats.school);
-        if (teamData && teamData.epa) {
-          return {
-            total: teamData.epa.total || 0,
-            passing: teamData.epa.passing || 0,
-            rushing: teamData.epa.rushing || 0,
-            defense: teamData.epa.defense || 0
-          };
-        }
-      }
-      
-      // Fallback defaults
-      return {
-        total: 0,
-        passing: 0,
-        rushing: 0,
-        defense: 0
-      };
-    };
-    
-    const getEfficiency = (stats, advancedData) => {
-      // If advanced data is available, use it
-      if (advancedData && advancedData.teams) {
-        const teamData = advancedData.teams.find(t => t.team === stats.school);
-        if (teamData && teamData.efficiency) {
-          return {
-            offensive: teamData.efficiency.offensive || 0,
-            defensive: teamData.efficiency.defensive || 0,
-            passingSuccess: teamData.efficiency.passingSuccess || 0,
-            rushingSuccess: teamData.efficiency.rushingSuccess || 0
-          };
-        }
-      }
-      
-      // Fallback defaults using available stats - these are estimates
-      return {
-        offensive: 0.5, // Default value
-        defensive: 0.5, // Default value
-        passingSuccess: stats.completionAttempts ? stats.completions / stats.completionAttempts : 0,
-        rushingSuccess: stats.rushingYards && stats.rushingAttempts ? 
-          Math.min(0.8, stats.rushingYards / (stats.rushingAttempts * 5)) : 0
-      };
-    };
-    
+    // Extract player stats from potentially nested structure
     const processPlayerStats = (playersData, homeTeam, awayTeam) => {
+      // Default empty result
+      const result = {
+        [homeTeam]: [],
+        [awayTeam]: []
+      };
+      
       // Ensure we have data to process
       if (!playersData || !Array.isArray(playersData) || playersData.length === 0) {
         console.warn('No player data available');
-        return { [homeTeam]: [], [awayTeam]: [] };
+        return result;
       }
       
-      // Check the structure of the data to handle different API response formats
-      if (playersData.length > 0 && playersData[0] && typeof playersData[0] === 'object') {
-        // We have valid data to process
-        console.log(`Processing player stats for ${homeTeam} and ${awayTeam}. First player:`, playersData[0]);
+      // Check for the structure - array of category type or direct players array
+      if (playersData[0] && playersData[0].categories) {
+        // Nested category structure
+        console.log('Processing nested category player data');
+        return processNestedPlayerData(playersData, homeTeam, awayTeam);
       } else {
-        console.warn('Player data has unexpected format:', playersData);
-        return { [homeTeam]: [], [awayTeam]: [] };
+        // Direct player array
+        console.log('Processing direct player array data');
+        return processDirectPlayerData(playersData, homeTeam, awayTeam);
       }
-      
-      // Group players by team
+    };
+    
+    // Process direct player array structure
+    const processDirectPlayerData = (playersData, homeTeam, awayTeam) => {
       const homeTeamPlayers = [];
       const awayTeamPlayers = [];
       
-      // Use for...of instead of forEach for better error handling with async/await
       for (const player of playersData) {
-        
         // Skip if player is null or undefined
         if (!player) continue;
         
@@ -760,16 +803,11 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           };
         }
         
-        // Add to appropriate team array
-        // Make a more flexible comparison to handle potential string differences
+        // Add to appropriate team array using flexible matching
         try {
-          const playerTeamLower = (player.team || '').toLowerCase();
-          const homeTeamLower = homeTeam.toLowerCase();
-          const awayTeamLower = awayTeam.toLowerCase();
-          
-          if (playerTeamLower.includes(homeTeamLower) || homeTeamLower.includes(playerTeamLower)) {
+          if (teamsMatch(player.team, homeTeam)) {
             homeTeamPlayers.push(playerObj);
-          } else if (playerTeamLower.includes(awayTeamLower) || awayTeamLower.includes(playerTeamLower)) {
+          } else if (teamsMatch(player.team, awayTeam)) {
             awayTeamPlayers.push(playerObj);
           } else {
             console.log(`Player team '${player.team}' doesn't match '${homeTeam}' or '${awayTeam}'`);
@@ -783,6 +821,108 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         [homeTeam]: homeTeamPlayers,
         [awayTeam]: awayTeamPlayers
       };
+    };
+    
+    // Process nested category player data
+    const processNestedPlayerData = (playersData, homeTeam, awayTeam) => {
+      const result = {
+        [homeTeam]: [],
+        [awayTeam]: []
+      };
+      
+      // Process each team's data
+      for (const teamData of playersData) {
+        if (!teamData.team || !teamData.categories) continue;
+        
+        const currentTeam = teamsMatch(teamData.team, homeTeam) ? homeTeam : awayTeam;
+        const allPlayers = new Map(); // Use map to collect all player data
+        
+        // Process each category
+        for (const category of teamData.categories) {
+          if (!category.name || !category.types) continue;
+          
+          // Process each stat type within the category
+          for (const type of category.types) {
+            if (!type.name || !type.athletes) continue;
+            
+            // Process each athlete for this stat type
+            for (const athlete of type.athletes) {
+              if (!athlete.id || athlete.stat === undefined) continue;
+              
+              // Get or create player object
+              if (!allPlayers.has(athlete.id)) {
+                allPlayers.set(athlete.id, {
+                  id: athlete.id,
+                  name: athlete.name || 'Unknown Player',
+                  position: 'N/A', // Position info might be elsewhere
+                  stats: {}
+                });
+              }
+              
+              const player = allPlayers.get(athlete.id);
+              
+              // Add stat based on category and type
+              const statValue = parseFloat(athlete.stat);
+              const statNumber = isNaN(statValue) ? 0 : statValue;
+              
+              // Map category.name and type.name to our stats structure
+              switch (category.name.toLowerCase()) {
+                case 'passing':
+                  if (!player.stats.passing) player.stats.passing = {};
+                  
+                  switch (type.name.toLowerCase()) {
+                    case 'att': player.stats.passing.attempts = statNumber; break;
+                    case 'cmp': player.stats.passing.completions = statNumber; break;
+                    case 'yds': player.stats.passing.yards = statNumber; break;
+                    case 'td': player.stats.passing.touchdowns = statNumber; break;
+                    case 'int': player.stats.passing.interceptions = statNumber; break;
+                  }
+                  break;
+                  
+                case 'rushing':
+                  if (!player.stats.rushing) player.stats.rushing = {};
+                  
+                  switch (type.name.toLowerCase()) {
+                    case 'att': player.stats.rushing.attempts = statNumber; break;
+                    case 'yds': player.stats.rushing.yards = statNumber; break;
+                    case 'td': player.stats.rushing.touchdowns = statNumber; break;
+                  }
+                  break;
+                  
+                case 'receiving':
+                  if (!player.stats.receiving) player.stats.receiving = {};
+                  
+                  switch (type.name.toLowerCase()) {
+                    case 'rec': player.stats.receiving.receptions = statNumber; break;
+                    case 'tar': player.stats.receiving.targets = statNumber; break;
+                    case 'yds': player.stats.receiving.yards = statNumber; break;
+                    case 'td': player.stats.receiving.touchdowns = statNumber; break;
+                  }
+                  break;
+                  
+                case 'defensive':
+                  if (!player.stats.defense) player.stats.defense = {};
+                  
+                  switch (type.name.toLowerCase()) {
+                    case 'tot': player.stats.defense.tackles = statNumber; break;
+                    case 'solo': player.stats.defense.soloTackles = statNumber; break;
+                    case 'sacks': player.stats.defense.sacks = statNumber; break;
+                    case 'tfl': player.stats.defense.tacklesForLoss = statNumber; break;
+                    case 'pd': player.stats.defense.passesDefended = statNumber; break;
+                    case 'qb hur': player.stats.defense.qbHurries = statNumber; break;
+                    case 'int': player.stats.defense.interceptions = statNumber; break;
+                  }
+                  break;
+              }
+            }
+          }
+        }
+        
+        // Add all players to result
+        result[currentTeam] = Array.from(allPlayers.values());
+      }
+      
+      return result;
     };
     
     if (gameData && gameData.id) {
@@ -1265,36 +1405,42 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               key={index} 
               style={{
                 ...styles.driveRow,
-                backgroundColor: drive.offense === homeTeam 
+                backgroundColor: teamsMatch(drive.offense, homeTeam)
                   ? `${homeTeamColor}10` 
                   : `${awayTeamColor}10`
               }}
             >
               <div style={styles.driveTeam}>
                 <img 
-                  src={drive.offense === homeTeam ? homeLogo : awayLogo} 
+                  src={teamsMatch(drive.offense, homeTeam) ? homeLogo : awayLogo} 
                   alt={drive.offense} 
                   style={styles.driveLogoSmall} 
                 />
                 <span>{drive.offense}</span>
               </div>
-              <div style={styles.driveQuarter}>{drive.period || 'N/A'}</div>
+              <div style={styles.driveQuarter}>{drive.startPeriod || 'N/A'}</div>
               <div 
                 style={{
                   ...styles.driveResult,
-                  color: drive.result === "Touchdown" || drive.result === "Field Goal" 
+                  color: drive.driveResult === "TD" || drive.driveResult === "FG" 
                     ? "#2ecc71" 
-                    : drive.result === "Turnover" || drive.result === "Interception" || drive.result === "Fumble" 
+                    : drive.driveResult === "TURNOVER" || drive.driveResult === "INT" || drive.driveResult === "FUMBLE" 
                       ? "#e74c3c" 
                       : "#777"
                 }}
               >
-                {drive.result || 'N/A'}
+                {drive.driveResult || 'N/A'}
               </div>
               <div style={styles.driveYards}>{drive.yards || 0}</div>
-              <div style={styles.driveTime}>{drive.elapsed || 'N/A'}</div>
+              <div style={styles.driveTime}>
+                {drive.startTime && drive.endTime ? 
+                  `${Math.abs(drive.startTime.minutes - drive.endTime.minutes)}:${Math.abs(drive.startTime.seconds - drive.endTime.seconds).toString().padStart(2, '0')}` : 
+                  'N/A'}
+              </div>
               <div style={styles.drivePlays}>{drive.plays || 0}</div>
-              <div style={styles.driveStart}>{drive.startingPosition || 'N/A'}</div>
+              <div style={styles.driveStart}>
+                {drive.startYardline ? `${drive.startYardline}` : 'N/A'}
+              </div>
             </div>
           ))}
         </div>
@@ -1354,14 +1500,14 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
                     )}
                     {player.stats.receiving && (
                       <div>
-                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, 
+                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets || 0}, 
                         {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
                       </div>
                     )}
                     {player.stats.defense && (
                       <div>
-                        Defense: {player.stats.defense.tackles} tackles, 
-                        {player.stats.defense.sacks} sacks, {player.stats.defense.interceptions} INT
+                        Defense: {player.stats.defense.tackles || 0} tackles, 
+                        {player.stats.defense.sacks || 0} sacks, {player.stats.defense.interceptions || 0} INT
                       </div>
                     )}
                   </td>
@@ -1410,14 +1556,14 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
                     )}
                     {player.stats.receiving && (
                       <div>
-                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets}, 
+                        Receiving: {player.stats.receiving.receptions}/{player.stats.receiving.targets || 0}, 
                         {player.stats.receiving.yards} yds, {player.stats.receiving.touchdowns} TD
                       </div>
                     )}
                     {player.stats.defense && (
                       <div>
-                        Defense: {player.stats.defense.tackles} tackles, 
-                        {player.stats.defense.sacks} sacks, {player.stats.defense.interceptions} INT
+                        Defense: {player.stats.defense.tackles || 0} tackles, 
+                        {player.stats.defense.sacks || 0} sacks, {player.stats.defense.interceptions || 0} INT
                       </div>
                     )}
                   </td>
