@@ -535,14 +535,15 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           drivesData = await teamsService.getGameDrives(gameData.id, year);
           console.log('All drives data:', drivesData);
           
-          // Filter drives to only include the current teams
-          if (drivesData && Array.isArray(drivesData)) {
+        // Filter drives to only include the current teams with exact name matching
+        if (drivesData && Array.isArray(drivesData)) {
             drivesData = drivesData.filter(drive => 
-              teamsMatch(drive.offense, homeTeam) || 
-              teamsMatch(drive.offense, awayTeam)
+            drive.offense &&
+            (drive.offense.toLowerCase().trim() === homeTeam.toLowerCase().trim() ||
+            drive.offense.toLowerCase().trim() === awayTeam.toLowerCase().trim())
             );
-            console.log('Filtered drives data:', drivesData);
-          }
+            console.log('Filtered drives data (exact match):', drivesData);
+        }
         } catch (err) {
           console.error('Error fetching drives:', err);
         }
