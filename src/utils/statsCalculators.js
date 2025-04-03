@@ -1036,42 +1036,48 @@ export const processTeamStatsFromAPI = (teamData) => {
     return calculateEmptyTeamStats();
   }
 
-  console.log("Processing team stats from API for team:", teamData.team, teamData);
-
-  // Create an easy-to-access map of stats by category
+  // Create an easy-to-access map of stats by category, prioritizing exact match
   const statsByCategory = {};
   teamData.stats.forEach(stat => {
-    statsByCategory[stat.category] = stat.stat;
+    statsByCategory[stat.category.toLowerCase()] = stat.stat;
   });
 
-  // Helper to safely parse stats that might be in various formats
-  const parseStatSafely = (category, defaultValue = 0) => {
-    const statValue = statsByCategory[category];
-    if (statValue === undefined) return defaultValue;
-    
-    // If the value contains a slash (like "5/10"), we want to extract the values
-    if (typeof statValue === 'string' && statValue.includes('/')) {
-      const [made, attempted] = statValue.split('/');
-      return {
-        conversions: parseInt(made, 10) || 0,
-        attempts: parseInt(attempted, 10) || 0
-      };
+  // Comprehensive parsing function with multiple fallback strategies
+  const parseStatSafely = (categories, defaultValue = 0) => {
+    // Ensure categories is always an array
+    const categoryList = Array.isArray(categories) ? categories : [categories];
+
+    for (const category of categoryList) {
+      const statValue = statsByCategory[category.toLowerCase()];
+      
+      if (statValue === undefined) continue;
+
+      // Fraction parsing (like "5/10")
+      if (typeof statValue === 'string' && statValue.includes('/')) {
+        const [made, attempted] = statValue.split('/');
+        return {
+          conversions: parseInt(made, 10) || 0,
+          attempts: parseInt(attempted, 10) || 0
+        };
+      }
+      
+      // Numeric parsing
+      if (typeof statValue === 'string') {
+        const parsed = parseFloat(statValue);
+        if (!isNaN(parsed)) return parsed;
+      }
+      
+      return statValue;
     }
-    
-    // For numeric strings, parse them as numbers
-    if (typeof statValue === 'string') {
-      const parsed = parseFloat(statValue);
-      return isNaN(parsed) ? statValue : parsed;
-    }
-    
-    return statValue;
+
+    return defaultValue;
   };
 
-  // Parse time of possession which is in format "MM:SS"
-  const parsePossessionTime = (posTimeStr) => {
-    if (!posTimeStr) return 30; // Default to 30 minutes
+  // Enhanced parsing functions
+  const parsePossessionTime = (timeStr) => {
+    if (!timeStr) return 30;
     
-    const parts = posTimeStr.split(':');
+    const parts = timeStr.split(':');
     if (parts.length !== 2) return 30;
     
     const minutes = parseInt(parts[0], 10);
@@ -1080,7 +1086,6 @@ export const processTeamStatsFromAPI = (teamData) => {
     return minutes + (seconds / 60);
   };
 
-  // Parse penalties which are in format "X-Y" (count-yards)
   const parsePenalties = (penaltiesStr) => {
     if (!penaltiesStr) return { count: 0, yards: 0 };
     
@@ -1093,75 +1098,73 @@ export const processTeamStatsFromAPI = (teamData) => {
     };
   };
 
-  // Extract data based on the API format seen in provided examples
-  // Look for both camelCase and lowercase versions of field names
-  const totalYards = parseStatSafely('totalYards');
-  const passingYards = parseStatSafely('netPassingYards');
-  const rushingYards = parseStatSafely('rushingYards');
-  const firstDowns = parseStatSafely('firstDowns');
-
-  // Parse third down efficiency which can be in format "5/13"
-  let thirdDowns = { attempts: 0, conversions: 0 };
-  const thirdDownEff = parseStatSafely('thirdDownEff');
-  if (typeof thirdDownEff === 'object' && thirdDownEff.attempts) {
-    thirdDowns = thirdDownEff;
-  } else if (typeof thirdDownEff === 'string' && thirdDownEff.includes('/')) {
-    const [made, attempted] = thirdDownEff.split('/');
-    thirdDowns = {
-      conversions: parseInt(made, 10) || 0,
-      attempts: parseInt(attempted, 10) || 0
-    };
-  }
-
-  // Parse fourth down efficiency
-  let fourthDowns = { attempts: 0, conversions: 0 };
-  const fourthDownEff = parseStatSafely('fourthDownEff');
-  if (typeof fourthDownEff === 'object' && fourthDownEff.attempts) {
-    fourthDowns = fourthDownEff;
-  } else if (typeof fourthDownEff === 'string' && fourthDownEff.includes('/')) {
-    const [made, attempted] = fourthDownEff.split('/');
-    fourthDowns = {
-      conversions: parseInt(made, 10) || 0,
-      attempts: parseInt(attempted, 10) || 0
-    };
-  }
-
-  // Parse red zone efficiency
-  let redZone = { attempts: 0, conversions: 0 };
-  const redZoneEff = parseStatSafely('redZoneEff');
-  if (typeof redZoneEff === 'object' && redZoneEff.attempts) {
-    redZone = redZoneEff;
-  } else if (typeof redZoneEff === 'string' && redZoneEff.includes('/')) {
-    const [made, attempted] = redZoneEff.split('/');
-    redZone = {
-      conversions: parseInt(made, 10) || 0,
-      attempts: parseInt(attempted, 10) || 0
-    };
-  }
-
-  // Build team stats object from API data
+  // Detailed parsing with multiple fallback categories
   const teamStats = {
-    totalYards: totalYards,
-    passingYards: passingYards,
-    rushingYards: rushingYards,
-    firstDowns: firstDowns,
-    thirdDowns: thirdDowns,
-    fourthDowns: fourthDowns,
-    turnovers: parseStatSafely('turnovers'),
-    timeOfPossession: parsePossessionTime(parseStatSafely('possessionTime', '30:00')),
-    redZone: redZone,
-    penalties: parsePenalties(parseStatSafely('totalPenaltiesYards', '0-0')),
+    totalYards: parseStatSafely(['totalYards', 'total yards'], 0),
+    passingYards: parseStatSafely(['netPassingYards', 'passing yards', 'passingYards'], 0),
+    rushingYards: parseStatSafely(['rushingYards', 'rushing yards'], 0),
+    firstDowns: parseStatSafely(['firstDowns', 'first downs'], 0),
+    
+    // Complex parsing for efficiency metrics
+    thirdDowns: (() => {
+      const thirdDownEff = parseStatSafely(['thirdDownEff', 'third down eff', 'third downs']);
+      if (typeof thirdDownEff === 'object' && thirdDownEff.attempts) return thirdDownEff;
+      if (typeof thirdDownEff === 'string' && thirdDownEff.includes('/')) {
+        const [made, attempted] = thirdDownEff.split('/');
+        return {
+          conversions: parseInt(made, 10) || 0,
+          attempts: parseInt(attempted, 10) || 0
+        };
+      }
+      return { attempts: 0, conversions: 0 };
+    })(),
+
+    fourthDowns: (() => {
+      const fourthDownEff = parseStatSafely(['fourthDownEff', 'fourth down eff', 'fourth downs']);
+      if (typeof fourthDownEff === 'object' && fourthDownEff.attempts) return fourthDownEff;
+      if (typeof fourthDownEff === 'string' && fourthDownEff.includes('/')) {
+        const [made, attempted] = fourthDownEff.split('/');
+        return {
+          conversions: parseInt(made, 10) || 0,
+          attempts: parseInt(attempted, 10) || 0
+        };
+      }
+      return { attempts: 0, conversions: 0 };
+    })(),
+
+    turnovers: parseStatSafely(['turnovers'], 0),
+    timeOfPossession: parsePossessionTime(
+      parseStatSafely(['possessionTime', 'time of possession'], '30:00')
+    ),
+    
+    redZone: (() => {
+      const redZoneEff = parseStatSafely(['redZoneEff', 'red zone eff', 'red zone']);
+      if (typeof redZoneEff === 'object' && redZoneEff.attempts) return redZoneEff;
+      if (typeof redZoneEff === 'string' && redZoneEff.includes('/')) {
+        const [made, attempted] = redZoneEff.split('/');
+        return {
+          conversions: parseInt(made, 10) || 0,
+          attempts: parseInt(attempted, 10) || 0
+        };
+      }
+      return { attempts: 0, conversions: 0 };
+    })(),
+
+    penalties: parsePenalties(
+      parseStatSafely(['totalPenaltiesYards', 'penalties'], '0-0')
+    ),
+    
     sacks: { 
-      count: parseStatSafely('sacks', 0),
-      yards: parseStatSafely('sackYards', 0)
+      count: parseStatSafely(['sacks'], 0),
+      yards: parseStatSafely(['sackYards'], 0)
     },
-    explosivePlays: 0, // Will count this from play-by-play data
-    ppa: { 
-      total: 0, 
-      passing: 0, 
-      rushing: 0, 
-      defense: 0 
-    },
+    
+    explosivePlays: parseStatSafely(['explosivePlays'], 
+      Math.round(parseStatSafely(['totalYards'], 0) / 100)
+    ),
+    
+    // Initialize with placeholders
+    ppa: { total: 0, passing: 0, rushing: 0, defense: 0 },
     efficiency: {
       offensive: 0.5, 
       defensive: 0.5, 
@@ -1170,32 +1173,8 @@ export const processTeamStatsFromAPI = (teamData) => {
     }
   };
 
-  // Count explosive plays from game data if available
-  // For now, estimate based on total yards
-  teamStats.explosivePlays = Math.round(totalYards / 100); // Rough estimate
-
-  // Calculate efficiency metrics
-  // These would ideally come from API but we can estimate based on stats
-  const rushingAttempts = parseStatSafely('rushingAttempts', 0);
-  const completionAttempts = parseStatSafely('completionAttempts');
-  let passAttempts = 0;
-  
-  if (typeof completionAttempts === 'string' && completionAttempts.includes('/')) {
-    const [_, attempted] = completionAttempts.split('/');
-    passAttempts = parseInt(attempted, 10) || 0;
-  } else if (typeof completionAttempts === 'object') {
-    passAttempts = completionAttempts.attempts || 0;
-  }
-  
-  const totalPlays = rushingAttempts + passAttempts;
-                      
-  if (totalPlays > 0) {
-    const yardsPerPlay = teamStats.totalYards / totalPlays;
-    teamStats.efficiency.offensive = Math.min(0.95, Math.max(0.1, 0.3 + (yardsPerPlay / 10)));
-  }
-
-  // Log the derived team stats 
-  console.log("Derived team stats for", teamData.team, teamStats);
+  // Diagnostic logging
+  console.log(`Processed Team Stats for ${teamData.team}:`, teamStats);
 
   return teamStats;
 };
