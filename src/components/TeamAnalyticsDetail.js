@@ -1,4 +1,3 @@
-// TeamAnalyticsDetail.js
 import React, { useState, useEffect } from "react";
 import teamsService from "../services/teamsService";
 import { useParams, useLocation } from "react-router-dom";
@@ -15,6 +14,9 @@ import {
   Legend,
   CartesianGrid,
   Cell,
+  PieChart,
+  Pie,
+  BarChart,
 } from "recharts";
 // Import the TopPerformers component
 import TopPerformers from "./TopPerformers";
@@ -172,9 +174,7 @@ const TeamAnalyticsDetail = () => {
         setAdvancedStats(advancedData);
         
         // 6. Fetch team game stats
-        // Note: Based on API format, we need year and team parameters too
         try {
-          // Using a more direct approach with parameters matching API documentation
           const gameStatsData = await teamsService.getTeamGameStats({ 
             gameId: gameId, 
             year: 2024, 
@@ -183,10 +183,9 @@ const TeamAnalyticsDetail = () => {
           setTeamGameStats(gameStatsData);
         } catch (error) {
           console.error('Error fetching team stats:', error);
-          // Continue execution for other data even if team stats fail
         }
 
-        // 6. Fetch Top Performers for Passing, Rushing, Receiving
+        // 7. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
           gameId,
           2024,
@@ -271,16 +270,44 @@ const TeamAnalyticsDetail = () => {
     { metric: "Cumulative PPA", Home: cumulativeOverallHome, Away: cumulativeOverallAway }
   ];
 
-  // Prepare data for Player Stats Chart using player usage stats
-  const playerUsageData =
-    advancedStats?.players?.usage?.map((player) => ({
-      name: player.player,
-      Usage: player.total,
-      Rushing: player.rushing,
-      Passing: player.passing,
-      team: player.team,
-      position: player.position,
-    })) || [];
+  // Prepare data for Player Stats Visualization
+  const preparePlayerStatsData = () => {
+    if (!advancedStats?.players?.usage) return null;
+
+    // Group players by team
+    const homeTeamPlayers = advancedStats.players.usage
+      .filter(player => player.team === game.homeTeam)
+      .slice(0, 5); // Top 5 players from home team
+    
+    const awayTeamPlayers = advancedStats.players.usage
+      .filter(player => player.team === game.awayTeam)
+      .slice(0, 5); // Top 5 players from away team
+
+    return {
+      homeTeamPlayers,
+      awayTeamPlayers
+    };
+  };
+
+  const playerStatsData = preparePlayerStatsData();
+
+  // Custom Tooltip for Player Stats
+  const PlayerStatsTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="player-stats-tooltip">
+          <h4>{data.name}</h4>
+          <p>Team: {data.team}</p>
+          <p>Position: {data.position}</p>
+          <p>Usage: {data.total.toFixed(2)}</p>
+          <p>Rushing: {data.rushing.toFixed(2)}</p>
+          <p>Passing: {data.passing.toFixed(2)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Find home and away team data from the API response
   const findTeamStats = (teamName) => {
@@ -304,10 +331,6 @@ const TeamAnalyticsDetail = () => {
       team.team.toLowerCase() === teamName.toLowerCase());
   };
   
-  // Get home and away team data - if no data from API, create mock data
-  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
-  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
-  
   // Helper function to create mock data when API data is not available
   function createMockTeamData(teamName, isHome) {
     console.log(`Creating mock data for ${teamName} as API data is not available`);
@@ -328,6 +351,10 @@ const TeamAnalyticsDetail = () => {
       ]
     };
   }
+  
+  // Get home and away team data - if no data from API, create mock data
+  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
+  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
   
   // Helper function to get a specific stat value from a team's stats array
   const getStatValue = (teamData, category) => {
@@ -424,6 +451,105 @@ const TeamAnalyticsDetail = () => {
     const awayWidth = 100 - homeWidth;
     
     return { homeWidth, awayWidth };
+  };
+
+  // Render player stats section
+  const renderPlayerStatsSection = () => {
+    if (!playerStatsData) return null;
+
+    return (
+      <div className="player-stats-section">
+        <h2>Player Performance Breakdown</h2>
+        
+        {/* Home Team Players */}
+        <div className="player-stats-teams">
+          <div className="player-stats-team">
+            <h3>{game.homeTeam} Top Players</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart 
+                data={playerStatsData.homeTeamPlayers}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip content={<PlayerStatsTooltip />} />
+                <Legend />
+                <Bar dataKey="total" name="Total Usage" fill={homeTeamColor || "#002244"} />
+                <Bar dataKey="rushing" name="Rushing" fill="#82ca9d" />
+                <Bar dataKey="passing" name="Passing" fill="#ffc658" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Away Team Players */}
+          <div className="player-stats-team">
+            <h3>{game.awayTeam} Top Players</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart 
+                data={playerStatsData.awayTeamPlayers}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip content={<PlayerStatsTooltip />} />
+                <Legend />
+                <Bar dataKey="total" name="Total Usage" fill={awayTeamColor || "#008E97"} />
+                <Bar dataKey="rushing" name="Rushing" fill="#82ca9d" />
+                <Bar dataKey="passing" name="Passing" fill="#ffc658" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Player Usage Pie Chart */}
+        <div className="player-usage-pie">
+          <h3>Player Usage Distribution</h3>
+          <div className="player-usage-charts">
+            {/* Home Team Usage Pie */}
+            <div className="player-usage-team">
+              <h4>{game.homeTeam}</h4>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={playerStatsData.homeTeamPlayers}
+                    dataKey="total"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill={homeTeamColor || "#002244"}
+                    label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Away Team Usage Pie */}
+            <div className="player-usage-team">
+              <h4>{game.awayTeam}</h4>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={playerStatsData.awayTeamPlayers}
+                    dataKey="total"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill={awayTeamColor || "#008E97"}
+                    label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -601,49 +727,8 @@ Higher values generally indicate more efficient and effective plays.
         </div>
       </div>
 
-      {/* Player Stats Section */}
-      {advancedStats?.players && advancedStats.players.usage && (
-        <div className="player-stats-section">
-          <h2>Player Stats</h2>
-          <div className="explanation-box">
-            <p>
-              <strong>Usage:</strong> Represents the overall involvement of the player in the game. Higher usage typically indicates a key role.
-            </p>
-            <p>
-              <strong>Rushing:</strong> Measures performance on rushing plays. Positive numbers are better.
-            </p>
-            <p>
-              <strong>Passing:</strong> Indicates production from passing plays. Higher values point to effective passing involvement.
-            </p>
-          </div>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={playerUsageData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Usage" stackId="a">
-                {playerUsageData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={
-                      entry.team === game.homeTeam
-                        ? homeTeamColor
-                        : entry.team === game.awayTeam
-                        ? awayTeamColor
-                        : "#8884d8"
-                    }
-                  />
-                ))}
-              </Bar>
-              <Bar dataKey="Rushing" stackId="a" fill="#82ca9d" />
-              <Bar dataKey="Passing" stackId="a" fill="#ffc658" />
-              <Line type="monotone" dataKey="Usage" stroke="#8884d8" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      {/* Render Player Stats Section */}
+      {playerStatsData && renderPlayerStatsSection()}
     </div>
   );
 };
