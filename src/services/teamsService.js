@@ -331,22 +331,33 @@ export const getPlayerSeasonStats = async (
 };
 
 // Function to fetch player game stats
-export const getPlayerGameStats = async (gameId, year = 2024, week = 1, seasonType = "regular", team = null, category = null) => {
+export const getPlayerGameStats = async (gameId, year = 2024, week = null, seasonType = "regular", team = null, category = null) => {
   const endpoint = "/games/players";
-  const params = { year, week };
+  const params = {};
   
+  // Only add parameters that are non-null
   if (gameId) params.gameId = gameId;
+  if (year) params.year = year;
+  if (week) params.week = week;
   if (seasonType) params.seasonType = seasonType;
   if (team) params.team = team;
   if (category) params.category = category;
 
   try {
+    // Check if all required parameters are present
+    if (!gameId && !team) {
+      console.warn('getPlayerGameStats called without gameId or team parameter');
+    }
+    
+    // Improve debug logging
+    console.log(`getPlayerGameStats called with params:`, params);
+    
     const response = await fetchData(endpoint, params);
-    console.log(`getPlayerGameStats called with params:`, params, "returned:", response);
+    console.log(`getPlayerGameStats for gameId ${gameId} and team ${team || 'any'} received data of length:`, Array.isArray(response) ? response.length : 'not an array');
     return response;
   } catch (error) {
-    console.error(`Error in getPlayerGameStats for gameId "${gameId}":`, error);
-    throw error;
+    console.error(`Error in getPlayerGameStats for gameId "${gameId}" and team "${team}": ${error.message}`);
+    return []; // Return empty array instead of throwing to improve error resilience
   }
 };
 
@@ -434,25 +445,50 @@ export const getGameDrives = async (gameId, year = 2024) => {
       const endpoint = "/games/players";
       const params = { gameId, year };
       
-      const playerData = await fetchData(endpoint, params);
-      
-      if (!playerData || !Array.isArray(playerData) || playerData.length === 0) {
-        console.warn(`No player data found for game ${gameId}, trying alternative endpoint`);
-        // Fallback to the original implementation if the direct endpoint fails
-        return await getPlayerGameStats(gameId, year, 1, "regular");
+      try {
+        const playerData = await fetchData(endpoint, params);
+        
+        if (!playerData || !Array.isArray(playerData) || playerData.length === 0) {
+          console.warn(`No player data found for game ${gameId}, trying alternative endpoints`);
+          
+          // Try multiple categories for more complete data
+          const results = await Promise.allSettled([
+            getPlayerGameStats(gameId, year, null, "regular", null, "passing"),
+            getPlayerGameStats(gameId, year, null, "regular", null, "rushing"),
+            getPlayerGameStats(gameId, year, null, "regular", null, "receiving"),
+            getPlayerGameStats(gameId, year, null, "regular", null, "defensive")
+          ]);
+          
+          // Combine successful results
+          let combinedData = [];
+          results.forEach(result => {
+            if (result.status === 'fulfilled' && Array.isArray(result.value) && result.value.length > 0) {
+              combinedData = [...combinedData, ...result.value];
+            }
+          });
+          
+          if (combinedData.length > 0) {
+            console.log(`Retrieved ${combinedData.length} player records through category-specific queries`);
+            return combinedData;
+          }
+          
+          console.warn(`No player data available through any endpoint for game ${gameId}`);
+          return [];
+        }
+        
+        console.log(`Retrieved ${playerData.length} player records directly for game ${gameId}`);
+        return playerData;
+      } catch (directError) {
+        console.error(`Error with direct player data fetch:`, directError);
+        
+        // Try single category calls as backup
+        console.log(`Attempting fallback player data fetch approach for game ${gameId}`);
+        const passingData = await getPlayerGameStats(gameId, year, null, "regular", null, "passing");
+        return Array.isArray(passingData) ? passingData : [];
       }
-      
-      return playerData;
     } catch (error) {
       console.error(`Error fetching player data for game ${gameId}:`, error);
-      // Try fallback approach
-      try {
-        console.log(`Attempting fallback player data fetch for game ${gameId}`);
-        return await getPlayerGameStats(gameId, year, 1, "regular");
-      } catch (fallbackError) {
-        console.error(`Fallback player data fetch also failed:`, fallbackError);
-        return []; // Return empty array to prevent null references
-      }
+      return []; // Return empty array to prevent null references
     }
   };
 

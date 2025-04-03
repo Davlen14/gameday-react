@@ -544,29 +544,37 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         // Fetch player stats for this game - try multiple approaches
         let playersData = [];
         try {
-          // Try first with direct game id
-          try {
-            playersData = await teamsService.getGamePlayers(gameData.id, year);
-            console.log('Player data from getGamePlayers:', playersData);
-          } catch (playerErr) {
-            console.warn('Error with getGamePlayers:', playerErr);
-            
-            // Try alternative approaches
+          // Mirror the approach from TeamAnalyticsDetail.js
+          // Try to fetch player data for each category and team separately
+          const passingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "passing");
+          const rushingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "rushing");
+          const receivingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "receiving");
+          
+          const passingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "passing");
+          const rushingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "rushing");
+          const receivingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "receiving");
+          
+          // Combine all valid player data responses
+          if (Array.isArray(passingPlayersHome) && passingPlayersHome.length > 0) playersData.push(...passingPlayersHome);
+          if (Array.isArray(rushingPlayersHome) && rushingPlayersHome.length > 0) playersData.push(...rushingPlayersHome);
+          if (Array.isArray(receivingPlayersHome) && receivingPlayersHome.length > 0) playersData.push(...receivingPlayersHome);
+          
+          if (Array.isArray(passingPlayersAway) && passingPlayersAway.length > 0) playersData.push(...passingPlayersAway);
+          if (Array.isArray(rushingPlayersAway) && rushingPlayersAway.length > 0) playersData.push(...rushingPlayersAway);
+          if (Array.isArray(receivingPlayersAway) && receivingPlayersAway.length > 0) playersData.push(...receivingPlayersAway);
+          
+          console.log('Player data from category-specific fetch:', playersData);
+          
+          // If we still don't have data, try the direct approach
+          if (playersData.length === 0) {
             try {
-              const homePlayerData = await teamsService.getPlayerGameStats(gameData.id, year, null, null, homeTeam);
-              const awayPlayerData = await teamsService.getPlayerGameStats(gameData.id, year, null, null, awayTeam);
-              
-              if (Array.isArray(homePlayerData) && homePlayerData.length > 0) {
-                playersData = [...playersData, ...homePlayerData];
+              const directPlayerData = await teamsService.getGamePlayers(gameData.id, year);
+              if (Array.isArray(directPlayerData) && directPlayerData.length > 0) {
+                playersData = directPlayerData;
+                console.log('Player data from direct getGamePlayers:', playersData);
               }
-              
-              if (Array.isArray(awayPlayerData) && awayPlayerData.length > 0) {
-                playersData = [...playersData, ...awayPlayerData];
-              }
-              
-              console.log('Player data from getPlayerGameStats:', playersData);
-            } catch (altErr) {
-              console.error('Alternative player data approach failed:', altErr);
+            } catch (directErr) {
+              console.warn('Error with direct getGamePlayers:', directErr);
             }
           }
         } catch (err) {
@@ -774,20 +782,43 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
       const homeTeamPlayers = [];
       const awayTeamPlayers = [];
       
+      // Track warnings for missing team information
+      let warningCount = 0;
+      const MAX_WARNINGS = 5; // Limit warning spam in console
+      
       for (const player of playersData) {
         // Skip if player is null or undefined
         if (!player) continue;
         
         // Make sure we have a valid player object with a team property
         if (!player.team) {
-          console.warn('Player missing team information:', player);
-          continue;
+          if (warningCount < MAX_WARNINGS) {
+            console.warn('Player missing team information:', player);
+            warningCount++;
+            
+            if (warningCount === MAX_WARNINGS) {
+              console.warn('Additional missing team warnings suppressed...');
+            }
+          }
+          
+          // Try to infer team based on homeTeam/awayTeam properties
+          if (player.homeTeam) {
+            console.log(`Inferring team ${player.homeTeam} for player ${player.name || 'Unknown'}`);
+            player.team = player.homeTeam;
+          } else if (player.awayTeam) {
+            console.log(`Inferring team ${player.awayTeam} for player ${player.name || 'Unknown'}`);
+            player.team = player.awayTeam;
+          } else {
+            // Cannot determine team, skip this player
+            continue;
+          }
         }
         
         // Create player object with key stats
         const playerObj = {
           name: player.name || `${player.firstName || ''} ${player.lastName || ''}`.trim() || 'Unknown Player',
           position: player.position || 'N/A',
+          team: player.team, // Explicitly add team property
           stats: {}
         };
         
@@ -840,6 +871,16 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
             awayTeamPlayers.push(playerObj);
           } else {
             console.log(`Player team '${player.team}' doesn't match '${homeTeam}' or '${awayTeam}'`);
+            
+            // As a last resort, try to guess based on whether it's in homeTeam or awayTeam array
+            // This is speculative but better than losing the data entirely
+            if (player.homeAway === 'home') {
+              console.log(`Using homeAway='home' to assign player ${playerObj.name} to ${homeTeam}`);
+              homeTeamPlayers.push(playerObj);
+            } else if (player.homeAway === 'away') {
+              console.log(`Using homeAway='away' to assign player ${playerObj.name} to ${awayTeam}`);
+              awayTeamPlayers.push(playerObj);
+            }
           }
         } catch (err) {
           console.error('Error processing player team assignment:', err, player);
@@ -859,11 +900,144 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         [awayTeam]: []
       };
       
-      // Process each team's data
+      // Ensure we have data to process
+      if (!playersData || !Array.isArray(playersData) || playersData.length === 0) {
+        console.warn('No player data available');
+        return result;
+      }
+      
+      // Check for the structure - we need to handle multiple possible API response formats
+      
+      // Format 1: Array of entries with teams -> categories -> types -> athletes (like TopPerformers format)
+      if (playersData[0] && playersData[0].teams && Array.isArray(playersData[0].teams)) {
+        console.log('Processing TopPerformers-style player data structure');
+        
+        playersData.forEach(gameData => {
+          if (!gameData.teams || !Array.isArray(gameData.teams)) return;
+          
+          gameData.teams.forEach(teamData => {
+            if (!teamData.team || !teamData.categories || !Array.isArray(teamData.categories)) return;
+            
+            // Determine which team this data belongs to
+            const currentTeam = teamsMatch(teamData.team, homeTeam) ? homeTeam : 
+                              teamsMatch(teamData.team, awayTeam) ? awayTeam : null;
+            
+            if (!currentTeam) {
+              console.warn(`Team ${teamData.team} doesn't match either ${homeTeam} or ${awayTeam}`);
+              return;
+            }
+            
+            // Process each category for this team
+            teamData.categories.forEach(category => {
+              if (!category.name || !category.types || !Array.isArray(category.types)) return;
+              
+              // Process each stat type within the category
+              category.types.forEach(type => {
+                if (!type.name || !type.athletes || !Array.isArray(type.athletes)) return;
+                
+                // Process each athlete for this stat type
+                type.athletes.forEach(athlete => {
+                  if (!athlete.id || athlete.stat === undefined) return;
+                  
+                  // Find existing player or create new one
+                  let player = result[currentTeam].find(p => p.id === athlete.id);
+                  
+                  if (!player) {
+                    player = {
+                      id: athlete.id,
+                      name: athlete.name || 'Unknown Player',
+                      team: currentTeam, // Explicitly set team
+                      position: athlete.position || 'N/A',
+                      stats: {}
+                    };
+                    result[currentTeam].push(player);
+                  }
+                  
+                  // Parse stat value
+                  const statValue = parseFloat(athlete.stat);
+                  const statNumber = isNaN(statValue) ? 0 : statValue;
+                  
+                  // Map category.name and type.name to our stats structure
+                  const categoryName = category.name.toLowerCase();
+                  const typeName = type.name.toUpperCase();
+                  
+                  // Initialize stat category if it doesn't exist
+                  if (!player.stats[categoryName]) {
+                    player.stats[categoryName] = {};
+                  }
+                  
+                  // Add specific stat based on category and type
+                  switch (categoryName) {
+                    case 'passing':
+                      switch (typeName) {
+                        case 'ATT': player.stats.passing.attempts = statNumber; break;
+                        case 'C/ATT': 
+                          // Handle completion/attempts format (like "21-35")
+                          const parts = athlete.stat.split('-');
+                          if (parts.length === 2) {
+                            player.stats.passing.completions = parseInt(parts[0]) || 0;
+                            player.stats.passing.attempts = parseInt(parts[1]) || 0;
+                          }
+                          break;
+                        case 'CMP': player.stats.passing.completions = statNumber; break;
+                        case 'YDS': player.stats.passing.yards = statNumber; break;
+                        case 'TD': player.stats.passing.touchdowns = statNumber; break;
+                        case 'INT': player.stats.passing.interceptions = statNumber; break;
+                      }
+                      break;
+                      
+                    case 'rushing':
+                      switch (typeName) {
+                        case 'ATT': case 'CAR': player.stats.rushing.attempts = statNumber; break;
+                        case 'YDS': player.stats.rushing.yards = statNumber; break;
+                        case 'TD': player.stats.rushing.touchdowns = statNumber; break;
+                      }
+                      break;
+                      
+                    case 'receiving':
+                      switch (typeName) {
+                        case 'REC': player.stats.receiving.receptions = statNumber; break;
+                        case 'TAR': player.stats.receiving.targets = statNumber; break;
+                        case 'YDS': player.stats.receiving.yards = statNumber; break;
+                        case 'TD': player.stats.receiving.touchdowns = statNumber; break;
+                      }
+                      break;
+                      
+                    case 'defensive':
+                      switch (typeName) {
+                        case 'TOT': player.stats.defense.tackles = statNumber; break;
+                        case 'SOLO': player.stats.defense.soloTackles = statNumber; break;
+                        case 'SACKS': player.stats.defense.sacks = statNumber; break;
+                        case 'TFL': player.stats.defense.tacklesForLoss = statNumber; break;
+                        case 'PD': player.stats.defense.passesDefended = statNumber; break;
+                        case 'QB HUR': player.stats.defense.qbHurries = statNumber; break;
+                        case 'INT': player.stats.defense.interceptions = statNumber; break;
+                      }
+                      break;
+                  }
+                });
+              });
+            });
+          });
+        });
+        
+        return result;
+      }
+      
+      // Format 2: Original format with array of team objects with categories
+      console.log('Processing original nested category player data format');
+      
       for (const teamData of playersData) {
         if (!teamData.team || !teamData.categories) continue;
         
-        const currentTeam = teamsMatch(teamData.team, homeTeam) ? homeTeam : awayTeam;
+        const currentTeam = teamsMatch(teamData.team, homeTeam) ? homeTeam : 
+                          teamsMatch(teamData.team, awayTeam) ? awayTeam : null;
+        
+        if (!currentTeam) {
+          console.warn(`Team ${teamData.team} doesn't match either ${homeTeam} or ${awayTeam}`);
+          continue;
+        }
+        
         const allPlayers = new Map(); // Use map to collect all player data
         
         // Process each category
@@ -883,6 +1057,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
                 allPlayers.set(athlete.id, {
                   id: athlete.id,
                   name: athlete.name || 'Unknown Player',
+                  team: currentTeam, // Explicitly set team
                   position: 'N/A', // Position info might be elsewhere
                   stats: {}
                 });
@@ -912,7 +1087,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
                   if (!player.stats.rushing) player.stats.rushing = {};
                   
                   switch (type.name.toLowerCase()) {
-                    case 'att': player.stats.rushing.attempts = statNumber; break;
+                    case 'att': case 'car': player.stats.rushing.attempts = statNumber; break;
                     case 'yds': player.stats.rushing.yards = statNumber; break;
                     case 'td': player.stats.rushing.touchdowns = statNumber; break;
                   }
