@@ -334,13 +334,13 @@ const Tooltip = ({ text, children }) => {
   
   return (
     <div 
-      className="tooltipContainer"
+      style={styles.tooltipContainer}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
       {children}
-      <span className="tooltipIcon">ⓘ</span>
-      <div className={showTooltip ? "tooltip tooltipVisible" : "tooltip"}>
+      <span style={styles.tooltipIcon}>ⓘ</span>
+      <div style={showTooltip ? {...styles.tooltip, ...styles.tooltipVisible} : styles.tooltip}>
         {text}
       </div>
     </div>
@@ -365,13 +365,12 @@ const EfficiencyMetric = ({ label, value, maxValue, explanation, color }) => {
         </div>
         <span style={{ fontWeight: 'bold' }}>{value ? value.toFixed(2) : 'N/A'}</span>
       </div>
-      <div className="progressBarContainer">
+      <div style={styles.progressBarContainer}>
         <div 
-          className="progressBar"
-          style={{width: `${percentage}%`, backgroundColor: color}}
+          style={{...styles.progressBar, width: `${percentage}%`, backgroundColor: color}}
         />
       </div>
-      <div className="metricExplanation">
+      <div style={styles.metricExplanation}>
         League Avg: {(maxValue/2).toFixed(2)} | Max: {maxValue.toFixed(2)}
       </div>
     </div>
@@ -756,7 +755,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   if (!teamStats) {
     console.warn('teamStats variable is null');
     return (
-      <div className="noData">
+      <div style={styles.noData}>
         Data for this game has not been received.
       </div>
     );
@@ -767,7 +766,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
       teamStats.awayTeamStats.totalYards === undefined) {
     console.warn('Total yards property is missing or null');
     return (
-      <div className="noData">
+      <div style={styles.noData}>
         Total yards statistics are unavailable for this game.
       </div>
     );
@@ -785,35 +784,35 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const awayPossessionPercentage = 100 - homePossessionPercentage;
 
   const renderTeamStatsComparison = () => (
-    <div className="statSection">
-      <h3 className="sectionTitle">Team Statistics Comparison</h3>
+    <div style={styles.statSection}>
+      <h3 style={styles.sectionTitle}>Team Statistics Comparison</h3>
       
-      <div className="teamComparisonGrid">
+      <div style={styles.teamComparisonGrid}>
         {/* Teams Headers */}
-        <div className="teamHeader" style={{ justifyContent: 'flex-end' }}>
-          <span className="teamName">{homeTeam}</span>
-          <img src={homeLogo} alt={homeTeam} className="teamLogo" />
+        <div style={{ ...styles.teamHeader, justifyContent: 'flex-end' }}>
+          <span style={styles.teamName}>{homeTeam}</span>
+          <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
         </div>
         <div style={{ gridColumn: "2" }}></div>
-        <div className="teamHeader">
-          <img src={awayLogo} alt={awayTeam} className="teamLogo" />
-          <span className="teamName">{awayTeam}</span>
+        <div style={styles.teamHeader}>
+          <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
+          <span style={styles.teamName}>{awayTeam}</span>
         </div>
         
         {/* Total Yards */}
-        <div className="homeStatValue" style={{ backgroundColor: `${homeTeamColor}20` }}>
+        <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
           {homeTeamStats.totalYards}
         </div>
-        <div className="statLabel">Total Yards</div>
-        <div className="awayStatValue" style={{ backgroundColor: `${awayTeamColor}20` }}>
+        <div style={styles.statLabel}>Total Yards</div>
+        <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
           {awayTeamStats.totalYards}
         </div>
         
         {/* Yards Bar */}
         <div style={{ gridColumn: "1 / span 3" }}>
-          <div className="statBar">
-            <div className="statBarInner" style={{ width: `${homeYardsPercentage}%`, backgroundColor: homeTeamColor }} />
-            <div className="statBarInner" style={{ width: `${awayYardsPercentage}%`, backgroundColor: awayTeamColor }} />
+          <div style={styles.statBar}>
+            <div style={{ ...styles.statBarInner, width: `${homeYardsPercentage}%`, backgroundColor: homeTeamColor }} />
+            <div style={{ ...styles.statBarInner, width: `${awayYardsPercentage}%`, backgroundColor: awayTeamColor }} />
           </div>
         </div>
         
@@ -927,10 +926,10 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Possession Bar */}
         <div style={{ gridColumn: "1 / span 3" }}>
-          <div className="timeOfPossessionContainer">
+          <div style={styles.timeOfPossessionContainer}>
             <div 
-              className="timeSegment"
               style={{ 
+                ...styles.timeSegment, 
                 width: `${homePossessionPercentage}%`, 
                 backgroundColor: homeTeamColor
               }}
@@ -938,8 +937,8 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               {homePossessionPercentage}%
             </div>
             <div 
-              className="timeSegment"
               style={{ 
+                ...styles.timeSegment, 
                 width: `${awayPossessionPercentage}%`, 
                 backgroundColor: awayTeamColor
               }}
@@ -968,26 +967,26 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const renderAdvancedMetrics = () => {
     if (!advancedData) {
       return (
-        <div className="statSection">
-          <h3 className="sectionTitle">Advanced Metrics</h3>
-          <div className="noData">Advanced metrics not available for this game.</div>
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Advanced Metrics</h3>
+          <div style={styles.noData}>Advanced metrics not available for this game.</div>
         </div>
       );
     }
     
     return (
-      <div className="statSection">
-        <h3 className="sectionTitle">Advanced Metrics</h3>
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Advanced Metrics</h3>
         
-        <div className="tabs">
+        <div style={styles.tabs}>
           <div 
-            className={activeMetricTab === 'efficiency' ? "tab activeTab" : "tab"}
+            style={activeMetricTab === 'efficiency' ? {...styles.tab, ...styles.activeTab} : styles.tab}
             onClick={() => setActiveMetricTab('efficiency')}
           >
             Efficiency
           </div>
           <div 
-            className={activeMetricTab === 'epa' ? "tab activeTab" : "tab"}
+            style={activeMetricTab === 'epa' ? {...styles.tab, ...styles.activeTab} : styles.tab}
             onClick={() => setActiveMetricTab('epa')}
           >
             EPA (Expected Points Added)
@@ -995,11 +994,11 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         </div>
         
         {activeMetricTab === 'efficiency' && (
-          <div className="efficiencyContainer">
-            <div className="efficiencyCard" style={{borderLeft: `4px solid ${homeTeamColor}`}}>
-              <div className="teamHeader" style={{marginBottom: '15px'}}>
-                <img src={homeLogo} alt={homeTeam} className="teamLogo" />
-                <span className="teamName">{homeTeam} Efficiency</span>
+          <div style={styles.efficiencyContainer}>
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{homeTeam} Efficiency</span>
               </div>
               
               <EfficiencyMetric 
@@ -1041,10 +1040,10 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               </div>
             </div>
             
-            <div className="efficiencyCard" style={{borderLeft: `4px solid ${awayTeamColor}`}}>
-              <div className="teamHeader" style={{marginBottom: '15px'}}>
-                <img src={awayLogo} alt={awayTeam} className="teamLogo" />
-                <span className="teamName">{awayTeam} Efficiency</span>
+            <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${awayTeamColor}`}}>
+              <div style={{...styles.teamHeader, marginBottom: '15px'}}>
+                <img src={awayLogo} alt={awayTeam} style={styles.teamLogo} />
+                <span style={styles.teamName}>{awayTeam} Efficiency</span>
               </div>
               
               <EfficiencyMetric 
@@ -1089,7 +1088,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         )}
         
         {activeMetricTab === 'epa' && (
-          <div className="efficiencyContainer">
+          <div style={styles.efficiencyContainer}>
             <div style={{...styles.efficiencyCard, borderLeft: `4px solid ${homeTeamColor}`}}>
               <div style={{...styles.teamHeader, marginBottom: '15px'}}>
                 <img src={homeLogo} alt={homeTeam} style={styles.teamLogo} />
@@ -1188,9 +1187,9 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const renderDrives = () => {
     if (!drives || drives.length === 0) {
       return (
-        <div className="statSection">
-          <h3 className="sectionTitle">Drive Summary</h3>
-          <div className="noData">Drive data not available for this game.</div>
+        <div style={styles.statSection}>
+          <h3 style={styles.sectionTitle}>Drive Summary</h3>
+          <div style={styles.noData}>Drive data not available for this game.</div>
         </div>
       );
     }
@@ -1204,42 +1203,42 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     const drivesToShow = filteredDrives.length > 0 ? filteredDrives : drives;
     
     return (
-      <div className="statSection">
-        <h3 className="sectionTitle">Drive Summary {!showAllDrives ? '(1st Quarter)' : ''}</h3>
+      <div style={styles.statSection}>
+        <h3 style={styles.sectionTitle}>Drive Summary {!showAllDrives ? '(1st Quarter)' : ''}</h3>
         
-        <div className="drivesContainer">
-          <div className="driveRow driveHeader">
-            <div className="driveTeam">Team</div>
-            <div className="driveQuarter">Qtr</div>
-            <div className="driveResult">Result</div>
-            <div className="driveYards">Yards</div>
-            <div className="driveTime">Time</div>
-            <div className="drivePlays">Plays</div>
-            <div className="driveStart">Start</div>
+        <div style={styles.drivesContainer}>
+          <div style={{...styles.driveRow, ...styles.driveHeader}}>
+            <div style={styles.driveTeam}>Team</div>
+            <div style={styles.driveQuarter}>Qtr</div>
+            <div style={styles.driveResult}>Result</div>
+            <div style={styles.driveYards}>Yards</div>
+            <div style={styles.driveTime}>Time</div>
+            <div style={styles.drivePlays}>Plays</div>
+            <div style={styles.driveStart}>Start</div>
           </div>
           
           {drivesToShow.map((drive, index) => (
             <div 
               key={index} 
-              className="driveRow"
               style={{
+                ...styles.driveRow,
                 backgroundColor: drive.offense.toLowerCase() === homeTeam.toLowerCase()
                   ? `${homeTeamColor}10` 
                   : `${awayTeamColor}10`
               }}
             >
-              <div className="driveTeam">
+              <div style={styles.driveTeam}>
                 <img 
                   src={drive.offense.toLowerCase() === homeTeam.toLowerCase() ? homeLogo : awayLogo} 
                   alt={drive.offense} 
-                  className="driveLogoSmall" 
+                  style={styles.driveLogoSmall} 
                 />
                 <span>{drive.offense}</span>
               </div>
-              <div className="driveQuarter">{drive.startPeriod || 'N/A'}</div>
+              <div style={styles.driveQuarter}>{drive.startPeriod || 'N/A'}</div>
               <div 
-                className="driveResult"
                 style={{
+                  ...styles.driveResult,
                   color: drive.driveResult === "TD" || drive.driveResult === "FG" 
                     ? "#2ecc71" 
                     : drive.driveResult === "TURNOVER" || drive.driveResult === "INT" || drive.driveResult === "FUMBLE" 
@@ -1249,14 +1248,14 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               >
                 {drive.driveResult || 'N/A'}
               </div>
-              <div className="driveYards">{drive.yards || 0}</div>
-              <div className="driveTime">
+              <div style={styles.driveYards}>{drive.yards || 0}</div>
+              <div style={styles.driveTime}>
                 {drive.startTime && drive.endTime ? 
                   `${Math.abs(drive.startTime.minutes - drive.endTime.minutes)}:${Math.abs(drive.startTime.seconds - drive.endTime.seconds).toString().padStart(2, '0')}` : 
                   'N/A'}
               </div>
-              <div className="drivePlays">{drive.plays || 0}</div>
-              <div className="driveStart">
+              <div style={styles.drivePlays}>{drive.plays || 0}</div>
+              <div style={styles.driveStart}>
                 {drive.startYardline ? `${drive.startYardline}` : 'N/A'}
               </div>
             </div>
@@ -1266,7 +1265,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           {drives.length > filteredDrives.length && (
             <div 
               onClick={() => setShowAllDrives(!showAllDrives)}
-              className="viewMoreButton"
+              style={styles.viewMoreButton}
               onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
             >
@@ -1411,7 +1410,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   };
   
   return (
-    <div className="container">
+    <div style={styles.container}>
       {renderTeamStatsComparison()}
       {renderAdvancedMetrics()}
       {renderDrives()}
