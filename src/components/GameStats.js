@@ -393,12 +393,18 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     return team1.toLowerCase().trim() === team2.toLowerCase().trim();
   };
 
-  // Team name containment check
+  // Team name exact match check
   const teamsMatch = (team1, team2) => {
     if (!team1 || !team2) return false;
     const t1 = team1.toLowerCase().trim();
     const t2 = team2.toLowerCase().trim();
-    return t1.includes(t2) || t2.includes(t1);
+    
+    // First try exact match
+    if (t1 === t2) return true;
+    
+    // Special case for A&M/A & M variations
+    const normalizeTeamName = (name) => name.replace(/\s*&\s*|\s+and\s+/gi, '').replace(/\s+/g, '');
+    return normalizeTeamName(t1) === normalizeTeamName(t2);
   };
 
   // Helper function to find a stat value from array of stat objects
