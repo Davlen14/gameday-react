@@ -171,8 +171,9 @@ const TeamAnalyticsDetail = () => {
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
         
-        // 6. Fetch team game stats
-        const gameStatsData = await teamsService.getTeamGameStatsByGameId(gameId, foundTeam.school, 2024);
+        // 6. Fetch team game stats - simplifying to directly use the endpoint without wrappers
+        const gameStatsData = await teamsService.getTeamGameStats({ gameId });
+        console.log('Team game stats response:', gameStatsData);
         setTeamGameStats(gameStatsData);
 
         // 6. Fetch Top Performers for Passing, Rushing, Receiving
@@ -273,11 +274,20 @@ const TeamAnalyticsDetail = () => {
 
   // Find home and away team data from the API response
   const findTeamStats = (teamName) => {
-    if (!teamGameStats || !teamGameStats.length) return null;
+    if (!teamGameStats || teamGameStats.length === 0) {
+      console.log('No team game stats available');
+      return null;
+    }
     
-    // Try to find the game data by gameId
-    const gameData = teamGameStats.find(game => game.id === parseInt(gameId, 10));
-    if (!gameData) return null;
+    // Find the game data - it should be the first item in the array since we filtered by gameId
+    const gameData = teamGameStats[0];
+    if (!gameData || !gameData.teams) {
+      console.log('No teams data found in game stats');
+      return null;
+    }
+    
+    console.log('Looking for team:', teamName);
+    console.log('Available teams:', gameData.teams.map(t => t.team));
     
     // Find team data matching this team name
     return gameData.teams.find(team => 
@@ -290,9 +300,13 @@ const TeamAnalyticsDetail = () => {
   
   // Helper function to get a specific stat value from a team's stats array
   const getStatValue = (teamData, category) => {
-    if (!teamData || !teamData.stats) return null;
+    if (!teamData || !teamData.stats) {
+      console.log(`No stats found for category: ${category}`);
+      return '-';
+    }
     const statItem = teamData.stats.find(stat => stat.category === category);
-    return statItem ? statItem.stat : null;
+    console.log(`Stat for ${category}:`, statItem);
+    return statItem ? statItem.stat : '-';
   };
   
   // Prepare team stats data from API
@@ -313,9 +327,9 @@ const TeamAnalyticsDetail = () => {
       awayValue: getStatValue(awayTeamData, "rushingYards") || "-"
     },
     {
-      label: "Yards per play",
-      homeValue: getStatValue(homeTeamData, "yardsPerPass") || "-",
-      awayValue: getStatValue(awayTeamData, "yardsPerPass") || "-"
+      label: "Yards per rush",
+      homeValue: getStatValue(homeTeamData, "yardsPerRushAttempt") || "-",
+      awayValue: getStatValue(awayTeamData, "yardsPerRushAttempt") || "-"
     },
     {
       label: "First downs",
@@ -335,7 +349,7 @@ const TeamAnalyticsDetail = () => {
       isText: true
     },
     {
-      label: "Total penalties",
+      label: "Penalties (Yards)",
       homeValue: getStatValue(homeTeamData, "totalPenaltiesYards") || "-",
       awayValue: getStatValue(awayTeamData, "totalPenaltiesYards") || "-",
       isText: true
