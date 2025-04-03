@@ -479,67 +479,23 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         const year = gameData?.season || new Date().getFullYear();
         console.log(`Fetching data for game ID: ${gameData.id}, year: ${year}, teams: ${homeTeam} vs ${awayTeam}`);
         
-        // Fetch raw game data which includes team stats
-        let rawGameData;
+        // Fetch team stats for home and away teams
+        let homeTeamStats = [];
+        let awayTeamStats = [];
+        
         try {
-          rawGameData = await teamsService.getGameById(gameData.id, year);
-          console.log('Raw game data:', rawGameData);
+          // Use the new method to fetch team stats
+          const homeTeamResponse = await teamsService.getTeamGameStatsByGameId(gameData.id, homeTeam, year);
+          const awayTeamResponse = await teamsService.getTeamGameStatsByGameId(gameData.id, awayTeam, year);
+          
+          console.log('Home Team Stats Response:', homeTeamResponse);
+          console.log('Away Team Stats Response:', awayTeamResponse);
+          
+          // Assuming the response is an array of stats objects
+          homeTeamStats = homeTeamResponse || [];
+          awayTeamStats = awayTeamResponse || [];
         } catch (err) {
-          console.error('Error fetching game data:', err);
-          rawGameData = null;
-        }
-        
-        // Extract team stats from raw game data
-        let homeTeamStats = null;
-        let awayTeamStats = null;
-        
-        if (rawGameData && rawGameData.teams && Array.isArray(rawGameData.teams)) {
-          console.log('Raw teams data:', rawGameData.teams);
-          
-          // Try different strategies to match teams
-          let homeTeamData, awayTeamData;
-          
-          // Strategy 1: Direct team name match
-         // Strategy 1: Direct team name match using exact, case‑insensitive comparison
-        homeTeamData = rawGameData.teams.find(
-            t => t.team && t.team.toLowerCase().trim() === homeTeam.toLowerCase().trim()
-        );
-        awayTeamData = rawGameData.teams.find(
-            t => t.team && t.team.toLowerCase().trim() === awayTeam.toLowerCase().trim()
-        );
-          
-          // Strategy 2: homeAway property match if strategy 1 fails
-          if (!homeTeamData) {
-            homeTeamData = rawGameData.teams.find(t => t.homeAway === 'home');
-            console.log('Falling back to homeAway property for home team:', homeTeamData?.team);
-          }
-          
-          if (!awayTeamData) {
-            awayTeamData = rawGameData.teams.find(t => t.homeAway === 'away');
-            console.log('Falling back to homeAway property for away team:', awayTeamData?.team);
-          }
-          
-          // Strategy 3: If one team is found but not the other, the remaining team must be the other
-          if (homeTeamData && !awayTeamData && rawGameData.teams.length === 2) {
-            awayTeamData = rawGameData.teams.find(t => t !== homeTeamData);
-            console.log('Inferring away team data from elimination:', awayTeamData?.team);
-          } else if (!homeTeamData && awayTeamData && rawGameData.teams.length === 2) {
-            homeTeamData = rawGameData.teams.find(t => t !== awayTeamData);
-            console.log('Inferring home team data from elimination:', homeTeamData?.team);
-          }
-          
-          // Strategy 4: If all else fails and we have exactly 2 teams, assume first is home, second is away
-          if (!homeTeamData && !awayTeamData && rawGameData.teams.length === 2) {
-            homeTeamData = rawGameData.teams[0];
-            awayTeamData = rawGameData.teams[1];
-            console.log('Last resort team assignment - home:', homeTeamData?.team, 'away:', awayTeamData?.team);
-          }
-          
-          homeTeamStats = homeTeamData?.stats || [];
-          awayTeamStats = awayTeamData?.stats || [];
-          
-          console.log('Final home team stats found for:', homeTeamData?.team, 'with', homeTeamStats.length, 'stats');
-          console.log('Final away team stats found for:', awayTeamData?.team, 'with', awayTeamStats.length, 'stats');
+          console.error('Error fetching team game stats:', err);
         }
         
         // Fetch game drives
