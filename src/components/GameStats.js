@@ -409,11 +409,66 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   };
 
   // Helper function to find a stat value from array of stat objects
-  const getStatValue = (teamData, category) => {
-    if (!teamData || !teamData.stats) return '-';
+  const findStatValue = (stats, category) => {
+    if (!stats || !Array.isArray(stats)) return null;
     
-    const statItem = teamData.stats.find(s => s.category === category);
-    return statItem ? statItem.stat : '-';
+    const statItem = stats.find(s => s.category === category);
+    if (!statItem) return null;
+    
+    let statStr = statItem.stat;
+    // If statStr is null, empty, or just a dash, return null
+    if (statStr === null || statStr === undefined || statStr.trim() === "" || statStr === "-") {
+      return null;
+    }
+    
+    // Try to parse as number, but if it's not a clean number, return the original string
+    const numValue = parseFloat(statStr);
+    return isNaN(numValue) ? statStr : numValue;
+  };
+
+  // Helper to parse fraction-like stats (e.g. "5-12")
+  const parseFractionStat = (stats, category) => {
+    const statValue = findStatValue(stats, category);
+    // If the statValue is null or not in a fraction format, return empty values
+    if (statValue === null || (typeof statValue === "string" && !statValue.includes("-"))) {
+      return { attempts: null, conversions: null };
+    }
+    
+    const parts = statValue.split('-');
+    if (parts.length !== 2) return { attempts: null, conversions: null };
+    
+    return {
+      conversions: parseInt(parts[0]) || null,
+      attempts: parseInt(parts[1]) || null
+    };
+  };
+
+  // Parse time of possession from MM:SS format
+  const parseTimeOfPossession = (stats) => {
+    const possessionTime = findStatValue(stats, 'possessionTime');
+    if (possessionTime === null) return null;
+    
+    const parts = possessionTime.split(':');
+    if (parts.length !== 2) return null;
+    
+    const minutes = parseInt(parts[0]) || 0;
+    const seconds = parseInt(parts[1]) || 0;
+    
+    return minutes + (seconds / 60);
+  };
+
+  // Parse penalties stats (e.g. "11-125")
+  const parsePenalties = (stats) => {
+    const penaltiesValue = findStatValue(stats, 'totalPenaltiesYards');
+    if (penaltiesValue === null) return { count: null, yards: null };
+    
+    const parts = String(penaltiesValue).split('-');
+    if (parts.length !== 2) return { count: null, yards: null };
+    
+    return {
+      count: parseInt(parts[0]) || null,
+      yards: parseInt(parts[1]) || null
+    };
   };
   
   // Fetch real data from the API
@@ -1217,63 +1272,53 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Red Zone Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.redZone.conversions !== null && homeTeamStats.redZone.attempts !== null ? 
-            `${homeTeamStats.redZone.conversions}/${homeTeamStats.redZone.attempts} 
-            (${homeTeamStats.redZone.attempts > 0 
-              ? Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100) 
-              : 0}%)` : '-'}
+          {homeTeamStats.redZone.conversions}/{homeTeamStats.redZone.attempts} 
+          ({homeTeamStats.redZone.attempts > 0 
+            ? Math.round((homeTeamStats.redZone.conversions / homeTeamStats.redZone.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Red Zone</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.redZone.conversions !== null && awayTeamStats.redZone.attempts !== null ? 
-            `${awayTeamStats.redZone.conversions}/${awayTeamStats.redZone.attempts}
-            (${awayTeamStats.redZone.attempts > 0 
-              ? Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100) 
-              : 0}%)` : '-'}
+          {awayTeamStats.redZone.conversions}/{awayTeamStats.redZone.attempts}
+          ({awayTeamStats.redZone.attempts > 0 
+            ? Math.round((awayTeamStats.redZone.conversions / awayTeamStats.redZone.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Penalties */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.penalties.count !== null && homeTeamStats.penalties.yards !== null ?
-            `${homeTeamStats.penalties.count}-${homeTeamStats.penalties.yards}` : '-'}
+          {homeTeamStats.penalties.count}-{homeTeamStats.penalties.yards}
         </div>
         <div style={styles.statLabel}>Penalties</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.penalties.count !== null && awayTeamStats.penalties.yards !== null ?
-            `${awayTeamStats.penalties.count}-${awayTeamStats.penalties.yards}` : '-'}
+          {awayTeamStats.penalties.count}-{awayTeamStats.penalties.yards}
         </div>
         
         {/* Turnovers */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.turnovers !== null ? homeTeamStats.turnovers : '-'}
+          {homeTeamStats.turnovers}
         </div>
         <div style={styles.statLabel}>Turnovers</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.turnovers !== null ? awayTeamStats.turnovers : '-'}
+          {awayTeamStats.turnovers}
         </div>
         
         {/* Sacks */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.sacks.count !== null && homeTeamStats.sacks.yards !== null ?
-            `${homeTeamStats.sacks.count}-${homeTeamStats.sacks.yards}` : '-'}
+          {homeTeamStats.sacks.count}-{homeTeamStats.sacks.yards}
         </div>
         <div style={styles.statLabel}>Sacks</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.sacks.count !== null && awayTeamStats.sacks.yards !== null ?
-            `${awayTeamStats.sacks.count}-${awayTeamStats.sacks.yards}` : '-'}
+          {awayTeamStats.sacks.count}-{awayTeamStats.sacks.yards}
         </div>
         
         {/* Time of Possession */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.timeOfPossession !== null ?
-            `${Math.floor(homeTeamStats.timeOfPossession)}:${Math.round((homeTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}`
-            : '-'}
+          {Math.floor(homeTeamStats.timeOfPossession)}:{Math.round((homeTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}
         </div>
         <div style={styles.statLabel}>Time of Possession</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.timeOfPossession !== null ?
-            `${Math.floor(awayTeamStats.timeOfPossession)}:${Math.round((awayTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}`
-            : '-'}
+          {Math.floor(awayTeamStats.timeOfPossession)}:{Math.round((awayTeamStats.timeOfPossession % 1) * 60).toString().padStart(2, '0')}
         </div>
         
         {/* Possession Bar */}
@@ -1302,7 +1347,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Explosive Plays */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.explosivePlays !== null ? homeTeamStats.explosivePlays : '-'}
+          {homeTeamStats.explosivePlays}
         </div>
         <div style={styles.statLabel}>
           <Tooltip text="Plays over 20 yards">
@@ -1310,7 +1355,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           </Tooltip>
         </div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.explosivePlays !== null ? awayTeamStats.explosivePlays : '-'}
+          {awayTeamStats.explosivePlays}
         </div>
       </div>
     </div>
