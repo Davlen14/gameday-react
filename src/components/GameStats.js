@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as teamsService from "../services/teamsService";
 
-
 // Inline CSS styles for the component
 const styles = {
   container: {
@@ -410,46 +409,45 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
 
   // Helper function to find a stat value from array of stat objects
   const findStatValue = (stats, category) => {
-    if (!stats || !Array.isArray(stats)) return null;
+    if (!stats || !Array.isArray(stats)) return 0;
     
     const statItem = stats.find(s => s.category === category);
-    if (!statItem) return null;
+    if (!statItem) return 0;
     
     let statStr = statItem.stat;
-    // If statStr is null, empty, or just a dash, return null
+    // If statStr is null, empty, or just a dash, treat it as 0
     if (statStr === null || statStr === undefined || statStr.trim() === "" || statStr === "-") {
-      return null;
+      return 0;
     }
     
-    // Try to parse as number, but if it's not a clean number, return the original string
     const numValue = parseFloat(statStr);
-    return isNaN(numValue) ? statStr : numValue;
+    return isNaN(numValue) ? 0 : numValue;
   };
 
   // Helper to parse fraction-like stats (e.g. "5-12")
   const parseFractionStat = (stats, category) => {
     const statValue = findStatValue(stats, category);
-    // If the statValue is null or not in a fraction format, return empty values
-    if (statValue === null || (typeof statValue === "string" && !statValue.includes("-"))) {
-      return { attempts: null, conversions: null };
+    // If the statValue is 0 or not in a fraction format, return zeros.
+    if (!statValue || typeof statValue !== "string" || !statValue.includes("-")) {
+      return { attempts: 0, conversions: 0 };
     }
     
     const parts = statValue.split('-');
-    if (parts.length !== 2) return { attempts: null, conversions: null };
+    if (parts.length !== 2) return { attempts: 0, conversions: 0 };
     
     return {
-      conversions: parseInt(parts[0]) || null,
-      attempts: parseInt(parts[1]) || null
+      conversions: parseInt(parts[0]) || 0,
+      attempts: parseInt(parts[1]) || 0
     };
   };
 
   // Parse time of possession from MM:SS format
   const parseTimeOfPossession = (stats) => {
     const possessionTime = findStatValue(stats, 'possessionTime');
-    if (possessionTime === null) return null;
+    if (!possessionTime) return 0;
     
     const parts = possessionTime.split(':');
-    if (parts.length !== 2) return null;
+    if (parts.length !== 2) return 0;
     
     const minutes = parseInt(parts[0]) || 0;
     const seconds = parseInt(parts[1]) || 0;
@@ -460,14 +458,14 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   // Parse penalties stats (e.g. "11-125")
   const parsePenalties = (stats) => {
     const penaltiesValue = findStatValue(stats, 'totalPenaltiesYards');
-    if (penaltiesValue === null) return { count: null, yards: null };
+    if (!penaltiesValue) return { count: 0, yards: 0 };
     
     const parts = String(penaltiesValue).split('-');
-    if (parts.length !== 2) return { count: null, yards: null };
+    if (parts.length !== 2) return { count: 0, yards: 0 };
     
     return {
-      count: parseInt(parts[0]) || null,
-      yards: parseInt(parts[1]) || null
+      count: parseInt(parts[0]) || 0,
+      yards: parseInt(parts[1]) || 0
     };
   };
   
@@ -482,34 +480,22 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         console.log(`Fetching data for game ID: ${gameData.id}, year: ${year}, teams: ${homeTeam} vs ${awayTeam}`);
         
         // Fetch team stats for home and away teams
-        let teamStatsData = null;
+        let homeTeamStats = [];
+        let awayTeamStats = [];
         
         try {
-          // First, try to fetch team stats directly by gameId
-          console.log(`Fetching team stats directly with gameId: ${gameData.id}, year: ${year}`);
-          teamStatsData = await teamsService.getTeamGameStats({ gameId: gameData.id, year });
-          console.log('Direct team stats response:', teamStatsData);
+          // Use the new method to fetch team stats
+          const homeTeamResponse = await teamsService.getTeamGameStatsByGameId(gameData.id, homeTeam, year);
+          const awayTeamResponse = await teamsService.getTeamGameStatsByGameId(gameData.id, awayTeam, year);
           
-          if (!teamStatsData || !Array.isArray(teamStatsData) || teamStatsData.length === 0) {
-            console.warn('No team stats data returned from direct gameId fetch');
-          }
+          console.log('Home Team Stats Response:', homeTeamResponse);
+          console.log('Away Team Stats Response:', awayTeamResponse);
+          
+          // Assuming the response is an array of stats objects
+          homeTeamStats = homeTeamResponse || [];
+          awayTeamStats = awayTeamResponse || [];
         } catch (err) {
-          console.error('Error fetching team game stats by gameId:', err);
-          
-          // If direct fetch fails, try the fallback that worked in TeamAnalyticsDetail
-          try {
-            console.log('Trying fallback fetch methods...');
-            
-            // Create mock data as a last resort fallback
-            teamStatsData = [{
-              id: gameData.id,
-              teams: []
-            }];
-            
-            console.log('Created fallback team stats structure');
-          } catch (fallbackErr) {
-            console.error('Error with fallback stats approach:', fallbackErr);
-          }
+          console.error('Error fetching team game stats:', err);
         }
         
         // Fetch game drives
@@ -622,7 +608,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         const processedPlayerStats = processPlayerStats(playersData, homeTeam, awayTeam);
         
         // Process team stats data
-        const processedTeamStats = processTeamStats(teamStatsData, homeTeam, awayTeam);
+        const processedTeamStats = processTeamStats(homeTeamStats, awayTeamStats);
         
         // Set all data to state
         setTeamStats(processedTeamStats);
@@ -644,93 +630,101 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     
     // Create an empty team stats object with default values
     const createEmptyTeamStats = () => ({
-      totalYards: null,
-      passingYards: null,
-      rushingYards: null,
-      firstDowns: null,
-      thirdDowns: { attempts: null, conversions: null },
-      fourthDowns: { attempts: null, conversions: null },
-      turnovers: null,
-      timeOfPossession: null,
-      redZone: { attempts: null, conversions: null },
-      penalties: { count: null, yards: null },
-      sacks: { count: null, yards: null },
-      explosivePlays: null,
-      epa: { total: null, passing: null, rushing: null, defense: null },
-      efficiency: { offensive: 0.5, defensive: 0.5, passingSuccess: 0.5, rushingSuccess: 0.5 }
+      totalYards: 0,
+      passingYards: 0,
+      rushingYards: 0,
+      firstDowns: 0,
+      thirdDowns: { attempts: 0, conversions: 0 },
+      fourthDowns: { attempts: 0, conversions: 0 },
+      turnovers: 0,
+      timeOfPossession: 0,
+      redZone: { attempts: 0, conversions: 0 },
+      penalties: { count: 0, yards: 0 },
+      sacks: { count: 0, yards: 0 },
+      explosivePlays: 0,
+      epa: { total: 0, passing: 0, rushing: 0, defense: 0 },
+      efficiency: { offensive: 0.5, defensive: 0.5, passingSuccess: 0, rushingSuccess: 0 }
     });
     
-    const processTeamStats = (teamStatsData, homeTeamName, awayTeamName) => {
-      // Create default empty stats objects
-      const homeTeamStats = createEmptyTeamStats();
-      const awayTeamStats = createEmptyTeamStats();
-      
-      // If we have no data, return empty stats
-      if (!teamStatsData || !Array.isArray(teamStatsData) || teamStatsData.length === 0) {
-        console.warn('No team stats data to process');
-        return { homeTeamStats, awayTeamStats };
-      }
-      
-      // Log the structure for debugging
-      console.log('Processing teamStatsData:', teamStatsData);
-      
-      // Find the game data in the array
-      const gameData = teamStatsData[0]; // Typically the first item
-      
-      if (!gameData || !gameData.teams || !Array.isArray(gameData.teams)) {
-        console.warn('Invalid team stats data structure');
-        return { homeTeamStats, awayTeamStats };
-      }
-      
-      // Find home and away teams
-      const homeTeamData = gameData.teams.find(team => 
-        team.team.toLowerCase() === homeTeamName.toLowerCase());
-      
-      const awayTeamData = gameData.teams.find(team => 
-        team.team.toLowerCase() === awayTeamName.toLowerCase());
-      
-      console.log('Found home team data:', homeTeamData);
-      console.log('Found away team data:', awayTeamData);
-      
-      // Extract stats for home team if found
-      if (homeTeamData && homeTeamData.stats) {
-        homeTeamStats.totalYards = findStatValue(homeTeamData.stats, 'totalYards');
-        homeTeamStats.passingYards = findStatValue(homeTeamData.stats, 'netPassingYards');
-        homeTeamStats.rushingYards = findStatValue(homeTeamData.stats, 'rushingYards');
-        homeTeamStats.firstDowns = findStatValue(homeTeamData.stats, 'firstDowns');
-        homeTeamStats.thirdDowns = parseFractionStat(homeTeamData.stats, 'thirdDownEff');
-        homeTeamStats.fourthDowns = parseFractionStat(homeTeamData.stats, 'fourthDownEff');
-        homeTeamStats.turnovers = findStatValue(homeTeamData.stats, 'turnovers');
-        homeTeamStats.timeOfPossession = parseTimeOfPossession(homeTeamData.stats);
-        homeTeamStats.redZone = parseFractionStat(homeTeamData.stats, 'redZoneEff');
-        homeTeamStats.penalties = parsePenalties(homeTeamData.stats);
-        homeTeamStats.sacks = {
-          count: findStatValue(homeTeamData.stats, 'sacks'),
-          yards: findStatValue(homeTeamData.stats, 'sackYards')
+    const processTeamStats = (homeStats, awayStats) => {
+      // Ensure we have data to process
+      if (!homeStats || !Array.isArray(homeStats) || 
+          !awayStats || !Array.isArray(awayStats)) {
+        console.warn('Missing or invalid team stats data');
+        // Print debug information
+        console.warn('homeStats:', homeStats); // Debug homeStats
+        console.warn('awayStats:', awayStats); // Debug awayStats
+        // Return default structure with zeros
+        return {
+          homeTeamStats: createEmptyTeamStats(),
+          awayTeamStats: createEmptyTeamStats()
         };
-        homeTeamStats.explosivePlays = findStatValue(homeTeamData.stats, 'explosivePlays');
       }
       
-      // Extract stats for away team if found
-      if (awayTeamData && awayTeamData.stats) {
-        awayTeamStats.totalYards = findStatValue(awayTeamData.stats, 'totalYards');
-        awayTeamStats.passingYards = findStatValue(awayTeamData.stats, 'netPassingYards');
-        awayTeamStats.rushingYards = findStatValue(awayTeamData.stats, 'rushingYards');
-        awayTeamStats.firstDowns = findStatValue(awayTeamData.stats, 'firstDowns');
-        awayTeamStats.thirdDowns = parseFractionStat(awayTeamData.stats, 'thirdDownEff');
-        awayTeamStats.fourthDowns = parseFractionStat(awayTeamData.stats, 'fourthDownEff');
-        awayTeamStats.turnovers = findStatValue(awayTeamData.stats, 'turnovers');
-        awayTeamStats.timeOfPossession = parseTimeOfPossession(awayTeamData.stats);
-        awayTeamStats.redZone = parseFractionStat(awayTeamData.stats, 'redZoneEff');
-        awayTeamStats.penalties = parsePenalties(awayTeamData.stats);
-        awayTeamStats.sacks = {
-          count: findStatValue(awayTeamData.stats, 'sacks'),
-          yards: findStatValue(awayTeamData.stats, 'sackYards')
-        };
-        awayTeamStats.explosivePlays = findStatValue(awayTeamData.stats, 'explosivePlays');
-      }
+      console.log('Processing home stats array length:', homeStats.length);
+      console.log('Processing away stats array length:', awayStats.length);
       
-      return { homeTeamStats, awayTeamStats };
+      // Extract and structure the relevant stats for both teams
+      return {
+        homeTeamStats: {
+          totalYards: findStatValue(homeStats, 'totalYards') || 0,
+          passingYards: findStatValue(homeStats, 'netPassingYards') || 0,
+          rushingYards: findStatValue(homeStats, 'rushingYards') || 0,
+          firstDowns: findStatValue(homeStats, 'firstDowns') || 0,
+          thirdDowns: parseFractionStat(homeStats, 'thirdDownEff'),
+          fourthDowns: parseFractionStat(homeStats, 'fourthDownEff'),
+          turnovers: findStatValue(homeStats, 'turnovers') || 0,
+          timeOfPossession: parseTimeOfPossession(homeStats),
+          redZone: parseFractionStat(homeStats, 'redZoneEff'),
+          penalties: parsePenalties(homeStats),
+          sacks: {
+            count: findStatValue(homeStats, 'sacks') || 0,
+            yards: findStatValue(homeStats, 'sackYards') || 0
+          },
+          explosivePlays: findStatValue(homeStats, 'explosivePlays') || 0,
+          epa: {
+            total: 0,
+            passing: 0,
+            rushing: 0,
+            defense: 0
+          },
+          efficiency: {
+            offensive: 0.5,
+            defensive: 0.5,
+            passingSuccess: 0.5,
+            rushingSuccess: 0.5
+          }
+        },
+        awayTeamStats: {
+          totalYards: findStatValue(awayStats, 'totalYards') || 0,
+          passingYards: findStatValue(awayStats, 'netPassingYards') || 0,
+          rushingYards: findStatValue(awayStats, 'rushingYards') || 0,
+          firstDowns: findStatValue(awayStats, 'firstDowns') || 0,
+          thirdDowns: parseFractionStat(awayStats, 'thirdDownEff'),
+          fourthDowns: parseFractionStat(awayStats, 'fourthDownEff'),
+          turnovers: findStatValue(awayStats, 'turnovers') || 0,
+          timeOfPossession: parseTimeOfPossession(awayStats),
+          redZone: parseFractionStat(awayStats, 'redZoneEff'),
+          penalties: parsePenalties(awayStats),
+          sacks: {
+            count: findStatValue(awayStats, 'sacks') || 0,
+            yards: findStatValue(awayStats, 'sackYards') || 0
+          },
+          explosivePlays: findStatValue(awayStats, 'explosivePlays') || 0,
+          epa: {
+            total: 0,
+            passing: 0,
+            rushing: 0,
+            defense: 0
+          },
+          efficiency: {
+            offensive: 0.5,
+            defensive: 0.5,
+            passingSuccess: 0.5,
+            rushingSuccess: 0.5
+          }
+        }
+      };
     };
     
     // Extract player stats from potentially nested structure
@@ -1149,31 +1143,29 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     );
   }
   
-  const { homeTeamStats, awayTeamStats } = teamStats;
-  
-  // Check if we have valid data to display
-  const hasValidData = homeTeamStats.totalYards !== null || awayTeamStats.totalYards !== null;
-  
-  if (!hasValidData) {
-    console.warn('Missing essential stats data');
+  // Check if totalYards properties are missing (not just zero)
+  if (teamStats.homeTeamStats.totalYards === undefined || teamStats.homeTeamStats.totalYards === null ||
+      teamStats.awayTeamStats.totalYards === undefined || teamStats.awayTeamStats.totalYards === null) {
+    console.warn('Total yards property is missing or null:', { 
+      homeTeamTotalYards: teamStats.homeTeamStats.totalYards,
+      awayTeamTotalYards: teamStats.awayTeamStats.totalYards 
+    });
     return (
       <div style={styles.noData}>
-        Complete statistics are not yet available for this game.
+        Total yards statistics are unavailable for this game.
       </div>
     );
   }
 
+  const { homeTeamStats, awayTeamStats } = teamStats;
+
   // Calculate percentages for visual display
-  const homeYards = homeTeamStats.totalYards || 0;
-  const awayYards = awayTeamStats.totalYards || 0;
-  const totalYards = homeYards + awayYards;
-  const homeYardsPercentage = totalYards > 0 ? Math.round((homeYards / totalYards) * 100) : 50;
+  const totalYards = homeTeamStats.totalYards + awayTeamStats.totalYards;
+  const homeYardsPercentage = Math.round((homeTeamStats.totalYards / totalYards) * 100) || 50;
   const awayYardsPercentage = 100 - homeYardsPercentage;
 
-  const homePossession = homeTeamStats.timeOfPossession || 0;
-  const awayPossession = awayTeamStats.timeOfPossession || 0;
-  const totalTime = homePossession + awayPossession;
-  const homePossessionPercentage = totalTime > 0 ? Math.round((homePossession / totalTime) * 100) : 50;
+  const totalTime = homeTeamStats.timeOfPossession + awayTeamStats.timeOfPossession;
+  const homePossessionPercentage = Math.round((homeTeamStats.timeOfPossession / totalTime) * 100) || 50;
   const awayPossessionPercentage = 100 - homePossessionPercentage;
 
   const renderTeamStatsComparison = () => (
@@ -1194,11 +1186,11 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Total Yards */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.totalYards !== null ? homeTeamStats.totalYards : '-'}
+          {homeTeamStats.totalYards}
         </div>
         <div style={styles.statLabel}>Total Yards</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.totalYards !== null ? awayTeamStats.totalYards : '-'}
+          {awayTeamStats.totalYards}
         </div>
         
         {/* Yards Bar */}
@@ -1211,63 +1203,59 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         
         {/* Passing Yards */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.passingYards !== null ? homeTeamStats.passingYards : '-'}
+          {homeTeamStats.passingYards}
         </div>
         <div style={styles.statLabel}>Passing Yards</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.passingYards !== null ? awayTeamStats.passingYards : '-'}
+          {awayTeamStats.passingYards}
         </div>
         
         {/* Rushing Yards */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.rushingYards !== null ? homeTeamStats.rushingYards : '-'}
+          {homeTeamStats.rushingYards}
         </div>
         <div style={styles.statLabel}>Rushing Yards</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.rushingYards !== null ? awayTeamStats.rushingYards : '-'}
+          {awayTeamStats.rushingYards}
         </div>
         
         {/* First Downs */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.firstDowns !== null ? homeTeamStats.firstDowns : '-'}
+          {homeTeamStats.firstDowns}
         </div>
         <div style={styles.statLabel}>First Downs</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.firstDowns !== null ? awayTeamStats.firstDowns : '-'}
+          {awayTeamStats.firstDowns}
         </div>
         
         {/* Third Down Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.thirdDowns.conversions !== null && homeTeamStats.thirdDowns.attempts !== null ? 
-            `${homeTeamStats.thirdDowns.conversions}/${homeTeamStats.thirdDowns.attempts} 
-            (${homeTeamStats.thirdDowns.attempts > 0 
-              ? Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100) 
-              : 0}%)` : '-'}
+          {homeTeamStats.thirdDowns.conversions}/{homeTeamStats.thirdDowns.attempts} 
+          ({homeTeamStats.thirdDowns.attempts > 0 
+            ? Math.round((homeTeamStats.thirdDowns.conversions / homeTeamStats.thirdDowns.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Third Down</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.thirdDowns.conversions !== null && awayTeamStats.thirdDowns.attempts !== null ? 
-            `${awayTeamStats.thirdDowns.conversions}/${awayTeamStats.thirdDowns.attempts}
-            (${awayTeamStats.thirdDowns.attempts > 0 
-              ? Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100) 
-              : 0}%)` : '-'}
+          {awayTeamStats.thirdDowns.conversions}/{awayTeamStats.thirdDowns.attempts}
+          ({awayTeamStats.thirdDowns.attempts > 0 
+            ? Math.round((awayTeamStats.thirdDowns.conversions / awayTeamStats.thirdDowns.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Fourth Down Efficiency */}
         <div style={{ ...styles.homeStatValue, backgroundColor: `${homeTeamColor}20` }}>
-          {homeTeamStats.fourthDowns.conversions !== null && homeTeamStats.fourthDowns.attempts !== null ? 
-            `${homeTeamStats.fourthDowns.conversions}/${homeTeamStats.fourthDowns.attempts} 
-            (${homeTeamStats.fourthDowns.attempts > 0 
-              ? Math.round((homeTeamStats.fourthDowns.conversions / homeTeamStats.fourthDowns.attempts) * 100) 
-              : 0}%)` : '-'}
+          {homeTeamStats.fourthDowns.conversions}/{homeTeamStats.fourthDowns.attempts} 
+          ({homeTeamStats.fourthDowns.attempts > 0 
+            ? Math.round((homeTeamStats.fourthDowns.conversions / homeTeamStats.fourthDowns.attempts) * 100) 
+            : 0}%)
         </div>
         <div style={styles.statLabel}>Fourth Down</div>
         <div style={{ ...styles.awayStatValue, backgroundColor: `${awayTeamColor}20` }}>
-          {awayTeamStats.fourthDowns.conversions !== null && awayTeamStats.fourthDowns.attempts !== null ? 
-            `${awayTeamStats.fourthDowns.conversions}/${awayTeamStats.fourthDowns.attempts} 
-            (${awayTeamStats.fourthDowns.attempts > 0 
-              ? Math.round((awayTeamStats.fourthDowns.conversions / awayTeamStats.fourthDowns.attempts) * 100) 
-              : 0}%)` : '-'}
+          {awayTeamStats.fourthDowns.conversions}/{awayTeamStats.fourthDowns.attempts} 
+          ({awayTeamStats.fourthDowns.attempts > 0 
+            ? Math.round((awayTeamStats.fourthDowns.conversions / awayTeamStats.fourthDowns.attempts) * 100) 
+            : 0}%)
         </div>
         
         {/* Red Zone Efficiency */}
