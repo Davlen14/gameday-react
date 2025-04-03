@@ -409,22 +409,30 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
 
   // Helper function to find a stat value from array of stat objects
   const findStatValue = (stats, category) => {
-    if (!stats || !Array.isArray(stats)) return null;
+    if (!stats || !Array.isArray(stats)) return 0;
     
     const statItem = stats.find(s => s.category === category);
-    if (!statItem) return null;
+    if (!statItem) return 0;
     
-    // Try to parse as number, fall back to string if not numeric
-    const numValue = parseFloat(statItem.stat);
-    return isNaN(numValue) ? statItem.stat : numValue;
+    let statStr = statItem.stat;
+    // If statStr is null, empty, or just a dash, treat it as 0
+    if (statStr === null || statStr === undefined || statStr.trim() === "" || statStr === "-") {
+      return 0;
+    }
+    
+    const numValue = parseFloat(statStr);
+    return isNaN(numValue) ? 0 : numValue;
   };
 
   // Helper to parse fraction-like stats (e.g. "5-12")
   const parseFractionStat = (stats, category) => {
     const statValue = findStatValue(stats, category);
-    if (!statValue) return { attempts: 0, conversions: 0 };
+    // If the statValue is 0 or not in a fraction format, return zeros.
+    if (!statValue || typeof statValue !== "string" || !statValue.includes("-")) {
+      return { attempts: 0, conversions: 0 };
+    }
     
-    const parts = String(statValue).split('-');
+    const parts = statValue.split('-');
     if (parts.length !== 2) return { attempts: 0, conversions: 0 };
     
     return {
@@ -492,9 +500,13 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           let homeTeamData, awayTeamData;
           
           // Strategy 1: Direct team name match
-         // Strategy 1: Direct team name match using exact case‑insensitive comparison
-         homeTeamData = rawGameData.teams.find(t => t.team && t.team.toLowerCase().trim() === homeTeam.toLowerCase().trim());
-         awayTeamData = rawGameData.teams.find(t => t.team && t.team.toLowerCase().trim() === awayTeam.toLowerCase().trim());
+         // Strategy 1: Direct team name match using exact, case‑insensitive comparison
+        homeTeamData = rawGameData.teams.find(
+            t => t.team && t.team.toLowerCase().trim() === homeTeam.toLowerCase().trim()
+        );
+        awayTeamData = rawGameData.teams.find(
+            t => t.team && t.team.toLowerCase().trim() === awayTeam.toLowerCase().trim()
+        );
           
           // Strategy 2: homeAway property match if strategy 1 fails
           if (!homeTeamData) {
