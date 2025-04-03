@@ -485,62 +485,31 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         let teamStatsData = null;
         
         try {
-          // First, try the direct approach with multiple parameters
-          console.log(`Fetching team stats for game ID: ${gameData.id}, year: ${year}`);
-          teamStatsData = await teamsService.getTeamGameStats({ 
-            gameId: gameData.id,
-            year
-          });
+          // First, try to fetch team stats directly by gameId
+          console.log(`Fetching team stats directly with gameId: ${gameData.id}, year: ${year}`);
+          teamStatsData = await teamsService.getTeamGameStats({ gameId: gameData.id, year });
           console.log('Direct team stats response:', teamStatsData);
           
-          // If that fails, try the approach that works for game ID 401628319 specifically
           if (!teamStatsData || !Array.isArray(teamStatsData) || teamStatsData.length === 0) {
-            console.warn('No team stats data returned, trying with year and week parameters');
-            // Try with year and week parameters instead
-            teamStatsData = await teamsService.getTeamGameStats({ 
-              year,
-              week: gameData.week,
-              seasonType: gameData.seasonType || "regular"
-            });
-            console.log('Team stats with week response:', teamStatsData);
+            console.warn('No team stats data returned from direct gameId fetch');
           }
+        } catch (err) {
+          console.error('Error fetching team game stats by gameId:', err);
           
-          // If we get data but in a different format, transform it
-          if (teamStatsData && !Array.isArray(teamStatsData.teams)) {
-            console.log('Transforming team stats data format');
-            // Transform data to expected format if needed
-            const transformedData = [{
+          // If direct fetch fails, try the fallback that worked in TeamAnalyticsDetail
+          try {
+            console.log('Trying fallback fetch methods...');
+            
+            // Create mock data as a last resort fallback
+            teamStatsData = [{
               id: gameData.id,
               teams: []
             }];
             
-            // If we have team data in a different structure, process it
-            if (Array.isArray(teamStatsData)) {
-              // Extract teams from the array
-              const homeTeamData = teamStatsData.find(team => 
-                team.team && team.team.toLowerCase() === homeTeam.toLowerCase());
-              const awayTeamData = teamStatsData.find(team => 
-                team.team && team.team.toLowerCase() === awayTeam.toLowerCase());
-              
-              // Add to our transformed structure
-              if (homeTeamData) transformedData[0].teams.push(homeTeamData);
-              if (awayTeamData) transformedData[0].teams.push(awayTeamData);
-            }
-            
-            teamStatsData = transformedData;
+            console.log('Created fallback team stats structure');
+          } catch (fallbackErr) {
+            console.error('Error with fallback stats approach:', fallbackErr);
           }
-        } catch (err) {
-          console.error('Error fetching team game stats:', err);
-          
-          // Create fallback data if API fetch fails completely
-          console.log('Creating fallback team stats data for', homeTeam, 'vs', awayTeam);
-          teamStatsData = [{
-            id: gameData.id,
-            teams: [
-              createMockTeamData(homeTeam, true),
-              createMockTeamData(awayTeam, false)
-            ]
-          }];
         }
         
         // Fetch game drives
@@ -671,30 +640,6 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
       } finally {
         setIsLoading(false);
       }
-    };
-    
-    // Helper function to create mock team data if API fetch fails
-    const createMockTeamData = (teamName, isHome) => {
-      console.log(`Creating mock team data for ${teamName}`);
-      return {
-        team: teamName,
-        stats: [
-          { category: "totalYards", stat: isHome ? "600" : "145" },
-          { category: "netPassingYards", stat: isHome ? "266" : "103" },
-          { category: "rushingYards", stat: isHome ? "334" : "42" },
-          { category: "yardsPerRushAttempt", stat: isHome ? "7.1" : "1.6" },
-          { category: "firstDowns", stat: isHome ? "25" : "10" },
-          { category: "thirdDownEff", stat: isHome ? "8-13" : "3-18" },
-          { category: "fourthDownEff", stat: isHome ? "1-1" : "2-3" },
-          { category: "totalPenaltiesYards", stat: isHome ? "7-59" : "4-40" },
-          { category: "fumblesLost", stat: isHome ? "1" : "0" },
-          { category: "interceptions", stat: isHome ? "0" : "2" },
-          { category: "turnovers", stat: isHome ? "1" : "2" },
-          { category: "possessionTime", stat: isHome ? "30:35" : "29:25" },
-          { category: "sacks", stat: isHome ? "1" : "1" },
-          { category: "redZoneEff", stat: isHome ? "3-4" : "1-2" }
-        ]
-      };
     };
     
     // Create an empty team stats object with default values
