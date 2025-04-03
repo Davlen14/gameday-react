@@ -70,54 +70,10 @@ export const getTeamGameStats = async (params = {}) => {
   try {
     // Log what parameters we're using
     console.log(`Fetching team game stats with params:`, params);
-    
-    // Fetch the response
     const response = await fetchData(endpoint, params);
-    
-    // Log the raw response for debugging
-    console.log('Raw team game stats response:', response);
-    
-    // Validate and process the response
-    if (!response) {
-      console.warn('No response received from team game stats endpoint');
-      return [];
-    }
-    
-    // If response is an array, return it directly
-    if (Array.isArray(response)) {
-      return response;
-    }
-    
-    // If response has a data property that is an array, return that
-    if (response.data && Array.isArray(response.data)) {
-      return response.data;
-    }
-    
-    // If response has a results property that is an array, return that
-    if (response.results && Array.isArray(response.results)) {
-      return response.results;
-    }
-    
-    // If response is a single object, wrap it in an array
-    if (typeof response === 'object') {
-      return [response];
-    }
-    
-    // If none of the above conditions are met, log a warning and return an empty array
-    console.warn('Unexpected response format for team game stats:', response);
-    return [];
+    return response;
   } catch (error) {
     console.error(`Error fetching team game stats:`, error);
-    
-    // If error has a response property, log its details
-    if (error.response) {
-      console.error('Error response details:', {
-        data: error.response.data,
-        status: error.response.status,
-        headers: error.response.headers
-      });
-    }
-    
     return []; // Return empty array to prevent null references
   }
 };
