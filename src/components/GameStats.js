@@ -409,66 +409,11 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   };
 
   // Helper function to find a stat value from array of stat objects
-  const findStatValue = (stats, category) => {
-    if (!stats || !Array.isArray(stats)) return null;
+  const getStatValue = (teamData, category) => {
+    if (!teamData || !teamData.stats) return '-';
     
-    const statItem = stats.find(s => s.category === category);
-    if (!statItem) return null;
-    
-    let statStr = statItem.stat;
-    // If statStr is null, empty, or just a dash, return null
-    if (statStr === null || statStr === undefined || statStr.trim() === "" || statStr === "-") {
-      return null;
-    }
-    
-    // Try to parse as number, but if it's not a clean number, return the original string
-    const numValue = parseFloat(statStr);
-    return isNaN(numValue) ? statStr : numValue;
-  };
-
-  // Helper to parse fraction-like stats (e.g. "5-12")
-  const parseFractionStat = (stats, category) => {
-    const statValue = findStatValue(stats, category);
-    // If the statValue is null or not in a fraction format, return empty values
-    if (statValue === null || (typeof statValue === "string" && !statValue.includes("-"))) {
-      return { attempts: null, conversions: null };
-    }
-    
-    const parts = statValue.split('-');
-    if (parts.length !== 2) return { attempts: null, conversions: null };
-    
-    return {
-      conversions: parseInt(parts[0]) || null,
-      attempts: parseInt(parts[1]) || null
-    };
-  };
-
-  // Parse time of possession from MM:SS format
-  const parseTimeOfPossession = (stats) => {
-    const possessionTime = findStatValue(stats, 'possessionTime');
-    if (possessionTime === null) return null;
-    
-    const parts = possessionTime.split(':');
-    if (parts.length !== 2) return null;
-    
-    const minutes = parseInt(parts[0]) || 0;
-    const seconds = parseInt(parts[1]) || 0;
-    
-    return minutes + (seconds / 60);
-  };
-
-  // Parse penalties stats (e.g. "11-125")
-  const parsePenalties = (stats) => {
-    const penaltiesValue = findStatValue(stats, 'totalPenaltiesYards');
-    if (penaltiesValue === null) return { count: null, yards: null };
-    
-    const parts = String(penaltiesValue).split('-');
-    if (parts.length !== 2) return { count: null, yards: null };
-    
-    return {
-      count: parseInt(parts[0]) || null,
-      yards: parseInt(parts[1]) || null
-    };
+    const statItem = teamData.stats.find(s => s.category === category);
+    return statItem ? statItem.stat : '-';
   };
   
   // Fetch real data from the API
