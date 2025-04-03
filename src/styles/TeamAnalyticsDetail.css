@@ -231,19 +231,19 @@ body {
 .team-stats-section {
   width: 96%;
   margin: 2% auto;
-  background-color: #111;
+  background-color: #fff;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #333;
 }
 
 .team-stats-section h2 {
   text-align: center;
   margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
 }
 
 .team-stats-container {
@@ -324,7 +324,7 @@ body {
 
 .team-stats-bar-label {
   font-size: 14px;
-  color: #aaa;
+  color: #666;
   text-align: center;
 }
 
@@ -334,7 +334,7 @@ body {
   width: 100%;
   border-radius: 4px;
   overflow: hidden;
-  background-color: #222;
+  background-color: #eee;
 }
 
 .team-stats-bar {
