@@ -68,7 +68,14 @@ export const getGameMedia = async (year = 2024, query) => {
 export const getTeamGameStats = async (gameId, team, year = 2024) => {
   const endpoint = "/games/teams";
   const params = { gameId, team, year };
-  return await fetchData(endpoint, params);
+  try {
+    const response = await fetchData(endpoint, params);
+    console.log(`getTeamGameStats for gameId ${gameId}, team ${team}:`, response);
+    return response;
+  } catch (error) {
+    console.error(`Error fetching team game stats for ${team}:`, error);
+    return []; // Return empty array to prevent null references
+  }
 };
 
 // UPDATED: Added postseason support and year parameter

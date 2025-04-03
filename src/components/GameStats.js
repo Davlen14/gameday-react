@@ -480,21 +480,47 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         let awayTeamStats = null;
         
         if (rawGameData && rawGameData.teams && Array.isArray(rawGameData.teams)) {
-          const homeTeamData = rawGameData.teams.find(t => 
-            isSameTeam(t.team, homeTeam) || 
-            (t.homeAway === 'home' && !rawGameData.teams.find(ht => isSameTeam(ht.team, homeTeam)))
-          );
+          console.log('Raw teams data:', rawGameData.teams);
           
-          const awayTeamData = rawGameData.teams.find(t => 
-            isSameTeam(t.team, awayTeam) || 
-            (t.homeAway === 'away' && !rawGameData.teams.find(at => isSameTeam(at.team, awayTeam)))
-          );
+          // Try different strategies to match teams
+          let homeTeamData, awayTeamData;
+          
+          // Strategy 1: Direct team name match
+          homeTeamData = rawGameData.teams.find(t => isSameTeam(t.team, homeTeam));
+          awayTeamData = rawGameData.teams.find(t => isSameTeam(t.team, awayTeam));
+          
+          // Strategy 2: homeAway property match if strategy 1 fails
+          if (!homeTeamData) {
+            homeTeamData = rawGameData.teams.find(t => t.homeAway === 'home');
+            console.log('Falling back to homeAway property for home team:', homeTeamData?.team);
+          }
+          
+          if (!awayTeamData) {
+            awayTeamData = rawGameData.teams.find(t => t.homeAway === 'away');
+            console.log('Falling back to homeAway property for away team:', awayTeamData?.team);
+          }
+          
+          // Strategy 3: If one team is found but not the other, the remaining team must be the other
+          if (homeTeamData && !awayTeamData && rawGameData.teams.length === 2) {
+            awayTeamData = rawGameData.teams.find(t => t !== homeTeamData);
+            console.log('Inferring away team data from elimination:', awayTeamData?.team);
+          } else if (!homeTeamData && awayTeamData && rawGameData.teams.length === 2) {
+            homeTeamData = rawGameData.teams.find(t => t !== awayTeamData);
+            console.log('Inferring home team data from elimination:', homeTeamData?.team);
+          }
+          
+          // Strategy 4: If all else fails and we have exactly 2 teams, assume first is home, second is away
+          if (!homeTeamData && !awayTeamData && rawGameData.teams.length === 2) {
+            homeTeamData = rawGameData.teams[0];
+            awayTeamData = rawGameData.teams[1];
+            console.log('Last resort team assignment - home:', homeTeamData?.team, 'away:', awayTeamData?.team);
+          }
           
           homeTeamStats = homeTeamData?.stats || [];
           awayTeamStats = awayTeamData?.stats || [];
           
-          console.log('Found home team stats:', homeTeamData?.team);
-          console.log('Found away team stats:', awayTeamData?.team);
+          console.log('Final home team stats found for:', homeTeamData?.team, 'with', homeTeamStats.length, 'stats');
+          console.log('Final away team stats found for:', awayTeamData?.team, 'with', awayTeamStats.length, 'stats');
         }
         
         // Fetch game drives
@@ -641,6 +667,9 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
       if (!homeStats || !Array.isArray(homeStats) || 
           !awayStats || !Array.isArray(awayStats)) {
         console.warn('Missing or invalid team stats data');
+        // Print debug information
+        console.warn('homeStats:', homeStats); // Debug homeStats
+        console.warn('awayStats:', awayStats); // Debug awayStats
         // Return default structure with zeros
         return {
           homeTeamStats: createEmptyTeamStats(),
@@ -954,11 +983,20 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     );
   }
 
-  if (!teamStats || isEmptyValue(teamStats.homeTeamStats.totalYards) && isEmptyValue(teamStats.awayTeamStats.totalYards)) {
-    console.warn('No valid team statistics available');
+  if (!teamStats) {
+    console.warn('teamStats variable is null');
     return (
       <div style={styles.noData}>
-        No advanced statistics available for this game.
+        Data for this game has not been received.
+      </div>
+    );
+  }
+  
+  if (isEmptyValue(teamStats.homeTeamStats.totalYards) && isEmptyValue(teamStats.awayTeamStats.totalYards)) {
+    console.warn('No total yards team statistics available');
+    return (
+      <div style={styles.noData}>
+        Total yards statistics are unavailable for this game.
       </div>
     );
   }
