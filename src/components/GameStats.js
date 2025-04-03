@@ -317,10 +317,10 @@ const styles = {
   },
 };
 
-// Helper function to determine if a value is empty or zero
+// Helper function to determine if a value is empty (but not zero)
 const isEmptyValue = (value) => {
   if (value === null || value === undefined) return true;
-  if (typeof value === 'number' && value === 0) return true;
+  // Removed check for zero values as they are valid statistical values
   if (typeof value === 'string' && value.trim() === '') return true;
   if (Array.isArray(value) && value.length === 0) return true;
   if (typeof value === 'object' && value !== null && Object.keys(value).length === 0) return true;
@@ -1167,8 +1167,13 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     );
   }
   
-  if (isEmptyValue(teamStats.homeTeamStats.totalYards) && isEmptyValue(teamStats.awayTeamStats.totalYards)) {
-    console.warn('No total yards team statistics available');
+  // Check if totalYards properties are missing (not just zero)
+  if (teamStats.homeTeamStats.totalYards === undefined || teamStats.homeTeamStats.totalYards === null ||
+      teamStats.awayTeamStats.totalYards === undefined || teamStats.awayTeamStats.totalYards === null) {
+    console.warn('Total yards property is missing or null:', { 
+      homeTeamTotalYards: teamStats.homeTeamStats.totalYards,
+      awayTeamTotalYards: teamStats.awayTeamStats.totalYards 
+    });
     return (
       <div style={styles.noData}>
         Total yards statistics are unavailable for this game.
