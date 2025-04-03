@@ -266,6 +266,92 @@ const TeamAnalyticsDetail = () => {
       position: player.position,
     })) || [];
 
+  // Prepare team stats data (mock data if not available from API)
+  const teamStats = [
+    {
+      label: "Total yards",
+      homeValue: game.homeStats?.totalYards || 467,
+      awayValue: game.awayStats?.totalYards || 496
+    },
+    {
+      label: "Passing yards",
+      homeValue: game.homeStats?.passingYards || 326,
+      awayValue: game.awayStats?.passingYards || 341
+    },
+    {
+      label: "Rushing yards",
+      homeValue: game.homeStats?.rushingYards || 141,
+      awayValue: game.awayStats?.rushingYards || 155
+    },
+    {
+      label: "Yards per play",
+      homeValue: game.homeStats?.yardsPerPlay || 6.9,
+      awayValue: game.awayStats?.yardsPerPlay || 7.6
+    },
+    {
+      label: "First downs",
+      homeValue: game.homeStats?.firstDowns || 22,
+      awayValue: game.awayStats?.firstDowns || 18
+    },
+    {
+      label: "3rd down efficiency",
+      homeValue: game.homeStats?.thirdDownEff || "4/12",
+      awayValue: game.awayStats?.thirdDownEff || "6/14",
+      isText: true
+    },
+    {
+      label: "4th down efficiency",
+      homeValue: game.homeStats?.fourthDownEff || "2/2",
+      awayValue: game.awayStats?.fourthDownEff || "1/2",
+      isText: true
+    },
+    {
+      label: "Total plays",
+      homeValue: game.homeStats?.totalPlays || 68,
+      awayValue: game.awayStats?.totalPlays || 65
+    },
+    {
+      label: "Punts",
+      homeValue: game.homeStats?.punts || 3,
+      awayValue: game.awayStats?.punts || 3
+    },
+    {
+      label: "Penalties (Yards)",
+      homeValue: game.homeStats?.penalties || "8 (70)",
+      awayValue: game.awayStats?.penalties || "3 (25)",
+      isText: true
+    },
+    {
+      label: "Fumbles lost",
+      homeValue: game.homeStats?.fumblesLost || 2,
+      awayValue: game.awayStats?.fumblesLost || 0
+    },
+    {
+      label: "Interceptions thrown",
+      homeValue: game.homeStats?.interceptionsThrown || 0,
+      awayValue: game.awayStats?.interceptionsThrown || 0
+    },
+    {
+      label: "Time of possession",
+      homeValue: game.homeStats?.timeOfPossession || "33:09",
+      awayValue: game.awayStats?.timeOfPossession || "26:51",
+      isText: true
+    }
+  ];
+
+  // Helper function to calculate bar widths for the team stats
+  const calculateWidth = (home, away, isText) => {
+    if (isText) return { homeWidth: 50, awayWidth: 50 };
+    
+    const total = home + away;
+    if (total === 0) return { homeWidth: 50, awayWidth: 50 };
+    
+    const homeWidth = Math.round((home / total) * 100);
+    const awayWidth = 100 - homeWidth;
+    
+    return { homeWidth, awayWidth };
+  };
+
   return (
     <div className="team-analytics-page">
       {/* Scoreboard Section */}
@@ -325,6 +411,60 @@ const TeamAnalyticsDetail = () => {
             )}
           </div>
           <img src={homeLogo} alt={game.homeTeam} className="scoreboard__logo" />
+        </div>
+      </div>
+
+      {/* Team Stats Comparison */}
+      <div className="team-stats-section">
+        <h2>TEAM STATS</h2>
+        <div className="team-stats-container">
+          <div className="team-stats-header">
+            <div className="team-stats-team team-stats-home">
+              <img src={homeLogo} alt={game.homeTeam} className="team-stats-logo" />
+              <span>{game.homePoints !== undefined ? game.homePoints : ""}</span>
+            </div>
+            <div className="team-stats-labels"></div>
+            <div className="team-stats-team team-stats-away">
+              <span>{game.awayPoints !== undefined ? game.awayPoints : ""}</span>
+              <img src={awayLogo} alt={game.awayTeam} className="team-stats-logo" />
+            </div>
+          </div>
+          
+          <div className="team-stats-metrics">
+            {teamStats.map((stat, index) => {
+              const { homeWidth, awayWidth } = calculateWidth(stat.homeValue, stat.awayValue, stat.isText);
+              const homeTextValue = typeof stat.homeValue === 'string' ? stat.homeValue : stat.homeValue.toLocaleString();
+              const awayTextValue = typeof stat.awayValue === 'string' ? stat.awayValue : stat.awayValue.toLocaleString();
+              
+              return (
+                <div key={index} className="team-stats-row">
+                  <div className="team-stats-home-value">{homeTextValue}</div>
+                  
+                  <div className="team-stats-bar-container">
+                    <div className="team-stats-bar-label">{stat.label}</div>
+                    <div className="team-stats-bars">
+                      <div 
+                        className="team-stats-bar team-stats-bar-home" 
+                        style={{ 
+                          width: `${homeWidth}%`,
+                          backgroundColor: homeTeamColor || '#CC0000'
+                        }}
+                      ></div>
+                      <div 
+                        className="team-stats-bar team-stats-bar-away" 
+                        style={{ 
+                          width: `${awayWidth}%`,
+                          backgroundColor: awayTeamColor || '#009900'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="team-stats-away-value">{awayTextValue}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

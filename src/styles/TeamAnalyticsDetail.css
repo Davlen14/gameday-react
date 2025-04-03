@@ -227,6 +227,131 @@ body {
   color: #333;
 }
 
+/* Team Stats Section */
+.team-stats-section {
+  width: 96%;
+  margin: 2% auto;
+  background-color: #111;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.team-stats-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.team-stats-container {
+  width: 100%;
+}
+
+.team-stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.team-stats-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-stats-home {
+  justify-content: flex-start;
+  width: 20%;
+}
+
+.team-stats-away {
+  justify-content: flex-end;
+  width: 20%;
+}
+
+.team-stats-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.team-stats-team span {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.team-stats-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.team-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.team-stats-home-value, 
+.team-stats-away-value {
+  width: 20%;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.team-stats-home-value {
+  text-align: right;
+  padding-right: 15px;
+}
+
+.team-stats-away-value {
+  text-align: left;
+  padding-left: 15px;
+}
+
+.team-stats-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 60%;
+}
+
+.team-stats-bar-label {
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+}
+
+.team-stats-bars {
+  display: flex;
+  height: 8px;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #222;
+}
+
+.team-stats-bar {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+.team-stats-bar-home {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.team-stats-bar-away {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 /* Top Performers Section */
 .top-performers {
   width: 96%;
@@ -303,7 +428,26 @@ body {
   .advanced-box-score, 
   .chart-container,
   .player-stats-section,
-  .top-performers {
+  .top-performers,
+  .team-stats-section {
     padding: 15px;
+  }
+  
+  .team-stats-home-value, 
+  .team-stats-away-value {
+    font-size: 14px;
+  }
+  
+  .team-stats-bar-label {
+    font-size: 12px;
+  }
+  
+  .team-stats-team span {
+    font-size: 22px;
+  }
+  
+  .team-stats-logo {
+    width: 30px;
+    height: 30px;
   }
 }
