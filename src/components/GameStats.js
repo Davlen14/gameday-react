@@ -315,6 +315,17 @@ const styles = {
     marginTop: "5px",
     fontStyle: "italic",
   },
+  viewMoreButton: {
+    cursor: 'pointer',
+    textAlign: 'center',
+    padding: '10px',
+    margin: '10px 0',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '4px',
+    color: '#3498db',
+    fontWeight: '500',
+    transition: 'background-color 0.3s'
+  }
 };
 
 // Tooltip component
@@ -376,6 +387,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   const [drives, setDrives] = useState([]);
   const [playerStats, setPlayerStats] = useState({});
   const [winProbabilities, setWinProbabilities] = useState(null);
+  const [showAllDrives, setShowAllDrives] = useState(false);
   
   // Helper function to extract a specific stat value from team stats array
   const getStatValue = (teamData, category) => {
@@ -1182,9 +1194,17 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
       );
     }
     
+    // Filter drives to show only 1st quarter initially
+    const filteredDrives = showAllDrives 
+      ? drives 
+      : drives.filter(drive => drive.startPeriod === 1 || drive.startPeriod === '1');
+    
+    // If no 1st quarter drives are available, show all drives
+    const drivesToShow = filteredDrives.length > 0 ? filteredDrives : drives;
+    
     return (
       <div style={styles.statSection}>
-        <h3 style={styles.sectionTitle}>Drive Summary</h3>
+        <h3 style={styles.sectionTitle}>Drive Summary {!showAllDrives ? '(1st Quarter)' : ''}</h3>
         
         <div style={styles.drivesContainer}>
           <div style={{...styles.driveRow, ...styles.driveHeader}}>
@@ -1197,7 +1217,7 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
             <div style={styles.driveStart}>Start</div>
           </div>
           
-          {drives.map((drive, index) => (
+          {drivesToShow.map((drive, index) => (
             <div 
               key={index} 
               style={{
@@ -1240,6 +1260,18 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
               </div>
             </div>
           ))}
+          
+          {/* Only show the toggle button if there are drives beyond the 1st quarter */}
+          {drives.length > filteredDrives.length && (
+            <div 
+              onClick={() => setShowAllDrives(!showAllDrives)}
+              style={styles.viewMoreButton}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+            >
+              {showAllDrives ? 'View Less (1st Quarter Only)' : 'View More (All Quarters)'}
+            </div>
+          )}
         </div>
       </div>
     );
