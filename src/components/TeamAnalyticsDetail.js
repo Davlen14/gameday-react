@@ -521,14 +521,14 @@ const TeamAnalyticsDetail = () => {
                         className="team-stats-bar team-stats-bar-home" 
                         style={{ 
                           width: `${homeWidth}%`,
-                          backgroundColor: '#D4001C' // Use the red color from the screenshot
+                          backgroundColor: homeTeamColor || '#D4001C'
                         }}
                       ></div>
                       <div 
                         className="team-stats-bar team-stats-bar-away" 
                         style={{ 
                           width: `${awayWidth}%`,
-                          backgroundColor: '#009900' // Keep green for away team
+                          backgroundColor: awayTeamColor || '#009900'
                         }}
                       ></div>
                     </div>
