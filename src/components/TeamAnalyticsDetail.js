@@ -58,42 +58,73 @@ const TeamAnalyticsDetail = () => {
     return team && team.color ? team.color : null;
   };
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div
-          className="custom-tooltip"
-          style={{ backgroundColor: "#fff", border: "1px solid #ddd", padding: "10px" }}
-        >
-          <p style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img
-                src={getTeamLogo(game.homeTeam)}
-                alt={game.homeTeam}
-                style={{ width: 20, height: 20, objectFit: "contain" }}
-              />
-              <span>
-                {getTeamAbbreviation(game.homeTeam)}:{" "}
-                {payload.find((item) => item.dataKey === "Home")?.value}
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <img
-                src={getTeamLogo(game.awayTeam)}
-                alt={game.awayTeam}
-                style={{ width: 20, height: 20, objectFit: "contain" }}
-              />
-              <span>
-                {getTeamAbbreviation(game.awayTeam)}:{" "}
-                {payload.find((item) => item.dataKey === "Away")?.value}
-              </span>
-            </div>
-          </div>
-        </div>
-      );
+  const findTeamStatsByName = (teamName) => {
+    if (!advancedStats?.teams?.ppa) return null;
+    return advancedStats.teams.ppa.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamCumulativeStatsByName = (teamName) => {
+    if (!advancedStats?.teams?.cumulativePpa) return null;
+    return advancedStats.teams.cumulativePpa.find(
+      (item) => item.team.toLowerCase() === teamName.toLowerCase()
+    );
+  };
+
+  const findTeamStats = (teamName) => {
+    console.log('Looking for team:', teamName);
+    console.log('Team game stats:', teamGameStats);
+
+    if (!teamGameStats || teamGameStats.length === 0) {
+      console.log('No team game stats available');
+      return null;
     }
-    return null;
+
+    const teamData = teamGameStats.find(gameStats => 
+      gameStats.teams.some(team => team.team.toLowerCase() === teamName.toLowerCase())
+    );
+
+    if (!teamData) {
+      console.log(`No game stats found for team: ${teamName}`);
+      return null;
+    }
+
+    const specificTeamData = teamData.teams.find(team => 
+      team.team.toLowerCase() === teamName.toLowerCase()
+    );
+
+    console.log('Found team data:', specificTeamData);
+    return specificTeamData;
+  };
+
+  const getStatValue = (teamData, category) => {
+    if (!teamData || !teamData.stats) {
+      console.log(`No stats found for category: ${category}`);
+      return '-';
+    }
+    const statItem = teamData.stats.find(stat => stat.category === category);
+    console.log(`Stat for ${category}:`, statItem);
+    return statItem ? statItem.stat : '-';
+  };
+
+  const calculateWidth = (home, away, isText) => {
+    if (isText) return { homeWidth: 50, awayWidth: 50 };
+    
+    if (home === '-' || away === '-') return { homeWidth: 50, awayWidth: 50 };
+    
+    const homeNum = typeof home === 'string' ? parseFloat(home) : home;
+    const awayNum = typeof away === 'string' ? parseFloat(away) : away;
+    
+    if (isNaN(homeNum) || isNaN(awayNum)) return { homeWidth: 50, awayWidth: 50 };
+    
+    const total = homeNum + awayNum;
+    if (total === 0) return { homeWidth: 50, awayWidth: 50 };
+    
+    const homeWidth = Math.round((homeNum / total) * 100);
+    const awayWidth = 100 - homeWidth;
+    
+    return { homeWidth, awayWidth };
   };
 
   const renderFetchErrors = () => {
@@ -139,89 +170,68 @@ const TeamAnalyticsDetail = () => {
     );
   };
 
-  const findTeamStatsByName = (teamName) => {
-    if (!advancedStats?.teams?.ppa) return null;
-    return advancedStats.teams.ppa.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
-  const findTeamCumulativeStatsByName = (teamName) => {
-    if (!advancedStats?.teams?.cumulativePpa) return null;
-    return advancedStats.teams.cumulativePpa.find(
-      (item) => item.team.toLowerCase() === teamName.toLowerCase()
-    );
-  };
-
-  const findTeamStats = (teamName) => {
-    if (!teamGameStats || teamGameStats.length === 0) {
-      console.log('No team game stats available');
-      return null;
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className="custom-tooltip"
+          style={{ backgroundColor: "#fff", border: "1px solid #ddd", padding: "10px" }}
+        >
+          <p style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <img
+                src={getTeamLogo(game.homeTeam)}
+                alt={game.homeTeam}
+                style={{ width: 20, height: 20, objectFit: "contain" }}
+              />
+              <span>
+                {getTeamAbbreviation(game.homeTeam)}:{" "}
+                {payload.find((item) => item.dataKey === "Home")?.value}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <img
+                src={getTeamLogo(game.awayTeam)}
+                alt={game.awayTeam}
+                style={{ width: 20, height: 20, objectFit: "contain" }}
+              />
+              <span>
+                {getTeamAbbreviation(game.awayTeam)}:{" "}
+                {payload.find((item) => item.dataKey === "Away")?.value}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
     }
-    
-    const gameData = teamGameStats[0];
-    if (!gameData || !gameData.teams) {
-      console.log('No teams data found in game stats');
-      return null;
-    }
-    
-    return gameData.teams.find(team => 
-      team.team.toLowerCase() === teamName.toLowerCase());
-  };
-
-  function createMockTeamData(teamName, isHome) {
-    console.log(`Creating mock data for ${teamName} as API data is not available`);
-    return {
-      team: teamName,
-      stats: [
-        { category: "totalYards", stat: isHome ? "600" : "145" },
-        { category: "netPassingYards", stat: isHome ? "266" : "103" },
-        { category: "rushingYards", stat: isHome ? "334" : "42" },
-        { category: "yardsPerRushAttempt", stat: isHome ? "7.1" : "1.6" },
-        { category: "firstDowns", stat: isHome ? "25" : "10" },
-        { category: "thirdDownEff", stat: isHome ? "8-13" : "3-18" },
-        { category: "fourthDownEff", stat: isHome ? "1-1" : "2-3" },
-        { category: "totalPenaltiesYards", stat: isHome ? "7-59" : "4-40" },
-        { category: "fumblesLost", stat: isHome ? "1" : "0" },
-        { category: "interceptions", stat: isHome ? "0" : "2" },
-        { category: "possessionTime", stat: isHome ? "30:35" : "29:25" }
-      ]
-    };
-  }
-
-  const getStatValue = (teamData, category) => {
-    if (!teamData || !teamData.stats) {
-      console.log(`No stats found for category: ${category}`);
-      return '-';
-    }
-    const statItem = teamData.stats.find(stat => stat.category === category);
-    console.log(`Stat for ${category}:`, statItem);
-    return statItem ? statItem.stat : '-';
-  };
-
-  const calculateWidth = (home, away, isText) => {
-    if (isText) return { homeWidth: 50, awayWidth: 50 };
-    
-    if (home === '-' || away === '-') return { homeWidth: 50, awayWidth: 50 };
-    
-    const homeNum = typeof home === 'string' ? parseFloat(home) : home;
-    const awayNum = typeof away === 'string' ? parseFloat(away) : away;
-    
-    if (isNaN(homeNum) || isNaN(awayNum)) return { homeWidth: 50, awayWidth: 50 };
-    
-    const total = homeNum + awayNum;
-    if (total === 0) return { homeWidth: 50, awayWidth: 50 };
-    
-    const homeWidth = Math.round((homeNum / total) * 100);
-    const awayWidth = 100 - homeWidth;
-    
-    return { homeWidth, awayWidth };
+    return null;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       const errors = {};
       try {
+        // 1. Fetch team game stats first
+        try {
+          const gameStatsData = await teamsService.getTeamGameStats({ 
+            gameId: gameId, 
+            year: 2024, 
+          });
+          console.log('Team game stats response:', gameStatsData);
+          setTeamGameStats(gameStatsData);
+
+          // Extract teams from game stats
+          const teamsInGame = gameStatsData.flatMap(game => 
+            game.teams.map(team => team.team)
+          );
+          console.log('Teams in game:', teamsInGame);
+        } catch (gameStatsError) {
+          errors.teamGameStats = gameStatsError.message;
+          console.error('Error fetching team stats:', gameStatsError);
+        }
+
+        // 2. Fetch teams list
         try {
           const teamsData = await teamsService.getTeams();
           setTeamsList(teamsData);
@@ -230,26 +240,26 @@ const TeamAnalyticsDetail = () => {
           console.error('Error fetching teams:', teamsError);
         }
 
-        const foundTeam = teamsList.find((t) => t.id === parseInt(teamId, 10));
-        if (!foundTeam) {
-          throw new Error("Team not found");
-        }
-        setSelectedTeam(foundTeam);
-
+        // 3. Find the game and handle other data fetching
         try {
+          // Use team names from game stats to find the game
+          const gameStatsTeams = teamGameStats?.[0]?.teams.map(t => t.team) || [];
+          
           const scheduleData = await teamsService.getTeamSchedule(
-            foundTeam.school,
+            gameStatsTeams[0], // Use first team from game stats
             2024
           );
 
           const foundGame = scheduleData.find(
             (g) => g.id === parseInt(gameId, 10)
           );
+          
           if (!foundGame) {
             throw new Error("Game not found");
           }
           setGame(foundGame);
 
+          // Fetch advanced box score
           try {
             const advancedData = await teamsService.getAdvancedBoxScore(gameId);
             setAdvancedStats(advancedData);
@@ -257,26 +267,15 @@ const TeamAnalyticsDetail = () => {
             errors.advancedStats = advancedStatsError.message;
             console.error('Error fetching advanced stats:', advancedStatsError);
           }
-          
-          try {
-            const gameStatsData = await teamsService.getTeamGameStats({ 
-              gameId: gameId, 
-              year: 2024, 
-            });
-            console.log('Team game stats response:', gameStatsData);
-            setTeamGameStats(gameStatsData);
-          } catch (gameStatsError) {
-            errors.teamGameStats = gameStatsError.message;
-            console.error('Error fetching team stats:', gameStatsError);
-          }
 
+          // Fetch top performers
           try {
             const passingPlayers = await teamsService.getPlayerGameStats(
               gameId,
               2024,
               1,
               "regular",
-              foundTeam.school,
+              gameStatsTeams[0],
               "passing"
             );
             const rushingPlayers = await teamsService.getPlayerGameStats(
@@ -284,7 +283,7 @@ const TeamAnalyticsDetail = () => {
               2024,
               1,
               "regular",
-              foundTeam.school,
+              gameStatsTeams[0],
               "rushing"
             );
             const receivingPlayers = await teamsService.getPlayerGameStats(
@@ -292,7 +291,7 @@ const TeamAnalyticsDetail = () => {
               2024,
               1,
               "regular",
-              foundTeam.school,
+              gameStatsTeams[0],
               "receiving"
             );
 
@@ -319,7 +318,7 @@ const TeamAnalyticsDetail = () => {
     };
 
     fetchData();
-  }, [teamId, gameId]);
+  }, [gameId]);
 
   if (isLoading) {
     return <div className="centered-fullscreen">Loading...</div>;
@@ -341,8 +340,8 @@ const TeamAnalyticsDetail = () => {
   const gameDate = new Date(game.date).toLocaleDateString();
   const gameTime = game.time || "TBD";
 
-  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
-  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
+  const homeTeamData = findTeamStats(game.homeTeam);
+  const awayTeamData = findTeamStats(game.awayTeam);
 
   const homeTeamStats = findTeamStatsByName(game.homeTeam);
   const awayTeamStats = findTeamStatsByName(game.awayTeam);
