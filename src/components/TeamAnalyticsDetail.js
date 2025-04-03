@@ -35,8 +35,8 @@ const TeamAnalyticsDetail = () => {
   const [topPerformersReceiving, setTopPerformersReceiving] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fetchErrors, setFetchErrors] = useState({});
 
-  // Fetch the correct logo for a given team name
   const getTeamLogo = (teamName) => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -44,7 +44,6 @@ const TeamAnalyticsDetail = () => {
     return team && team.logos ? team.logos[0] : "/photos/default_team.png";
   };
 
-  // Helper to get team abbreviation
   const getTeamAbbreviation = (teamName) => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -52,7 +51,6 @@ const TeamAnalyticsDetail = () => {
     return team && team.abbreviation ? team.abbreviation : teamName;
   };
 
-  // Helper to get team color
   const getTeamColor = (teamName) => {
     const team = teamsList.find(
       (t) => t.school.toLowerCase() === teamName.toLowerCase()
@@ -60,7 +58,6 @@ const TeamAnalyticsDetail = () => {
     return team && team.color ? team.color : null;
   };
 
-  // Custom tooltip for Advanced Box Score showing logos and abbreviation
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -99,7 +96,26 @@ const TeamAnalyticsDetail = () => {
     return null;
   };
 
-  // Custom Legend for Advanced Box Score showing logos and abbreviations
+  const renderFetchErrors = () => {
+    if (Object.keys(fetchErrors).length === 0) return null;
+
+    return (
+      <div className="fetch-errors" style={{ 
+        backgroundColor: '#ffeeee', 
+        padding: '15px', 
+        margin: '10px 0', 
+        borderRadius: '5px' 
+      }}>
+        <h3>Some data could not be loaded:</h3>
+        {Object.entries(fetchErrors).map(([key, errorMsg]) => (
+          <p key={key} style={{ margin: '5px 0' }}>
+            <strong>{key}:</strong> {errorMsg}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   const renderCustomLegend = () => {
     return (
       <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
@@ -123,7 +139,6 @@ const TeamAnalyticsDetail = () => {
     );
   };
 
-  // Helper functions to match advanced stats by team name
   const findTeamStatsByName = (teamName) => {
     if (!advancedStats?.teams?.ppa) return null;
     return advancedStats.teams.ppa.find(
@@ -138,177 +153,22 @@ const TeamAnalyticsDetail = () => {
     );
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 1. Fetch all teams
-        const teamsData = await teamsService.getTeams();
-        setTeamsList(teamsData);
-
-        // 2. Find the selected team by ID
-        const foundTeam = teamsData.find((t) => t.id === parseInt(teamId, 10));
-        if (!foundTeam) {
-          throw new Error("Team not found");
-        }
-        setSelectedTeam(foundTeam);
-
-        // 3. Fetch that team's schedule
-        const scheduleData = await teamsService.getTeamSchedule(
-          foundTeam.school,
-          2024
-        );
-
-        // 4. Find the specific game by gameId (using g.id)
-        const foundGame = scheduleData.find(
-          (g) => g.id === parseInt(gameId, 10)
-        );
-        if (!foundGame) {
-          throw new Error("Game not found");
-        }
-        setGame(foundGame);
-
-        // 5. Fetch advanced box score stats
-        const advancedData = await teamsService.getAdvancedBoxScore(gameId);
-        setAdvancedStats(advancedData);
-        
-        // 6. Fetch team game stats
-        // Note: Based on API format, we need year and team parameters too
-        try {
-          // Using a more direct approach with parameters matching API documentation
-          const gameStatsData = await teamsService.getTeamGameStats({ 
-            gameId: gameId, 
-            year: 2024, 
-          });
-          console.log('Team game stats response:', gameStatsData);
-          setTeamGameStats(gameStatsData);
-        } catch (error) {
-          console.error('Error fetching team stats:', error);
-          // Continue execution for other data even if team stats fail
-        }
-
-        // 6. Fetch Top Performers for Passing, Rushing, Receiving
-        const passingPlayers = await teamsService.getPlayerGameStats(
-          gameId,
-          2024,
-          1,
-          "regular",
-          foundTeam.school,
-          "passing"
-        );
-        const rushingPlayers = await teamsService.getPlayerGameStats(
-          gameId,
-          2024,
-          1,
-          "regular",
-          foundTeam.school,
-          "rushing"
-        );
-        const receivingPlayers = await teamsService.getPlayerGameStats(
-          gameId,
-          2024,
-          1,
-          "regular",
-          foundTeam.school,
-          "receiving"
-        );
-
-        setTopPerformersPassing(passingPlayers);
-        setTopPerformersRushing(rushingPlayers);
-        setTopPerformersReceiving(receivingPlayers);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [teamId, gameId]);
-
-  if (isLoading) {
-    return <div className="centered-fullscreen">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="centered-fullscreen error">{error}</div>;
-  }
-
-  if (!game) {
-    return <div className="centered-fullscreen">Game not found</div>;
-  }
-
-  // Get team colors: try to fetch from teamsList and fallback to game object values
-  const homeTeamColor = getTeamColor(game.homeTeam) || game.homeColor;
-  const awayTeamColor = getTeamColor(game.awayTeam) || game.awayColor;
-
-  // Prepare logos and date/time
-  const homeLogo = getTeamLogo(game.homeTeam);
-  const awayLogo = getTeamLogo(game.awayTeam);
-  const gameDate = new Date(game.date).toLocaleDateString();
-  const gameTime = game.time || "TBD";
-
-  // Find advanced stats for home/away
-  const homeTeamStats = findTeamStatsByName(game.homeTeam);
-  const awayTeamStats = findTeamStatsByName(game.awayTeam);
-  const homeTeamCumulativeStats = findTeamCumulativeStatsByName(game.homeTeam);
-  const awayTeamCumulativeStats = findTeamCumulativeStatsByName(game.awayTeam);
-
-  // Extract metrics (or 'N/A' if not found)
-  const overallPpaHome = homeTeamStats?.overall?.total ?? "N/A";
-  const overallPpaAway = awayTeamStats?.overall?.total ?? "N/A";
-  const passingPpaHome = homeTeamStats?.passing?.total ?? "N/A";
-  const passingPpaAway = awayTeamStats?.passing?.total ?? "N/A";
-  const rushingPpaHome = homeTeamStats?.rushing?.total ?? "N/A";
-  const rushingPpaAway = awayTeamStats?.rushing?.total ?? "N/A";
-  const cumulativeOverallHome = homeTeamCumulativeStats?.overall?.total ?? "N/A";
-  const cumulativeOverallAway = awayTeamCumulativeStats?.overall?.total ?? "N/A";
-
-  // Create data array for Advanced Box Score Chart
-  const boxScoreData = [
-    { metric: "Overall PPA", Home: overallPpaHome, Away: overallPpaAway },
-    { metric: "Passing PPA", Home: passingPpaHome, Away: passingPpaAway },
-    { metric: "Rushing PPA", Home: rushingPpaHome, Away: rushingPpaAway },
-    { metric: "Cumulative PPA", Home: cumulativeOverallHome, Away: cumulativeOverallAway }
-  ];
-
-  // Prepare data for Player Stats Chart using player usage stats
-  const playerUsageData =
-    advancedStats?.players?.usage?.map((player) => ({
-      name: player.player,
-      Usage: player.total,
-      Rushing: player.rushing,
-      Passing: player.passing,
-      team: player.team,
-      position: player.position,
-    })) || [];
-
-  // Find home and away team data from the API response
   const findTeamStats = (teamName) => {
     if (!teamGameStats || teamGameStats.length === 0) {
       console.log('No team game stats available');
       return null;
     }
     
-    // Find the game data - it should be the first item in the array since we filtered by gameId
     const gameData = teamGameStats[0];
     if (!gameData || !gameData.teams) {
       console.log('No teams data found in game stats');
       return null;
     }
     
-    console.log('Looking for team:', teamName);
-    console.log('Available teams:', gameData.teams.map(t => t.team));
-    
-    // Find team data matching this team name
     return gameData.teams.find(team => 
       team.team.toLowerCase() === teamName.toLowerCase());
   };
-  
-  // Get home and away team data - if no data from API, create mock data
-  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
-  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
-  
-  // Helper function to create mock data when API data is not available
+
   function createMockTeamData(teamName, isHome) {
     console.log(`Creating mock data for ${teamName} as API data is not available`);
     return {
@@ -328,8 +188,7 @@ const TeamAnalyticsDetail = () => {
       ]
     };
   }
-  
-  // Helper function to get a specific stat value from a team's stats array
+
   const getStatValue = (teamData, category) => {
     if (!teamData || !teamData.stats) {
       console.log(`No stats found for category: ${category}`);
@@ -339,8 +198,183 @@ const TeamAnalyticsDetail = () => {
     console.log(`Stat for ${category}:`, statItem);
     return statItem ? statItem.stat : '-';
   };
-  
-  // Prepare team stats data from API
+
+  const calculateWidth = (home, away, isText) => {
+    if (isText) return { homeWidth: 50, awayWidth: 50 };
+    
+    if (home === '-' || away === '-') return { homeWidth: 50, awayWidth: 50 };
+    
+    const homeNum = typeof home === 'string' ? parseFloat(home) : home;
+    const awayNum = typeof away === 'string' ? parseFloat(away) : away;
+    
+    if (isNaN(homeNum) || isNaN(awayNum)) return { homeWidth: 50, awayWidth: 50 };
+    
+    const total = homeNum + awayNum;
+    if (total === 0) return { homeWidth: 50, awayWidth: 50 };
+    
+    const homeWidth = Math.round((homeNum / total) * 100);
+    const awayWidth = 100 - homeWidth;
+    
+    return { homeWidth, awayWidth };
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const errors = {};
+      try {
+        try {
+          const teamsData = await teamsService.getTeams();
+          setTeamsList(teamsData);
+        } catch (teamsError) {
+          errors.teams = teamsError.message;
+          console.error('Error fetching teams:', teamsError);
+        }
+
+        const foundTeam = teamsList.find((t) => t.id === parseInt(teamId, 10));
+        if (!foundTeam) {
+          throw new Error("Team not found");
+        }
+        setSelectedTeam(foundTeam);
+
+        try {
+          const scheduleData = await teamsService.getTeamSchedule(
+            foundTeam.school,
+            2024
+          );
+
+          const foundGame = scheduleData.find(
+            (g) => g.id === parseInt(gameId, 10)
+          );
+          if (!foundGame) {
+            throw new Error("Game not found");
+          }
+          setGame(foundGame);
+
+          try {
+            const advancedData = await teamsService.getAdvancedBoxScore(gameId);
+            setAdvancedStats(advancedData);
+          } catch (advancedStatsError) {
+            errors.advancedStats = advancedStatsError.message;
+            console.error('Error fetching advanced stats:', advancedStatsError);
+          }
+          
+          try {
+            const gameStatsData = await teamsService.getTeamGameStats({ 
+              gameId: gameId, 
+              year: 2024, 
+            });
+            console.log('Team game stats response:', gameStatsData);
+            setTeamGameStats(gameStatsData);
+          } catch (gameStatsError) {
+            errors.teamGameStats = gameStatsError.message;
+            console.error('Error fetching team stats:', gameStatsError);
+          }
+
+          try {
+            const passingPlayers = await teamsService.getPlayerGameStats(
+              gameId,
+              2024,
+              1,
+              "regular",
+              foundTeam.school,
+              "passing"
+            );
+            const rushingPlayers = await teamsService.getPlayerGameStats(
+              gameId,
+              2024,
+              1,
+              "regular",
+              foundTeam.school,
+              "rushing"
+            );
+            const receivingPlayers = await teamsService.getPlayerGameStats(
+              gameId,
+              2024,
+              1,
+              "regular",
+              foundTeam.school,
+              "receiving"
+            );
+
+            setTopPerformersPassing(passingPlayers);
+            setTopPerformersRushing(rushingPlayers);
+            setTopPerformersReceiving(receivingPlayers);
+          } catch (playersError) {
+            errors.topPerformers = playersError.message;
+            console.error('Error fetching top performers:', playersError);
+          }
+
+        } catch (scheduleError) {
+          errors.schedule = scheduleError.message;
+          console.error('Error fetching schedule:', scheduleError);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        if (Object.keys(errors).length > 0) {
+          setFetchErrors(errors);
+        }
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [teamId, gameId]);
+
+  if (isLoading) {
+    return <div className="centered-fullscreen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="centered-fullscreen error">{error}</div>;
+  }
+
+  if (!game) {
+    return <div className="centered-fullscreen">Game not found</div>;
+  }
+
+  const homeTeamColor = getTeamColor(game.homeTeam) || game.homeColor;
+  const awayTeamColor = getTeamColor(game.awayTeam) || game.awayColor;
+
+  const homeLogo = getTeamLogo(game.homeTeam);
+  const awayLogo = getTeamLogo(game.awayTeam);
+  const gameDate = new Date(game.date).toLocaleDateString();
+  const gameTime = game.time || "TBD";
+
+  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
+  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
+
+  const homeTeamStats = findTeamStatsByName(game.homeTeam);
+  const awayTeamStats = findTeamStatsByName(game.awayTeam);
+  const homeTeamCumulativeStats = findTeamCumulativeStatsByName(game.homeTeam);
+  const awayTeamCumulativeStats = findTeamCumulativeStatsByName(game.awayTeam);
+
+  const overallPpaHome = homeTeamStats?.overall?.total ?? "N/A";
+  const overallPpaAway = awayTeamStats?.overall?.total ?? "N/A";
+  const passingPpaHome = homeTeamStats?.passing?.total ?? "N/A";
+  const passingPpaAway = awayTeamStats?.passing?.total ?? "N/A";
+  const rushingPpaHome = homeTeamStats?.rushing?.total ?? "N/A";
+  const rushingPpaAway = awayTeamStats?.rushing?.total ?? "N/A";
+  const cumulativeOverallHome = homeTeamCumulativeStats?.overall?.total ?? "N/A";
+  const cumulativeOverallAway = awayTeamCumulativeStats?.overall?.total ?? "N/A";
+
+  const boxScoreData = [
+    { metric: "Overall PPA", Home: overallPpaHome, Away: overallPpaAway },
+    { metric: "Passing PPA", Home: passingPpaHome, Away: passingPpaAway },
+    { metric: "Rushing PPA", Home: rushingPpaHome, Away: rushingPpaAway },
+    { metric: "Cumulative PPA", Home: cumulativeOverallHome, Away: cumulativeOverallAway }
+  ];
+
+  const playerUsageData =
+    advancedStats?.players?.usage?.map((player) => ({
+      name: player.player,
+      Usage: player.total,
+      Rushing: player.rushing,
+      Passing: player.passing,
+      team: player.team,
+      position: player.position,
+    })) || [];
+
   const teamStats = [
     {
       label: "Total yards",
@@ -403,44 +437,19 @@ const TeamAnalyticsDetail = () => {
     }
   ];
 
-  // Helper function to calculate bar widths for the team stats
-  const calculateWidth = (home, away, isText) => {
-    if (isText) return { homeWidth: 50, awayWidth: 50 };
-    
-    // Handle cases when values are missing or just dashes
-    if (home === '-' || away === '-') return { homeWidth: 50, awayWidth: 50 };
-    
-    // Handle string values that need to be converted to numbers
-    const homeNum = typeof home === 'string' ? parseFloat(home) : home;
-    const awayNum = typeof away === 'string' ? parseFloat(away) : away;
-    
-    // Handle non-numeric values
-    if (isNaN(homeNum) || isNaN(awayNum)) return { homeWidth: 50, awayWidth: 50 };
-    
-    const total = homeNum + awayNum;
-    if (total === 0) return { homeWidth: 50, awayWidth: 50 };
-    
-    const homeWidth = Math.round((homeNum / total) * 100);
-    const awayWidth = 100 - homeWidth;
-    
-    return { homeWidth, awayWidth };
-  };
-
   return (
     <div className="team-analytics-page">
-      {/* Scoreboard Section */}
+      {renderFetchErrors()}
+
       <div className="scoreboard">
-        {/* Away Color Bar */}
         <div
           className="scoreboard__color-bar scoreboard__color-bar--left"
           style={{ backgroundColor: awayTeamColor }}
         />
-        {/* Home Color Bar */}
         <div
           className="scoreboard__color-bar scoreboard__color-bar--right"
           style={{ backgroundColor: homeTeamColor }}
         />
-        {/* Away Team */}
         <div className="scoreboard__team scoreboard__team--away">
           <img src={awayLogo} alt={game.awayTeam} className="scoreboard__logo" />
           <div className="scoreboard__team-info">
@@ -453,7 +462,6 @@ const TeamAnalyticsDetail = () => {
             )}
           </div>
         </div>
-        {/* Game Info (Center) */}
         <div className="scoreboard__center">
           <div className="scoreboard__date">{gameDate}</div>
           <div className="scoreboard__time">{gameTime}</div>
@@ -473,7 +481,6 @@ const TeamAnalyticsDetail = () => {
             </div>
           )}
         </div>
-        {/* Home Team */}
         <div className="scoreboard__team scoreboard__team--home">
           <div className="scoreboard__team-info">
             <span className="scoreboard__team-name">{game.homeTeam}</span>
@@ -488,7 +495,6 @@ const TeamAnalyticsDetail = () => {
         </div>
       </div>
 
-      {/* Team Stats Comparison */}
       <div className="team-stats-section">
         <h2>TEAM STATS</h2>
         <div className="team-stats-container">
@@ -542,7 +548,6 @@ const TeamAnalyticsDetail = () => {
         </div>
       </div>
 
-      {/* Top Performers Section (imported from TopPerformers.js) */}
       <TopPerformers
         game={game}
         topPerformersPassing={topPerformersPassing}
@@ -551,7 +556,6 @@ const TeamAnalyticsDetail = () => {
         getTeamAbbreviation={getTeamAbbreviation}
       />
 
-      {/* Advanced Box Score Section */}
       <div className="advanced-box-score">
         <h2
           title={`Definitions:
@@ -593,7 +597,6 @@ Higher values generally indicate more efficient and effective plays.
         </ResponsiveContainer>
       </div>
 
-      {/* Additional Dashboard Content */}
       <div className="dashboard-content">
         <div className="dashboard-stats">
           <h2>Additional Dashboard Stats</h2>
@@ -601,7 +604,6 @@ Higher values generally indicate more efficient and effective plays.
         </div>
       </div>
 
-      {/* Player Stats Section */}
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>

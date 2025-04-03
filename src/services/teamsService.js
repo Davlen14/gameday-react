@@ -64,27 +64,38 @@ export const getGameMedia = async (year = 2024, query) => {
     }
     return await fetchData(endpoint, params);
 };
-
 export const getTeamGameStats = async (params = {}) => {
   const endpoint = "/games/teams";
   try {
-    // Log what parameters we're using
-    console.log(`Fetching team game stats with params:`, params);
+    // Log detailed parameters for debugging
+    console.log('Fetching team game stats with params:', {
+      gameId: params.gameId,
+      year: params.year
+    });
+
     const response = await fetchData(endpoint, params);
+    
+    // Additional logging to verify response
+    console.log('Team game stats response:', response);
+    
+    // Validate response before returning
+    if (!response || response.length === 0) {
+      console.warn('No team game stats found');
+      return null;
+    }
+
     return response;
   } catch (error) {
-    console.error(`Error fetching team game stats:`, error);
-    return []; // Return empty array to prevent null references
+    // Comprehensive error logging
+    console.error('Error fetching team game stats:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+
+    // Return null instead of empty array to trigger mock data creation
+    return null;
   }
-};
-
-// Helper functions for different query patterns
-export const getTeamGameStatsByWeek = async (team, year = 2024, week = 1) => {
-  return getTeamGameStats({ team, year, week });
-};
-
-export const getTeamGameStatsByGameId = async (gameId, team, year = 2024) => {
-  return getTeamGameStats({ gameId, team, year });
 };
 
 // UPDATED: Added postseason support and year parameter
