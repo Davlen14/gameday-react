@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import teamsService from "../services/teamsService";
+import * as teamsService from "../services/teamsService";
+
 
 // Inline CSS styles for the component
 const styles = {
