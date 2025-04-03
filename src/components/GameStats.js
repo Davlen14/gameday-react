@@ -492,8 +492,9 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
           let homeTeamData, awayTeamData;
           
           // Strategy 1: Direct team name match
-          homeTeamData = rawGameData.teams.find(t => isSameTeam(t.team, homeTeam));
-          awayTeamData = rawGameData.teams.find(t => isSameTeam(t.team, awayTeam));
+         // Strategy 1: Direct team name match using exact case‑insensitive comparison
+         homeTeamData = rawGameData.teams.find(t => t.team && t.team.toLowerCase().trim() === homeTeam.toLowerCase().trim());
+         awayTeamData = rawGameData.teams.find(t => t.team && t.team.toLowerCase().trim() === awayTeam.toLowerCase().trim());
           
           // Strategy 2: homeAway property match if strategy 1 fails
           if (!homeTeamData) {
