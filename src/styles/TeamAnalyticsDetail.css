@@ -1,3 +1,182 @@
+/* Top Performers Section Styles */
+.top-performers-section {
+  margin: 40px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.top-performers-section h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.top-performers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.top-performers-category {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.top-performers-category h3 {
+  padding: 15px;
+  margin: 0;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 22px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.top-performers-chart-container {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+.top-performers-details {
+  display: flex;
+  flex-direction: row;
+}
+
+.team-column {
+  flex: 1;
+  border-right: 1px solid #eee;
+}
+
+.team-column:last-child {
+  border-right: none;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: #fff;
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.team-header h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.player-stats-list {
+  padding: 15px;
+  background-color: #fff;
+}
+
+.player-stat-item {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.player-stat-item:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-3px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.player-stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.player-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #444;
+  font-size: 16px;
+}
+
+.player-stat-details {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stat {
+  font-size: 14px;
+  color: #666;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.no-data {
+  text-align: center;
+  padding: 15px 0;
+  color: #888;
+  font-style: italic;
+}
+
+/* Custom Tooltip Styles */
+.custom-tooltip {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  min-width: 150px;
+}
+
+.tooltip-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.tooltip-team {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.tooltip-stat {
+  font-size: 14px;
+  color: #555;
+  margin: 2px 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .top-performers-details {
+    flex-direction: column;
+  }
+  
+  .team-column {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .team-column:last-child {
+    border-bottom: none;
+  }
+}
 /* Base/Reset */
 * {
   box-sizing: border-box;
