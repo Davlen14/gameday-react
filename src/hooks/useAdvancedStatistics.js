@@ -22,60 +22,41 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
       return;
     }
 
-    // Helper: Transform the stats array into an object with key/value pairs.
-    const transformOfficialStats = (teamData) => {
-      if (!teamData) return {};
-      const transformed = { ...teamData };
-      if (teamData.stats && Array.isArray(teamData.stats)) {
-        teamData.stats.forEach(item => {
-          transformed[item.category] = item.stat;
-        });
-      }
-      return transformed;
-    };
-
     const fetchAdvancedStats = async () => {
       try {
         setIsLoading(true);
-        let playersData, ppaData, drivesData;
+        let advancedBoxScoreData;
 
-        // Fetch player, PPA, and drive data
+        // Attempt to fetch advanced box score
         try {
-          console.log("Fetching player data using teamsService for game", gameData.id);
-          playersData = await teamsService.getGamePlayers(gameData.id);
-
-          console.log("Fetching PPA data using teamsService for game", gameData.id);
-          ppaData = (await teamsService.getGamePPA(gameData.id)) || [];
-
-          console.log("Fetching drive data using teamsService for game", gameData.id);
-          drivesData = (await teamsService.getGameDrives(gameData.id)) || [];
+          console.log(`Fetching advanced box score for game ${gameData.id}`);
+          advancedBoxScoreData = await teamsService.getAdvancedBoxScore(gameData.id);
+          
+          // Log the structure of the advanced box score for debugging
+          console.log('Advanced Box Score Data:', {
+            playersUsageCount: advancedBoxScoreData?.players?.usage?.length || 0,
+            playersPPACount: advancedBoxScoreData?.players?.ppa?.length || 0
+          });
         } catch (primaryError) {
-          console.error("teamsService error:", primaryError);
-          if (graphqlTeamsService && typeof graphqlTeamsService.getGamePlayers === "function") {
-            console.log("Fetching player data using graphqlTeamsService for game", gameData.id);
-            playersData = await graphqlTeamsService.getGamePlayers(gameData.id);
-            ppaData = (await graphqlTeamsService.getGamePPA(gameData.id)) || [];
-            drivesData = (await graphqlTeamsService.getGameDrives(gameData.id)) || [];
+          console.error("Error fetching advanced box score:", primaryError);
+          
+          // Fallback to GraphQL service if available
+          if (graphqlTeamsService && typeof graphqlTeamsService.getAdvancedBoxScore === "function") {
+            console.log("Attempting to fetch from GraphQL service");
+            advancedBoxScoreData = await graphqlTeamsService.getAdvancedBoxScore(gameData.id);
           } else {
-            console.warn("No fallback available; setting empty data for game", gameData.id);
-            playersData = [];
-            ppaData = [];
-            drivesData = [];
+            console.warn("No fallback available; setting empty data");
+            advancedBoxScoreData = { players: { usage: [], ppa: [] } };
           }
         }
 
-        console.log("Player data fetched:", playersData);
-        console.log("PPA data fetched:", ppaData);
-        console.log("Drive data fetched:", drivesData);
-
-        const processedPlayers = Array.isArray(playersData) && playersData.length > 0 
-          ? processPlayerStats(playersData, ppaData)
-          : [];
+        // Process players from advanced stats
+        const processedPlayers = processPlayerStats(advancedBoxScoreData);
         
         console.log(`Processed ${processedPlayers.length} players`);
-        console.log('Processed Players:', processedPlayers);
-setPlayerStats(processedPlayers);
+        setPlayerStats(processedPlayers);
 
+        // Calculate team stats
         const homeStats = processedPlayers.length > 0
           ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
           : calculateEmptyTeamStats();
@@ -83,24 +64,18 @@ setPlayerStats(processedPlayers);
         const awayStats = processedPlayers.length > 0
           ? calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam)
           : calculateEmptyTeamStats();
-          
-        console.log("Home team stats processed:", homeStats);
-        console.log("Away team stats processed:", awayStats);
+
+        // Fetch drive data
+        let drivesData = [];
+        try {
+          drivesData = await teamsService.getGameDrives(gameData.id) || [];
+        } catch (drivesError) {
+          console.error("Error fetching drive data:", drivesError);
+        }
 
         const processedDrives = processDriveData(drivesData, homeTeam, awayTeam);
 
-        // Fetch the official team stats from the API
-        const officialStatsData = await teamsService.getTeamGameStats(gameData.id, null, 2024);
-        let officialHomeStats = {};
-        let officialAwayStats = {};
-        if (officialStatsData && officialStatsData.length > 0) {
-          const teamsData = officialStatsData[0].teams;
-          officialHomeStats = teamsData.find(team => team.team === homeTeam);
-          officialAwayStats = teamsData.find(team => team.team === awayTeam);
-        }
-        const transformedHomeStats = transformOfficialStats(officialHomeStats);
-        const transformedAwayStats = transformOfficialStats(officialAwayStats);
-
+        // Construct advanced data object
         const advancedDataObj = {
           gameInfo: gameData,
           homeTeamStats: homeStats,
@@ -111,16 +86,14 @@ setPlayerStats(processedPlayers);
             [homeTeam]: getKeyPlayers(processedPlayers, homeTeam),
             [awayTeam]: getKeyPlayers(processedPlayers, awayTeam),
           },
-          // Include the official team stats (transformed)
-          officialHomeStats: transformedHomeStats,
-          officialAwayStats: transformedAwayStats,
+          rawAdvancedData: advancedBoxScoreData, // Include raw data for reference
         };
 
         setAdvancedData(advancedDataObj);
         setIsLoading(false);
       } catch (err) {
-        console.error("Error fetching advanced stats:", err);
-        setError("Failed to load advanced statistics. " + err.message);
+        console.error("Comprehensive error in fetchAdvancedStats:", err);
+        setError(`Failed to load advanced statistics: ${err.message}`);
         setIsLoading(false);
         setPlayerStats([]);
         setAdvancedData(null);

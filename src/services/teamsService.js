@@ -143,7 +143,23 @@ export const getGames = async (query, year = 2024) => {
 export const getAdvancedBoxScore = async (gameId, year = 2024) => {
   const endpoint = "/game/box/advanced";
   const params = { id: gameId, year };
-  return await fetchData(endpoint, params);
+  try {
+    console.log(`Fetching advanced box score for game ${gameId}`);
+    const data = await fetchData(endpoint, params);
+    
+    // Log data structure for debugging
+    console.log('Advanced Box Score Data Structure:', {
+      hasPlayerUsage: !!data?.players?.usage,
+      hasPlayerPPA: !!data?.players?.ppa,
+      usageCount: data?.players?.usage?.length || 0,
+      ppaCount: data?.players?.ppa?.length || 0
+    });
+    
+    return data;
+  } catch (error) {
+    console.error(`Error fetching advanced box score for game ${gameId}:`, error);
+    return { players: { usage: [], ppa: [] } }; // Fallback to empty structure
+  }
 };
 
 export const getGameLines = async (year = 2024, team = null, seasonType = "regular") => {
