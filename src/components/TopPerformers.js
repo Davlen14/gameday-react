@@ -12,8 +12,8 @@ import {
 import { 
   Award, 
   Running, 
-  Touchdown, 
-  ArrowUpRight 
+  PlayIcon, 
+  TrendingUpIcon 
 } from 'lucide-react';
 
 // Styled CSS as a template literal
@@ -199,7 +199,7 @@ const TopPerformers = ({
         </div>
         <div className="top-performer-rank">
           {index + 1}
-          <ArrowUpRight size={20} color="#007bff" />
+          <TrendingUpIcon size={20} color="#007bff" />
         </div>
       </div>
     ));
@@ -219,7 +219,7 @@ const TopPerformers = ({
             className={`top-performers-tab ${activeCategory === 'passing' ? 'active' : ''}`}
             onClick={() => setActiveCategory('passing')}
           >
-            <Touchdown size={18} /> Passing
+            <PlayIcon size={18} /> Passing
           </button>
           <button
             className={`top-performers-tab ${activeCategory === 'rushing' ? 'active' : ''}`}
