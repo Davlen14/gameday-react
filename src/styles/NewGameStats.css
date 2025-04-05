@@ -1,0 +1,219 @@
+/* GameStats.css */
+.game-stats {
+  padding: 20px;
+}
+
+.game-stats h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--accent-color, #4caf50);
+  font-size: 1.3rem;
+}
+
+.stats-message {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-secondary, #b0b0b0);
+  font-style: italic;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.team-header.home {
+  flex-direction: row;
+}
+
+.team-header.away {
+  flex-direction: row-reverse;
+}
+
+.team-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: white;
+  padding: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.team-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.team-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.stats-divider {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-secondary, #b0b0b0);
+  position: relative;
+}
+
+.stats-divider::before,
+.stats-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stats-divider::before {
+  right: 100%;
+  margin-right: 10px;
+}
+
+.stats-divider::after {
+  left: 100%;
+  margin-left: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-md, 8px);
+  padding: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stat-icon {
+  color: var(--accent-color, #4caf50);
+  font-size: 1.2rem;
+}
+
+.stat-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-secondary, #b0b0b0);
+}
+
+.stat-comparison {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-value {
+  font-weight: bold;
+  min-width: 40px;
+  text-align: center;
+}
+
+.stat-value.home {
+  text-align: right;
+}
+
+.stat-value.away {
+  text-align: left;
+}
+
+.stat-bar-container {
+  flex: 1;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+}
+
+.stat-bar {
+  height: 100%;
+}
+
+.stat-bar.home {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.stat-bar.away {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Special styling for turnovers */
+.stat-comparison.turnovers {
+  justify-content: space-between;
+}
+
+.turnover-display {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  justify-content: center;
+}
+
+.turnover-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+
+.turnover-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .stats-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .stats-divider {
+    margin: 10px 0;
+  }
+  
+  .stats-divider::before,
+  .stats-divider::after {
+    width: 50px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
