@@ -174,7 +174,8 @@ const TeamAnalyticsDetail = () => {
         // 6. Fetch team game stats
         try {
           const gameStatsData = await teamsService.getTeamGameStats({
-            year: 2024
+            year: 2024,
+            week: foundGame.week // Added the week parameter
           });
           
           console.log('Team game stats response:', gameStatsData);
@@ -229,7 +230,7 @@ const TeamAnalyticsDetail = () => {
         const passingPlayers = await teamsService.getPlayerGameStats(
           gameId,
           2024,
-          1,
+          foundGame.week, // Use the actual week from the game data
           "regular",
           foundTeam.school,
           "passing"
@@ -237,7 +238,7 @@ const TeamAnalyticsDetail = () => {
         const rushingPlayers = await teamsService.getPlayerGameStats(
           gameId,
           2024,
-          1,
+          foundGame.week, // Use the actual week from the game data
           "regular",
           foundTeam.school,
           "rushing"
@@ -245,7 +246,7 @@ const TeamAnalyticsDetail = () => {
         const receivingPlayers = await teamsService.getPlayerGameStats(
           gameId,
           2024,
-          1,
+          foundGame.week, // Use the actual week from the game data
           "regular",
           foundTeam.school,
           "receiving"
