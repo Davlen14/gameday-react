@@ -171,37 +171,36 @@ const TeamAnalyticsDetail = () => {
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
         
-        // 6. Fetch team game stats
-        // Note: Based on API format, we need year and team parameters too
-        try {
-          // Using a more direct approach with parameters matching API documentation
-          const gameStatsData = await teamsService.getTeamGameStats({ 
-            gameId: gameId, 
-            year: 2024, 
-          });
-          console.log('Team game stats response:', gameStatsData);
+      // 6. Fetch team game stats
+      try {
+        // Using a more direct approach with parameters matching API documentation
+        const gameStatsData = await teamsService.getTeamGameStats({ 
+          gameId: gameId, 
+          year: 2024, 
+        });
+        console.log('Team game stats response:', gameStatsData);
+        
+        // Validate that we received data in the expected format
+        if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
+          console.log(`Received stats for ${gameStatsData.length} games`);
           
-          // Validate that we received data in the expected format
-          if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
-            console.log(`Received stats for ${gameStatsData.length} games`);
-            
-            // Check if any of the games have the ID we're looking for
-            const matchingGame = gameStatsData.find(g => g.id === parseInt(gameId, 10));
-            if (matchingGame) {
-              console.log('Found exact match for game ID:', gameId);
-            } else {
-              console.log('No exact game ID match, will search by team names');
-            }
-            
-            setTeamGameStats(gameStatsData);
+          // Check if any of the games have the ID we're looking for
+          const matchingGame = gameStatsData.find(g => g.id === parseInt(gameId, 10));
+          if (matchingGame) {
+            console.log('Found exact match for game ID:', gameId);
           } else {
-            console.warn('Received empty or invalid team stats data');
-            setTeamGameStats(null);
+            console.log('No exact game ID match, will search by team names');
           }
-        } catch (error) {
-          console.error('Error fetching team stats:', error);
-          // Continue execution for other data even if team stats fail
+          
+          setTeamGameStats(gameStatsData);
+        } else {
+          console.warn('Received empty or invalid team stats data');
+          setTeamGameStats(null);
         }
+      } catch (error) {
+        console.error('Error fetching team stats:', error);
+        // Continue execution for other data even if team stats fail
+      }
 
         // 7. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
@@ -299,46 +298,46 @@ const TeamAnalyticsDetail = () => {
       position: player.position,
     })) || [];
 
-  // Find home and away team data from the API response
-  const findTeamStats = (teamName) => {
-    if (!teamGameStats || teamGameStats.length === 0) {
-      console.log('No team game stats available');
-      return null;
-    }
-    
-    console.log('Looking for team:', teamName);
-    
-    // Look through all games in the response
-    for (const gameData of teamGameStats) {
-      if (!gameData.teams) continue;
-      
-      // Check if this game has the team we're looking for
-      console.log('Checking game ID:', gameData.id, 'for teams:', gameData.teams.map(t => t.team));
-      
-      // Find team data matching this team name with more flexible matching
-      const teamData = gameData.teams.find(team => {
-        // Try exact match first
-        if (team.team.toLowerCase() === teamName.toLowerCase()) return true;
-        
-        // Try partial match (in case API abbreviates or formats differently)
-        if (teamName.toLowerCase().includes(team.team.toLowerCase()) || 
-            team.team.toLowerCase().includes(teamName.toLowerCase())) {
-          console.log(`Found partial match: ${team.team} for ${teamName}`);
-          return true;
-        }
-        
-        return false;
-      });
-      
-      if (teamData) {
-        console.log(`Found stats for ${teamName}:`, teamData);
-        return teamData;
-      }
-    }
-    
-    console.log(`No stats found for ${teamName} in any game data`);
+// Find home and away team data from the API response
+const findTeamStats = (teamName) => {
+  if (!teamGameStats || teamGameStats.length === 0) {
+    console.log('No team game stats available');
     return null;
-  };
+  }
+  
+  console.log('Looking for team:', teamName);
+  
+  // Look through all games in the response
+  for (const gameData of teamGameStats) {
+    if (!gameData.teams) continue;
+    
+    // Check if this game has the team we're looking for
+    console.log('Checking game ID:', gameData.id, 'for teams:', gameData.teams.map(t => t.team));
+    
+    // Find team data matching this team name with more flexible matching
+    const teamData = gameData.teams.find(team => {
+      // Try exact match first
+      if (team.team.toLowerCase() === teamName.toLowerCase()) return true;
+      
+      // Try partial match (in case API abbreviates or formats differently)
+      if (teamName.toLowerCase().includes(team.team.toLowerCase()) || 
+          team.team.toLowerCase().includes(teamName.toLowerCase())) {
+        console.log(`Found partial match: ${team.team} for ${teamName}`);
+        return true;
+      }
+      
+      return false;
+    });
+    
+    if (teamData) {
+      console.log(`Found stats for ${teamName}:`, teamData);
+      return teamData;
+    }
+  }
+  
+  console.log(`No stats found for ${teamName} in any game data`);
+  return null;
+};
   
   // Get home and away team data - if no data from API, create mock data
   const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
