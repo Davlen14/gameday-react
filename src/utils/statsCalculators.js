@@ -879,149 +879,86 @@ export const renderPlayerKeyStat = (player) => {
 // Processing Player Data
 // ----------------------------------------------------------------------------
 
-export const processPlayerStats = (playersData, ppaData) => {
-  console.log("Processing player stats with:", {
-    playersDataAvailable: !!playersData && Array.isArray(playersData), 
-    playersCount: playersData?.length || 0,
-    ppaDataAvailable: !!ppaData && Array.isArray(ppaData),
-    ppaCount: ppaData?.length || 0 
+export const processPlayerStats = (advancedStatsData) => {
+  console.log("Processing player stats from advanced data:", {
+    dataAvailable: !!advancedStatsData,
+    hasPlayersData: !!advancedStatsData?.players,
+    usageCount: advancedStatsData?.players?.usage?.length || 0,
+    ppaCount: advancedStatsData?.players?.ppa?.length || 0
   });
   
-  if (!playersData || !Array.isArray(playersData) || playersData.length === 0) {
-    console.warn("No valid players data available");
+  // Safely extract players data from the advanced stats structure
+  const usageData = advancedStatsData?.players?.usage || [];
+  const ppaData = advancedStatsData?.players?.ppa || [];
+
+  if (usageData.length === 0) {
+    console.warn("No valid usage data available in advanced stats");
     return [];
   }
 
-  // Normalize PPA data if available
-  let normalizedPpaData = [];
-  if (ppaData && Array.isArray(ppaData) && ppaData.length > 0) {
-    // Log sample PPA data structure to help debug
-    console.log("Sample PPA data structure:", ppaData[0]);
-    
-    // Normalize PPA data to a consistent format
-    normalizedPpaData = ppaData.map(item => {
-      // Check for different PPA value formats
-      let ppaValue = 0;
-      if (typeof item.ppa === 'number') {
-        ppaValue = item.ppa;
-      } else if (item.ppa && typeof item.ppa.total === 'number') {
-        ppaValue = item.ppa.total;
-      } else if (typeof item.total === 'number') {
-        ppaValue = item.total;
-      } else if (typeof item.value === 'number') {
-        ppaValue = item.value;
-      }
-      
-      return {
-        id: item.playerId || item.player_id || item.id,
-        name: item.player || item.playerName || item.name,
-        team: item.team || item.teamName,
-        ppa: ppaValue
-      };
-    });
-  }
-
-  let allPlayers = [];
-
-  // Check if data uses the nested categories structure...
-  if (playersData[0]?.teams && Array.isArray(playersData[0].teams)) {
-    playersData.forEach((game) => {
-      game.teams.forEach((teamData) => {
-        const teamName = teamData.team;
-        const conference = teamData.conference;
-        const homeAway = teamData.homeAway;
-        // If the old structure exists:
-        if (teamData.categories && Array.isArray(teamData.categories)) {
-          teamData.categories.forEach((category) => {
-            const categoryName = category.name;
-            if (category.types && Array.isArray(category.types)) {
-              category.types.forEach((type) => {
-                const statName = type.name;
-                if (type.athletes && Array.isArray(type.athletes)) {
-                  type.athletes.forEach((athlete) => {
-                    let existingPlayer = allPlayers.find((p) => p.id === athlete.id);
-                    if (!existingPlayer) {
-                      existingPlayer = {
-                        id: athlete.id,
-                        name: athlete.name,
-                        team: teamName,
-                        conference,
-                        homeAway,
-                        position: inferPositionFromCategory(categoryName, statName),
-                        stats: {},
-                      };
-                      allPlayers.push(existingPlayer);
-                    }
-                    if (!existingPlayer.stats[categoryName]) {
-                      existingPlayer.stats[categoryName] = {};
-                    }
-                    existingPlayer.stats[categoryName][statName.toLowerCase()] = parseStatValue(athlete.stat);
-                  });
-                }
-              });
-            }
-          });
-        }
-        // Else if using the new flat "stats" array
-        else if (teamData.stats && Array.isArray(teamData.stats)) {
-          // Create a flat stats object for this team/player
-          let flatStats = {};
-          teamData.stats.forEach((statObj) => {
-            // Use the lowercased category name as key
-            flatStats[statObj.category.toLowerCase()] = parseStatValue(statObj.stat);
-          });
-          // Create a new player entry using this flat structure
-          // (Assuming one entry per team here; adjust if your data contains multiple athletes per team)
-          let player = {
-            id: teamData.teamId, // Using teamId as id in this flat structure
-            name: teamData.team,
-            team: teamData.team,
-            conference,
-            homeAway,
-            // For flat stats, we directly assign the flatStats object
-            stats: flatStats,
-          };
-          // Optionally, set grade if PPA data is available (this may require mapping from team-level PPA if provided)
-          const playerPPA = ppaData?.find(
-            (p) => p.team === teamData.team || p.name === teamData.team
-          );
-          player.grade = calculatePlayerGrade(player, playerPPA);
-          player.ppa = playerPPA?.ppa || 0;
-          allPlayers.push(player);
-        }
-      });
-    });
-  } else {
-    allPlayers = playersData;
-  }
-
-  // For each processed player, calculate grade using PPA data if available
-  console.log(`Processing ${allPlayers.length} players for grades`);
+  console.log(`Processing ${usageData.length} players from usage data`);
+  console.log(`PPA data available for ${ppaData.length} players`);
   
-  return allPlayers.map((player) => {
-    // Try to find matching PPA data in normalized format
-    const playerPPA = normalizedPpaData.find(
-      (p) => 
-        p.id === player.id || 
-        p.playerId === player.id || 
-        (p.name === player.name && p.team === player.team)
-    );
+  // For debugging, log a sample of the data structure
+  if (usageData.length > 0) {
+    console.log("Sample usage data structure:", usageData[0]);
+  }
+  if (ppaData.length > 0) {
+    console.log("Sample PPA data structure:", ppaData[0]);
+  }
+
+  return usageData.map(player => {
+    // Find corresponding PPA data for this player
+    const playerPPA = ppaData.find(p => p.player === player.player);
     
-    // Fallback to original PPA data format if normalized search fails
-    const originalPPA = !playerPPA && ppaData ? ppaData.find(
-      (p) =>
-        p.playerId === player.id ||
-        (p.name === player.name && p.team === player.team)
-    ) : null;
-    
-    // Calculate grade with PPA data if available
-    const ppaForGrade = playerPPA || originalPPA;
-    const grade = calculatePlayerGrade(player, ppaForGrade);
+    // Log player mapping for debugging
+    if (playerPPA) {
+      console.log(`Found PPA match for ${player.player} (${player.position})`);
+    }
     
     return {
-      ...player,
-      ppa: playerPPA?.ppa || originalPPA?.ppa || 0,
-      grade: grade || 50, // Use default grade of 50 if calculation fails
+      id: crypto.randomUUID(), // Unique identifier
+      name: player.player,
+      team: player.team,
+      position: player.position,
+      
+      // Usage metrics
+      usage: player.total || 0,
+      rushingUsage: player.rushing || 0,
+      passingUsage: player.passing || 0,
+      
+      // Stats object to match existing grade calculation method
+      stats: {
+        passing: playerPPA?.average?.passing !== undefined ? 
+          { 
+            yards: Math.round(playerPPA.average.passing * 100), 
+            completions: 0, 
+            attempts: 0,
+            touchdowns: 0,
+            interceptions: 0
+          } : null,
+        rushing: playerPPA?.average?.rushing !== undefined ? 
+          { 
+            yards: Math.round(playerPPA.average.rushing * 100),
+            attempts: 0,
+            touchdowns: 0
+          } : null
+      },
+      
+      // PPA metrics
+      ppa: playerPPA?.average?.total || 0,
+      cumulativePpa: playerPPA?.cumulative?.total || 0,
+      
+      // Calculate grade using existing method
+      grade: calculatePlayerGrade({
+        position: player.position,
+        stats: {
+          passing: playerPPA?.average?.passing !== undefined ? 
+            { yards: Math.round(playerPPA.average.passing * 100) } : null,
+          rushing: playerPPA?.average?.rushing !== undefined ? 
+            { yards: Math.round(playerPPA.average.rushing * 100) } : null
+        }
+      }, { ppa: playerPPA?.average?.total || 0 })
     };
   });
 };
