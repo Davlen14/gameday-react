@@ -36,6 +36,7 @@ const TeamAnalyticsDetail = () => {
   const [topPerformersReceiving, setTopPerformersReceiving] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showRadarChart, setShowRadarChart] = useState(false);
 
   // Fetch the correct logo for a given team name
   const getTeamLogo = (teamName) => {
@@ -694,47 +695,241 @@ Higher values generally indicate more efficient and effective plays.
         </div>
       </div>
 
-      {/* Player Stats Section */}
+      {/* Player Stats Section - Enhanced Version */}
       {advancedStats?.players && advancedStats.players.usage && (
         <div className="player-stats-section">
           <h2>Player Stats</h2>
-          <div className="explanation-box">
-            <p>
-              <strong>Usage:</strong> Represents the overall involvement of the player in the game. Higher usage typically indicates a key role.
-            </p>
-            <p>
-              <strong>Rushing:</strong> Measures performance on rushing plays. Positive numbers are better.
-            </p>
-            <p>
-              <strong>Passing:</strong> Indicates production from passing plays. Higher values point to effective passing involvement.
-            </p>
+          
+          {/* Modern Metrics Legend */}
+          <div className="player-metrics-legend">
+            <div className="metrics-category">
+              <h3>Usage</h3>
+              <div className="metrics-scale">
+                <div className="scale-item">
+                  <span className="scale-badge elite">Elite</span>
+                  <span className="scale-value">&gt;0.5</span>
+                </div>
+                <div className="scale-item">
+                  <span className="scale-badge star">Star</span>
+                  <span className="scale-value">0.3-0.5</span>
+                </div>
+                <div className="scale-item">
+                  <span className="scale-badge starter">Starter</span>
+                  <span className="scale-value">0.15-0.3</span>
+                </div>
+                <div className="scale-item">
+                  <span className="scale-badge role">Role Player</span>
+                  <span className="scale-value">&lt;0.15</span>
+                </div>
+              </div>
+              <p className="metric-description">Represents the overall involvement of the player in the game. Higher usage typically indicates a key role.</p>
+            </div>
+            
+            <div className="metrics-category">
+              <h3>Rushing/Passing Contribution</h3>
+              <div className="metrics-scale">
+                <div className="scale-item">
+                  <div className="performance-indicator excellent"></div>
+                  <span className="scale-value">Excellent (&gt;0.6)</span>
+                </div>
+                <div className="scale-item">
+                  <div className="performance-indicator good"></div>
+                  <span className="scale-value">Good (0.3-0.6)</span>
+                </div>
+                <div className="scale-item">
+                  <div className="performance-indicator average"></div>
+                  <span className="scale-value">Average (0.1-0.3)</span>
+                </div>
+                <div className="scale-item">
+                  <div className="performance-indicator limited"></div>
+                  <span className="scale-value">Limited (&lt;0.1)</span>
+                </div>
+              </div>
+              <p className="metric-description">Measures a player's contribution in rushing and passing plays. Higher values indicate greater impact in that area.</p>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={playerUsageData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Usage" stackId="a">
-                {playerUsageData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={
-                      entry.team === game.homeTeam
-                        ? homeTeamColor
-                        : entry.team === game.awayTeam
-                        ? awayTeamColor
-                        : "#8884d8"
+
+          {/* Player Cards Layout */}
+          <div className="player-cards-container">
+            {playerUsageData
+              .sort((a, b) => b.Usage - a.Usage)
+              .map((player, index) => {
+                // Determine badge levels based on metrics
+                const usageBadge = player.Usage > 0.5 ? "elite" : 
+                                 player.Usage > 0.3 ? "star" : 
+                                 player.Usage > 0.15 ? "starter" : "role";
+                
+                const rushingLevel = player.Rushing > 0.6 ? "excellent" : 
+                                    player.Rushing > 0.3 ? "good" : 
+                                    player.Rushing > 0.1 ? "average" : "limited";
+                                    
+                const passingLevel = player.Passing > 0.6 ? "excellent" : 
+                                    player.Passing > 0.3 ? "good" : 
+                                    player.Passing > 0.1 ? "average" : "limited";
+                
+                // Get appropriate team color
+                const playerTeamColor = player.team === game.homeTeam ? homeTeamColor : awayTeamColor;
+                
+                return (
+                  <div 
+                    className="player-card" 
+                    key={index}
+                    style={{ borderTopColor: playerTeamColor }}
+                  >
+                    <div className="player-card-header">
+                      <h3 className="player-name">{player.name}</h3>
+                      <div className="player-badges">
+                        <span className={`usage-badge ${usageBadge}`}>
+                          {usageBadge.charAt(0).toUpperCase() + usageBadge.slice(1)}
+                        </span>
+                        <span className="position-badge" style={{ backgroundColor: playerTeamColor }}>
+                          {player.position}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="player-metrics">
+                      <div className="metric">
+                        <div className="metric-label">Usage</div>
+                        <div className="metric-gauge">
+                          <div 
+                            className="metric-fill" 
+                            style={{ 
+                              width: `${Math.min(100, player.Usage * 100)}%`,
+                              backgroundColor: playerTeamColor 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="metric-value">{player.Usage.toFixed(3)}</div>
+                      </div>
+                      
+                      <div className="metric">
+                        <div className="metric-label">Rushing</div>
+                        <div className="metric-gauge">
+                          <div 
+                            className={`metric-fill ${rushingLevel}`}
+                            style={{ width: `${Math.min(100, player.Rushing * 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="metric-value">{player.Rushing.toFixed(3)}</div>
+                      </div>
+                      
+                      <div className="metric">
+                        <div className="metric-label">Passing</div>
+                        <div className="metric-gauge">
+                          <div 
+                            className={`metric-fill ${passingLevel}`}
+                            style={{ width: `${Math.min(100, player.Passing * 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="metric-value">{player.Passing.toFixed(3)}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Look for corresponding PPA data */}
+                    {advancedStats?.players?.ppa && (
+                      <div className="player-ppa">
+                        {advancedStats.players.ppa.find(p => p.player === player.name) ? (
+                          <>
+                            <div className="ppa-label">PPA (Points Per Attempt)</div>
+                            <div className="ppa-value">
+                              {advancedStats.players.ppa.find(p => p.player === player.name).average.total.toFixed(3)}
+                              <span className="ppa-rating">
+                                {advancedStats.players.ppa.find(p => p.player === player.name).average.total > 0.5 ? '🔥 Outstanding' :
+                                 advancedStats.players.ppa.find(p => p.player === player.name).average.total > 0.2 ? '✓ Positive' :
+                                 advancedStats.players.ppa.find(p => p.player === player.name).average.total > 0 ? '- Neutral' : '✗ Negative'}
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="ppa-na">PPA Data Not Available</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Player Radar Chart View Toggle Button */}
+          <button className="toggle-view-btn" onClick={() => setShowRadarChart(prevState => !prevState)}>
+            {showRadarChart ? "Switch to Card View" : "Switch to Radar Chart View"}
+          </button>
+
+          {/* Player Radar Chart View (Alternative Visualization) */}
+          {showRadarChart && (
+            <div className="radar-chart-container">
+              <ResponsiveContainer width="100%" height={500}>
+                <ComposedChart data={playerUsageData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const player = payload[0].payload;
+                      return (
+                        <div className="custom-player-tooltip">
+                          <h3>{player.name} ({player.position})</h3>
+                          <p className="team-name">{player.team}</p>
+                          <div className="tooltip-metrics">
+                            <div className="tooltip-metric">
+                              <span className="tooltip-label">Usage:</span>
+                              <span className="tooltip-value">{player.Usage.toFixed(3)}</span>
+                            </div>
+                            <div className="tooltip-metric">
+                              <span className="tooltip-label">Rushing:</span>
+                              <span className="tooltip-value">{player.Rushing.toFixed(3)}</span>
+                            </div>
+                            <div className="tooltip-metric">
+                              <span className="tooltip-label">Passing:</span>
+                              <span className="tooltip-value">{player.Passing.toFixed(3)}</span>
+                            </div>
+                            {advancedStats?.players?.ppa && advancedStats.players.ppa.find(p => p.player === player.name) && (
+                              <div className="tooltip-metric">
+                                <span className="tooltip-label">PPA:</span>
+                                <span className="tooltip-value">
+                                  {advancedStats.players.ppa.find(p => p.player === player.name).average.total.toFixed(3)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
                     }
+                    return null;
+                  }} />
+                  <Legend />
+                  <Bar dataKey="Usage" stackId="a">
+                    {playerUsageData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.team === game.homeTeam
+                            ? homeTeamColor
+                            : entry.team === game.awayTeam
+                            ? awayTeamColor
+                            : "#8884d8"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="Rushing" stackId="a" fill="#4CAF50" />
+                  <Bar dataKey="Passing" stackId="a" fill="#2196F3" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Usage" 
+                    stroke="#8884d8" 
+                    dot={{
+                      stroke: '#8884d8',
+                      strokeWidth: 2,
+                      r: 4,
+                      fill: '#fff'
+                    }}
                   />
-                ))}
-              </Bar>
-              <Bar dataKey="Rushing" stackId="a" fill="#82ca9d" />
-              <Bar dataKey="Passing" stackId="a" fill="#ffc658" />
-              <Line type="monotone" dataKey="Usage" stroke="#8884d8" />
-            </ComposedChart>
-          </ResponsiveContainer>
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
     </div>
