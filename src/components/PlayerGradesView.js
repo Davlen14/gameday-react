@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   getGradeDescription, 
   getGradeColor, 
@@ -15,88 +15,92 @@ const PlayerGradesView = ({
   const [playerPositionFilter, setPlayerPositionFilter] = useState('all');
   const [displayedPlayers, setDisplayedPlayers] = useState([]);
 
-  // Debug logging
+  // Comprehensive position mapping for flexible filtering
+  const positionMappings = {
+    'all': () => true,
+    'offense': (pos) => ['QB', 'RB', 'WR', 'TE', 'OL'].some(p => pos.includes(p)),
+    'defense': (pos) => ['DL', 'DE', 'DT', 'LB', 'CB', 'S', 'DB'].some(p => pos.includes(p)),
+    'QB': (pos) => pos === 'QB',
+    'RB': (pos) => pos === 'RB',
+    'WR': (pos) => ['WR', 'TE'].includes(pos),
+    'DL': (pos) => ['DL', 'DE', 'DT'].some(p => pos.includes(p)),
+    'LB': (pos) => pos === 'LB',
+    'DB': (pos) => ['CB', 'S', 'DB'].some(p => pos.includes(p))
+  };
+
+  // Debug logging for player stats
   useEffect(() => {
-    console.log("PlayerGradesView Received playerStats:", playerStats);
-    console.log("Home Team:", homeTeam);
-    console.log("Away Team:", awayTeam);
+    console.group('Player Grades View - Data Inspection');
+    console.log('Raw Player Stats:', playerStats);
+    console.log('Home Team:', homeTeam);
+    console.log('Away Team:', awayTeam);
+    console.groupEnd();
   }, [playerStats, homeTeam, awayTeam]);
 
-  // Enhanced filtering logic
-  useEffect(() => {
+  // Memoized player processing to optimize performance
+  const processedPlayers = useMemo(() => {
     if (!playerStats || playerStats.length === 0) {
+      console.warn('No player stats available');
+      return [];
+    }
+
+    // Safe player data transformation
+    return playerStats.map(player => ({
+      ...player,
+      // Ensure all necessary fields have default values
+      id: player.id || crypto.randomUUID(), // Unique identifier
+      name: player.name || 'Unknown Player',
+      position: player.position || 'N/A',
+      team: player.team || 'Unknown Team',
+      grade: player.grade !== undefined ? player.grade : 50,
+      ppa: player.ppa !== undefined ? parseFloat(player.ppa) : 0,
+      stats: player.stats || {} // Ensure stats object exists
+    }));
+  }, [playerStats]);
+
+  // Filter and sort players based on position
+  useEffect(() => {
+    if (processedPlayers.length === 0) {
       setDisplayedPlayers([]);
       return;
     }
 
-    let filteredPlayers = [...playerStats];
+    const filterFn = positionMappings[playerPositionFilter] || positionMappings['all'];
+    
+    const filteredPlayers = processedPlayers
+      .filter(player => filterFn(player.position))
+      .sort((a, b) => (b.grade || 50) - (a.grade || 50));
 
-    // Position filtering logic
-    if (playerPositionFilter !== 'all') {
-      filteredPlayers = filteredPlayers.filter(player => {
-        const position = player.position || '';
-        
-        switch (playerPositionFilter) {
-          case 'offense':
-            return ['QB', 'RB', 'WR', 'TE', 'OL'].some(p => position.includes(p));
-          case 'defense':
-            return ['DL', 'DE', 'DT', 'LB', 'CB', 'S', 'DB'].some(p => position.includes(p));
-          case 'QB':
-            return position === 'QB';
-          case 'RB':
-            return position === 'RB';
-          case 'WR':
-            return ['WR', 'TE'].includes(position);
-          case 'DL':
-            return ['DL', 'DE', 'DT'].some(p => position.includes(p));
-          case 'LB':
-            return position === 'LB';
-          case 'DB':
-            return ['CB', 'S', 'DB'].some(p => position.includes(p));
-          default:
-            return true;
-        }
-      });
-    }
+    console.log('Filtered Players:', filteredPlayers);
+    setDisplayedPlayers(filteredPlayers);
+  }, [processedPlayers, playerPositionFilter]);
 
-    // Sort by grade descending
-    const sortedPlayers = filteredPlayers.sort((a, b) => 
-      (b.grade || 0) - (a.grade || 0)
-    );
-
-    setDisplayedPlayers(sortedPlayers);
-  }, [playerStats, playerPositionFilter]);
-
-  // Render nothing if no players
+  // Render nothing if no players found
   if (!playerStats || playerStats.length === 0) {
     return (
       <div className="no-player-data">
         <p>No player statistics available for this game.</p>
-        <pre>{JSON.stringify(playerStats, null, 2)}</pre>
+        <details>
+          <summary>Debug Information</summary>
+          <pre>{JSON.stringify({ playerStats, homeTeam, awayTeam }, null, 2)}</pre>
+        </details>
       </div>
     );
   }
 
   return (
     <div className="player-grades-container">
+      {/* Position Filter Buttons */}
       <div className="position-filter-buttons">
-        {[
-          { key: 'all', label: 'All Positions' },
-          { key: 'offense', label: 'Offense' },
-          { key: 'defense', label: 'Defense' },
-          { key: 'QB', label: 'QB' },
-          { key: 'RB', label: 'RB' },
-          { key: 'WR', label: 'WR/TE' },
-          { key: 'DL', label: 'DL' },
-          { key: 'LB', label: 'LB' },
-          { key: 'DB', label: 'DB' }
-        ].map(({ key, label }) => (
+        {Object.keys(positionMappings).map(key => (
           <button 
             key={key}
             className={`position-button ${playerPositionFilter === key ? 'active' : ''}`}
             onClick={() => setPlayerPositionFilter(key)}
           >
-            {label}
+            {key === 'all' ? 'All Positions' : 
+             key === 'offense' ? 'Offense' : 
+             key === 'defense' ? 'Defense' : key}
           </button>
         ))}
       </div>
@@ -117,23 +121,30 @@ const PlayerGradesView = ({
             </tr>
           </thead>
           <tbody>
-            {displayedPlayers.map((player, index) => (
+            {displayedPlayers.map((player) => (
               <tr 
-                key={`${player.id || index}-${player.name}`}
+                key={`${player.id}-${player.name}`}
                 className={player.team === homeTeam ? 'home-team-row' : 'away-team-row'}
               >
+                {/* Grade Cell */}
                 <td 
                   className="grade-cell"
                   style={{ 
-                    backgroundColor: getGradeColor(player.grade || 50),
-                    color: (player.grade || 50) >= 60 ? 'white' : 'black'
+                    backgroundColor: getGradeColor(player.grade),
+                    color: player.grade >= 60 ? 'white' : 'black'
                   }}
                 >
-                  <div className="grade-value">{player.grade || 'N/A'}</div>
-                  <div className="grade-text">{getGradeDescription(player.grade || 50)}</div>
+                  <div className="grade-value">{player.grade.toFixed(0)}</div>
+                  <div className="grade-text">{getGradeDescription(player.grade)}</div>
                 </td>
-                <td>{player.name || 'Unknown Player'}</td>
-                <td>{player.position || 'N/A'}</td>
+                
+                {/* Player Name */}
+                <td>{player.name}</td>
+                
+                {/* Position */}
+                <td>{player.position}</td>
+                
+                {/* Team */}
                 <td>
                   <div className="team-cell">
                     <img 
@@ -141,12 +152,16 @@ const PlayerGradesView = ({
                       alt={player.team} 
                       className="team-logo-tiny" 
                     />
-                    <span>{player.team || 'N/A'}</span>
+                    <span>{player.team}</span>
                   </div>
                 </td>
+                
+                {/* Key Stats */}
                 <td className="key-stats-cell">
-                  {renderPlayerKeyStat(player) || 'No stats'}
+                  {renderPlayerKeyStat(player) || 'No stats available'}
                 </td>
+                
+                {/* PPA */}
                 <td className="ppa-cell">
                   {player.ppa !== undefined ? player.ppa.toFixed(2) : 'N/A'}
                 </td>
@@ -162,8 +177,31 @@ const PlayerGradesView = ({
         )}
       </div>
       
+      {/* Grading Scale Explainer */}
       <div className="grading-scale-explainer">
-        {/* Existing grading scale code remains the same */}
+        <h4>Player Grading Scale</h4>
+        <div className="grade-scale-container">
+          {[
+            { range: "90-100", description: "Elite", color: "#2ecc71" },
+            { range: "80-89", description: "Excellent", color: "#27ae60" },
+            { range: "70-79", description: "Very Good", color: "#3498db" },
+            { range: "60-69", description: "Above Average", color: "#2980b9" },
+            { range: "50-59", description: "Average", color: "#f1c40f" },
+            { range: "40-49", description: "Below Average", color: "#e67e22" },
+            { range: "30-39", description: "Poor", color: "#e74c3c" },
+            { range: "0-29", description: "Very Poor", color: "#c0392b" }
+          ].map(({ range, description, color }) => (
+            <div key={range} className="grade-scale-item">
+              <div 
+                className="grade-scale-color" 
+                style={{ backgroundColor: color }}
+              />
+              <div className="grade-scale-text">
+                {range}: {description}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
