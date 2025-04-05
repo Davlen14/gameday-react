@@ -209,10 +209,11 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         // 1. Fetch team game stats
         let teamGameStats = null;
         try {
-          teamGameStats = await teamsService.getTeamGameStats({ 
-            gameId: gameData.id, 
-            year: year
-          });
+            teamGameStats = await teamsService.getTeamGameStats({ 
+                gameId: gameData.id, 
+                year: year,
+                week: gameData.week // pass the correct week
+              });
           console.log('Team game stats response:', teamGameStats);
         } catch (err) {
           console.error('Error fetching team game stats:', err);
@@ -315,14 +316,14 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
         // 5. Fetch player stats for this game
         let playersData = [];
         try {
-          // Try to fetch player data for each category and team separately
-          const passingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "passing");
-          const rushingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "rushing");
-          const receivingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", homeTeam, "receiving");
+          // Fetch player data for each category and team using gameData.week
+          const passingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", homeTeam, "passing");
+          const rushingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", homeTeam, "rushing");
+          const receivingPlayersHome = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", homeTeam, "receiving");
           
-          const passingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "passing");
-          const rushingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "rushing");
-          const receivingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, null, "regular", awayTeam, "receiving");
+          const passingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", awayTeam, "passing");
+          const rushingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", awayTeam, "rushing");
+          const receivingPlayersAway = await teamsService.getPlayerGameStats(gameData.id, year, gameData.week, "regular", awayTeam, "receiving");
           
           // Combine all valid player data responses
           if (Array.isArray(passingPlayersHome)) playersData = playersData.concat(passingPlayersHome);
