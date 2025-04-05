@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { 
   Award, 
-  Run, // Changed from Running to Run
+  Footprints, // Changed to Footprints for running icon
   PlayIcon, 
   TrendingUpIcon 
 } from 'lucide-react';
@@ -225,7 +225,7 @@ const TopPerformers = ({
             className={`top-performers-tab ${activeCategory === 'rushing' ? 'active' : ''}`}
             onClick={() => setActiveCategory('rushing')}
           >
-            <Run size={18} /> Rushing
+            <Footprints size={18} /> Rushing
           </button>
           <button
             className={`top-performers-tab ${activeCategory === 'receiving' ? 'active' : ''}`}
