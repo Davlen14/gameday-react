@@ -640,6 +640,8 @@ const TeamAnalyticsDetail = () => {
         topPerformersRushing={topPerformersRushing}
         topPerformersReceiving={topPerformersReceiving}
         getTeamAbbreviation={getTeamAbbreviation}
+        getTeamLogo={getTeamLogo}
+        getTeamColor={getTeamColor}
       />
 
       {/* Advanced Box Score Section */}

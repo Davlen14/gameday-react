@@ -8,23 +8,10 @@ const TopPerformers = ({
   topPerformersRushing,
   topPerformersReceiving,
   getTeamAbbreviation,
+  getTeamColor,
+  getTeamLogo,
 }) => {
-  // Get team logos from parent component
-  const getTeamLogo = (teamName) => {
-    // This function should exist in the parent component
-    const team = window.teamsList?.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return team && team.logos ? team.logos[0] : "/photos/default_team.png";
-  };
 
-  // Get team colors
-  const getTeamColor = (teamName) => {
-    const team = window.teamsList?.find(
-      (t) => t.school.toLowerCase() === teamName.toLowerCase()
-    );
-    return team && team.color ? team.color : "#888888";
-  };
 
   // Utility function to extract top performers
   const extractTopPerformers = (category, statTypes) => {
