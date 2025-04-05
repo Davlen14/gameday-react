@@ -74,26 +74,27 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
     return statItem ? statItem.stat : '-';
   };
   
-  // Helper function to find team stats in API response
   const findTeamStats = (teamName, teamGameStats) => {
     if (!teamGameStats || teamGameStats.length === 0) {
       console.log('No team game stats available');
       return null;
     }
     
-    // Find the game data in the array 
-    const gameData = teamGameStats[0];
-    if (!gameData || !gameData.teams) {
-      console.log('No teams data found in game stats');
-      return null;
+    // Iterate over all game stats items and try a flexible match
+    for (const game of teamGameStats) {
+      if (game.teams && game.teams.length > 0) {
+        const teamData = game.teams.find(team =>
+          team.team.toLowerCase() === teamName.toLowerCase() ||
+          team.team.toLowerCase().includes(teamName.toLowerCase()) ||
+          teamName.toLowerCase().includes(team.team.toLowerCase())
+        );
+        if (teamData) {
+          return teamData;
+        }
+      }
     }
-    
-    console.log('Looking for team:', teamName);
-    console.log('Available teams:', gameData.teams.map(t => t.team));
-    
-    // Find team data matching this team name
-    return gameData.teams.find(team => 
-      team.team.toLowerCase() === teamName.toLowerCase());
+    console.log(`No matching stats found for: ${teamName}`);
+    return null;
   };
   
   // Helper function to create mock data when API data is not available
