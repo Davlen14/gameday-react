@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as teamsService from "../services/teamsService";
-import '../styles/GameStats.css';
+import "..styles/GameStats.css"; // Adjust the path as necessary
 
 // Tooltip component
 const Tooltip = ({ text, children }) => {

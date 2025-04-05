@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaFootballBall, FaChartLine } from 'react-icons/fa';
 import { GiAmericanFootballHelmet } from 'react-icons/gi';
-import '..styles/FieldHeatmap.css'; // Adjust the path as necessary
+import "../styles/FieldHeatmap.css"; // Adjust the path as necessary"
 
 const FieldHeatmap = ({ 
   plays, 

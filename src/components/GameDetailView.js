@@ -10,7 +10,7 @@ import PlayByPlayTimeline from "./PlayByPlayTimeline";
 import GameStats from "./NewGameStats";
 import FieldHeatmap from "./FieldHeatmap";
 import DriveVisualizer from "./DriveVisualizer";
-import '../styles/GameDetailView.css'; // Adjust the path as necessary
+import "../styles/GameDetailView.css"; // Adjust the path as necessary
 
 const GameDetailView = () => {
   const { gameId } = useParams();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaChartLine, FaChartBar, FaExchangeAlt } from 'react-icons/fa';
-import '../styles/NewGameStats.css'; // Adjust the path as necessar
+import "../styles/NewGameStats.css"; // Adjust the path as necessary
 
 const NewGameStats = ({ 
   game, 

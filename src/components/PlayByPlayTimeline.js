@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaFootballBall, FaChartLine, FaFlag } from 'react-icons/fa';
 import { GiWhistle } from 'react-icons/gi';
-import '../styles/PlayByPlayTimeline.css'; // Adjust the path as necessary
+import "../styles/PlayByPlayTimeline.css"; // Adjust the path as necessary
 
 const PlayByPlayTimeline = ({ 
   plays, 
