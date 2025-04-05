@@ -67,13 +67,17 @@ export const getGameMedia = async (year = 2024, query) => {
 export const getTeamGameStats = async (params = {}) => {
   const endpoint = "/games/teams";
   try {
+    // Modify the parameters to match the API requirements
+    const apiParams = {
+      year: params.year || 2024,
+      week: params.week || 1,
+      team: params.team  // You'll need to pass the team name
+    };
+    
     // Log detailed parameters for debugging
-    console.log('Fetching team game stats with params:', {
-      gameId: params.gameId,
-      year: params.year
-    });
-
-    const response = await fetchData(endpoint, params);
+    console.log('Fetching team game stats with params:', apiParams);
+    
+    const response = await fetchData(endpoint, apiParams);
     
     // Additional logging to verify response
     console.log('Team game stats response:', response);
@@ -83,7 +87,7 @@ export const getTeamGameStats = async (params = {}) => {
       console.warn('No team game stats found');
       return null;
     }
-
+    
     return response;
   } catch (error) {
     // Comprehensive error logging
@@ -92,7 +96,7 @@ export const getTeamGameStats = async (params = {}) => {
       status: error.response?.status,
       data: error.response?.data
     });
-
+    
     // Return null instead of empty array to trigger mock data creation
     return null;
   }

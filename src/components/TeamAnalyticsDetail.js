@@ -171,36 +171,68 @@ const TeamAnalyticsDetail = () => {
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
         
-      // 6. Fetch team game stats
-      try {
-        // Using a more direct approach with parameters matching API documentation
-        const gameStatsData = await teamsService.getTeamGameStats({ 
-          gameId: gameId, 
-          year: 2024, 
-        });
-        console.log('Team game stats response:', gameStatsData);
+   // 6. Fetch team game stats
+try {
+  // First get the teams from the game to help with API call
+  const homeTeamName = foundGame.homeTeam;
+  const awayTeamName = foundGame.awayTeam;
+  
+  // More specific query - include one of the team names to narrow results
+  // Using "team" parameter as shown in your API example
+  const gameStatsData = await teamsService.getTeamGameStats({ 
+    year: 2024,
+    team: homeTeamName
+  });
+  
+  console.log('Team game stats response:', gameStatsData);
+  
+  if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
+    console.log(`Received stats for ${gameStatsData.length} games with ${homeTeamName}`);
+    
+    // Try to find an exact game ID match first
+    const exactMatch = gameStatsData.find(g => g.id === parseInt(gameId, 10));
+    if (exactMatch) {
+      console.log('Found exact match for game ID:', gameId);
+    } else {
+      // If no exact ID match, look for games with both home and away teams
+      const teamMatch = gameStatsData.find(g => {
+        if (!g.teams) return false;
         
-        // Validate that we received data in the expected format
-        if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
-          console.log(`Received stats for ${gameStatsData.length} games`);
-          
-          // Check if any of the games have the ID we're looking for
-          const matchingGame = gameStatsData.find(g => g.id === parseInt(gameId, 10));
-          if (matchingGame) {
-            console.log('Found exact match for game ID:', gameId);
-          } else {
-            console.log('No exact game ID match, will search by team names');
-          }
-          
-          setTeamGameStats(gameStatsData);
-        } else {
-          console.warn('Received empty or invalid team stats data');
-          setTeamGameStats(null);
-        }
-      } catch (error) {
-        console.error('Error fetching team stats:', error);
-        // Continue execution for other data even if team stats fail
+        const teamsInGame = g.teams.map(t => t.team.toLowerCase());
+        return teamsInGame.some(t => homeTeamName.toLowerCase().includes(t) || 
+                                     t.includes(homeTeamName.toLowerCase())) &&
+               teamsInGame.some(t => awayTeamName.toLowerCase().includes(t) || 
+                                     t.includes(awayTeamName.toLowerCase()));
+      });
+      
+      if (teamMatch) {
+        console.log('Found game with both teams:', teamMatch.id);
+      } else {
+        console.log('No exact match, will search by individual team names');
       }
+    }
+    
+    setTeamGameStats(gameStatsData);
+  } else {
+    // If first attempt failed, try with away team name
+    console.log('No results with home team, trying away team...');
+    const altGameStatsData = await teamsService.getTeamGameStats({
+      year: 2024,
+      team: awayTeamName
+    });
+    
+    if (altGameStatsData && Array.isArray(altGameStatsData) && altGameStatsData.length > 0) {
+      console.log(`Got ${altGameStatsData.length} games with ${awayTeamName}`);
+      setTeamGameStats(altGameStatsData);
+    } else {
+      console.warn('Could not find team stats for either team');
+      setTeamGameStats(null);
+    }
+  }
+} catch (error) {
+  console.error('Error fetching team stats:', error);
+  // Continue execution for other data even if team stats fail
+}
 
         // 7. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
