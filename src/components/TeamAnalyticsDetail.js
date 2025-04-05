@@ -180,13 +180,30 @@ const TeamAnalyticsDetail = () => {
             year: 2024, 
           });
           console.log('Team game stats response:', gameStatsData);
-          setTeamGameStats(gameStatsData);
+          
+          // Validate that we received data in the expected format
+          if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
+            console.log(`Received stats for ${gameStatsData.length} games`);
+            
+            // Check if any of the games have the ID we're looking for
+            const matchingGame = gameStatsData.find(g => g.id === parseInt(gameId, 10));
+            if (matchingGame) {
+              console.log('Found exact match for game ID:', gameId);
+            } else {
+              console.log('No exact game ID match, will search by team names');
+            }
+            
+            setTeamGameStats(gameStatsData);
+          } else {
+            console.warn('Received empty or invalid team stats data');
+            setTeamGameStats(null);
+          }
         } catch (error) {
           console.error('Error fetching team stats:', error);
           // Continue execution for other data even if team stats fail
         }
 
-        // 6. Fetch Top Performers for Passing, Rushing, Receiving
+        // 7. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
           gameId,
           2024,
@@ -289,19 +306,38 @@ const TeamAnalyticsDetail = () => {
       return null;
     }
     
-    // Find the game data - it should be the first item in the array since we filtered by gameId
-    const gameData = teamGameStats[0];
-    if (!gameData || !gameData.teams) {
-      console.log('No teams data found in game stats');
-      return null;
+    console.log('Looking for team:', teamName);
+    
+    // Look through all games in the response
+    for (const gameData of teamGameStats) {
+      if (!gameData.teams) continue;
+      
+      // Check if this game has the team we're looking for
+      console.log('Checking game ID:', gameData.id, 'for teams:', gameData.teams.map(t => t.team));
+      
+      // Find team data matching this team name with more flexible matching
+      const teamData = gameData.teams.find(team => {
+        // Try exact match first
+        if (team.team.toLowerCase() === teamName.toLowerCase()) return true;
+        
+        // Try partial match (in case API abbreviates or formats differently)
+        if (teamName.toLowerCase().includes(team.team.toLowerCase()) || 
+            team.team.toLowerCase().includes(teamName.toLowerCase())) {
+          console.log(`Found partial match: ${team.team} for ${teamName}`);
+          return true;
+        }
+        
+        return false;
+      });
+      
+      if (teamData) {
+        console.log(`Found stats for ${teamName}:`, teamData);
+        return teamData;
+      }
     }
     
-    console.log('Looking for team:', teamName);
-    console.log('Available teams:', gameData.teams.map(t => t.team));
-    
-    // Find team data matching this team name
-    return gameData.teams.find(team => 
-      team.team.toLowerCase() === teamName.toLowerCase());
+    console.log(`No stats found for ${teamName} in any game data`);
+    return null;
   };
   
   // Get home and away team data - if no data from API, create mock data
@@ -336,7 +372,10 @@ const TeamAnalyticsDetail = () => {
       return '-';
     }
     const statItem = teamData.stats.find(stat => stat.category === category);
-    console.log(`Stat for ${category}:`, statItem);
+    // Only log when we find the stat to reduce console clutter
+    if (statItem) {
+      console.log(`Found stat for ${category}:`, statItem.stat);
+    }
     return statItem ? statItem.stat : '-';
   };
   
