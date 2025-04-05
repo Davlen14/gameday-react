@@ -73,7 +73,8 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           : [];
         
         console.log(`Processed ${processedPlayers.length} players`);
-        setPlayerStats(processedPlayers);
+        console.log('Processed Players:', processedPlayers);
+setPlayerStats(processedPlayers);
 
         const homeStats = processedPlayers.length > 0
           ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
