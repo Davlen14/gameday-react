@@ -7,6 +7,7 @@ import {
   processDriveData,
   getKeyPlayers,
   calculateEmptyTeamStats,
+  enhancePlayerStats
 } from "../utils/statsCalculators";
 
 const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
@@ -50,19 +51,89 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           }
         }
 
-        // Process players from advanced stats
-        const processedPlayers = processPlayerStats(advancedBoxScoreData);
+        // Fetch traditional player stats
+        let traditionalPlayerStats = [];
+        try {
+          console.log(`Fetching traditional player stats for game ${gameData.id}`);
+          
+          // Get game player data for both teams
+          const homePlayerStats = await teamsService.getGamePlayers(gameData.id, gameData.season || 2024, homeTeam);
+          const awayPlayerStats = await teamsService.getGamePlayers(gameData.id, gameData.season || 2024, awayTeam);
+          
+          // Combine all player stats
+          traditionalPlayerStats = [...homePlayerStats, ...awayPlayerStats];
+          
+          console.log(`Fetched ${traditionalPlayerStats.length} traditional player stats`);
+          
+          // If we don't have enough data, try fetching by category
+          if (traditionalPlayerStats.length < 10) {
+            console.log("Not enough player data, fetching by category...");
+            
+            // Fetch player stats by category
+            const passingStats = await teamsService.getPlayerGameStats(
+              gameData.id, gameData.season || 2024, null, "regular", null, "passing"
+            );
+            
+            const rushingStats = await teamsService.getPlayerGameStats(
+              gameData.id, gameData.season || 2024, null, "regular", null, "rushing"
+            );
+            
+            const receivingStats = await teamsService.getPlayerGameStats(
+              gameData.id, gameData.season || 2024, null, "regular", null, "receiving"
+            );
+            
+            const defensiveStats = await teamsService.getPlayerGameStats(
+              gameData.id, gameData.season || 2024, null, "regular", null, "defensive"
+            );
+            
+            // Merge all categories
+            traditionalPlayerStats = [
+              ...traditionalPlayerStats,
+              ...passingStats, 
+              ...rushingStats, 
+              ...receivingStats,
+              ...defensiveStats
+            ];
+            
+            // Remove duplicates based on player name
+            const uniquePlayers = {};
+            traditionalPlayerStats.forEach(player => {
+              if (player.name) {
+                if (!uniquePlayers[player.name]) {
+                  uniquePlayers[player.name] = player;
+                } else {
+                  // Merge stats from multiple entries for the same player
+                  if (player.passing) uniquePlayers[player.name].passing = player.passing;
+                  if (player.rushing) uniquePlayers[player.name].rushing = player.rushing;
+                  if (player.receiving) uniquePlayers[player.name].receiving = player.receiving;
+                  if (player.defensive) uniquePlayers[player.name].defensive = player.defensive;
+                }
+              }
+            });
+            
+            traditionalPlayerStats = Object.values(uniquePlayers);
+            console.log(`Fetched ${traditionalPlayerStats.length} unique players through category queries`);
+          }
+          
+        } catch (statsError) {
+          console.error("Error fetching traditional player stats:", statsError);
+          // Continue with just the advanced stats
+          traditionalPlayerStats = [];
+        }
+
+        // Process players by combining advanced and traditional stats
+        const enhancedPlayers = enhancePlayerStats(advancedBoxScoreData, traditionalPlayerStats);
         
-        console.log(`Processed ${processedPlayers.length} players`);
-        setPlayerStats(processedPlayers);
+        console.log(`Processed ${enhancedPlayers.length} enhanced players`);
+        setPlayerStats(enhancedPlayers);
 
         // Calculate team stats
-        const homeStats = processedPlayers.length > 0
-          ? calculateTeamStats(processedPlayers, homeTeam, gameData, homeTeam)
+        const homeStats = enhancedPlayers.length > 0
+          ? calculateTeamStats(enhancedPlayers, homeTeam, gameData, homeTeam)
           : calculateEmptyTeamStats();
           
-        const awayStats = processedPlayers.length > 0
-          ? calculateTeamStats(processedPlayers, awayTeam, gameData, homeTeam)
+        const awayStats = enhancedPlayers.length > 0
+          ? calculateTeamStats(enhancedPlayers, awayTeam, gameData, homeTeam)
           : calculateEmptyTeamStats();
 
         // Fetch drive data
@@ -80,11 +151,11 @@ const useAdvancedStatistics = ({ gameData, homeTeam, awayTeam }) => {
           gameInfo: gameData,
           homeTeamStats: homeStats,
           awayTeamStats: awayStats,
-          players: processedPlayers,
+          players: enhancedPlayers,
           drives: processedDrives,
           keyPlayers: {
-            [homeTeam]: getKeyPlayers(processedPlayers, homeTeam),
-            [awayTeam]: getKeyPlayers(processedPlayers, awayTeam),
+            [homeTeam]: getKeyPlayers(enhancedPlayers, homeTeam),
+            [awayTeam]: getKeyPlayers(enhancedPlayers, awayTeam),
           },
           rawAdvancedData: advancedBoxScoreData, // Include raw data for reference
         };

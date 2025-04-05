@@ -824,61 +824,281 @@ export const getGradeColor = (grade) => {
 };
 
 export const renderPlayerKeyStat = (player) => {
-  if (!player.stats) return "No stats";
+  if (!player) return "No stats";
+  if (!player.stats) {
+    // If player has PPA data but no traditional stats, use that instead
+    if (player.ppa !== undefined) {
+      return `PPA: ${player.ppa.toFixed(2)}`;
+    }
+    return "No stats";
+  }
+
+  // Helper to safely access nested properties
+  const getNestedValue = (obj, path, defaultValue = 0) => {
+    try {
+      return path.split('.').reduce((o, p) => (o ? o[p] : undefined), obj) || defaultValue;
+    } catch (e) {
+      return defaultValue;
+    }
+  };
+
+  // Comprehensive handling based on position
   switch (player.position) {
-    case "QB":
-      if (player.stats.passing) {
-        let completions, attempts, yards, touchdowns;
-        if (player.stats.passing.c_att || player.stats.passing["c/att"]) {
-          const parts = (player.stats.passing.c_att || player.stats.passing["c/att"])
-            .toString()
-            .split("/");
-          completions = parts[0];
-          attempts = parts[1];
-        } else {
-          completions = player.stats.passing.completions || 0;
-          attempts = player.stats.passing.attempts || 0;
-        }
-        yards = player.stats.passing.yards || player.stats.passing.yds || 0;
-        touchdowns = player.stats.passing.touchdowns || player.stats.passing.td || 0;
-        return `${completions}/${attempts}, ${yards} yds, ${touchdowns} TD`;
+    case "QB": {
+      // Check various possible structures for passing stats
+      const passYards = 
+        getNestedValue(player.stats, 'passing.yards') ||
+        getNestedValue(player.stats, 'passing.yds') ||
+        getNestedValue(player.stats, 'netpassingyards') || 
+        0;
+        
+      const completions = 
+        getNestedValue(player.stats, 'passing.completions') || 
+        (player.stats.passing?.c_att ? player.stats.passing.c_att.toString().split('/')[0] : 0);
+        
+      const attempts = 
+        getNestedValue(player.stats, 'passing.attempts') || 
+        (player.stats.passing?.c_att ? player.stats.passing.c_att.toString().split('/')[1] : 0);
+        
+      const touchdowns = 
+        getNestedValue(player.stats, 'passing.touchdowns') || 
+        getNestedValue(player.stats, 'passing.td') || 
+        0;
+        
+      const interceptions = 
+        getNestedValue(player.stats, 'passing.interceptions') || 
+        getNestedValue(player.stats, 'passing.int') || 
+        0;
+      
+      // Use calculated values from PPA data if we don't have regular stats
+      if (!passYards && !completions && !attempts && player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
       }
-      return "No passing stats";
-    case "RB":
-      if (player.stats.rushing) {
-        return `${player.stats.rushing.attempts || 0} car, ${player.stats.rushing.yards || 0} yds, ${player.stats.rushing.touchdowns || 0} TD`;
+      
+      return `${completions}/${attempts}, ${passYards} yds, ${touchdowns} TD, ${interceptions} INT`;
+    }
+    
+    case "RB": {
+      const rushYards = 
+        getNestedValue(player.stats, 'rushing.yards') ||
+        getNestedValue(player.stats, 'rushing.yds') ||
+        getNestedValue(player.stats, 'rushingyards') ||
+        0;
+        
+      const rushAttempts = 
+        getNestedValue(player.stats, 'rushing.attempts') ||
+        getNestedValue(player.stats, 'rushing.att') ||
+        0;
+        
+      const rushTouchdowns = 
+        getNestedValue(player.stats, 'rushing.touchdowns') ||
+        getNestedValue(player.stats, 'rushing.td') ||
+        0;
+      
+      // Use calculated values from PPA data if we don't have regular stats
+      if (!rushYards && !rushAttempts && player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
       }
-      return "No rushing stats";
+      
+      return `${rushAttempts} car, ${rushYards} yds, ${rushTouchdowns} TD`;
+    }
+    
     case "WR":
-    case "TE":
-      if (player.stats.receiving) {
-        return `${player.stats.receiving.receptions || 0} rec, ${player.stats.receiving.yards || 0} yds, ${player.stats.receiving.touchdowns || 0} TD`;
+    case "TE": {
+      const recYards = 
+        getNestedValue(player.stats, 'receiving.yards') ||
+        getNestedValue(player.stats, 'receiving.yds') ||
+        getNestedValue(player.stats, 'receivingyards') ||
+        0;
+        
+      const receptions = 
+        getNestedValue(player.stats, 'receiving.receptions') ||
+        getNestedValue(player.stats, 'receiving.rec') ||
+        0;
+        
+      const recTouchdowns = 
+        getNestedValue(player.stats, 'receiving.touchdowns') ||
+        getNestedValue(player.stats, 'receiving.td') ||
+        0;
+      
+      // Use calculated values from PPA data if we don't have regular stats
+      if (!recYards && !receptions && player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
       }
-      return "No receiving stats";
+      
+      return `${receptions} rec, ${recYards} yds, ${recTouchdowns} TD`;
+    }
+    
     case "DL":
     case "DE":
     case "DT":
-    case "LB":
-      if (player.stats.defense) {
-        return `${player.stats.defense.tackles || 0} tkl, ${player.stats.defense.tacklesForLoss || 0} TFL, ${player.stats.defense.sacks || 0} sacks`;
+    case "LB": {
+      const tackles = 
+        getNestedValue(player.stats, 'defense.tackles') ||
+        getNestedValue(player.stats, 'defense.tkl') ||
+        0;
+        
+      const tacklesForLoss = 
+        getNestedValue(player.stats, 'defense.tacklesForLoss') ||
+        getNestedValue(player.stats, 'defense.tfl') ||
+        0;
+        
+      const sacks = 
+        getNestedValue(player.stats, 'defense.sacks') ||
+        0;
+      
+      // Use calculated values from PPA data if we don't have regular stats
+      if (!tackles && !tacklesForLoss && !sacks && player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
       }
-      return "No defensive stats";
+      
+      return `${tackles} tkl, ${tacklesForLoss} TFL, ${sacks} sacks`;
+    }
+    
     case "CB":
     case "S":
-    case "DB":
-      if (player.stats.defense) {
-        return `${player.stats.defense.tackles || 0} tkl, ${player.stats.defense.interceptions || 0} INT, ${player.stats.defense.passesDefended || 0} PD`;
+    case "DB": {
+      const tackles = 
+        getNestedValue(player.stats, 'defense.tackles') ||
+        getNestedValue(player.stats, 'defense.tkl') ||
+        0;
+        
+      const interceptions = 
+        getNestedValue(player.stats, 'defense.interceptions') ||
+        getNestedValue(player.stats, 'defense.int') ||
+        0;
+        
+      const passesDefended = 
+        getNestedValue(player.stats, 'defense.passesDefended') ||
+        getNestedValue(player.stats, 'defense.pd') ||
+        0;
+      
+      // Use calculated values from PPA data if we don't have regular stats
+      if (!tackles && !interceptions && !passesDefended && player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
       }
-      return "No defensive stats";
-    default:
+      
+      return `${tackles} tkl, ${interceptions} INT, ${passesDefended} PD`;
+    }
+    
+    default: {
+      // For other positions or if we can't determine stats, just show PPA
+      if (player.ppa !== undefined) {
+        return `PPA: ${player.ppa.toFixed(2)}`;
+      }
       return "Stats N/A";
+    }
   }
 };
 
 // ----------------------------------------------------------------------------
-// Processing Player Data
+// Enhanced Player Stats Processing
 // ----------------------------------------------------------------------------
 
+/**
+ * Combines advanced PPA data with traditional game stats
+ * This provides the most comprehensive player stats by merging the two data sources
+ */
+export const enhancePlayerStats = (advancedData, traditionalStats) => {
+  // Process advanced data first to get PPA information
+  const ppaPlayers = processPlayerStats(advancedData);
+  
+  console.log(`Enhancing ${ppaPlayers.length} PPA players with traditional stats`);
+  console.log('Traditional stats available:', traditionalStats?.length || 0);
+  
+  if (!traditionalStats || !Array.isArray(traditionalStats) || traditionalStats.length === 0) {
+    console.log('No traditional stats available, returning PPA-only players');
+    return ppaPlayers; // Return just PPA data if traditional stats aren't available
+  }
+  
+  // Merge PPA players with matching traditional stats
+  return ppaPlayers.map(ppaPlayer => {
+    // Try to find matching traditional stats player
+    const traditionalPlayer = traditionalStats.find(tPlayer => {
+      // Match by exact name
+      if (tPlayer.name?.toLowerCase() === ppaPlayer.name?.toLowerCase()) {
+        return true;
+      }
+      
+      // Try to match by first/last name
+      if (tPlayer.firstName && tPlayer.lastName && ppaPlayer.name) {
+        const ppaNameLower = ppaPlayer.name.toLowerCase();
+        const firstNameLower = tPlayer.firstName.toLowerCase();
+        const lastNameLower = tPlayer.lastName.toLowerCase();
+        
+        if (ppaNameLower.includes(firstNameLower) && ppaNameLower.includes(lastNameLower)) {
+          return true;
+        }
+      }
+      
+      // Try to match by athlete ID if available
+      if (tPlayer.id && ppaPlayer.id && tPlayer.id === ppaPlayer.id) {
+        return true;
+      }
+      
+      return false;
+    });
+    
+    if (!traditionalPlayer) {
+      return ppaPlayer; // No match found, return just PPA data
+    }
+    
+    console.log(`Found matching traditional stats for ${ppaPlayer.name}`);
+    
+    // Process traditional stats into the right format
+    const processedStats = {};
+    
+    // Handle passing stats
+    if (traditionalPlayer.passing) {
+      processedStats.passing = {
+        attempts: traditionalPlayer.passing.attempts || 0,
+        completions: traditionalPlayer.passing.completions || 0,
+        yards: traditionalPlayer.passing.yards || traditionalPlayer.passing.yds || 0,
+        touchdowns: traditionalPlayer.passing.touchdowns || traditionalPlayer.passing.td || 0,
+        interceptions: traditionalPlayer.passing.interceptions || traditionalPlayer.passing.int || 0
+      };
+    }
+    
+    // Handle rushing stats
+    if (traditionalPlayer.rushing) {
+      processedStats.rushing = {
+        attempts: traditionalPlayer.rushing.attempts || traditionalPlayer.rushing.att || 0,
+        yards: traditionalPlayer.rushing.yards || traditionalPlayer.rushing.yds || 0,
+        touchdowns: traditionalPlayer.rushing.touchdowns || traditionalPlayer.rushing.td || 0
+      };
+    }
+    
+    // Handle receiving stats
+    if (traditionalPlayer.receiving) {
+      processedStats.receiving = {
+        receptions: traditionalPlayer.receiving.receptions || traditionalPlayer.receiving.rec || 0,
+        yards: traditionalPlayer.receiving.yards || traditionalPlayer.receiving.yds || 0,
+        touchdowns: traditionalPlayer.receiving.touchdowns || traditionalPlayer.receiving.td || 0,
+        targets: traditionalPlayer.receiving.targets || 0
+      };
+    }
+    
+    // Handle defensive stats
+    if (traditionalPlayer.defensive) {
+      processedStats.defense = {
+        tackles: traditionalPlayer.defensive.tackles || traditionalPlayer.defensive.tot || 0,
+        sacks: traditionalPlayer.defensive.sacks || 0,
+        tacklesForLoss: traditionalPlayer.defensive.tfl || traditionalPlayer.defensive.tacklesForLoss || 0,
+        interceptions: traditionalPlayer.defensive.int || traditionalPlayer.defensive.interceptions || 0,
+        passesDefended: traditionalPlayer.defensive.pd || traditionalPlayer.defensive.passesDefended || 0
+      };
+    }
+    
+    // Merge the player objects, preferring traditional stats when available
+    return {
+      ...ppaPlayer,
+      stats: {
+        ...ppaPlayer.stats,
+        ...processedStats
+      }
+    };
+  });
+};
 export const processPlayerStats = (advancedStatsData) => {
   console.log("Processing player stats from advanced data:", {
     dataAvailable: !!advancedStatsData,
