@@ -7,7 +7,7 @@ import { FaFootballBall, FaFlag, FaChartLine, FaChevronRight, FaChevronLeft, FaP
 import { IoMdFootball } from "react-icons/io";
 import { GiWhistle, GiAmericanFootballHelmet } from "react-icons/gi";
 import PlayByPlayTimeline from "./PlayByPlayTimeline";
-import GameStats from "./GameStats";
+import GameStats from "./NewGameStats";
 import FieldHeatmap from "./FieldHeatmap";
 import DriveVisualizer from "./DriveVisualizer";
 import '../styles/GameDetailView.css'; // Adjust the path as necessary
