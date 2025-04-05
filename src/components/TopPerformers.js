@@ -1,287 +1,223 @@
-import React, { useState } from 'react';
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  Legend, 
-  CartesianGrid 
-} from 'recharts';
-import { 
-  Award, 
-  Footprints, // Changed to Footprints for running icon
-  PlayIcon, 
-  TrendingUpIcon 
-} from 'lucide-react';
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-// Styled CSS as a template literal
-const styles = `
-.top-performers-modern {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 25px;
-  margin: 20px 0;
-}
-
-.top-performers-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 15px;
-}
-
-.top-performers-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-}
-
-.top-performers-tabs {
-  display: flex;
-  gap: 10px;
-}
-
-.top-performers-tab {
-  padding: 8px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 500;
-}
-
-.top-performers-tab.active {
-  background-color: #007bff;
-  color: white;
-}
-
-.top-performers-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-}
-
-.top-performers-chart {
-  height: 350px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.top-performers-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.top-performer-card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: transform 0.3s ease;
-}
-
-.top-performer-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.top-performer-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.top-performer-name {
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-}
-
-.top-performer-stats {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  color: #666;
-}
-
-.top-performer-rank {
-  font-size: 32px;
-  font-weight: 700;
-  color: #007bff;
-  opacity: 0.7;
-}
-
-@media (max-width: 768px) {
-  .top-performers-content {
-    grid-template-columns: 1fr;
-  }
-}
-`;
-
-const TopPerformers = ({ 
-  passingPlayers, 
-  rushingPlayers, 
-  receivingPlayers, 
-  homeTeam, 
-  awayTeam 
+const TopPerformers = ({
+  game,
+  topPerformersPassing,
+  topPerformersRushing,
+  topPerformersReceiving,
+  getTeamAbbreviation,
 }) => {
-  const [activeCategory, setActiveCategory] = useState('passing');
-
-  // Prepare data for charts
-  const prepareChartData = (players) => {
-    return players
-      ?.filter(player => player.team === homeTeam || player.team === awayTeam)
-      .slice(0, 4)
-      .map(player => ({
-        name: player.name,
-        yards: player.statYards,
-        touchdowns: player.statTouchdowns,
-        team: player.team
-      })) || [];
+  // Utility function to extract top performers
+  const extractTopPerformers = (category, statTypes) => {
+    if (!category) return [];
+    
+    return statTypes.flatMap(statType => {
+      const matchingStat = category.types.find(type => type.name === statType);
+      return matchingStat ? matchingStat.athletes.slice(0, 2) : [];
+    });
   };
 
-  // Get current category players
-  const getCurrentPlayers = () => {
-    switch (activeCategory) {
-      case 'passing': return passingPlayers;
-      case 'rushing': return rushingPlayers;
-      case 'receiving': return receivingPlayers;
-      default: return passingPlayers;
-    }
+  // Process top performers for each team
+  const processTeamPerformers = (side) => {
+    const passingCategory = topPerformersPassing?.[0]?.teams.find(
+      t => t.team.toLowerCase() === side.team.toLowerCase()
+    )?.categories.find(cat => cat.name === "passing");
+
+    const rushingCategory = topPerformersRushing?.[0]?.teams.find(
+      t => t.team.toLowerCase() === side.team.toLowerCase()
+    )?.categories.find(cat => cat.name === "rushing");
+
+    const receivingCategory = topPerformersReceiving?.[0]?.teams.find(
+      t => t.team.toLowerCase() === side.team.toLowerCase()
+    )?.categories.find(cat => cat.name === "receiving");
+
+    return {
+      passingPerformers: extractTopPerformers(passingCategory, ["YDS", "C/ATT", "QBR", "TD"]),
+      rushingPerformers: extractTopPerformers(rushingCategory, ["YDS", "CAR", "TD"]),
+      receivingPerformers: extractTopPerformers(receivingCategory, ["YDS", "REC", "TD"])
+    };
   };
 
-  // Render top performers list
-  const renderTopPerformersList = () => {
-    const players = getCurrentPlayers()
-      ?.filter(player => player.team === homeTeam || player.team === awayTeam)
-      .slice(0, 3) || [];
-
-    return players.map((player, index) => (
-      <div key={player.name} className="top-performer-card">
-        <div className="top-performer-info">
-          <span className="top-performer-name">{player.name}</span>
-          <div className="top-performer-stats">
-            {activeCategory === 'passing' && (
-              <>
-                <span>YDS: {player.statYards}</span>
-                <span>TD: {player.statTouchdowns}</span>
-                <span>INT: {player.statInterceptions}</span>
-              </>
-            )}
-            {activeCategory === 'rushing' && (
-              <>
-                <span>CAR: {player.statCarries}</span>
-                <span>YDS: {player.statYards}</span>
-                <span>TD: {player.statTouchdowns}</span>
-              </>
-            )}
-            {activeCategory === 'receiving' && (
-              <>
-                <span>REC: {player.statReceptions}</span>
-                <span>YDS: {player.statYards}</span>
-                <span>TD: {player.statTouchdowns}</span>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="top-performer-rank">
-          {index + 1}
-          <TrendingUpIcon size={20} color="#007bff" />
-        </div>
-      </div>
-    ));
+  // Prepare chart data
+  const prepareChartData = (performers, statType) => {
+    return performers.map(athlete => ({
+      name: athlete.name,
+      [statType]: parseFloat(athlete.stat)
+    }));
   };
 
   return (
-    <div className="top-performers-modern">
-      {/* Inject styles */}
-      <style>{styles}</style>
+    <div className="top-performers" style={styles.container}>
+      <h2 style={styles.heading}>Top Performers</h2>
+      <div className="top-performers__container" style={styles.teamContainer}>
+        {[
+          { team: game.homeTeam, label: getTeamAbbreviation(game.homeTeam) },
+          { team: game.awayTeam, label: getTeamAbbreviation(game.awayTeam) },
+        ].map((side) => {
+          const { 
+            passingPerformers, 
+            rushingPerformers, 
+            receivingPerformers 
+          } = processTeamPerformers(side);
 
-      <div className="top-performers-header">
-        <div className="top-performers-title">
-          <Award size={30} /> Top Performers
-        </div>
-        <div className="top-performers-tabs">
-          <button
-            className={`top-performers-tab ${activeCategory === 'passing' ? 'active' : ''}`}
-            onClick={() => setActiveCategory('passing')}
-          >
-            <PlayIcon size={18} /> Passing
-          </button>
-          <button
-            className={`top-performers-tab ${activeCategory === 'rushing' ? 'active' : ''}`}
-            onClick={() => setActiveCategory('rushing')}
-          >
-            <Footprints size={18} /> Rushing
-          </button>
-          <button
-            className={`top-performers-tab ${activeCategory === 'receiving' ? 'active' : ''}`}
-            onClick={() => setActiveCategory('receiving')}
-          >
-            <Award size={18} /> Receiving
-          </button>
-        </div>
-      </div>
-
-      <div className="top-performers-content">
-        <div className="top-performers-chart">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={prepareChartData(getCurrentPlayers())}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45} 
-                textAnchor="end" 
-                interval={0} 
-                height={70} 
-              />
-              <YAxis />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #ddd',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Bar 
-                dataKey="yards" 
-                name={`${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Yards`} 
-                fill="#007bff" 
-                radius={[10, 10, 0, 0]}
-              />
-              <Bar 
-                dataKey="touchdowns" 
-                name="Touchdowns" 
-                fill="#28a745" 
-                radius={[10, 10, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="top-performers-list">
-          {renderTopPerformersList()}
-        </div>
+          return (
+            <div key={side.team} className="top-performers__team" style={styles.teamSection}>
+              <h3 style={styles.teamHeading}>{side.label}</h3>
+              
+              {/* Passing Performance Chart */}
+              <div className="top-performers__passing" style={styles.categorySection}>
+                <h4 style={styles.categoryHeading}>Passing Performance</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart 
+                    data={prepareChartData(passingPerformers, 'yards')}
+                    layout="vertical"
+                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
+                  >
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" />
+                    <Tooltip />
+                    <Bar dataKey="yards" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+                
+                {/* Detailed Passing Stats */}
+                <div style={styles.statsDetails}>
+                  {passingPerformers.map(athlete => (
+                    <div key={athlete.id} style={styles.statItem}>
+                      <span style={styles.athleteName}>{athlete.name}</span>
+                      <span style={styles.athleteStat}>({athlete.stat})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Rushing Performance Chart */}
+              <div className="top-performers__rushing" style={styles.categorySection}>
+                <h4 style={styles.categoryHeading}>Rushing Performance</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart 
+                    data={prepareChartData(rushingPerformers, 'yards')}
+                    layout="vertical"
+                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
+                  >
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" />
+                    <Tooltip />
+                    <Bar dataKey="yards" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+                
+                {/* Detailed Rushing Stats */}
+                <div style={styles.statsDetails}>
+                  {rushingPerformers.map(athlete => (
+                    <div key={athlete.id} style={styles.statItem}>
+                      <span style={styles.athleteName}>{athlete.name}</span>
+                      <span style={styles.athleteStat}>({athlete.stat})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Receiving Performance Chart */}
+              <div className="top-performers__receiving" style={styles.categorySection}>
+                <h4 style={styles.categoryHeading}>Receiving Performance</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart 
+                    data={prepareChartData(receivingPerformers, 'yards')}
+                    layout="vertical"
+                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
+                  >
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" />
+                    <Tooltip />
+                    <Bar dataKey="yards" fill="#ffc658" />
+                  </BarChart>
+                </ResponsiveContainer>
+                
+                {/* Detailed Receiving Stats */}
+                <div style={styles.statsDetails}>
+                  {receivingPerformers.map(athlete => (
+                    <div key={athlete.id} style={styles.statItem}>
+                      <span style={styles.athleteName}>{athlete.name}</span>
+                      <span style={styles.athleteStat}>({athlete.stat})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
+};
+
+// Inline styles object
+const styles = {
+  container: {
+    width: '96%',
+    margin: '2% auto',
+    background: '#f4f4f4',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+  },
+  heading: {
+    textAlign: 'center',
+    marginBottom: '20px',
+    color: '#333',
+    fontSize: '1.8em',
+    fontWeight: '600',
+  },
+  teamContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '2%',
+  },
+  teamSection: {
+    flex: '1 1 48%',
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '10px',
+    padding: '15px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+  },
+  teamHeading: {
+    textAlign: 'center',
+    marginBottom: '15px',
+    color: '#444',
+    fontSize: '1.4em',
+  },
+  categorySection: {
+    marginBottom: '20px',
+  },
+  categoryHeading: {
+    textAlign: 'left',
+    marginBottom: '10px',
+    color: '#666',
+    fontSize: '1.2em',
+    borderBottom: '2px solid #f0f0f0',
+    paddingBottom: '5px',
+  },
+  statsDetails: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: '10px',
+  },
+  statItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  athleteName: {
+    fontWeight: '600',
+    color: '#333',
+  },
+  athleteStat: {
+    color: '#666',
+    fontSize: '0.9em',
+  },
 };
 
 export default TopPerformers;
