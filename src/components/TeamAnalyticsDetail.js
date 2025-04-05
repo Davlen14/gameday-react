@@ -171,68 +171,59 @@ const TeamAnalyticsDetail = () => {
         const advancedData = await teamsService.getAdvancedBoxScore(gameId);
         setAdvancedStats(advancedData);
         
-   // 6. Fetch team game stats
-try {
-  // First get the teams from the game to help with API call
-  const homeTeamName = foundGame.homeTeam;
-  const awayTeamName = foundGame.awayTeam;
-  
-  // More specific query - include one of the team names to narrow results
-  // Using "team" parameter as shown in your API example
-  const gameStatsData = await teamsService.getTeamGameStats({ 
-    year: 2024,
-    team: homeTeamName
-  });
-  
-  console.log('Team game stats response:', gameStatsData);
-  
-  if (gameStatsData && Array.isArray(gameStatsData) && gameStatsData.length > 0) {
-    console.log(`Received stats for ${gameStatsData.length} games with ${homeTeamName}`);
-    
-    // Try to find an exact game ID match first
-    const exactMatch = gameStatsData.find(g => g.id === parseInt(gameId, 10));
-    if (exactMatch) {
-      console.log('Found exact match for game ID:', gameId);
-    } else {
-      // If no exact ID match, look for games with both home and away teams
-      const teamMatch = gameStatsData.find(g => {
-        if (!g.teams) return false;
-        
-        const teamsInGame = g.teams.map(t => t.team.toLowerCase());
-        return teamsInGame.some(t => homeTeamName.toLowerCase().includes(t) || 
-                                     t.includes(homeTeamName.toLowerCase())) &&
-               teamsInGame.some(t => awayTeamName.toLowerCase().includes(t) || 
-                                     t.includes(awayTeamName.toLowerCase()));
-      });
-      
-      if (teamMatch) {
-        console.log('Found game with both teams:', teamMatch.id);
-      } else {
-        console.log('No exact match, will search by individual team names');
-      }
-    }
-    
-    setTeamGameStats(gameStatsData);
-  } else {
-    // If first attempt failed, try with away team name
-    console.log('No results with home team, trying away team...');
-    const altGameStatsData = await teamsService.getTeamGameStats({
-      year: 2024,
-      team: awayTeamName
-    });
-    
-    if (altGameStatsData && Array.isArray(altGameStatsData) && altGameStatsData.length > 0) {
-      console.log(`Got ${altGameStatsData.length} games with ${awayTeamName}`);
-      setTeamGameStats(altGameStatsData);
-    } else {
-      console.warn('Could not find team stats for either team');
-      setTeamGameStats(null);
-    }
-  }
-} catch (error) {
-  console.error('Error fetching team stats:', error);
-  // Continue execution for other data even if team stats fail
-}
+        // 6. Fetch team game stats
+        try {
+          const gameStatsData = await teamsService.getTeamGameStats({
+            year: 2024
+          });
+          
+          console.log('Team game stats response:', gameStatsData);
+          
+          if (gameStatsData && Array.isArray(gameStatsData)) {
+            // Filter only the game we're looking for by gameId
+            const gameData = gameStatsData.find(g => g.id === parseInt(gameId, 10));
+            
+            if (gameData) {
+              console.log('Found exact match for game ID:', gameId);
+              setTeamGameStats([gameData]); // Set only the matching game data
+            } else {
+              console.log('Game ID not found in response, searching by teams...');
+              
+              // Try to find by team names
+              const possibleMatches = gameStatsData.filter(g => {
+                if (!g.teams) return false;
+                
+                // Check if both home and away teams are in this game
+                const teamsInGame = g.teams.map(t => t.team.toLowerCase());
+                const homeTeamMatches = teamsInGame.some(t => 
+                  foundGame.homeTeam.toLowerCase().includes(t) || 
+                  t.includes(foundGame.homeTeam.toLowerCase())
+                );
+                
+                const awayTeamMatches = teamsInGame.some(t => 
+                  foundGame.awayTeam.toLowerCase().includes(t) || 
+                  t.includes(foundGame.awayTeam.toLowerCase())
+                );
+                
+                return homeTeamMatches && awayTeamMatches;
+              });
+              
+              if (possibleMatches.length > 0) {
+                console.log('Found possible matches by team names:', possibleMatches.length);
+                setTeamGameStats(possibleMatches);
+              } else {
+                console.log('No matches found by team names either');
+                setTeamGameStats(null);
+              }
+            }
+          } else {
+            console.warn('Invalid data format from getTeamGameStats');
+            setTeamGameStats(null);
+          }
+        } catch (error) {
+          console.error('Error fetching team stats:', error);
+          // Continue execution for other data even if team stats fail
+        }
 
         // 7. Fetch Top Performers for Passing, Rushing, Receiving
         const passingPlayers = await teamsService.getPlayerGameStats(
@@ -330,50 +321,79 @@ try {
       position: player.position,
     })) || [];
 
-// Find home and away team data from the API response
-const findTeamStats = (teamName) => {
-  if (!teamGameStats || teamGameStats.length === 0) {
-    console.log('No team game stats available');
-    return null;
-  }
-  
-  console.log('Looking for team:', teamName);
-  
-  // Look through all games in the response
-  for (const gameData of teamGameStats) {
-    if (!gameData.teams) continue;
+  // Find the correct game data from the teamGameStats array
+  const findCorrectGameData = () => {
+    if (!teamGameStats || teamGameStats.length === 0) {
+      return null;
+    }
     
-    // Check if this game has the team we're looking for
-    console.log('Checking game ID:', gameData.id, 'for teams:', gameData.teams.map(t => t.team));
+    // Try to find exact match by gameId first
+    const exactMatch = teamGameStats.find(g => g.id === parseInt(gameId, 10));
+    if (exactMatch) {
+      return exactMatch;
+    }
     
-    // Find team data matching this team name with more flexible matching
-    const teamData = gameData.teams.find(team => {
-      // Try exact match first
-      if (team.team.toLowerCase() === teamName.toLowerCase()) return true;
+    // If no exact match, try to find by matching both teams
+    for (const gameData of teamGameStats) {
+      if (!gameData.teams || gameData.teams.length < 2) continue;
       
-      // Try partial match (in case API abbreviates or formats differently)
-      if (teamName.toLowerCase().includes(team.team.toLowerCase()) || 
-          team.team.toLowerCase().includes(teamName.toLowerCase())) {
-        console.log(`Found partial match: ${team.team} for ${teamName}`);
-        return true;
+      const teamNames = gameData.teams.map(t => t.team.toLowerCase());
+      const homeTeamMatch = teamNames.some(name => 
+        name === game.homeTeam.toLowerCase() || 
+        game.homeTeam.toLowerCase().includes(name) || 
+        name.includes(game.homeTeam.toLowerCase())
+      );
+      
+      const awayTeamMatch = teamNames.some(name => 
+        name === game.awayTeam.toLowerCase() || 
+        game.awayTeam.toLowerCase().includes(name) || 
+        name.includes(game.awayTeam.toLowerCase())
+      );
+      
+      if (homeTeamMatch && awayTeamMatch) {
+        return gameData;
       }
-      
-      return false;
-    });
+    }
+    
+    return null;
+  };
+
+  // Get the correct game data
+  const correctGameData = findCorrectGameData();
+  
+  // Find home and away team data from the correct game
+  const findTeamData = (teamName, isHome) => {
+    if (!correctGameData || !correctGameData.teams) {
+      console.log(`No game data found for ${teamName}`);
+      return null;
+    }
+    
+    // Try to match by team name first
+    let teamData = correctGameData.teams.find(team => 
+      team.team.toLowerCase() === teamName.toLowerCase() ||
+      teamName.toLowerCase().includes(team.team.toLowerCase()) || 
+      team.team.toLowerCase().includes(teamName.toLowerCase())
+    );
+    
+    // If not found, try matching by homeAway property
+    if (!teamData) {
+      teamData = correctGameData.teams.find(team => 
+        team.homeAway === (isHome ? "home" : "away")
+      );
+    }
     
     if (teamData) {
       console.log(`Found stats for ${teamName}:`, teamData);
       return teamData;
     }
-  }
+    
+    console.log(`No stats found for ${teamName}`);
+    return null;
+  };
   
-  console.log(`No stats found for ${teamName} in any game data`);
-  return null;
-};
-  
-  // Get home and away team data - if no data from API, create mock data
-  const homeTeamData = findTeamStats(game.homeTeam) || createMockTeamData(game.homeTeam, true);
-  const awayTeamData = findTeamStats(game.awayTeam) || createMockTeamData(game.awayTeam, false);
+  // Get home and away team data
+  const homeTeamData = findTeamData(game.homeTeam, true);
+  const awayTeamData = findTeamData(game.awayTeam, false);
   
   // Helper function to create mock data when API data is not available
   function createMockTeamData(teamName, isHome) {
@@ -381,32 +401,31 @@ const findTeamStats = (teamName) => {
     return {
       team: teamName,
       stats: [
-        { category: "totalYards", stat: isHome ? "600" : "145" },
-        { category: "netPassingYards", stat: isHome ? "266" : "103" },
-        { category: "rushingYards", stat: isHome ? "334" : "42" },
-        { category: "yardsPerRushAttempt", stat: isHome ? "7.1" : "1.6" },
-        { category: "firstDowns", stat: isHome ? "25" : "10" },
-        { category: "thirdDownEff", stat: isHome ? "8-13" : "3-18" },
-        { category: "fourthDownEff", stat: isHome ? "1-1" : "2-3" },
-        { category: "totalPenaltiesYards", stat: isHome ? "7-59" : "4-40" },
-        { category: "fumblesLost", stat: isHome ? "1" : "0" },
-        { category: "interceptions", stat: isHome ? "0" : "2" },
-        { category: "possessionTime", stat: isHome ? "30:35" : "29:25" }
+        { category: "totalYards", stat: isHome ? "450" : "350" },
+        { category: "netPassingYards", stat: isHome ? "270" : "220" },
+        { category: "rushingYards", stat: isHome ? "180" : "130" },
+        { category: "yardsPerRushAttempt", stat: isHome ? "5.2" : "4.1" },
+        { category: "firstDowns", stat: isHome ? "22" : "18" },
+        { category: "thirdDownEff", stat: isHome ? "7-12" : "5-13" },
+        { category: "fourthDownEff", stat: isHome ? "1-1" : "1-2" },
+        { category: "totalPenaltiesYards", stat: isHome ? "5-45" : "6-50" },
+        { category: "fumblesLost", stat: isHome ? "0" : "1" },
+        { category: "interceptions", stat: isHome ? "1" : "0" },
+        { category: "possessionTime", stat: isHome ? "32:15" : "27:45" }
       ]
     };
   }
   
+  // Use actual data or fall back to mock data if needed
+  const finalHomeTeamData = homeTeamData || createMockTeamData(game.homeTeam, true);
+  const finalAwayTeamData = awayTeamData || createMockTeamData(game.awayTeam, false);
+  
   // Helper function to get a specific stat value from a team's stats array
   const getStatValue = (teamData, category) => {
     if (!teamData || !teamData.stats) {
-      console.log(`No stats found for category: ${category}`);
       return '-';
     }
     const statItem = teamData.stats.find(stat => stat.category === category);
-    // Only log when we find the stat to reduce console clutter
-    if (statItem) {
-      console.log(`Found stat for ${category}:`, statItem.stat);
-    }
     return statItem ? statItem.stat : '-';
   };
   
@@ -414,61 +433,61 @@ const findTeamStats = (teamName) => {
   const teamStats = [
     {
       label: "Total yards",
-      homeValue: getStatValue(homeTeamData, "totalYards") || "-",
-      awayValue: getStatValue(awayTeamData, "totalYards") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "totalYards"),
+      awayValue: getStatValue(finalAwayTeamData, "totalYards")
     },
     {
       label: "Passing yards",
-      homeValue: getStatValue(homeTeamData, "netPassingYards") || "-",
-      awayValue: getStatValue(awayTeamData, "netPassingYards") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "netPassingYards"),
+      awayValue: getStatValue(finalAwayTeamData, "netPassingYards")
     },
     {
       label: "Rushing yards",
-      homeValue: getStatValue(homeTeamData, "rushingYards") || "-",
-      awayValue: getStatValue(awayTeamData, "rushingYards") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "rushingYards"),
+      awayValue: getStatValue(finalAwayTeamData, "rushingYards")
     },
     {
       label: "Yards per rush",
-      homeValue: getStatValue(homeTeamData, "yardsPerRushAttempt") || "-",
-      awayValue: getStatValue(awayTeamData, "yardsPerRushAttempt") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "yardsPerRushAttempt"),
+      awayValue: getStatValue(finalAwayTeamData, "yardsPerRushAttempt")
     },
     {
       label: "First downs",
-      homeValue: getStatValue(homeTeamData, "firstDowns") || "-",
-      awayValue: getStatValue(awayTeamData, "firstDowns") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "firstDowns"),
+      awayValue: getStatValue(finalAwayTeamData, "firstDowns")
     },
     {
       label: "3rd down efficiency",
-      homeValue: getStatValue(homeTeamData, "thirdDownEff") || "-",
-      awayValue: getStatValue(awayTeamData, "thirdDownEff") || "-",
+      homeValue: getStatValue(finalHomeTeamData, "thirdDownEff"),
+      awayValue: getStatValue(finalAwayTeamData, "thirdDownEff"),
       isText: true
     },
     {
       label: "4th down efficiency",
-      homeValue: getStatValue(homeTeamData, "fourthDownEff") || "-",
-      awayValue: getStatValue(awayTeamData, "fourthDownEff") || "-",
+      homeValue: getStatValue(finalHomeTeamData, "fourthDownEff"),
+      awayValue: getStatValue(finalAwayTeamData, "fourthDownEff"),
       isText: true
     },
     {
       label: "Penalties (Yards)",
-      homeValue: getStatValue(homeTeamData, "totalPenaltiesYards") || "-",
-      awayValue: getStatValue(awayTeamData, "totalPenaltiesYards") || "-",
+      homeValue: getStatValue(finalHomeTeamData, "totalPenaltiesYards"),
+      awayValue: getStatValue(finalAwayTeamData, "totalPenaltiesYards"),
       isText: true
     },
     {
       label: "Fumbles lost",
-      homeValue: getStatValue(homeTeamData, "fumblesLost") || "-",
-      awayValue: getStatValue(awayTeamData, "fumblesLost") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "fumblesLost"),
+      awayValue: getStatValue(finalAwayTeamData, "fumblesLost")
     },
     {
       label: "Interceptions",
-      homeValue: getStatValue(homeTeamData, "interceptions") || "-",
-      awayValue: getStatValue(awayTeamData, "interceptions") || "-"
+      homeValue: getStatValue(finalHomeTeamData, "interceptions"),
+      awayValue: getStatValue(finalAwayTeamData, "interceptions")
     },
     {
       label: "Time of possession",
-      homeValue: getStatValue(homeTeamData, "possessionTime") || "-",
-      awayValue: getStatValue(awayTeamData, "possessionTime") || "-",
+      homeValue: getStatValue(finalHomeTeamData, "possessionTime"),
+      awayValue: getStatValue(finalAwayTeamData, "possessionTime"),
       isText: true
     }
   ];
