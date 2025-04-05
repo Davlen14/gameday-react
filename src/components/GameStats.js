@@ -148,51 +148,81 @@ const GameStats = ({ gameData, homeTeam, awayTeam, homeTeamColor, awayTeamColor,
   
   // Extract team-specific information from player data
   const processPlayerData = (playersData, homeTeam, awayTeam) => {
-    const result = {
-      [homeTeam]: [],
-      [awayTeam]: []
-    };
-    
+    const result = { [homeTeam]: [], [awayTeam]: [] };
+  
     if (!playersData || playersData.length === 0) {
       return result;
     }
-    
-    playersData.forEach(player => {
-      if (!player) return;
-      
-      // Create player object with key stats
-      const playerObj = {
-        name: player.name || `${player.firstName || ''} ${player.lastName || ''}`.trim() || 'Unknown Player',
-        position: player.position || 'N/A',
-        team: player.team,
-        stats: {}
-      };
-      
-      // Add available stats
-      if (player.passing) {
-        playerObj.stats.passing = player.passing;
-      }
-      
-      if (player.rushing) {
-        playerObj.stats.rushing = player.rushing;
-      }
-      
-      if (player.receiving) {
-        playerObj.stats.receiving = player.receiving;
-      }
-      
-      if (player.defense) {
-        playerObj.stats.defense = player.defense;
-      }
-      
-      // Determine which team the player belongs to
-      if (player.team && player.team.toLowerCase() === homeTeam.toLowerCase()) {
-        result[homeTeam].push(playerObj);
-      } else if (player.team && player.team.toLowerCase() === awayTeam.toLowerCase()) {
-        result[awayTeam].push(playerObj);
+  
+    playersData.forEach(item => {
+      // Check if the item contains nested 'categories' indicating the new structure
+      if (item.categories) {
+        // Assume item.team holds the team name for this set of stats
+        const teamName = item.team?.toLowerCase() || "";
+        // Iterate across each category (ex: passing, rushing, etc.)
+        item.categories.forEach(category => {
+          // For each type (like YDS, TD, etc.) inside a category
+          category.types.forEach(type => {
+            type.athletes.forEach(athlete => {
+              // Try to find an existing athlete in the result for this team
+              const normalizedTeam = teamName;
+              let targetTeam = "";
+              if (normalizedTeam === homeTeam.toLowerCase()) {
+                targetTeam = homeTeam;
+              } else if (normalizedTeam === awayTeam.toLowerCase()) {
+                targetTeam = awayTeam;
+              } else {
+                // If team does not match, skip
+                return;
+              }
+              let playerObj = result[targetTeam].find(p => p.name === athlete.name);
+              if (!playerObj) {
+                playerObj = {
+                  name: athlete.name,
+                  position: athlete.position || "N/A",
+                  team: targetTeam,
+                  stats: {}
+                };
+                result[targetTeam].push(playerObj);
+              }
+              // Add or merge the stat for this category.
+              // For clarity, we use the category name (ex: "passing") as a key,
+              // and use the type name (like "YDS", "TD", "C/ATT") as a subkey.
+              if (!playerObj.stats[category.name]) {
+                playerObj.stats[category.name] = {};
+              }
+              playerObj.stats[category.name][type.name] = athlete.stat;
+            });
+          });
+        });
+      } else {
+        // Fallback for flat structure
+        const playerObj = {
+          name: item.name || `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Unknown Player',
+          position: item.position || 'N/A',
+          team: item.team,
+          stats: {}
+        };
+        if (item.passing) {
+          playerObj.stats.passing = item.passing;
+        }
+        if (item.rushing) {
+          playerObj.stats.rushing = item.rushing;
+        }
+        if (item.receiving) {
+          playerObj.stats.receiving = item.receiving;
+        }
+        if (item.defense) {
+          playerObj.stats.defense = item.defense;
+        }
+        if (playerObj.team && playerObj.team.toLowerCase() === homeTeam.toLowerCase()) {
+          result[homeTeam].push(playerObj);
+        } else if (playerObj.team && playerObj.team.toLowerCase() === awayTeam.toLowerCase()) {
+          result[awayTeam].push(playerObj);
+        }
       }
     });
-    
+  
     return result;
   };
   
