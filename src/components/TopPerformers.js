@@ -1,6 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { FaTrophy, FaMedal, FaRunning, FaFootballBall, FaHandsReceiving } from 'react-icons/fa';
+import { FaTrophy, FaMedal, FaRunning, FaRegHandPointUp, FaFootballBall, FaHandsReceiving } from 'react-icons/fa';
 
 const TopPerformers = ({
   game,
@@ -104,7 +104,7 @@ const TopPerformers = ({
     // Set icon based on category
     if (category === "passing") Icon = FaFootballBall;
     else if (category === "rushing") Icon = FaRunning;
-    else Icon = FaHandsReceiving;
+    else Icon = FaRegHandPointUp;
     
     // Determine medal based on yards
     if (yards >= 150) {
@@ -331,7 +331,7 @@ const TopPerformers = ({
               {/* Receiving Performance Section */}
               <div className="top-performers__receiving" style={styles.categorySection}>
                 <div style={styles.categoryHeader}>
-                  <FaHandsReceiving style={{ color: teamColor, marginRight: '8px' }} />
+                  <FaRegHandPointUp style={{ color: teamColor, marginRight: '8px' }} />
                   <h4 style={styles.categoryHeading}>Receiving Leaders</h4>
                 </div>
                 
