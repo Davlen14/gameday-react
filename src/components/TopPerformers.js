@@ -1,5 +1,6 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { FaTrophy, FaMedal, FaRunning, FaFootballBall, FaHandsReceiving } from 'react-icons/fa';
 
 const TopPerformers = ({
   game,
@@ -8,14 +9,52 @@ const TopPerformers = ({
   topPerformersReceiving,
   getTeamAbbreviation,
 }) => {
+  // Get team logos from parent component
+  const getTeamLogo = (teamName) => {
+    // This function should exist in the parent component
+    const team = window.teamsList?.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.logos ? team.logos[0] : "/photos/default_team.png";
+  };
+
+  // Get team colors
+  const getTeamColor = (teamName) => {
+    const team = window.teamsList?.find(
+      (t) => t.school.toLowerCase() === teamName.toLowerCase()
+    );
+    return team && team.color ? team.color : "#888888";
+  };
+
   // Utility function to extract top performers
   const extractTopPerformers = (category, statTypes) => {
     if (!category) return [];
     
-    return statTypes.flatMap(statType => {
+    // Get all athletes with their stats
+    const allAthletes = statTypes.flatMap(statType => {
       const matchingStat = category.types.find(type => type.name === statType);
-      return matchingStat ? matchingStat.athletes.slice(0, 2) : [];
+      return matchingStat ? matchingStat.athletes.map(athlete => ({
+        ...athlete,
+        statType,
+        statValue: parseFloat(athlete.stat)
+      })) : [];
     });
+    
+    // First get top 2 performers by yards
+    const topPerformers = allAthletes
+      .filter(athlete => athlete.statType === "YDS")
+      .sort((a, b) => b.statValue - a.statValue)
+      .slice(0, 2);
+    
+    // Then add any athletes with over 75 yards who aren't already included
+    const additionalPerformers = allAthletes
+      .filter(athlete => 
+        athlete.statType === "YDS" && 
+        athlete.statValue >= 75 && 
+        !topPerformers.some(p => p.id === athlete.id)
+      );
+    
+    return [...topPerformers, ...additionalPerformers];
   };
 
   // Process top performers for each team
@@ -42,14 +81,89 @@ const TopPerformers = ({
   // Prepare chart data
   const prepareChartData = (performers, statType) => {
     return performers.map(athlete => ({
-      name: athlete.name,
-      [statType]: parseFloat(athlete.stat)
+      name: athlete.name.split(' ').pop(), // Just use last name for chart clarity
+      fullName: athlete.name,
+      yards: parseFloat(athlete.stat),
+      id: athlete.id
     }));
+  };
+
+  // Dynamic color for performance
+  const getPerformanceColor = (value) => {
+    if (value >= 150) return "#0cce6b"; // Green for excellent
+    if (value >= 100) return "#7cbb00"; // Light green for very good
+    if (value >= 75) return "#ffaa00";  // Yellow/orange for good
+    if (value >= 50) return "#ff7700";  // Orange for average
+    return "#ff4e00";                   // Red-orange for below average
+  };
+
+  // Performance badge component
+  const PerformanceBadge = ({ yards, category }) => {
+    let Icon, bgColor, label;
+    
+    // Set icon based on category
+    if (category === "passing") Icon = FaFootballBall;
+    else if (category === "rushing") Icon = FaRunning;
+    else Icon = FaHandsReceiving;
+    
+    // Determine medal based on yards
+    if (yards >= 150) {
+      bgColor = "#FFD700"; // Gold
+      label = "Elite";
+    } else if (yards >= 100) {
+      bgColor = "#C0C0C0"; // Silver
+      label = "Star";
+    } else {
+      bgColor = "#CD7F32"; // Bronze
+      label = "Solid";
+    }
+    
+    return (
+      <div className="performance-badge" style={{
+        backgroundColor: bgColor,
+        padding: '4px 8px',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        fontSize: '0.75rem',
+        fontWeight: 'bold',
+        color: '#333',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+      }}>
+        <Icon style={{ fontSize: '0.9rem' }} />
+        <span>{label}</span>
+      </div>
+    );
+  };
+
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload, label, teamColor }) => {
+    if (active && payload && payload.length > 0) {
+      return (
+        <div style={{
+          backgroundColor: '#fff',
+          border: `2px solid ${teamColor || '#8884d8'}`,
+          padding: '10px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.15)'
+        }}>
+          <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{payload[0].payload.fullName}</p>
+          <p style={{ margin: '0', color: getPerformanceColor(payload[0].value) }}>
+            {payload[0].value} yards
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
     <div className="top-performers" style={styles.container}>
-      <h2 style={styles.heading}>Top Performers</h2>
+      <h2 style={styles.heading}>
+        <FaTrophy style={{ marginRight: '10px', color: '#FFD700' }} />
+        Top Performers
+      </h2>
       <div className="top-performers__container" style={styles.teamContainer}>
         {[
           { team: game.homeTeam, label: getTeamAbbreviation(game.homeTeam) },
@@ -61,89 +175,225 @@ const TopPerformers = ({
             receivingPerformers 
           } = processTeamPerformers(side);
 
+          const teamColor = getTeamColor(side.team);
+          const teamLogo = getTeamLogo(side.team);
+          
           return (
             <div key={side.team} className="top-performers__team" style={styles.teamSection}>
-              <h3 style={styles.teamHeading}>{side.label}</h3>
+              <div style={styles.teamHeader}>
+                <img 
+                  src={teamLogo} 
+                  alt={side.label} 
+                  style={styles.teamLogo} 
+                />
+                <h3 style={{
+                  ...styles.teamHeading,
+                  color: teamColor
+                }}>{side.label}</h3>
+              </div>
               
-              {/* Passing Performance Chart */}
+              {/* Passing Performance Section */}
               <div className="top-performers__passing" style={styles.categorySection}>
-                <h4 style={styles.categoryHeading}>Passing Performance</h4>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart 
-                    data={prepareChartData(passingPerformers, 'yards')}
-                    layout="vertical"
-                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
-                  >
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" />
-                    <Tooltip />
-                    <Bar dataKey="yards" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-                
-                {/* Detailed Passing Stats */}
-                <div style={styles.statsDetails}>
-                  {passingPerformers.map(athlete => (
-                    <div key={athlete.id} style={styles.statItem}>
-                      <span style={styles.athleteName}>{athlete.name}</span>
-                      <span style={styles.athleteStat}>({athlete.stat})</span>
-                    </div>
-                  ))}
+                <div style={styles.categoryHeader}>
+                  <FaFootballBall style={{ color: teamColor, marginRight: '8px' }} />
+                  <h4 style={styles.categoryHeading}>Passing Leaders</h4>
                 </div>
+                
+                {passingPerformers.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart 
+                        data={prepareChartData(passingPerformers)}
+                        layout="vertical"
+                        margin={{ left: 20, right: 30, top: 20, bottom: 10 }}
+                      >
+                        <XAxis 
+                          type="number" 
+                          label={{ value: 'Yards', position: 'insideBottom', offset: -8 }} 
+                        />
+                        <YAxis 
+                          dataKey="name" 
+                          type="category" 
+                          width={80}
+                          style={{ fontWeight: 'bold' }}
+                        />
+                        <Tooltip content={<CustomTooltip teamColor={teamColor} />} />
+                        <Bar 
+                          dataKey="yards" 
+                          barSize={20}
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {
+                            prepareChartData(passingPerformers).map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={getPerformanceColor(entry.yards)} 
+                              />
+                            ))
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    
+                    <div style={styles.statsDetails}>
+                      {passingPerformers.map(athlete => (
+                        <div key={athlete.id} style={styles.statItemDetailed}>
+                          <div style={styles.athleteNameContainer}>
+                            <span style={styles.athleteName}>{athlete.name}</span>
+                            <PerformanceBadge yards={parseFloat(athlete.stat)} category="passing" />
+                          </div>
+                          <div style={styles.athleteStatContainer}>
+                            <span style={{
+                              ...styles.athleteStat,
+                              color: getPerformanceColor(parseFloat(athlete.stat)),
+                              fontWeight: 'bold'
+                            }}>
+                              {athlete.stat} YDS
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={styles.noDataMessage}>No passing data available</div>
+                )}
               </div>
               
-              {/* Rushing Performance Chart */}
+              {/* Rushing Performance Section */}
               <div className="top-performers__rushing" style={styles.categorySection}>
-                <h4 style={styles.categoryHeading}>Rushing Performance</h4>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart 
-                    data={prepareChartData(rushingPerformers, 'yards')}
-                    layout="vertical"
-                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
-                  >
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" />
-                    <Tooltip />
-                    <Bar dataKey="yards" fill="#82ca9d" />
-                  </BarChart>
-                </ResponsiveContainer>
-                
-                {/* Detailed Rushing Stats */}
-                <div style={styles.statsDetails}>
-                  {rushingPerformers.map(athlete => (
-                    <div key={athlete.id} style={styles.statItem}>
-                      <span style={styles.athleteName}>{athlete.name}</span>
-                      <span style={styles.athleteStat}>({athlete.stat})</span>
-                    </div>
-                  ))}
+                <div style={styles.categoryHeader}>
+                  <FaRunning style={{ color: teamColor, marginRight: '8px' }} />
+                  <h4 style={styles.categoryHeading}>Rushing Leaders</h4>
                 </div>
+                
+                {rushingPerformers.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart 
+                        data={prepareChartData(rushingPerformers)}
+                        layout="vertical"
+                        margin={{ left: 20, right: 30, top: 20, bottom: 10 }}
+                      >
+                        <XAxis 
+                          type="number" 
+                          label={{ value: 'Yards', position: 'insideBottom', offset: -8 }} 
+                        />
+                        <YAxis 
+                          dataKey="name" 
+                          type="category" 
+                          width={80}
+                          style={{ fontWeight: 'bold' }}
+                        />
+                        <Tooltip content={<CustomTooltip teamColor={teamColor} />} />
+                        <Bar 
+                          dataKey="yards" 
+                          barSize={20}
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {
+                            prepareChartData(rushingPerformers).map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={getPerformanceColor(entry.yards)} 
+                              />
+                            ))
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    
+                    <div style={styles.statsDetails}>
+                      {rushingPerformers.map(athlete => (
+                        <div key={athlete.id} style={styles.statItemDetailed}>
+                          <div style={styles.athleteNameContainer}>
+                            <span style={styles.athleteName}>{athlete.name}</span>
+                            <PerformanceBadge yards={parseFloat(athlete.stat)} category="rushing" />
+                          </div>
+                          <div style={styles.athleteStatContainer}>
+                            <span style={{
+                              ...styles.athleteStat,
+                              color: getPerformanceColor(parseFloat(athlete.stat)),
+                              fontWeight: 'bold'
+                            }}>
+                              {athlete.stat} YDS
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={styles.noDataMessage}>No rushing data available</div>
+                )}
               </div>
               
-              {/* Receiving Performance Chart */}
+              {/* Receiving Performance Section */}
               <div className="top-performers__receiving" style={styles.categorySection}>
-                <h4 style={styles.categoryHeading}>Receiving Performance</h4>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart 
-                    data={prepareChartData(receivingPerformers, 'yards')}
-                    layout="vertical"
-                    margin={{ left: 20, right: 10, top: 10, bottom: 10 }}
-                  >
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" />
-                    <Tooltip />
-                    <Bar dataKey="yards" fill="#ffc658" />
-                  </BarChart>
-                </ResponsiveContainer>
-                
-                {/* Detailed Receiving Stats */}
-                <div style={styles.statsDetails}>
-                  {receivingPerformers.map(athlete => (
-                    <div key={athlete.id} style={styles.statItem}>
-                      <span style={styles.athleteName}>{athlete.name}</span>
-                      <span style={styles.athleteStat}>({athlete.stat})</span>
-                    </div>
-                  ))}
+                <div style={styles.categoryHeader}>
+                  <FaHandsReceiving style={{ color: teamColor, marginRight: '8px' }} />
+                  <h4 style={styles.categoryHeading}>Receiving Leaders</h4>
                 </div>
+                
+                {receivingPerformers.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart 
+                        data={prepareChartData(receivingPerformers)}
+                        layout="vertical"
+                        margin={{ left: 20, right: 30, top: 20, bottom: 10 }}
+                      >
+                        <XAxis 
+                          type="number" 
+                          label={{ value: 'Yards', position: 'insideBottom', offset: -8 }} 
+                        />
+                        <YAxis 
+                          dataKey="name" 
+                          type="category" 
+                          width={80}
+                          style={{ fontWeight: 'bold' }}
+                        />
+                        <Tooltip content={<CustomTooltip teamColor={teamColor} />} />
+                        <Bar 
+                          dataKey="yards" 
+                          barSize={20}
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {
+                            prepareChartData(receivingPerformers).map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={getPerformanceColor(entry.yards)} 
+                              />
+                            ))
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    
+                    <div style={styles.statsDetails}>
+                      {receivingPerformers.map(athlete => (
+                        <div key={athlete.id} style={styles.statItemDetailed}>
+                          <div style={styles.athleteNameContainer}>
+                            <span style={styles.athleteName}>{athlete.name}</span>
+                            <PerformanceBadge yards={parseFloat(athlete.stat)} category="receiving" />
+                          </div>
+                          <div style={styles.athleteStatContainer}>
+                            <span style={{
+                              ...styles.athleteStat,
+                              color: getPerformanceColor(parseFloat(athlete.stat)),
+                              fontWeight: 'bold'
+                            }}>
+                              {athlete.stat} YDS
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={styles.noDataMessage}>No receiving data available</div>
+                )}
               </div>
             </div>
           );
@@ -153,71 +403,123 @@ const TopPerformers = ({
   );
 };
 
-// Inline styles object
+// Enhanced styles object
 const styles = {
   container: {
     width: '96%',
     margin: '2% auto',
-    background: '#f4f4f4',
-    borderRadius: '12px',
-    padding: '20px',
-    boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+    background: '#fff',
+    borderRadius: '16px',
+    padding: '24px',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+    border: '1px solid #eaeaea',
   },
   heading: {
     textAlign: 'center',
-    marginBottom: '20px',
+    marginBottom: '24px',
     color: '#333',
-    fontSize: '1.8em',
-    fontWeight: '600',
+    fontSize: '2rem',
+    fontWeight: '700',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   teamContainer: {
     display: 'flex',
     flexWrap: 'wrap',
-    gap: '2%',
+    gap: '24px',
   },
   teamSection: {
     flex: '1 1 48%',
-    background: 'white',
-    border: '1px solid #e0e0e0',
-    borderRadius: '10px',
-    padding: '15px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    background: '#fcfcfc',
+    border: '1px solid #f0f0f0',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
+    },
+  },
+  teamHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '20px',
+    gap: '12px',
+  },
+  teamLogo: {
+    width: '40px',
+    height: '40px',
+    objectFit: 'contain',
   },
   teamHeading: {
     textAlign: 'center',
-    marginBottom: '15px',
-    color: '#444',
-    fontSize: '1.4em',
+    fontWeight: '600',
+    fontSize: '1.6rem',
+    margin: 0,
   },
   categorySection: {
-    marginBottom: '20px',
+    marginBottom: '28px',
+    background: 'white',
+    borderRadius: '10px',
+    padding: '16px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+  },
+  categoryHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '12px',
   },
   categoryHeading: {
-    textAlign: 'left',
-    marginBottom: '10px',
-    color: '#666',
-    fontSize: '1.2em',
-    borderBottom: '2px solid #f0f0f0',
-    paddingBottom: '5px',
+    margin: 0,
+    color: '#444',
+    fontSize: '1.2rem',
+    fontWeight: '600',
   },
   statsDetails: {
     display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '10px',
+    flexDirection: 'column',
+    gap: '12px',
+    marginTop: '16px',
+    padding: '8px',
+    background: '#f9f9f9',
+    borderRadius: '8px',
   },
-  statItem: {
+  statItemDetailed: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 12px',
+    background: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+  },
+  athleteNameContainer: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    gap: '4px',
   },
   athleteName: {
     fontWeight: '600',
     color: '#333',
+    fontSize: '0.95rem',
+  },
+  athleteStatContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   },
   athleteStat: {
-    color: '#666',
-    fontSize: '0.9em',
+    fontSize: '1.1rem',
   },
+  noDataMessage: {
+    padding: '20px',
+    textAlign: 'center',
+    color: '#888',
+    fontStyle: 'italic',
+  }
 };
 
 export default TopPerformers;
