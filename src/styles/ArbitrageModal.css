@@ -101,9 +101,9 @@
 }
 
 .arbmodal-team-logo-large {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
   border-radius: 50%;
   border: 2px solid var(--border-color);
   padding: 3px;
@@ -326,6 +326,13 @@
   gap: 8px;
 }
 
+.arbmodal-sportsbook-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  max-width: 100%;
+}
+
 .arbmodal-odds-cell {
   position: relative;
 }
@@ -437,6 +444,7 @@
   width: 16px;
   height: 16px;
   object-fit: contain;
+  max-width: 100%;
 }
 
 .arbmodal-profit-value {
@@ -579,9 +587,10 @@
 }
 
 .arbmodal-bookmaker-header img {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
+  max-width: 100%;
 }
 
 .arbmodal-bookmaker-header h4 {
@@ -601,9 +610,9 @@
 }
 
 .arbmodal-team-logo-small {
-  width: 24px;
-  height: 24px;
-  object-fit: cover;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   border-radius: 50%;
 }
 
