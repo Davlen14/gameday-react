@@ -5,7 +5,7 @@ import {
   faChevronLeft, faChevronRight, faShield, faFootballBall, 
   faUserFriends, faUniversity, faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
-import "./PlayerTable.css";
+import "../styles/PlayerTable.css"; // Assuming you have a CSS file for styles
 
 const PlayerTable = ({ 
   playerGrades, 

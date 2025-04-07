@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFootball, faTrophy, faChartLine, faFilter, faInfoCircle, faArrowUp, faArrowDown, faList } from '@fortawesome/free-solid-svg-icons';
-import "./PlayerGrade.css";
+import "../styles/PlayerGrade.css";
 import PlayerDetailModal from "./PlayerDetailModal";
 import PlayerTable from "./PlayerTable";
 
