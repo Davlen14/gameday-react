@@ -625,12 +625,6 @@
   color: #343a40;
 }
 
-.sportsbooks-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-}
-
 .betting-card {
   background-color: white;
   border-radius: 12px;
@@ -705,27 +699,80 @@
   opacity: 0.9;
 }
 
-/* Sportsbook container styling */
-.sportsbook {
+/* Sportsbook lines styles - similar to main Games view */
+.sportsbook-lines-container {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.sportsbook:hover {
-  transform: translateY(-3px);
+.sportsbook-line-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  gap: 16px;
 }
 
-.sportsbook-name {
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin: 12px 0;
+.sportsbook-line-item:hover {
+  background-color: #e9ecef;
+}
+
+.sportsbook-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.sportsbook-logo-sm {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.line-data {
+  display: flex;
+  gap: 12px;
+}
+
+.spread-data, .ou-data {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.line-label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.line-value {
+  font-weight: 700;
   color: #212529;
-  text-align: center;
+  font-size: 0.95rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #343a40;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.section-title:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 40px;
+  background-color: #D4001C;
 }
 
 .betting-odds {

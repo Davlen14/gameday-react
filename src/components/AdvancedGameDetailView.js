@@ -379,9 +379,23 @@ const getSportsbookLogo = (provider) => {
   return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
 };
 
-// Function to filter lines for the current game
-const getGameLines = (gameId, lines) => {
-  return lines.filter((line) => line.gameId === gameId || line.id === gameId);
+// Function to process game lines
+const processGameLines = (gameId, linesData) => {
+  if (!gameId || !linesData || !Array.isArray(linesData)) return [];
+  
+  // Loop through all lines objects to find matching game
+  for (const lineObj of linesData) {
+    // Check if this line object is for our game
+    if (lineObj.id === gameId || (lineObj.gameId && lineObj.gameId === gameId)) {
+      // If it has a lines array, return it
+      if (lineObj.lines && Array.isArray(lineObj.lines)) {
+        return lineObj.lines;
+      }
+    }
+  }
+  
+  // If no match found or no lines array, return empty array
+  return [];
 };
 
 // Video card component for displaying YouTube videos
@@ -518,6 +532,8 @@ const AdvancedGameDetailView = () => {
         const scoreboardData = await graphqlTeamsService.getGameScoreboard(id);
         const gameInfoData = await graphqlTeamsService.getGameInfo(id);
         const linesData = await teamsService.getGameLines(2024);
+        console.log("Game ID:", id);
+        console.log("Fetched lines data:", linesData);
         setLines(linesData);
         const mergedData = { ...scoreboardData, ...gameInfoData, ...restGameData };
         if (mergedData) {
@@ -623,7 +639,17 @@ const AdvancedGameDetailView = () => {
   const awayTeamColor = getTeamColor(awayTeam);
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
-  const gameLines = getGameLines(gameId, lines);
+  // Process game lines
+  const processedGameLines = processGameLines(id, lines);
+  
+  // Log the processed lines for debugging
+  useEffect(() => {
+    if (lines && lines.length > 0 && id) {
+      console.log("Game ID:", id);
+      console.log("Available lines data:", lines);
+      console.log("Processed lines for this game:", processedGameLines);
+    }
+  }, [lines, id, processedGameLines]);
 
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
@@ -905,53 +931,40 @@ const AdvancedGameDetailView = () => {
   );
 
   const renderBetting = () => {
-    // Filter lines for the current game
-    const gameLines = lines.filter(line => line.id === gameId || line.gameId === gameId);
-    
     return (
       <div className="tab-content betting">
         <h2>Betting Information</h2>
-        {gameLines && gameLines.length > 0 ? (
-          <div className="betting-section">
-            <h3>Sportsbook Lines</h3>
-            <div className="sportsbooks-container">
-              {gameLines.map((line, index) => (
-                <div key={index} className="sportsbook">
-                  <img
-                    src={getSportsbookLogo(line.provider)}
-                    alt={line.provider || "Sportsbook"}
-                    className="sportsbook-logo"
-                  />
-                  <div className="sportsbook-name">{line.provider || "Sportsbook"}</div>
-                  <div className="betting-odds">
-                    <div className="odds-item">
-                      <span className="odds-label">Spread:</span>
-                      <span className="odds-value">{line.spread || "N/A"}</span>
+        <div className="betting-section">
+          <h3 className="section-title">Sportsbook Lines</h3>
+
+          {processedGameLines && processedGameLines.length > 0 ? (
+            <div className="sportsbook-lines-container">
+              {processedGameLines.map((line, index) => (
+                <div key={index} className="sportsbook-line-item">
+                  <div className="sportsbook-branding">
+                    <img 
+                      src={getSportsbookLogo(line.provider)} 
+                      alt={line.provider || "Sportsbook"} 
+                      className="sportsbook-logo-sm" 
+                    />
+                  </div>
+                  <div className="line-data">
+                    <div className="spread-data">
+                      <span className="line-label">SP: </span>
+                      <span className="line-value">{line.spread || "N/A"}</span>
                     </div>
-                    <div className="odds-item">
-                      <span className="odds-label">Over/Under:</span>
-                      <span className="odds-value">{line.overUnder || "N/A"}</span>
+                    <div className="ou-data">
+                      <span className="line-label">O/U: </span>
+                      <span className="line-value">{line.overUnder || "N/A"}</span>
                     </div>
-                    {line.moneylineHome && line.moneylineAway && (
-                      <div className="odds-item moneyline">
-                        <div className="moneyline-item">
-                          <span className="team-abbr">{homeTeam}:</span>
-                          <span className="money-value">{line.moneylineHome}</span>
-                        </div>
-                        <div className="moneyline-item">
-                          <span className="team-abbr">{awayTeam}:</span>
-                          <span className="money-value">{line.moneylineAway}</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        ) : (
-          <p className="no-data">No betting lines available for this game.</p>
-        )}
+          ) : (
+            <p className="no-data">No betting lines available for this game.</p>
+          )}
+        </div>
         <div className="betting-disclaimer">
           <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
         </div>
