@@ -899,7 +899,7 @@ const AdvancedGameDetailView = () => {
   const renderBetting = () => {
     return (
       <div className="tab-content betting">
-        <GameOdds lines={lines} gameId={gameId} />
+        <GameOdds lines={lines} gameId={gameId} homeTeam={homeTeam} awayTeam={awayTeam} />
       </div>
     );
   };

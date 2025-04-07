@@ -1,39 +1,312 @@
+/* =========================================
+   Modern ArbitrageEV Styles
+   ========================================= */
+
+/* Enhanced Color Variables */
 :root {
+  /* Base colors */
   --primary-color: #ffffff;
+  --background-color: #f8f9fa;
+  --text-color: #252525;
+  --border-color: #e2e8f0;
+  
+  /* Accent colors */
   --accent-color: #D4001C;
-  --text-color: #333333;
-  --background-color: #ffffff;
-  --border-color: #dddddd;
+  --accent-hover: #b00017;
+  --accent-light: rgba(212, 0, 28, 0.1);
+  
+  /* Status colors */
+  --positive-color: #0ca678;
+  --warning-color: #f59f00;
+  --negative-color: #e03131;
+  --info-color: #1c7ed6;
+  
+  /* EV specific colors */
+  --low-ev-color: #74c0fc;
+  --medium-ev-color: #22b8cf;
+  --high-ev-color: #0ca678;
+  --negative-ev-color: #868e96;
+  --neutral-color: #adb5bd;
+  
+  /* UI colors */
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --hover-bg: #f1f3f5;
+  --active-bg: #e9ecef;
+  
+  /* Chart colors */
+  --chart-primary: rgba(75, 192, 192, 0.7);
+  --chart-secondary: rgba(255, 159, 64, 0.7);
+  
+  /* Dark mode colors (used with .dark-mode class) */
+  --dark-bg: #1a1a1a;
+  --dark-card: #2d2d2d;
+  --dark-text: #e9ecef;
+  --dark-border: #444444;
+  --dark-hover: #333333;
 }
 
-/* Base Container & Tab Navigation */
+/* Dark Mode Styling */
+body.dark-mode {
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+.dark-mode .ev-arbitrage-container {
+  background-color: var(--dark-bg);
+}
+
+.dark-mode .tab-content,
+.dark-mode .game-card,
+.dark-mode .modal-content,
+.dark-mode .pair-item,
+.dark-mode .odds-table th {
+  background-color: var(--dark-card);
+  color: var(--dark-text);
+}
+
+.dark-mode .border-color,
+.dark-mode .odds-table th,
+.dark-mode .odds-table td {
+  border-color: var(--dark-border);
+}
+
+.dark-mode .game-week,
+.dark-mode .team-info,
+.dark-mode .stake-input label,
+.dark-mode .close-button,
+.dark-mode .tab-nav button:not(.active) {
+  color: var(--dark-text);
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Base Layout Styling */
 .ev-arbitrage-container {
   width: 100%;
   padding: 20px;
   background: var(--background-color);
+  font-family: "Titillium Web", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-color);
+  position: relative;
 }
 
+/* Main Header Styling */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.app-title {
+  font-family: "Orbitron", "Titillium Web", sans-serif;
+  font-size: 1.8rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent-color);
+}
+
+.title-icon {
+  font-size: 1.5rem;
+}
+
+.main-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 8px 8px 8px 35px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  width: 200px;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  width: 220px;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+.filter-button,
+.settings-button,
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background-color: var(--primary-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover,
+.settings-button:hover,
+.refresh-button:hover {
+  background-color: var(--hover-bg);
+  transform: translateY(-2px);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Filter & Settings Panels */
+.filter-panel,
+.settings-panel {
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+  animation: slideDown 0.3s ease;
+}
+
+.filter-section,
+.setting-option {
+  margin-bottom: 15px;
+}
+
+.filter-section h3,
+.settings-panel h3 {
+  font-size: 1.1rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sportsbook-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sportsbook-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sportsbook-option:hover {
+  background-color: var(--hover-bg);
+}
+
+.sportsbook-option.selected {
+  background-color: var(--accent-light);
+  border-color: var(--accent-color);
+}
+
+.sportsbook-filter-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.setting-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* Tab Navigation */
 .tab-nav {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
   border-bottom: 2px solid var(--border-color);
   padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .tab-nav button {
   background: none;
   border: none;
   padding: 10px 20px;
-  font-size: 18px;
+  font-size: 1rem;
   cursor: pointer;
   color: var(--text-color);
   border-radius: 5px 5px 0 0;
-  transition: 0.3s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: "Orbitron", "Titillium Web", sans-serif;
+  position: relative;
 }
 
 .tab-nav button:hover {
@@ -43,217 +316,642 @@
 .tab-nav .active {
   color: var(--accent-color);
   font-weight: bold;
-  border-bottom: 3px solid var(--accent-color);
 }
 
+.tab-nav .active::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--accent-color);
+  border-radius: 1.5px;
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+/* Data Status Bar */
+.data-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #666;
+  box-shadow: var(--card-shadow);
+}
+
+.auto-refresh-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--info-color);
+}
+
+/* Loading & Error States */
+.loading-container,
+.error-container,
+.ev-empty-state,
+.arbitrage-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+.loading-spinner {
+  font-size: 2rem;
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  animation: spin 1.5s linear infinite;
+}
+
+.error-message {
+  color: var(--negative-color);
+  margin-bottom: 15px;
+}
+
+.retry-button {
+  padding: 8px 16px;
+  border: none;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: var(--accent-hover);
+}
+
+.empty-icon {
+  color: #aaa;
+  margin-bottom: 15px;
+}
+
+.empty-subtext {
+  color: #666;
+  font-size: 0.9rem;
+  max-width: 400px;
+  margin: 5px auto 20px;
+}
+
+/* Tab Content */
 .tab-content {
-  margin-top: 20px;
-  padding: 20px;
   background: var(--primary-color);
   border-radius: 8px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
 }
 
-/* Week Filter Styling */
+/* Week Filter */
 .week-filter {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  gap: 10px;
+  padding: 8px 15px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 20px;
 }
 
 .week-filter label {
-  margin-right: 8px;
-  font-weight: bold;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .week-filter select {
-  padding: 6px 8px;
+  padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--border-color);
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-}
-
-/* Game Card & Odds Table (Base Styles) */
-.arbitrage-container,
-.ev-container {
   background-color: var(--primary-color);
-  border-radius: 4px;
-  padding: 1rem;
-  margin-top: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 100px;
 }
 
+/* Arbitrage Container - Modern Grid Layout */
+.arbitrage-container {
+  padding: 20px;
+}
+
+.arbitrage-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--primary-color);
+}
+
+.arbitrage-summary {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.summary-stat {
+  flex: 1;
+  min-width: 150px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-icon {
+  color: var(--accent-color);
+  font-size: 1.8rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Game Card Styling */
 .game-card {
   background-color: var(--primary-color);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  cursor: pointer;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.game-card.has-arbitrage {
+  border: 1px solid var(--positive-color);
+}
+
+.arbitrage-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--positive-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 2;
+}
+
+.trophy-icon {
+  font-size: 0.9rem;
 }
 
 .game-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.teams-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
+  gap: 10px;
 }
 
 .team-info {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 5px;
+  min-width: 100px;
 }
 
 .team-logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
   border-radius: 4px;
 }
 
 .team-name {
-  font-weight: bold;
-  font-size: 1.1rem;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-.vs-text {
-  margin: 0 0.5rem;
+.versus {
   font-style: italic;
-}
-
-.week-label,
-.game-week {
   font-size: 0.9rem;
   color: #666;
-  margin-left: auto;
+}
+
+.game-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.game-week {
+  font-size: 0.85rem;
+  color: #666;
+  background-color: var(--hover-bg);
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.info-icon-container {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 .odds-comparison {
-  overflow-x: auto;
-}
-
-.odds-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.odds-table th,
-.odds-table td {
-  border: 1px solid var(--border-color);
-  padding: 8px;
-  text-align: center;
-  font-family: "Titillium Web", sans-serif;
-}
-
-.odds-table th {
-  background-color: var(--background-color);
-  font-weight: bold;
-}
-
-/* Additional Styles for Moneyline & Calculator Sections */
-.arbitrage-lines,
-.moneyline-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.moneyline-item {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.5rem;
-}
-
-.moneyline-item label {
-  font-weight: bold;
-  margin-bottom: 0.2rem;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-}
-
-.moneyline-item input {
-  width: 100px;
-  margin: 0.2rem 0;
-  padding: 0.2rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-}
-
-.calculated-return {
-  font-size: 0.9rem;
-  color: #333;
-  margin-top: 0.2rem;
-}
-
-/* =========================================
-   Modern Layout Styles
-   ========================================= */
-
-/* Two-Column Layout Container */
-.two-column-layout {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-/* Left Panel (Game List and Week Filter) */
-.left-panel {
-  flex: 0 0 250px;
-  background: var(--background-color);
   padding: 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
 }
 
-/* Right Panel (Game Details) */
-.right-panel {
-  flex: 1;
-  background: var(--primary-color);
-  padding: 20px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Game List Styling */
-.game-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Individual Game Item in the List */
-.game-item {
+.sportsbook {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.sportsbook-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.highlighted-odds {
+  font-weight: bold;
+  color: var(--positive-color);
+}
+
+.view-details-button {
+  width: 100%;
   padding: 10px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.view-details-button:hover {
+  background-color: var(--accent-hover);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .main-header, 
+  .arbitrage-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .main-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .search-input {
+    width: 150px;
+  }
+  
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tab-nav {
+    flex-wrap: wrap;
+  }
+  
+  .summary-stat {
+    min-width: 100%;
+  }
+}
+
+/* Toast Notifications Styling */
+.Toastify__toast {
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.Toastify__toast--success {
+  background-color: var(--positive-color);
+}
+
+.Toastify__toast--error {
+  background-color: var(--negative-color);
+}
+
+.Toastify__toast--warning {
+  background-color: var(--warning-color);
+}
+
+.Toastify__toast--info {
+  background-color: var(--info-color);
+}
+
+/* EVBetting Component Specific Styles */
+.ev-container {
+  padding: 20px;
+}
+
+.ev-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.ev-filter-section,
+.ev-sort-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ev-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bet-type-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bet-type-options {
+  display: flex;
+  gap: 5px;
+}
+
+.bet-type-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: none;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bet-type-btn.selected {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: none;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-btn.active {
+  background-color: var(--accent-light);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.sort-icon {
+  font-size: 0.8rem;
+}
+
+.ev-game-card {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.ev-game-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
 }
 
-.game-item:hover {
-  background: var(--background-color);
-  transform: translateY(-2px);
+.ev-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.game-item.selected {
-  background: var(--accent-color);
-  color: var(--primary-color);
+.best-ev-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-/* Small Team Logo in Game List */
-.team-logo-sm {
-  width: 24px;
-  height: 24px;
-  object-fit: cover;
+.expand-toggle {
+  font-size: 1.2rem;
+  color: #aaa;
+}
+
+.ev-lines-preview {
+  padding: 15px;
+}
+
+.more-lines-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: var(--hover-bg);
   border-radius: 4px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.info-icon {
+  font-size: 1rem;
+  color: var(--info-color);
+}
+
+.ev-lines-expanded {
+  padding: 15px;
+}
+
+.ev-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.ev-tab {
+  padding: 8px 15px;
+  border-radius: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ev-tab.active {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.ev-tab-content {
+  margin-bottom: 20px;
+}
+
+.positive-ev {
+  position: relative;
+}
+
+.positive-ev::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--high-ev-color);
+  opacity: 0.1;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.odds-cell {
+  position: relative;
+}
+
+.odds-main {
+  font-weight: 500;
+}
+
+.ev-indicator {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ev-calculator {
+  background-color: var(--hover-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.ev-calculator h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.calc-icon {
+  color: var(--info-color);
+}
+
+.ev-calculator-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.expected-returns-table {
+  background-color: var(--primary-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.return-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 10px;
+  font-weight: 600;
+}
+
+.return-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.return-row:last-child {
+  border-bottom: none;
+}
+
+.stake-amount {
+  font-weight: 600;
+}
+
+.expected-profit {
+  font-weight: 600;
 }
