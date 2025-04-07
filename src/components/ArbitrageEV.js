@@ -178,30 +178,30 @@ const ArbitrageEV = () => {
   };
 
   return (
-    <div className={`ev-arbitrage-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`arb-ev-container ${darkMode ? 'dark-mode' : ''}`}>
       <ToastContainer />
       
       {/* Header and Main Controls */}
-      <div className="main-header">
-        <h1 className="app-title">
-          <FaMoneyBillWave className="title-icon" />
+      <div className="arb-ev-main-header">
+        <h1 className="arb-ev-app-title">
+          <FaMoneyBillWave className="arb-ev-title-icon" />
           Sports Arbitrage Finder
         </h1>
         
-        <div className="main-controls">
-          <div className="search-container">
-            <FaSearch className="search-icon" />
+        <div className="arb-ev-main-controls">
+          <div className="arb-ev-search-container">
+            <FaSearch className="arb-ev-search-icon" />
             <input
               type="text"
               placeholder="Search teams..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="arb-ev-search-input"
             />
           </div>
           
           <button 
-            className="filter-button"
+            className="arb-ev-filter-button"
             onClick={() => setShowFilterPanel(!showFilterPanel)}
           >
             <FaFilter />
@@ -209,7 +209,7 @@ const ArbitrageEV = () => {
           </button>
           
           <button 
-            className="settings-button"
+            className="arb-ev-settings-button"
             onClick={() => setShowSettings(!showSettings)}
           >
             <FaCog />
@@ -217,21 +217,21 @@ const ArbitrageEV = () => {
           </button>
           
           <button 
-            className="refresh-button"
+            className="arb-ev-refresh-button"
             onClick={handleManualRefresh}
             disabled={isLoading}
           >
-            {isLoading ? <FaSpinner className="spinner" /> : "Refresh Odds"}
+            {isLoading ? <FaSpinner className="arb-ev-spinner" /> : "Refresh Odds"}
           </button>
         </div>
       </div>
       
       {/* Filter Panel (expandable) */}
       {showFilterPanel && (
-        <div className="filter-panel">
-          <div className="filter-section">
+        <div className="arb-ev-filter-panel">
+          <div className="arb-ev-filter-section">
             <h3><FaCalendarAlt /> Week Selection</h3>
-            <div className="week-filter">
+            <div className="arb-ev-week-filter">
               <label htmlFor="week-select">Week: </label>
               <select id="week-select" value={week} onChange={handleWeekChange}>
                 {Array.from({ length: 20 }, (_, i) => i + 1).map((w) => (
@@ -243,19 +243,19 @@ const ArbitrageEV = () => {
             </div>
           </div>
           
-          <div className="filter-section">
+          <div className="arb-ev-filter-section">
             <h3>Sportsbooks</h3>
-            <div className="sportsbook-selector">
+            <div className="arb-ev-sportsbook-selector">
               {["DraftKings", "ESPN Bet", "Bovada"].map(book => (
                 <div 
                   key={book} 
-                  className={`sportsbook-option ${selectedSportsbooks.includes(book) ? 'selected' : ''}`}
+                  className={`arb-ev-sportsbook-option ${selectedSportsbooks.includes(book) ? 'selected' : ''}`}
                   onClick={() => toggleSportsbook(book)}
                 >
                   <img 
                     src={getSportsbookLogo(book)} 
                     alt={book} 
-                    className="sportsbook-filter-logo" 
+                    className="arb-ev-sportsbook-filter-logo" 
                   />
                   <span>{book}</span>
                 </div>
@@ -267,9 +267,9 @@ const ArbitrageEV = () => {
       
       {/* Settings Panel (expandable) */}
       {showSettings && (
-        <div className="settings-panel">
+        <div className="arb-ev-settings-panel">
           <h3>Display Settings</h3>
-          <div className="setting-option">
+          <div className="arb-ev-setting-option">
             <label htmlFor="dark-mode">Dark Mode</label>
             <input
               id="dark-mode"
@@ -280,7 +280,7 @@ const ArbitrageEV = () => {
           </div>
           
           <h3>Data Refresh</h3>
-          <div className="setting-option">
+          <div className="arb-ev-setting-option">
             <label htmlFor="refresh-interval">Auto-refresh interval (minutes):</label>
             <select
               id="refresh-interval"
@@ -298,44 +298,44 @@ const ArbitrageEV = () => {
       )}
 
       {/* Tab Navigation */}
-      <div className="tab-nav">
+      <div className="arb-ev-tab-nav">
         <button
           className={activeTab === "arbitrage" ? "active" : ""}
           onClick={() => handleTabClick("arbitrage")}
         >
-          <FaChartLine className="tab-icon" />
+          <FaChartLine className="arb-ev-tab-icon" />
           Arbitrage Opportunities
         </button>
         <button
           className={activeTab === "ev" ? "active" : ""}
           onClick={() => handleTabClick("ev")}
         >
-          <FaMoneyBillWave className="tab-icon" />
+          <FaMoneyBillWave className="arb-ev-tab-icon" />
           Positive EV Bets
         </button>
       </div>
 
       {/* Data Status */}
-      <div className="data-status">
+      <div className="arb-ev-data-status">
         <span>Showing {filteredOddsData.length} games for Week {week}</span>
         {refreshInterval > 0 && (
-          <span className="auto-refresh-indicator">
+          <span className="arb-ev-auto-refresh-indicator">
             Auto-refreshing every {refreshInterval} minutes
           </span>
         )}
       </div>
 
       {/* Main Content */}
-      <div className="tab-content">
+      <div className="arb-ev-tab-content">
         {isLoading ? (
-          <div className="loading-container">
-            <FaSpinner className="loading-spinner" />
+          <div className="arb-ev-loading-container">
+            <FaSpinner className="arb-ev-loading-spinner" />
             <p>Loading betting lines...</p>
           </div>
         ) : error ? (
-          <div className="error-container">
-            <p className="error-message">Error: {error}</p>
-            <button onClick={fetchOdds} className="retry-button">
+          <div className="arb-ev-error-container">
+            <p className="arb-ev-error-message">Error: {error}</p>
+            <button onClick={fetchOdds} className="arb-ev-retry-button">
               Retry
             </button>
           </div>

@@ -194,23 +194,23 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
 
   if (!oddsData || oddsData.length === 0) {
     return (
-      <div className="ev-empty-state">
-        <FaChartLine size={48} className="empty-icon" />
+      <div className="arb-ev-empty-state">
+        <FaChartLine size={48} className="arb-ev-empty-icon" />
         <p>No betting odds available.</p>
-        <p className="empty-subtext">Try changing your filters or check back later for new odds.</p>
+        <p className="arb-ev-empty-subtext">Try changing your filters or check back later for new odds.</p>
       </div>
     );
   }
   
   if (filteredAndSortedData.length === 0) {
     return (
-      <div className="ev-empty-state">
-        <FaInfoCircle size={48} className="empty-icon" />
+      <div className="arb-ev-empty-state">
+        <FaInfoCircle size={48} className="arb-ev-empty-icon" />
         <p>No positive EV bets found with current filters.</p>
-        <p className="empty-subtext">Try lowering the minimum EV or selecting different bet types.</p>
+        <p className="arb-ev-empty-subtext">Try lowering the minimum EV or selecting different bet types.</p>
         
-        <div className="filter-controls">
-          <div className="ev-filter">
+        <div className="arb-ev-filter-controls">
+          <div className="evbet-filter">
             <label>Minimum EV %:</label>
             <input
               type="range"
@@ -228,11 +228,11 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
   }
 
   return (
-    <div className="ev-container">
+    <div className="evbet-container">
       {/* EV Filters and Controls */}
-      <div className="ev-controls">
-        <div className="ev-filter-section">
-          <div className="ev-filter">
+      <div className="evbet-controls">
+        <div className="evbet-filter-section">
+          <div className="evbet-filter">
             <label>Minimum EV %:</label>
             <input
               type="range"
@@ -245,23 +245,23 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             <span>{minEV}%</span>
           </div>
           
-          <div className="bet-type-filters">
+          <div className="evbet-bet-type-filters">
             <label>Bet Types:</label>
-            <div className="bet-type-options">
+            <div className="evbet-bet-type-options">
               <button 
-                className={`bet-type-btn ${selectedTypes.includes('moneyline') ? 'selected' : ''}`}
+                className={`evbet-bet-type-btn ${selectedTypes.includes('moneyline') ? 'selected' : ''}`}
                 onClick={() => toggleBetType('moneyline')}
               >
                 Moneyline
               </button>
               <button 
-                className={`bet-type-btn ${selectedTypes.includes('spread') ? 'selected' : ''}`}
+                className={`evbet-bet-type-btn ${selectedTypes.includes('spread') ? 'selected' : ''}`}
                 onClick={() => toggleBetType('spread')}
               >
                 Spread
               </button>
               <button 
-                className={`bet-type-btn ${selectedTypes.includes('overUnder') ? 'selected' : ''}`}
+                className={`evbet-bet-type-btn ${selectedTypes.includes('overUnder') ? 'selected' : ''}`}
                 onClick={() => toggleBetType('overUnder')}
               >
                 Over/Under
@@ -270,91 +270,91 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
           </div>
         </div>
         
-        <div className="ev-sort-section">
+        <div className="evbet-sort-section">
           <button 
-            className={`sort-btn ${sortBy === 'ev' ? 'active' : ''}`}
+            className={`evbet-sort-btn ${sortBy === 'ev' ? 'active' : ''}`}
             onClick={() => handleSort('ev')}
           >
             Sort by EV 
             {sortBy === 'ev' && (
-              sortOrder === 'desc' ? <FaSortAmountDown className="sort-icon" /> : <FaSortAmountUp className="sort-icon" />
+              sortOrder === 'desc' ? <FaSortAmountDown className="evbet-sort-icon" /> : <FaSortAmountUp className="evbet-sort-icon" />
             )}
           </button>
           <button 
-            className={`sort-btn ${sortBy === 'team' ? 'active' : ''}`}
+            className={`evbet-sort-btn ${sortBy === 'team' ? 'active' : ''}`}
             onClick={() => handleSort('team')}
           >
             Sort by Team
             {sortBy === 'team' && (
-              sortOrder === 'desc' ? <FaSortAmountDown className="sort-icon" /> : <FaSortAmountUp className="sort-icon" />
+              sortOrder === 'desc' ? <FaSortAmountDown className="evbet-sort-icon" /> : <FaSortAmountUp className="evbet-sort-icon" />
             )}
           </button>
         </div>
       </div>
       
       {/* EV Stats Summary */}
-      <div className="ev-summary">
-        <div className="summary-stat">
-          <FaChartLine className="summary-icon" />
-          <div className="stat-content">
-            <span className="stat-value">{filteredAndSortedData.length}</span>
-            <span className="stat-label">Games with +EV</span>
+      <div className="arb-ev-arbitrage-summary">
+        <div className="arb-ev-summary-stat">
+          <FaChartLine className="arb-ev-summary-icon" />
+          <div className="arb-ev-stat-content">
+            <span className="arb-ev-stat-value">{filteredAndSortedData.length}</span>
+            <span className="arb-ev-stat-label">Games with +EV</span>
           </div>
         </div>
         
-        <div className="summary-stat">
-          <FaPercentage className="summary-icon" />
-          <div className="stat-content">
-            <span className="stat-value">
+        <div className="arb-ev-summary-stat">
+          <FaPercentage className="arb-ev-summary-icon" />
+          <div className="arb-ev-stat-content">
+            <span className="arb-ev-stat-value">
               {Math.max(...filteredAndSortedData.map(g => g.maxEV)).toFixed(1)}%
             </span>
-            <span className="stat-label">Best EV</span>
+            <span className="arb-ev-stat-label">Best EV</span>
           </div>
         </div>
         
-        <div className="summary-stat">
-          <FaDollarSign className="summary-icon" />
-          <div className="stat-content">
-            <span className="stat-value">
+        <div className="arb-ev-summary-stat">
+          <FaDollarSign className="arb-ev-summary-icon" />
+          <div className="arb-ev-stat-content">
+            <span className="arb-ev-stat-value">
               ${(100 * (1 + Math.max(...filteredAndSortedData.map(g => g.maxEV)) / 100)).toFixed(2)}
             </span>
-            <span className="stat-label">Expected Value on $100</span>
+            <span className="arb-ev-stat-label">Expected Value on $100</span>
           </div>
         </div>
       </div>
 
       {/* EV Game Cards */}
-      <div className="ev-games">
+      <div className="evbet-games">
         {filteredAndSortedData.map((game) => (
-          <div key={game.id} className="ev-game-card">
+          <div key={game.id} className="evbet-game-card">
             {/* Game Header with Best EV Badge */}
-            <div className="ev-game-header" onClick={() => toggleExpanded(game.id)}>
-              <div className="teams-container">
-                <div className="team-info">
+            <div className="evbet-game-header" onClick={() => toggleExpanded(game.id)}>
+              <div className="arb-ev-teams-container">
+                <div className="arb-ev-team-info">
                 <img
                     src={getTeamLogo(game.homeTeam)}
                     alt={game.homeTeam}
-                    className="team-logo"
+                    className="arb-ev-team-logo"
                   />
-                  <span className="team-name">{game.homeTeam}</span>
+                  <span className="arb-ev-team-name">{game.homeTeam}</span>
                 </div>
-                <span className="versus">vs</span>
-                <div className="team-info">
+                <span className="arb-ev-versus">vs</span>
+                <div className="arb-ev-team-info">
                   <img
                     src={getTeamLogo(game.awayTeam)}
                     alt={game.awayTeam}
-                    className="team-logo"
+                    className="arb-ev-team-logo"
                   />
-                  <span className="team-name">{game.awayTeam}</span>
+                  <span className="arb-ev-team-name">{game.awayTeam}</span>
                 </div>
               </div>
               
-              <div className="ev-meta">
-                <div className="game-week">Week {game.week}</div>
-                <div className="best-ev-badge" style={{ backgroundColor: getEVColor(game.maxEV) }}>
-                  <span className="ev-value">+{game.maxEV.toFixed(1)}% EV</span>
+              <div className="evbet-meta">
+                <div className="arb-ev-game-week">Week {game.week}</div>
+                <div className="evbet-best-ev-badge" style={{ backgroundColor: getEVColor(game.maxEV) }}>
+                  <span className="evbet-ev-value">+{game.maxEV.toFixed(1)}% EV</span>
                 </div>
-                <div className="expand-toggle">
+                <div className="evbet-expand-toggle">
                   {expandedGames[game.id] ? <FaAngleUp /> : <FaAngleDown />}
                 </div>
               </div>
@@ -362,8 +362,8 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             
             {/* Game Lines - Collapsed View */}
             {!expandedGames[game.id] && (
-              <div className="ev-lines-preview">
-                <table className="ev-table-preview">
+              <div className="evbet-lines-preview">
+                <table className="evbet-table-preview">
                   <thead>
                     <tr>
                       <th>Sportsbook</th>
@@ -393,15 +393,15 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                       
                       return (
                         <tr key={index}>
-                          <td className="sportsbook-cell">
+                          <td className="arb-ev-sportsbook-cell">
                             <img
                               src={getSportsbookLogo(line.provider)}
                               alt={line.provider}
-                              className="sportsbook-logo"
+                              className="arb-ev-sportsbook-logo"
                             />
                             <span>{line.provider}</span>
                           </td>
-                          <td className="best-bet-cell">
+                          <td className="evbet-best-bet-cell">
                             {bestBet.type === 'Home ML' && `${game.homeTeam} ML (${bestBet.odds})`}
                             {bestBet.type === 'Away ML' && `${game.awayTeam} ML (${bestBet.odds})`}
                             {bestBet.type === 'Home Spread' && `${game.homeTeam} ${bestBet.spread} (${bestBet.odds})`}
@@ -409,7 +409,7 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                             {bestBet.type === 'Over' && `Over ${bestBet.total} (${bestBet.odds})`}
                             {bestBet.type === 'Under' && `Under ${bestBet.total} (${bestBet.odds})`}
                           </td>
-                          <td className="ev-value-cell" style={{ color: getEVColor(bestBet.value) }}>
+                          <td className="evbet-ev-value-cell" style={{ color: getEVColor(bestBet.value) }}>
                             +{bestBet.value.toFixed(1)}%
                           </td>
                         </tr>
@@ -419,8 +419,8 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                 </table>
                 
                 {game.evLines.length > 2 && (
-                  <div className="more-lines-prompt">
-                    <FaInfoCircle className="info-icon" />
+                  <div className="evbet-more-lines-prompt">
+                    <FaInfoCircle className="evbet-info-icon" />
                     <span>Click to see {game.evLines.length - 2} more sportsbooks</span>
                   </div>
                 )}
@@ -429,23 +429,23 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             
             {/* Game Lines - Expanded View */}
             {expandedGames[game.id] && (
-              <div className="ev-lines-expanded">
-                <div className="ev-tabs">
+              <div className="evbet-lines-expanded">
+                <div className="evbet-tabs">
                   {selectedTypes.includes('moneyline') && (
-                    <button className="ev-tab active">Moneyline</button>
+                    <button className="evbet-tab active">Moneyline</button>
                   )}
                   {selectedTypes.includes('spread') && (
-                    <button className="ev-tab">Spread</button>
+                    <button className="evbet-tab">Spread</button>
                   )}
                   {selectedTypes.includes('overUnder') && (
-                    <button className="ev-tab">Over/Under</button>
+                    <button className="evbet-tab">Over/Under</button>
                   )}
                 </div>
                 
                 {/* Moneyline Tab */}
                 {selectedTypes.includes('moneyline') && (
-                  <div className="ev-tab-content">
-                    <table className="ev-table-detailed">
+                  <div className="evbet-tab-content">
+                    <table className="evbet-table-detailed">
                       <thead>
                         <tr>
                           <th>Sportsbook</th>
@@ -457,22 +457,22 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                       <tbody>
                         {game.evLines.map((line, index) => (
                           <tr key={index}>
-                            <td className="sportsbook-cell">
+                            <td className="arb-ev-sportsbook-cell">
                               <img
                                 src={getSportsbookLogo(line.provider)}
                                 alt={line.provider}
-                                className="sportsbook-logo"
+                                className="arb-ev-sportsbook-logo"
                               />
                               <span>{line.provider}</span>
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.homeMoneyline >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.homeMoneyline >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`home-ml-${game.id}-${index}`}
                             >
-                              <div className="odds-main">{line.homeMoneyline}</div>
+                              <div className="evbet-odds-main">{line.homeMoneyline}</div>
                               {line.ev.homeMoneyline !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.homeMoneyline) }}
                                 >
                                   {line.ev.homeMoneyline > 0 ? '+' : ''}{line.ev.homeMoneyline.toFixed(1)}%
@@ -487,13 +487,13 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                               </Tooltip>
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.awayMoneyline >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.awayMoneyline >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`away-ml-${game.id}-${index}`}
                             >
-                              <div className="odds-main">{line.awayMoneyline}</div>
+                              <div className="evbet-odds-main">{line.awayMoneyline}</div>
                               {line.ev.awayMoneyline !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.awayMoneyline) }}
                                 >
                                   {line.ev.awayMoneyline > 0 ? '+' : ''}{line.ev.awayMoneyline.toFixed(1)}%
@@ -507,10 +507,10 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                                 </div>
                               </Tooltip>
                             </td>
-                            <td className="best-ev-cell">
+                            <td className="evbet-best-ev-cell">
                               {line.bestEV >= minEV && (
                                 <div
-                                  className="best-ev-value"
+                                  className="evbet-best-ev-value"
                                   style={{ color: getEVColor(line.bestEV) }}
                                 >
                                   +{line.bestEV.toFixed(1)}%
@@ -526,8 +526,8 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                 
                 {/* Spread Tab (similar structure to Moneyline) */}
                 {selectedTypes.includes('spread') && (
-                  <div className="ev-tab-content">
-                    <table className="ev-table-detailed">
+                  <div className="evbet-tab-content">
+                    <table className="evbet-table-detailed">
                       <thead>
                         <tr>
                           <th>Sportsbook</th>
@@ -539,24 +539,24 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                       <tbody>
                         {game.evLines.map((line, index) => (
                           <tr key={index}>
-                            <td className="sportsbook-cell">
+                            <td className="arb-ev-sportsbook-cell">
                               <img
                                 src={getSportsbookLogo(line.provider)}
                                 alt={line.provider}
-                                className="sportsbook-logo"
+                                className="arb-ev-sportsbook-logo"
                               />
                               <span>{line.provider}</span>
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.homeSpread >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.homeSpread >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`home-spread-${game.id}-${index}`}
                             >
-                              <div className="odds-main">
+                              <div className="evbet-odds-main">
                                 {line.homeSpread} ({line.homeSpreadOdds})
                               </div>
                               {line.ev.homeSpread !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.homeSpread) }}
                                 >
                                   {line.ev.homeSpread > 0 ? '+' : ''}{line.ev.homeSpread.toFixed(1)}%
@@ -572,15 +572,15 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                               </Tooltip>
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.awaySpread >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.awaySpread >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`away-spread-${game.id}-${index}`}
                             >
-                              <div className="odds-main">
+                              <div className="evbet-odds-main">
                                 {line.awaySpread} ({line.awaySpreadOdds})
                               </div>
                               {line.ev.awaySpread !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.awaySpread) }}
                                 >
                                   {line.ev.awaySpread > 0 ? '+' : ''}{line.ev.awaySpread.toFixed(1)}%
@@ -595,13 +595,13 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                                 </div>
                               </Tooltip>
                             </td>
-                            <td className="best-ev-cell">
+                            <td className="evbet-best-ev-cell">
                               {Math.max(
                                 line.ev.homeSpread || -Infinity,
                                 line.ev.awaySpread || -Infinity
                               ) >= minEV && (
                                 <div
-                                  className="best-ev-value"
+                                  className="evbet-best-ev-value"
                                   style={{ 
                                     color: getEVColor(
                                       Math.max(
@@ -627,8 +627,8 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                 
                 {/* Over/Under Tab (similar structure) */}
                 {selectedTypes.includes('overUnder') && (
-                  <div className="ev-tab-content">
-                    <table className="ev-table-detailed">
+                  <div className="evbet-tab-content">
+                    <table className="evbet-table-detailed">
                       <thead>
                         <tr>
                           <th>Sportsbook</th>
@@ -641,25 +641,25 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                       <tbody>
                         {game.evLines.map((line, index) => (
                           <tr key={index}>
-                            <td className="sportsbook-cell">
+                            <td className="arb-ev-sportsbook-cell">
                               <img
                                 src={getSportsbookLogo(line.provider)}
                                 alt={line.provider}
-                                className="sportsbook-logo"
+                                className="arb-ev-sportsbook-logo"
                               />
                               <span>{line.provider}</span>
                             </td>
-                            <td className="total-cell">
+                            <td className="evbet-total-cell">
                               {line.overUnder || "N/A"}
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.over >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.over >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`over-${game.id}-${index}`}
                             >
-                              <div className="odds-main">{line.overOdds}</div>
+                              <div className="evbet-odds-main">{line.overOdds}</div>
                               {line.ev.over !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.over) }}
                                 >
                                   {line.ev.over > 0 ? '+' : ''}{line.ev.over.toFixed(1)}%
@@ -674,13 +674,13 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                               </Tooltip>
                             </td>
                             <td 
-                              className={`odds-cell ${line.ev.under >= minEV ? 'positive-ev' : ''}`}
+                              className={`evbet-odds-cell ${line.ev.under >= minEV ? 'evbet-positive-ev' : ''}`}
                               data-tooltip-id={`under-${game.id}-${index}`}
                             >
-                              <div className="odds-main">{line.underOdds}</div>
+                              <div className="evbet-odds-main">{line.underOdds}</div>
                               {line.ev.under !== null && (
                                 <div 
-                                  className="ev-indicator" 
+                                  className="evbet-ev-indicator" 
                                   style={{ color: getEVColor(line.ev.under) }}
                                 >
                                   {line.ev.under > 0 ? '+' : ''}{line.ev.under.toFixed(1)}%
@@ -694,13 +694,13 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                                 </div>
                               </Tooltip>
                             </td>
-                            <td className="best-ev-cell">
+                            <td className="evbet-best-ev-cell">
                               {Math.max(
                                 line.ev.over || -Infinity,
                                 line.ev.under || -Infinity
                               ) >= minEV && (
                                 <div
-                                  className="best-ev-value"
+                                  className="evbet-best-ev-value"
                                   style={{ 
                                     color: getEVColor(
                                       Math.max(
@@ -725,26 +725,26 @@ const EVBetting = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                 )}
                 
                 {/* EV Calculator */}
-                <div className="ev-calculator">
-                  <h4>EV Calculator <FaCalculator className="calc-icon" /></h4>
-                  <p className="ev-calculator-description">
+                <div className="evbet-calculator">
+                  <h4>EV Calculator <FaCalculator className="evbet-calc-icon" /></h4>
+                  <p className="evbet-calculator-description">
                     Expected Value (EV) represents the average amount you can expect to win (or lose) 
                     per bet placed if you were to place the same bet on this game many times.
                   </p>
                   
-                  <div className="expected-returns-table">
-                    <div className="return-header">
+                  <div className="evbet-expected-returns-table">
+                    <div className="evbet-return-header">
                       <span>Stake</span>
                       <span>Expected Return</span>
                       <span>Expected Profit</span>
                     </div>
                     {[50, 100, 200, 500, 1000].map(stake => (
-                      <div className="return-row" key={stake}>
-                        <span className="stake-amount">${stake}</span>
-                        <span className="expected-return">
+                      <div className="evbet-return-row" key={stake}>
+                        <span className="evbet-stake-amount">${stake}</span>
+                        <span className="evbet-expected-return">
                           ${(stake * (1 + game.maxEV / 100)).toFixed(2)}
                         </span>
-                        <span className="expected-profit" style={{ color: getEVColor(game.maxEV) }}>
+                        <span className="evbet-expected-profit" style={{ color: getEVColor(game.maxEV) }}>
                           ${(stake * game.maxEV / 100).toFixed(2)}
                         </span>
                       </div>

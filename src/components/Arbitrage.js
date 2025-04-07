@@ -103,36 +103,36 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
 
   if (!oddsData || oddsData.length === 0) {
     return (
-      <div className="arbitrage-empty-state">
-        <FaChartLine size={48} className="empty-icon" />
+      <div className="arb-ev-arbitrage-empty-state">
+        <FaChartLine size={48} className="arb-ev-empty-icon" />
         <p>No arbitrage opportunities available.</p>
-        <p className="empty-subtext">Try changing your filters or check back later for new odds.</p>
+        <p className="arb-ev-empty-subtext">Try changing your filters or check back later for new odds.</p>
       </div>
     );
   }
 
   return (
-    <div className="arbitrage-container">
+    <div className="arb-ev-arbitrage-container">
       {/* Filters and Controls */}
-      <div className="arbitrage-controls">
-        <div className="filter-group">
+      <div className="arb-ev-arbitrage-controls">
+        <div className="arb-ev-filter-group">
           <label>Filter:</label>
           <select 
             value={filterBy} 
             onChange={(e) => setFilterBy(e.target.value)}
-            className="filter-select"
+            className="arb-ev-filter-select"
           >
             <option value="all">All Games</option>
             <option value="guaranteed">Guaranteed Profit Only</option>
           </select>
         </div>
         
-        <div className="filter-group">
+        <div className="arb-ev-filter-group">
           <label>Sort By:</label>
           <select 
             value={sortBy} 
             onChange={(e) => setSortBy(e.target.value)}
-            className="filter-select"
+            className="arb-ev-filter-select"
           >
             <option value="profit">Best Profit</option>
             <option value="homeTeam">Home Team</option>
@@ -142,68 +142,68 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
       </div>
       
       {/* Summary Stats */}
-      <div className="arbitrage-summary">
-        <div className="summary-stat">
-          <span className="stat-value">{displayedGames.length}</span>
-          <span className="stat-label">Games</span>
+      <div className="arb-ev-arbitrage-summary">
+        <div className="arb-ev-summary-stat">
+          <span className="arb-ev-stat-value">{displayedGames.length}</span>
+          <span className="arb-ev-stat-label">Games</span>
         </div>
-        <div className="summary-stat">
-          <span className="stat-value">{displayedGames.filter(g => g.hasArbitrage).length}</span>
-          <span className="stat-label">With Arbitrage</span>
+        <div className="arb-ev-summary-stat">
+          <span className="arb-ev-stat-value">{displayedGames.filter(g => g.hasArbitrage).length}</span>
+          <span className="arb-ev-stat-label">With Arbitrage</span>
         </div>
-        <div className="summary-stat">
-          <span className="stat-value">
+        <div className="arb-ev-summary-stat">
+          <span className="arb-ev-stat-value">
             {displayedGames.some(g => g.hasArbitrage) ? 
               displayedGames.reduce((max, game) => Math.max(max, game.bestProfit), 0).toFixed(2) + '%' : 
               'N/A'}
           </span>
-          <span className="stat-label">Best Profit</span>
+          <span className="arb-ev-stat-label">Best Profit</span>
         </div>
       </div>
       
       {/* Game Cards */}
-      <div className="game-grid">
+      <div className="arb-ev-game-grid">
         {displayedGames.map((game) => (
           <div
             key={game.id}
-            className={`game-card ${game.hasArbitrage ? 'has-arbitrage' : ''}`}
+            className={`arb-ev-game-card ${game.hasArbitrage ? 'has-arbitrage' : ''}`}
             onClick={() => openModal(game)}
           >
             {game.hasArbitrage && (
-              <div className="arbitrage-badge">
-                <FaTrophy className="trophy-icon" />
+              <div className="arb-ev-arbitrage-badge">
+                <FaTrophy className="arb-ev-trophy-icon" />
                 <span>{game.bestProfit.toFixed(2)}% Profit</span>
               </div>
             )}
             
             {/* Game Header with Team Logos */}
-            <div className="game-header">
-              <div className="teams-container">
-                <div className="team-info">
+            <div className="arb-ev-game-header">
+              <div className="arb-ev-teams-container">
+                <div className="arb-ev-team-info">
                   <img
                     src={getTeamLogo(game.homeTeam)}
                     alt={game.homeTeam}
-                    className="team-logo"
+                    className="arb-ev-team-logo"
                   />
-                  <span className="team-name">{game.homeTeam}</span>
+                  <span className="arb-ev-team-name">{game.homeTeam}</span>
                 </div>
-                <span className="versus">vs</span>
-                <div className="team-info">
+                <span className="arb-ev-versus">vs</span>
+                <div className="arb-ev-team-info">
                   <img
                     src={getTeamLogo(game.awayTeam)}
                     alt={game.awayTeam}
-                    className="team-logo"
+                    className="arb-ev-team-logo"
                   />
-                  <span className="team-name">{game.awayTeam}</span>
+                  <span className="arb-ev-team-name">{game.awayTeam}</span>
                 </div>
               </div>
-              <div className="game-meta">
-                <div className="game-week">Week {game.week}</div>
+              <div className="arb-ev-game-meta">
+                <div className="arb-ev-game-week">Week {game.week}</div>
                 <div 
-                  className="info-icon-container"
+                  className="arb-ev-info-icon-container"
                   data-tooltip-id={`game-info-${game.id}`}
                 >
-                  <FaInfo className="info-icon" />
+                  <FaInfo className="arb-ev-info-icon" />
                 </div>
                 <Tooltip id={`game-info-${game.id}`} place="top" effect="solid">
                   <div>
@@ -219,9 +219,9 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             </div>
 
             {/* Compare Sportsbooks in a Table */}
-            <div className="odds-comparison">
+            <div className="arb-ev-odds-comparison">
               {game.lines.length > 0 ? (
-                <table className="odds-table">
+                <table className="arb-ev-odds-table">
                   <thead>
                     <tr>
                       <th>Sportsbook</th>
@@ -232,18 +232,18 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
                   <tbody>
                     {game.lines.slice(0, 3).map((line, index) => (
                       <tr key={index}>
-                        <td className="sportsbook">
+                        <td className="arb-ev-sportsbook">
                           <img
                             src={getSportsbookLogo(line.provider)}
                             alt={line.provider}
-                            className="sportsbook-logo"
+                            className="arb-ev-sportsbook-logo"
                           />
                           <span>{line.provider}</span>
                         </td>
-                        <td className={line.provider === game.arbitrageOpportunities[0]?.homeBookmaker ? 'highlighted-odds' : ''}>
+                        <td className={line.provider === game.arbitrageOpportunities[0]?.homeBookmaker ? 'arb-ev-highlighted-odds' : ''}>
                           {line.homeMoneyline}
                         </td>
-                        <td className={line.provider === game.arbitrageOpportunities[0]?.awayBookmaker ? 'highlighted-odds' : ''}>
+                        <td className={line.provider === game.arbitrageOpportunities[0]?.awayBookmaker ? 'arb-ev-highlighted-odds' : ''}>
                           {line.awayMoneyline}
                         </td>
                       </tr>
@@ -256,7 +256,7 @@ const Arbitrage = ({ oddsData, getSportsbookLogo, getTeamLogo }) => {
             </div>
             
             {/* View Details Button */}
-            <button className="view-details-button">
+            <button className="arb-ev-view-details-button">
               View Arbitrage Details
             </button>
           </div>

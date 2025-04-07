@@ -51,30 +51,30 @@ body.dark-mode {
   color: var(--dark-text);
 }
 
-.dark-mode .ev-arbitrage-container {
+.dark-mode .arb-ev-container {
   background-color: var(--dark-bg);
 }
 
-.dark-mode .tab-content,
-.dark-mode .game-card,
-.dark-mode .modal-content,
-.dark-mode .pair-item,
-.dark-mode .odds-table th {
+.dark-mode .arb-ev-tab-content,
+.dark-mode .arb-ev-game-card,
+.dark-mode .arb-ev-modal-content,
+.dark-mode .arb-ev-pair-item,
+.dark-mode .arb-ev-odds-table th {
   background-color: var(--dark-card);
   color: var(--dark-text);
 }
 
-.dark-mode .border-color,
-.dark-mode .odds-table th,
-.dark-mode .odds-table td {
+.dark-mode .arb-ev-border-color,
+.dark-mode .arb-ev-odds-table th,
+.dark-mode .arb-ev-odds-table td {
   border-color: var(--dark-border);
 }
 
-.dark-mode .game-week,
-.dark-mode .team-info,
-.dark-mode .stake-input label,
-.dark-mode .close-button,
-.dark-mode .tab-nav button:not(.active) {
+.dark-mode .arb-ev-game-week,
+.dark-mode .arb-ev-team-info,
+.dark-mode .arb-ev-stake-input label,
+.dark-mode .arb-ev-close-button,
+.dark-mode .arb-ev-tab-nav button:not(.active) {
   color: var(--dark-text);
 }
 
@@ -118,7 +118,7 @@ body.dark-mode {
 }
 
 /* Base Layout Styling */
-.ev-arbitrage-container {
+.arb-ev-container {
   width: 100%;
   padding: 20px;
   background: var(--background-color);
@@ -128,7 +128,7 @@ body.dark-mode {
 }
 
 /* Main Header Styling */
-.main-header {
+.arb-ev-main-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -137,7 +137,7 @@ body.dark-mode {
   gap: 15px;
 }
 
-.app-title {
+.arb-ev-app-title {
   font-family: "Orbitron", "Titillium Web", sans-serif;
   font-size: 1.8rem;
   margin: 0;
@@ -147,22 +147,22 @@ body.dark-mode {
   color: var(--accent-color);
 }
 
-.title-icon {
+.arb-ev-title-icon {
   font-size: 1.5rem;
 }
 
-.main-controls {
+.arb-ev-main-controls {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.search-container {
+.arb-ev-search-container {
   position: relative;
 }
 
-.search-icon {
+.arb-ev-search-icon {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -171,7 +171,7 @@ body.dark-mode {
   pointer-events: none;
 }
 
-.search-input {
+.arb-ev-search-input {
   padding: 8px 8px 8px 35px;
   border-radius: 20px;
   border: 1px solid var(--border-color);
@@ -180,16 +180,16 @@ body.dark-mode {
   transition: all 0.3s ease;
 }
 
-.search-input:focus {
+.arb-ev-search-input:focus {
   outline: none;
   width: 220px;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px var(--accent-light);
 }
 
-.filter-button,
-.settings-button,
-.refresh-button {
+.arb-ev-filter-button,
+.arb-ev-settings-button,
+.arb-ev-refresh-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -202,25 +202,25 @@ body.dark-mode {
   transition: all 0.2s ease;
 }
 
-.filter-button:hover,
-.settings-button:hover,
-.refresh-button:hover {
+.arb-ev-filter-button:hover,
+.arb-ev-settings-button:hover,
+.arb-ev-refresh-button:hover {
   background-color: var(--hover-bg);
   transform: translateY(-2px);
 }
 
-.refresh-button:disabled {
+.arb-ev-refresh-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.spinner {
+.arb-ev-spinner {
   animation: spin 1s linear infinite;
 }
 
 /* Filter & Settings Panels */
-.filter-panel,
-.settings-panel {
+.arb-ev-filter-panel,
+.arb-ev-settings-panel {
   background-color: var(--primary-color);
   border-radius: 8px;
   padding: 15px;
@@ -229,13 +229,13 @@ body.dark-mode {
   animation: slideDown 0.3s ease;
 }
 
-.filter-section,
-.setting-option {
+.arb-ev-filter-section,
+.arb-ev-setting-option {
   margin-bottom: 15px;
 }
 
-.filter-section h3,
-.settings-panel h3 {
+.arb-ev-filter-section h3,
+.arb-ev-settings-panel h3 {
   font-size: 1.1rem;
   margin-top: 0;
   margin-bottom: 10px;
@@ -244,13 +244,13 @@ body.dark-mode {
   gap: 8px;
 }
 
-.sportsbook-selector {
+.arb-ev-sportsbook-selector {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.sportsbook-option {
+.arb-ev-sportsbook-option {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -261,22 +261,22 @@ body.dark-mode {
   transition: all 0.2s ease;
 }
 
-.sportsbook-option:hover {
+.arb-ev-sportsbook-option:hover {
   background-color: var(--hover-bg);
 }
 
-.sportsbook-option.selected {
+.arb-ev-sportsbook-option.selected {
   background-color: var(--accent-light);
   border-color: var(--accent-color);
 }
 
-.sportsbook-filter-logo {
+.arb-ev-sportsbook-filter-logo {
   width: 20px;
   height: 20px;
   object-fit: contain;
 }
 
-.setting-option {
+.arb-ev-setting-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -284,7 +284,7 @@ body.dark-mode {
 }
 
 /* Tab Navigation */
-.tab-nav {
+.arb-ev-tab-nav {
   display: flex;
   justify-content: center;
   gap: 15px;
@@ -293,7 +293,7 @@ body.dark-mode {
   margin-bottom: 20px;
 }
 
-.tab-nav button {
+.arb-ev-tab-nav button {
   background: none;
   border: none;
   padding: 10px 20px;
@@ -309,16 +309,16 @@ body.dark-mode {
   position: relative;
 }
 
-.tab-nav button:hover {
+.arb-ev-tab-nav button:hover {
   color: var(--accent-color);
 }
 
-.tab-nav .active {
+.arb-ev-tab-nav .active {
   color: var(--accent-color);
   font-weight: bold;
 }
 
-.tab-nav .active::after {
+.arb-ev-tab-nav .active::after {
   content: "";
   position: absolute;
   bottom: -12px;
@@ -329,12 +329,12 @@ body.dark-mode {
   border-radius: 1.5px;
 }
 
-.tab-icon {
+.arb-ev-tab-icon {
   font-size: 1.1rem;
 }
 
 /* Data Status Bar */
-.data-status {
+.arb-ev-data-status {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -347,7 +347,7 @@ body.dark-mode {
   box-shadow: var(--card-shadow);
 }
 
-.auto-refresh-indicator {
+.arb-ev-auto-refresh-indicator {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -355,10 +355,10 @@ body.dark-mode {
 }
 
 /* Loading & Error States */
-.loading-container,
-.error-container,
-.ev-empty-state,
-.arbitrage-empty-state {
+.arb-ev-loading-container,
+.arb-ev-error-container,
+.arb-ev-empty-state,
+.arb-ev-arbitrage-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -370,19 +370,19 @@ body.dark-mode {
   box-shadow: var(--card-shadow);
 }
 
-.loading-spinner {
+.arb-ev-loading-spinner {
   font-size: 2rem;
   color: var(--accent-color);
   margin-bottom: 15px;
   animation: spin 1.5s linear infinite;
 }
 
-.error-message {
+.arb-ev-error-message {
   color: var(--negative-color);
   margin-bottom: 15px;
 }
 
-.retry-button {
+.arb-ev-retry-button {
   padding: 8px 16px;
   border: none;
   background-color: var(--accent-color);
@@ -392,16 +392,16 @@ body.dark-mode {
   transition: background-color 0.2s ease;
 }
 
-.retry-button:hover {
+.arb-ev-retry-button:hover {
   background-color: var(--accent-hover);
 }
 
-.empty-icon {
+.arb-ev-empty-icon {
   color: #aaa;
   margin-bottom: 15px;
 }
 
-.empty-subtext {
+.arb-ev-empty-subtext {
   color: #666;
   font-size: 0.9rem;
   max-width: 400px;
@@ -409,7 +409,7 @@ body.dark-mode {
 }
 
 /* Tab Content */
-.tab-content {
+.arb-ev-tab-content {
   background: var(--primary-color);
   border-radius: 8px;
   box-shadow: var(--card-shadow);
@@ -417,7 +417,7 @@ body.dark-mode {
 }
 
 /* Week Filter */
-.week-filter {
+.arb-ev-week-filter {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -428,12 +428,12 @@ body.dark-mode {
   margin-bottom: 20px;
 }
 
-.week-filter label {
+.arb-ev-week-filter label {
   font-weight: 600;
   color: var(--text-color);
 }
 
-.week-filter select {
+.arb-ev-week-filter select {
   padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--border-color);
@@ -444,11 +444,11 @@ body.dark-mode {
 }
 
 /* Arbitrage Container - Modern Grid Layout */
-.arbitrage-container {
+.arb-ev-arbitrage-container {
   padding: 20px;
 }
 
-.arbitrage-controls {
+.arb-ev-arbitrage-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -457,27 +457,27 @@ body.dark-mode {
   gap: 15px;
 }
 
-.filter-group {
+.arb-ev-filter-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.filter-select {
+.arb-ev-filter-select {
   padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--border-color);
   background-color: var(--primary-color);
 }
 
-.arbitrage-summary {
+.arb-ev-arbitrage-summary {
   display: flex;
   gap: 15px;
   margin-bottom: 25px;
   flex-wrap: wrap;
 }
 
-.summary-stat {
+.arb-ev-summary-stat {
   flex: 1;
   min-width: 150px;
   background-color: var(--primary-color);
@@ -489,35 +489,35 @@ body.dark-mode {
   gap: 12px;
 }
 
-.summary-icon {
+.arb-ev-summary-icon {
   color: var(--accent-color);
   font-size: 1.8rem;
 }
 
-.stat-content {
+.arb-ev-stat-content {
   display: flex;
   flex-direction: column;
 }
 
-.stat-value {
+.arb-ev-stat-value {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--text-color);
 }
 
-.stat-label {
+.arb-ev-stat-label {
   font-size: 0.85rem;
   color: #666;
 }
 
-.game-grid {
+.arb-ev-game-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
 
 /* Game Card Styling */
-.game-card {
+.arb-ev-game-card {
   background-color: var(--primary-color);
   border-radius: 10px;
   overflow: hidden;
@@ -528,16 +528,16 @@ body.dark-mode {
   border: 1px solid var(--border-color);
 }
 
-.game-card:hover {
+.arb-ev-game-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-.game-card.has-arbitrage {
+.arb-ev-game-card.has-arbitrage {
   border: 1px solid var(--positive-color);
 }
 
-.arbitrage-badge {
+.arb-ev-arbitrage-badge {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -552,11 +552,11 @@ body.dark-mode {
   z-index: 2;
 }
 
-.trophy-icon {
+.arb-ev-trophy-icon {
   font-size: 0.9rem;
 }
 
-.game-header {
+.arb-ev-game-header {
   padding: 15px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -565,13 +565,13 @@ body.dark-mode {
   gap: 10px;
 }
 
-.teams-container {
+.arb-ev-teams-container {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.team-info {
+.arb-ev-team-info {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -579,33 +579,33 @@ body.dark-mode {
   min-width: 100px;
 }
 
-.team-logo {
+.arb-ev-team-logo {
   width: 40px;
   height: 40px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.team-name {
+.arb-ev-team-name {
   font-weight: 600;
   font-size: 0.9rem;
   text-align: center;
 }
 
-.versus {
+.arb-ev-versus {
   font-style: italic;
   font-size: 0.9rem;
   color: #666;
 }
 
-.game-meta {
+.arb-ev-game-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
 }
 
-.game-week {
+.arb-ev-game-week {
   font-size: 0.85rem;
   color: #666;
   background-color: var(--hover-bg);
@@ -613,34 +613,34 @@ body.dark-mode {
   border-radius: 10px;
 }
 
-.info-icon-container {
+.arb-ev-info-icon-container {
   cursor: pointer;
   font-size: 0.9rem;
   color: #666;
 }
 
-.odds-comparison {
+.arb-ev-odds-comparison {
   padding: 15px;
 }
 
-.sportsbook {
+.arb-ev-sportsbook {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.sportsbook-logo {
+.arb-ev-sportsbook-logo {
   width: 20px;
   height: 20px;
   object-fit: contain;
 }
 
-.highlighted-odds {
+.arb-ev-highlighted-odds {
   font-weight: bold;
   color: var(--positive-color);
 }
 
-.view-details-button {
+.arb-ev-view-details-button {
   width: 100%;
   padding: 10px;
   background-color: var(--accent-color);
@@ -651,36 +651,36 @@ body.dark-mode {
   transition: background-color 0.2s ease;
 }
 
-.view-details-button:hover {
+.arb-ev-view-details-button:hover {
   background-color: var(--accent-hover);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .main-header, 
-  .arbitrage-controls {
+  .arb-ev-main-header, 
+  .arb-ev-arbitrage-controls {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .main-controls {
+  .arb-ev-main-controls {
     width: 100%;
     justify-content: space-between;
   }
   
-  .search-input {
+  .arb-ev-search-input {
     width: 150px;
   }
   
-  .game-grid {
+  .arb-ev-game-grid {
     grid-template-columns: 1fr;
   }
   
-  .tab-nav {
+  .arb-ev-tab-nav {
     flex-wrap: wrap;
   }
   
-  .summary-stat {
+  .arb-ev-summary-stat {
     min-width: 100%;
   }
 }
@@ -708,11 +708,11 @@ body.dark-mode {
 }
 
 /* EVBetting Component Specific Styles */
-.ev-container {
+.evbet-container {
   padding: 20px;
 }
 
-.ev-controls {
+.evbet-controls {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
@@ -720,32 +720,32 @@ body.dark-mode {
   gap: 15px;
 }
 
-.ev-filter-section,
-.ev-sort-section {
+.evbet-filter-section,
+.evbet-sort-section {
   display: flex;
   gap: 15px;
   align-items: center;
   flex-wrap: wrap;
 }
 
-.ev-filter {
+.evbet-filter {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.bet-type-filters {
+.evbet-bet-type-filters {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.bet-type-options {
+.evbet-bet-type-options {
   display: flex;
   gap: 5px;
 }
 
-.bet-type-btn {
+.evbet-bet-type-btn {
   padding: 6px 12px;
   border-radius: 4px;
   background: none;
@@ -754,13 +754,13 @@ body.dark-mode {
   transition: all 0.2s ease;
 }
 
-.bet-type-btn.selected {
+.evbet-bet-type-btn.selected {
   background-color: var(--accent-color);
   color: white;
   border-color: var(--accent-color);
 }
 
-.sort-btn {
+.evbet-sort-btn {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -772,17 +772,17 @@ body.dark-mode {
   transition: all 0.2s ease;
 }
 
-.sort-btn.active {
+.evbet-sort-btn.active {
   background-color: var(--accent-light);
   border-color: var(--accent-color);
   color: var(--accent-color);
 }
 
-.sort-icon {
+.evbet-sort-icon {
   font-size: 0.8rem;
 }
 
-.ev-game-card {
+.evbet-game-card {
   background-color: var(--primary-color);
   border-radius: 10px;
   overflow: hidden;
@@ -791,7 +791,7 @@ body.dark-mode {
   border: 1px solid var(--border-color);
 }
 
-.ev-game-header {
+.evbet-game-header {
   padding: 15px;
   display: flex;
   justify-content: space-between;
@@ -799,13 +799,13 @@ body.dark-mode {
   cursor: pointer;
 }
 
-.ev-meta {
+.evbet-meta {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.best-ev-badge {
+.evbet-best-ev-badge {
   padding: 4px 10px;
   border-radius: 12px;
   color: white;
@@ -813,16 +813,16 @@ body.dark-mode {
   font-weight: 600;
 }
 
-.expand-toggle {
+.evbet-expand-toggle {
   font-size: 1.2rem;
   color: #aaa;
 }
 
-.ev-lines-preview {
+.evbet-lines-preview {
   padding: 15px;
 }
 
-.more-lines-prompt {
+.evbet-more-lines-prompt {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -835,16 +835,16 @@ body.dark-mode {
   color: #666;
 }
 
-.info-icon {
+.evbet-info-icon {
   font-size: 1rem;
   color: var(--info-color);
 }
 
-.ev-lines-expanded {
+.evbet-lines-expanded {
   padding: 15px;
 }
 
-.ev-tabs {
+.evbet-tabs {
   display: flex;
   gap: 5px;
   margin-bottom: 15px;
@@ -852,7 +852,7 @@ body.dark-mode {
   padding-bottom: 10px;
 }
 
-.ev-tab {
+.evbet-tab {
   padding: 8px 15px;
   border-radius: 4px;
   background: none;
@@ -861,21 +861,21 @@ body.dark-mode {
   transition: all 0.2s ease;
 }
 
-.ev-tab.active {
+.evbet-tab.active {
   background-color: var(--accent-light);
   color: var(--accent-color);
   font-weight: 600;
 }
 
-.ev-tab-content {
+.evbet-tab-content {
   margin-bottom: 20px;
 }
 
-.positive-ev {
+.evbet-positive-ev {
   position: relative;
 }
 
-.positive-ev::after {
+.evbet-positive-ev::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -885,50 +885,50 @@ body.dark-mode {
   pointer-events: none;
 }
 
-.odds-cell {
+.evbet-odds-cell {
   position: relative;
 }
 
-.odds-main {
+.evbet-odds-main {
   font-weight: 500;
 }
 
-.ev-indicator {
+.evbet-ev-indicator {
   font-size: 0.8rem;
   font-weight: 600;
 }
 
-.ev-calculator {
+.evbet-calculator {
   background-color: var(--hover-bg);
   padding: 15px;
   border-radius: 8px;
   margin-top: 20px;
 }
 
-.ev-calculator h4 {
+.evbet-calculator h4 {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 0;
 }
 
-.calc-icon {
+.evbet-calc-icon {
   color: var(--info-color);
 }
 
-.ev-calculator-description {
+.evbet-calculator-description {
   font-size: 0.9rem;
   color: #666;
   margin-bottom: 15px;
 }
 
-.expected-returns-table {
+.evbet-expected-returns-table {
   background-color: var(--primary-color);
   border-radius: 6px;
   overflow: hidden;
 }
 
-.return-header {
+.evbet-return-header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   background-color: var(--accent-color);
@@ -937,21 +937,21 @@ body.dark-mode {
   font-weight: 600;
 }
 
-.return-row {
+.evbet-return-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding: 10px;
   border-bottom: 1px solid var(--border-color);
 }
 
-.return-row:last-child {
+.evbet-return-row:last-child {
   border-bottom: none;
 }
 
-.stake-amount {
+.evbet-stake-amount {
   font-weight: 600;
 }
 
-.expected-profit {
+.evbet-expected-profit {
   font-weight: 600;
 }
