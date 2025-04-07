@@ -9,7 +9,8 @@ import {
   FaPercentage,
   FaDollarSign,
   FaAngleDown,
-  FaAngleUp
+  FaAngleUp,
+  FaCalculator
 } from "react-icons/fa";
 import { Tooltip } from "react-tooltip";
 
