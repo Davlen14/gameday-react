@@ -19,6 +19,7 @@ import {
 } from "recharts";
 // Import the TopPerformers component
 import TopPerformers from "./TopPerformers";
+import PlayerGameGrade from "./PlayerGameGrade";
 
 const TeamAnalyticsDetail = () => {
   const { teamId } = useParams();
@@ -687,11 +688,11 @@ Higher values generally indicate more efficient and effective plays.
         </ResponsiveContainer>
       </div>
 
-      {/* Additional Dashboard Content */}
+      {/* Player Game Grades */}
       <div className="dashboard-content">
         <div className="dashboard-stats">
-          <h2>Additional Dashboard Stats</h2>
-          <p>Add your content here...</p>
+          <h2>Player Performance Grades</h2>
+          <PlayerGameGrade gameId={gameId} />
         </div>
       </div>
 
