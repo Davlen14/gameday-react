@@ -36,13 +36,30 @@ const GameDetailView = () => {
   
   // Field position display
   const [fieldPosition, setFieldPosition] = useState("");
+  
+  // For tracking what shows up in the top-right score display 
+  const [scoreBoardPosition, setScoreBoardPosition] = useState("");
 
   // Determine if a given teamName is the home or away team for this game
   const getTeamSide = (teamName) => {
     if (!game) return null;
     const normalized = (teamName || "").toLowerCase().trim();
+    
+    // Direct match with full team name
     if (normalized === (game.homeTeam || "").toLowerCase()) return "home";
     if (normalized === (game.awayTeam || "").toLowerCase()) return "away";
+    
+    // Check for abbreviations
+    const homeAbbr = abbreviateTeamName(game.homeTeam).toLowerCase();
+    const awayAbbr = abbreviateTeamName(game.awayTeam).toLowerCase();
+    
+    if (normalized === homeAbbr || normalized.includes(homeAbbr) || homeAbbr.includes(normalized)) return "home";
+    if (normalized === awayAbbr || normalized.includes(awayAbbr) || awayAbbr.includes(normalized)) return "away";
+
+    // For debugging
+    console.log(`Could not identify team: "${teamName}". Home team: ${game.homeTeam}, Away team: ${game.awayTeam}`);
+    console.log(`Abbreviations - Home: ${homeAbbr}, Away: ${awayAbbr}`);
+    
     return null;
   };
 
@@ -52,6 +69,8 @@ const GameDetailView = () => {
     if (fullName.toLowerCase().includes("ohio state")) return "OSU";
     if (fullName.toLowerCase().includes("indiana")) return "IU";
     if (fullName.toLowerCase().includes("tennessee")) return "TEN";
+    // Add more team-specific abbreviations as needed
+    
     // Otherwise, take first word or something short
     const firstWord = fullName.split(" ")[0];
     return firstWord.length > 4 ? firstWord.slice(0, 4).toUpperCase() : firstWord.toUpperCase();
@@ -74,14 +93,17 @@ const GameDetailView = () => {
       if (isNaN(yardNumber)) return null;
 
       const side = getTeamSide(teamNameRaw);
-      if (!side) return null; // couldn't identify team
-      
-      // If it's home's yard line => universal = yardNumber
-      // If it's away's yard line => universal = 100 - yardNumber
-      if (side === "home") {
-        return yardNumber;
+      if (!side) {
+        // If we can't identify the team, log it but continue with the simple pattern
+        console.log(`WARNING: Could not identify team "${teamNameRaw}" in play text: "${playText}"`);
       } else {
-        return 100 - yardNumber;
+        // If it's home's yard line => universal = yardNumber
+        // If it's away's yard line => universal = 100 - yardNumber
+        if (side === "home") {
+          return yardNumber;
+        } else {
+          return 100 - yardNumber;
+        }
       }
     }
     
@@ -211,6 +233,26 @@ const GameDetailView = () => {
     console.log(`Play #${play.playNumber}: ${play.playText}`);
     console.log(`Team with ball: ${play.homeBall ? game?.homeTeam : game?.awayTeam}`);
     console.log(`Raw yardLine from data: ${play.yardLine}`);
+    
+    // If play text contains "to the", attempt to parse
+    if (play.playText && play.playText.includes("to the")) {
+      const fullRegex = /to the\s+(.+?)\s+(\d+)\b/i;
+      const simpleRegex = /to the\s+(\d+)\b/i;
+      const fullMatch = play.playText.match(fullRegex);
+      const simpleMatch = play.playText.match(simpleRegex);
+      
+      if (fullMatch) {
+        const teamNameRaw = fullMatch[1].trim();
+        const yardNumber = parseInt(fullMatch[2], 10);
+        const side = getTeamSide(teamNameRaw);
+        console.log(`  Found team name "${teamNameRaw}" in play text, identified as: ${side || "unknown"}`);
+        console.log(`  Found yard number "${yardNumber}" in play text`);
+      } else if (simpleMatch) {
+        const yardNumber = parseInt(simpleMatch[1], 10);
+        console.log(`  Found simple yard number "${yardNumber}" in play text`); 
+      }
+    }
+    
     console.log(`Universal yardLine (0-100): ${universalYardLine}`);
     console.log(`Formatted position: ${formatFieldPosition(universalYardLine, play.homeBall)}`);
     console.log('==========================');
@@ -264,6 +306,7 @@ const GameDetailView = () => {
           setCurrentQuarter(firstPlay.period || 1);
           // Debug the initial position
           debugFieldPosition(firstPlay, yard);
+      console.log(`Initial field position: "${fieldPosition}"`);
 
           // If last play is 4th Q or beyond, game might be complete
           if (uniquePlays[uniquePlays.length - 1].period >= 4) {
@@ -399,6 +442,7 @@ const GameDetailView = () => {
       setFieldPosition(formatFieldPosition(yard, nextPlay.homeBall));
       // Debug the position on each play advancement
       debugFieldPosition(nextPlay, yard);
+      console.log(`New field position: "${formatFieldPosition(yard, nextPlay.homeBall)}"`);
 
       checkForTouchdown(currentPlay, nextPlay);
       checkForRedzone(yard, nextPlay.homeBall);
@@ -705,6 +749,13 @@ const GameDetailView = () => {
           {/* Field position indicator */}
           <div className="field-position-indicator">
             {fieldPosition}
+          </div>
+          
+          {/* The orange scoreboard display in the top-right corner */}
+          <div className="field-scoreboard">
+            {currentPlay && (
+              <span>{currentPlay.homeBall ? abbreviateTeamName(game.homeTeam) : abbreviateTeamName(game.awayTeam)} {currentPlay.yardLine}</span>
+            )}
           </div>
 
           {/* Left Endzone = Home */}
@@ -1241,6 +1292,19 @@ const GameDetailView = () => {
   color: white;
   font-weight: bold;
   z-index: 20;
+}
+
+.field-scoreboard {
+  position: absolute;
+  top: 10px;
+  right: 60px;
+  background: #FF8200; /* Tennessee orange */
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  z-index: 20;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .stat-label {
