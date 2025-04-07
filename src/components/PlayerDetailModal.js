@@ -14,7 +14,7 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
   const [hoverGrade, setHoverGrade] = useState(null);
   const [animateIn, setAnimateIn] = useState(true);
   
-  if (!player || !team) return null;
+  // Early return pattern moved after all hook declarations
 
   // Use passed in functions or fallback to local implementations
   const getPlayerGradeClass = getGradeColorClass || ((grade) => {
@@ -68,6 +68,14 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
 
   // Calculate passing vs running snaps data with memoization
   const snapsData = useMemo(() => {
+    // Default values in case player is null
+    if (!player) {
+      return [
+        { name: "Passing Snaps", value: 0, color: "#00264c" },
+        { name: "Running Snaps", value: 0, color: "#d52b1e" }
+      ];
+    }
+    
     // In a real implementation, you would get this data from player.gameStats or seasonStats
     // For now, we're creating mock data based on position
     if (!player.seasonStats || player.seasonStats.length === 0) {
@@ -141,19 +149,19 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
 
   // Get career grade data
   const careerData = useMemo(() => {
-    // Mock career data - in a real implementation, this would come from historical player data
-    const baseGrade = player.grade || 75;
+    // Default grade if player is null
+    const baseGrade = player?.grade || 75;
     return [
       { year: 2021, grade: Math.max(50, baseGrade > 80 ? baseGrade - 20 : baseGrade + 5) },
       { year: 2022, grade: Math.max(50, baseGrade > 85 ? baseGrade - 15 : baseGrade + 10) },
       { year: 2023, grade: Math.max(50, baseGrade > 85 ? baseGrade - 5 : baseGrade + 15) },
       { year: 2024, grade: baseGrade }
     ];
-  }, [player.grade]);
+  }, [player?.grade]);
   
   // Calculate performance trends
   const performanceTrends = useMemo(() => {
-    const offenseGrade = player.grade || 75;
+    const offenseGrade = player?.grade || 75;
     const passGrade = Math.max(50, offenseGrade - 2);
     const runGrade = Math.max(50, offenseGrade - 7);
     
@@ -174,7 +182,7 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
         trend: getTrendIndicator(runGrade, Math.max(50, careerData[careerData.length - 2]?.grade - 7 || (runGrade - 4)))
       }
     };
-  }, [player.grade, careerData, getTrendIndicator]);
+  }, [player?.grade, careerData, getTrendIndicator]);
 
   // Colors for charts and visual elements
   const COLORS = ['#00264c', '#d52b1e'];
@@ -184,8 +192,8 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
 
   // Get the background gradient based on team color
   const getTeamGradient = useCallback(() => {
-    // Default gradient for team (when team has no colors)
-    if (!team.color) {
+    // Default gradient when team is null or has no colors
+    if (!team || !team.color) {
       return `linear-gradient(135deg, #00264c 0%, #0d79b3 100%)`;
     }
     
@@ -194,7 +202,7 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
     
     // Return the gradient
     return `linear-gradient(135deg, ${team.color} 0%, ${secondaryColor} 100%)`;
-  }, [team.color, team.alt_color]);
+  }, [team?.color, team?.alt_color]);
   
   // Helper to lighten a color for gradient effect
   const lightenColor = (color, percent) => {
@@ -222,12 +230,12 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
   // Get physical info or mock it if missing
   const physicalInfo = useMemo(() => {
     return {
-      height: player.height || "6'2\"",
-      weight: player.weight || "225",
-      year: player.year || "Sr.",
+      height: player?.height || "6'2\"",
+      weight: player?.weight || "225",
+      year: player?.year || "Sr.",
       draftYear: year + 1
     };
-  }, [player.height, player.weight, player.year, year]);
+  }, [player?.height, player?.weight, player?.year, year]);
 
   // Custom tooltip for the weekly bar chart
   const CustomBarTooltip = ({ active, payload }) => {
@@ -257,6 +265,9 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
       onClose();
     }, 300);
   };
+  
+  // Early return pattern - AFTER all hooks are defined
+  if (!player || !team) return null;
 
   return (
     <div className={`pdm-overlay ${animateIn ? 'pdm-fade-in' : 'pdm-fade-out'}`} onClick={handleClose}>
@@ -291,19 +302,19 @@ const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade
           </div>
           
           <div className="pdm-player-info">
-            <h2 id="player-modal-title" className="pdm-player-name">{player.fullName}</h2>
+            <h2 id="player-modal-title" className="pdm-player-name">{player?.fullName}</h2>
             <div className="pdm-position">
               <span className="pdm-position-badge">
                 <FontAwesomeIcon icon={faShieldAlt} className="pdm-position-icon" />
-                {player.position}
+                {player?.position}
               </span> 
-              <span className="pdm-jersey">#{player.number || player.jersey || "1"}</span>
+              <span className="pdm-jersey">#{player?.number || player?.jersey || "1"}</span>
             </div>
           </div>
           
           <div className="pdm-team-info">
-            <span className="pdm-team-name">{team.school}</span>
-            <span className="pdm-team-mascot">{team.mascot || ''}</span>
+            <span className="pdm-team-name">{team?.school}</span>
+            <span className="pdm-team-mascot">{team?.mascot || ''}</span>
             {isGameSpecific && (
               <div className="pdm-game-badge">
                 <FontAwesomeIcon icon={faFlagCheckered} /> Game Analysis
