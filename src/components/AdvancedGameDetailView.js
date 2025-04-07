@@ -379,23 +379,11 @@ const getSportsbookLogo = (provider) => {
   return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
 };
 
-// Function to process game lines
-const processGameLines = (gameId, linesData) => {
+// Helper function to find lines for a specific game
+const findGameLines = (gameId, linesData) => {
   if (!gameId || !linesData || !Array.isArray(linesData)) return [];
-  
-  // Loop through all lines objects to find matching game
-  for (const lineObj of linesData) {
-    // Check if this line object is for our game
-    if (lineObj.id === gameId || (lineObj.gameId && lineObj.gameId === gameId)) {
-      // If it has a lines array, return it
-      if (lineObj.lines && Array.isArray(lineObj.lines)) {
-        return lineObj.lines;
-      }
-    }
-  }
-  
-  // If no match found or no lines array, return empty array
-  return [];
+  const gameLinesObj = linesData.find(line => line.id === gameId || line.gameId === gameId);
+  return gameLinesObj && gameLinesObj.lines ? gameLinesObj.lines : [];
 };
 
 // Video card component for displaying YouTube videos
@@ -640,16 +628,8 @@ const AdvancedGameDetailView = () => {
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
   // Process game lines
-  const processedGameLines = processGameLines(id, lines);
-  
-  // Log the processed lines for debugging
-  useEffect(() => {
-    if (lines && lines.length > 0 && id) {
-      console.log("Game ID:", id);
-      console.log("Available lines data:", lines);
-      console.log("Processed lines for this game:", processedGameLines);
-    }
-  }, [lines, id, processedGameLines]);
+  const gameLinesObj = lines.find(line => line.id === gameId || line.gameId === gameId);
+  const gameLines = gameLinesObj && gameLinesObj.lines ? gameLinesObj.lines : [];
 
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
@@ -937,9 +917,9 @@ const AdvancedGameDetailView = () => {
         <div className="betting-section">
           <h3 className="section-title">Sportsbook Lines</h3>
 
-          {processedGameLines && processedGameLines.length > 0 ? (
+          {gameLines && gameLines.length > 0 ? (
             <div className="sportsbook-lines-container">
-              {processedGameLines.map((line, index) => (
+              {gameLines.map((line, index) => (
                 <div key={index} className="sportsbook-line-item">
                   <div className="sportsbook-branding">
                     <img 
