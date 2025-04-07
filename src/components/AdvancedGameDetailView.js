@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import GameOdds from "./GameOdds";
 import { useParams } from "react-router-dom";
 import teamsService from "../services/teamsService";
 import graphqlTeamsService from "../services/graphqlTeamsService";
@@ -369,22 +370,9 @@ const EloRating = ({ startElo, endElo, label }) => {
   );
 };
 
-const sportsbookLogos = {
-  "DraftKings": "/photos/draftkings.png",
-  "ESPN Bet": "/photos/espnbet.png",
-  "Bovada": "/photos/bovada.jpg",
-};
 
-const getSportsbookLogo = (provider) => {
-  return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
-};
 
-// Helper function to find lines for a specific game
-const findGameLines = (gameId, linesData) => {
-  if (!gameId || !linesData || !Array.isArray(linesData)) return [];
-  const gameLinesObj = linesData.find(line => line.id === gameId || line.gameId === gameId);
-  return gameLinesObj && gameLinesObj.lines ? gameLinesObj.lines : [];
-};
+
 
 // Video card component for displaying YouTube videos
 const VideoCard = ({ video, onClick }) => {
@@ -627,9 +615,7 @@ const AdvancedGameDetailView = () => {
   const awayTeamColor = getTeamColor(awayTeam);
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
-  // Process game lines
-  const gameLinesObj = lines.find(line => line.id === gameId || line.gameId === gameId);
-  const gameLines = gameLinesObj && gameLinesObj.lines ? gameLinesObj.lines : [];
+
 
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
@@ -913,41 +899,7 @@ const AdvancedGameDetailView = () => {
   const renderBetting = () => {
     return (
       <div className="tab-content betting">
-        <h2>Betting Information</h2>
-        <div className="betting-section">
-          <h3 className="section-title">Sportsbook Lines</h3>
-
-          {gameLines && gameLines.length > 0 ? (
-            <div className="sportsbook-lines-container">
-              {gameLines.map((line, index) => (
-                <div key={index} className="sportsbook-line-item">
-                  <div className="sportsbook-branding">
-                    <img 
-                      src={getSportsbookLogo(line.provider)} 
-                      alt={line.provider || "Sportsbook"} 
-                      className="sportsbook-logo-sm" 
-                    />
-                  </div>
-                  <div className="line-data">
-                    <div className="spread-data">
-                      <span className="line-label">SP: </span>
-                      <span className="line-value">{line.spread || "N/A"}</span>
-                    </div>
-                    <div className="ou-data">
-                      <span className="line-label">O/U: </span>
-                      <span className="line-value">{line.overUnder || "N/A"}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-data">No betting lines available for this game.</p>
-          )}
-        </div>
-        <div className="betting-disclaimer">
-          <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
-        </div>
+        <GameOdds lines={lines} gameId={gameId} />
       </div>
     );
   };
