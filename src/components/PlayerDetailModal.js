@@ -7,7 +7,7 @@ import {
   faArrowUp, faArrowDown, faRunning, faArrowCircleRight, faUsers,
   faArrowAltCircleUp, faBolt, faFlagCheckered, faClipboardCheck, faClock
 } from '@fortawesome/free-solid-svg-icons';
-import "../../styles/PlayerDetailModal.css"; // Assuming you have a CSS file for styles
+import "../styles/PlayerDetailModal.css"; // Assuming you have a CSS file for styles
 
 const PlayerDetailModal = ({ player, team, onClose, year, gameId, getLetterGrade, getGradeColorClass }) => {
   const [activeTab, setActiveTab] = useState("season");
