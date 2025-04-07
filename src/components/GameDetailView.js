@@ -17,7 +17,7 @@ const GameDetailView = () => {
   const [playSpeed, setPlaySpeed] = useState(1000); // ms between plays
   const playIntervalRef = useRef(null);
   
-  // This “universal” yard line means:
+  // This "universal" yard line means:
   //   0   = Home end zone (left side)
   //   100 = Away end zone (right side)
   const [ballPosition, setBallPosition] = useState(50); 
@@ -51,6 +51,7 @@ const GameDetailView = () => {
     if (!fullName) return "";
     if (fullName.toLowerCase().includes("ohio state")) return "OSU";
     if (fullName.toLowerCase().includes("indiana")) return "IU";
+    if (fullName.toLowerCase().includes("tennessee")) return "TEN";
     // Otherwise, take first word or something short
     const firstWord = fullName.split(" ")[0];
     return firstWord.length > 4 ? firstWord.slice(0, 4).toUpperCase() : firstWord.toUpperCase();
@@ -58,74 +59,142 @@ const GameDetailView = () => {
 
   /**
    * parseYardLine from play text:
-   *  If it says “to the [HomeTeam] 23” => universal yard line = 23
-   *  If it says “to the [AwayTeam] 23” => universal yard line = 100 - 23 = 77
+   *  If it says "to the [HomeTeam] 23" => universal yard line = 23
+   *  If it says "to the [AwayTeam] 23" => universal yard line = 100 - 23 = 77
+   *  If it just says "to the 23" => depends on possession
    */
-  const parseYardLine = (playText) => {
-    const regex = /to the\s+(.+?)\s+(\d+)\b/i;
-    const match = playText.match(regex);
-    if (!match) return null;
-    const teamNameRaw = match[1].trim();
-    const yardNumber = parseInt(match[2], 10);
-    if (isNaN(yardNumber)) return null;
+  const parseYardLine = (playText, isHomeBall) => {
+    // Try pattern with team name first: "to the Ohio State 23"
+    const fullRegex = /to the\s+(.+?)\s+(\d+)\b/i;
+    const fullMatch = playText.match(fullRegex);
+    
+    if (fullMatch) {
+      const teamNameRaw = fullMatch[1].trim();
+      const yardNumber = parseInt(fullMatch[2], 10);
+      if (isNaN(yardNumber)) return null;
 
-    const side = getTeamSide(teamNameRaw);
-    if (!side) return null; // couldn't identify
-    // If it's home’s yard line => universal = yardNumber
-    // If it's away’s yard line => universal = 100 - yardNumber
-    if (side === "home") {
-      return yardNumber;
-    } else {
-      return 100 - yardNumber;
+      const side = getTeamSide(teamNameRaw);
+      if (!side) return null; // couldn't identify team
+      
+      // If it's home's yard line => universal = yardNumber
+      // If it's away's yard line => universal = 100 - yardNumber
+      if (side === "home") {
+        return yardNumber;
+      } else {
+        return 100 - yardNumber;
+      }
     }
+    
+    // Try simpler pattern: "to the 23" (no team mentioned)
+    const simpleRegex = /to the\s+(\d+)\b/i;
+    const simpleMatch = playText.match(simpleRegex);
+    
+    if (simpleMatch) {
+      const yardNumber = parseInt(simpleMatch[1], 10);
+      if (isNaN(yardNumber)) return null;
+      
+      // If no team is specified, assume it's the yard line of the team with possession
+      if (isHomeBall) {
+        return yardNumber; // Home has ball, so it's home's yard line
+      } else {
+        return 100 - yardNumber; // Away has ball, so it's away's yard line
+      }
+    }
+    
+    return null; // No match found
   };
 
   /**
    * extractYardLine: return 0..100 for the given play
    *   - prefer parseYardLine from text
-   *   - fallback to play.yardLine if available
+   *   - fallback to play.yardLine if available (properly converted to universal scale)
    *   - else 50
    */
   const extractYardLine = (play) => {
-    const fromText = parseYardLine(play.playText || "");
+    const isHomeBall = play.homeBall === true;
+    
+    // First try to parse from play text
+    const fromText = parseYardLine(play.playText || "", isHomeBall);
     if (fromText !== null) {
       return Math.max(0, Math.min(100, fromText));
     }
-    // If there's a numeric yardLine field:
+    
+    // If there's a numeric yardLine field, it represents the absolute field position
+    // in terms of the possessing team's side of the field
     if (play.yardLine !== undefined && play.yardLine !== null) {
-      // But we need to interpret it. If yardLine is from the home end zone, we can use yardLine directly.
-      // If the ball belongs to away, we do 100 - yardLine. 
-      if (play.homeBall) {
-        return Math.max(0, Math.min(100, play.yardLine));
+      const yardNumber = parseInt(play.yardLine, 10);
+      if (isNaN(yardNumber)) return 50;
+      
+      // Convert to universal 0-100 scale
+      // yardLine is the raw number from 0-50 (midfield)
+      if (isHomeBall) {
+        // Home team has the ball, yardLine is distance from home end zone
+        return Math.max(0, Math.min(100, yardNumber));
       } else {
-        return Math.max(0, Math.min(100, 100 - play.yardLine));
+        // Away team has the ball, yardLine is distance from away end zone
+        // We need to convert to universal yards from home end zone
+        return Math.max(0, Math.min(100, 100 - yardNumber));
       }
     }
-    return 50; // fallback
+    
+    // Default to midfield if we can't determine position
+    return 50;
   };
 
   /**
    * Format field position display
-   *  If yardLine = 35 and the home team has the ball => "HOME 35"
-   *  If yardLine = 65 and the away team has the ball => that means 100-65=35 from away end zone => "AWAY 35"
+   * The universalYardLine is on a 0-100 scale where:
+   *   0 = Home end zone
+   *   100 = Away end zone
+   * 
+   * For display, we want to show the team abbrev and yard line in terms of distance from their own end zone:
+   * 
+   * Examples:
+   * - If universalYardLine = 35 and home team has ball => "OSU 35" (35 yards from home end zone)
+   * - If universalYardLine = 65 and away team has ball => "TEN 35" (35 yards from away end zone, which is 100-65=35)
+   * 
+   * We also need to handle the case where the ball is in opponent territory:
+   * - When home has ball and universalYardLine > 50 => "OSU at TEN 40" (where 40 = 100-60 yards from away end zone)
+   * - When away has ball and universalYardLine < 50 => "TEN at OSU 40" (where 40 = yards from home end zone) 
    */
   const formatFieldPosition = (universalYardLine, isHomeBall) => {
     if (!game) return "";
-    const teamName = isHomeBall ? game.homeTeam : game.awayTeam;
-    const teamAbbr = abbreviateTeamName(teamName);
-    let yardNumber = 0;
+    
+    // Ensure universalYardLine is valid
+    const yardLine = Math.max(0, Math.min(100, universalYardLine));
+    
+    // Get team abbreviations
+    const homeAbbr = abbreviateTeamName(game.homeTeam);
+    const awayAbbr = abbreviateTeamName(game.awayTeam);
+    
+    // Case 1: Home team has the ball
     if (isHomeBall) {
-      yardNumber = universalYardLine; // 0..100 from home end zone
-    } else {
-      yardNumber = 100 - universalYardLine; // 0..100 from away end zone
+      if (yardLine <= 50) {
+        // In home territory: "OSU 35"
+        return `${homeAbbr} ${yardLine}`;
+      } else {
+        // In away territory: "OSU at TEN 45" (where 45 is yards from away end zone)
+        const awayYard = 100 - yardLine;
+        return `${homeAbbr} at ${awayAbbr} ${awayYard}`;
+      }
+    } 
+    // Case 2: Away team has the ball
+    else {
+      if (yardLine >= 50) {
+        // In away territory: "TEN 35" (where 35 is yards from away end zone)
+        const awayYard = 100 - yardLine;
+        return `${awayAbbr} ${awayYard}`;
+      } else {
+        // In home territory: "TEN at OSU 35"
+        return `${awayAbbr} at ${homeAbbr} ${yardLine}`;
+      }
     }
-    return `${teamAbbr} ${yardNumber}`;
   };
 
   // Redzone check
   const checkForRedzone = (universalYardLine, isHomeBall) => {
-    // Home has ball => yardLine >= 80 => inside away’s 20
-    // Away has ball => yardLine <= 20 => inside home’s 20
+    // Home has ball => yardLine >= 80 => inside away's 20
+    // Away has ball => yardLine <= 20 => inside home's 20
     if (isHomeBall && universalYardLine >= 80) {
       setIsRedzone(true);
     } else if (!isHomeBall && universalYardLine <= 20) {
@@ -133,6 +202,18 @@ const GameDetailView = () => {
     } else {
       setIsRedzone(false);
     }
+  };
+  
+  // Debug function to help troubleshoot field position issues
+  const debugFieldPosition = (play, universalYardLine) => {
+    if (!play) return;
+    console.log('=== Field Position Debug ===');
+    console.log(`Play #${play.playNumber}: ${play.playText}`);
+    console.log(`Team with ball: ${play.homeBall ? game?.homeTeam : game?.awayTeam}`);
+    console.log(`Raw yardLine from data: ${play.yardLine}`);
+    console.log(`Universal yardLine (0-100): ${universalYardLine}`);
+    console.log(`Formatted position: ${formatFieldPosition(universalYardLine, play.homeBall)}`);
+    console.log('==========================');
   };
 
   // Data fetching
@@ -181,6 +262,8 @@ const GameDetailView = () => {
           setBallPosition(yard);
           setFieldPosition(formatFieldPosition(yard, firstPlay.homeBall));
           setCurrentQuarter(firstPlay.period || 1);
+          // Debug the initial position
+          debugFieldPosition(firstPlay, yard);
 
           // If last play is 4th Q or beyond, game might be complete
           if (uniquePlays[uniquePlays.length - 1].period >= 4) {
@@ -216,7 +299,7 @@ const GameDetailView = () => {
       setShowFireworks(true);
 
       const startYard = extractYardLine(currentPlay);
-      // If home scores => yard line goes to 100 if we were “home=0” ? Actually no. 
+      // If home scores => yard line goes to 100 if we were "home=0" ? Actually no. 
       // We said home end zone=0, away end zone=100. 
       // That means to score, the home team goes from e.g. 20 up to 100? 
       // Wait, if home is 0, then to score a TD, they'd have to get to 100 (the away end zone). 
@@ -314,6 +397,8 @@ const GameDetailView = () => {
       const yard = extractYardLine(nextPlay);
       setBallPosition(yard);
       setFieldPosition(formatFieldPosition(yard, nextPlay.homeBall));
+      // Debug the position on each play advancement
+      debugFieldPosition(nextPlay, yard);
 
       checkForTouchdown(currentPlay, nextPlay);
       checkForRedzone(yard, nextPlay.homeBall);
