@@ -1,4 +1,37 @@
-/* AdvancedGameDetailView.css */
+.odds-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.odds-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.odds-value {
+  font-weight: 700;
+  color: #212529;
+}
+
+.odds-item.moneyline {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moneyline-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.money-value {
+  font-weight: 700;
+  color: #212529;
+}/* AdvancedGameDetailView.css */
 
 /* Use box-sizing: border-box for consistent sizing */
 *,
@@ -580,12 +613,22 @@
   line-height: 1.5;
 }
 
-/* Betting Cards */
-.betting-cards-container {
+/* Betting Section Styling */
+.betting-section {
+  margin-bottom: 24px;
+}
+
+.betting-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #343a40;
+}
+
+.sportsbooks-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .betting-card {
@@ -650,10 +693,10 @@
 }
 
 .sportsbook-logo {
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
-  margin-right: 8px;
+  align-self: center;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -665,17 +708,31 @@
 /* Sportsbook container styling */
 .sportsbook {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
 }
 
-.odds {
+.sportsbook:hover {
+  transform: translateY(-3px);
+}
+
+.sportsbook-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 12px 0;
+  color: #212529;
+  text-align: center;
+}
+
+.betting-odds {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.95rem;
-  color: #333;
+  gap: 12px;
+  width: 100%;
 }
 
 .value-label {

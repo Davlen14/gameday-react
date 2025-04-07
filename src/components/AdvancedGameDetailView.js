@@ -379,10 +379,9 @@ const getSportsbookLogo = (provider) => {
   return sportsbookLogos[provider] || "/photos/default_sportsbook.png";
 };
 
-const getRandomLineForGame = (gameId, lines) => {
-  const gameLines = lines.filter((line) => line.gameId === gameId);
-  if (gameLines.length === 0) return null;
-  return gameLines[Math.floor(Math.random() * gameLines.length)];
+// Function to filter lines for the current game
+const getGameLines = (gameId, lines) => {
+  return lines.filter((line) => line.gameId === gameId || line.id === gameId);
 };
 
 // Video card component for displaying YouTube videos
@@ -624,7 +623,7 @@ const AdvancedGameDetailView = () => {
   const awayTeamColor = getTeamColor(awayTeam);
   const homeLogo = getTeamLogo(homeTeam);
   const awayLogo = getTeamLogo(awayTeam);
-  const randomLine = getRandomLineForGame(gameId, lines);
+  const gameLines = getGameLines(gameId, lines);
 
   const renderLineScores = () => {
     const periods = homeLineScores && homeLineScores.length;
@@ -906,32 +905,52 @@ const AdvancedGameDetailView = () => {
   );
 
   const renderBetting = () => {
-    const randomLine = getRandomLineForGame(gameId, lines);
+    // Filter lines for the current game
+    const gameLines = lines.filter(line => line.id === gameId || line.gameId === gameId);
+    
     return (
       <div className="tab-content betting">
         <h2>Betting Information</h2>
-        {randomLine ? (
+        {gameLines && gameLines.length > 0 ? (
           <div className="betting-section">
-            <div className="sportsbook">
-              <img
-                src={getSportsbookLogo(randomLine.provider)}
-                alt={randomLine.provider}
-                className="sportsbook-logo"
-              />
-              <div className="betting-odds">
-                <div className="odds-item">
-                  <span className="odds-label">Spread:</span>
-                  <span className="odds-value">{randomLine.spread || "N/A"}</span>
+            <h3>Sportsbook Lines</h3>
+            <div className="sportsbooks-container">
+              {gameLines.map((line, index) => (
+                <div key={index} className="sportsbook">
+                  <img
+                    src={getSportsbookLogo(line.provider)}
+                    alt={line.provider || "Sportsbook"}
+                    className="sportsbook-logo"
+                  />
+                  <div className="sportsbook-name">{line.provider || "Sportsbook"}</div>
+                  <div className="betting-odds">
+                    <div className="odds-item">
+                      <span className="odds-label">Spread:</span>
+                      <span className="odds-value">{line.spread || "N/A"}</span>
+                    </div>
+                    <div className="odds-item">
+                      <span className="odds-label">Over/Under:</span>
+                      <span className="odds-value">{line.overUnder || "N/A"}</span>
+                    </div>
+                    {line.moneylineHome && line.moneylineAway && (
+                      <div className="odds-item moneyline">
+                        <div className="moneyline-item">
+                          <span className="team-abbr">{homeTeam}:</span>
+                          <span className="money-value">{line.moneylineHome}</span>
+                        </div>
+                        <div className="moneyline-item">
+                          <span className="team-abbr">{awayTeam}:</span>
+                          <span className="money-value">{line.moneylineAway}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="odds-item">
-                  <span className="odds-label">O/U:</span>
-                  <span className="odds-value">{randomLine.overUnder || "N/A"}</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         ) : (
-          <p className="no-data">No betting lines available</p>
+          <p className="no-data">No betting lines available for this game.</p>
         )}
         <div className="betting-disclaimer">
           <p>Odds displayed are for informational purposes only. Please check with sportsbooks for current odds.</p>
