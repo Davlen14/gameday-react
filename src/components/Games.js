@@ -18,6 +18,9 @@ const Games = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const navigate = useNavigate();
 
+    // 🔴 ADDED: New state variable for toggling the detailed view of a game
+    const [expandedGames, setExpandedGames] = useState({});
+
     useEffect(() => {
         const fetchGamesAndRelatedData = async () => {
             try {
@@ -361,91 +364,145 @@ const Games = () => {
 
                     return (
                         <article key={game.id} className="gtgame-card">
-                            <div className="gtteams-container">
-                                <div className="gtteam">
-                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="gtteam-logo" />
-                                    <div className="gtteam-details">
-                                        <h3>{game.homeTeam}</h3>
-                                        {homeIsFCS && <span className="gtteam-division"></span>}
-                                        <span className="gtscore">{game.homePoints}</span>
+                            {/* Game Card Header */}
+                            <div className="gtgame-card-header">
+                                <div className="gtteams-container">
+                                    <div className="gtteam home-team">
+                                        <div className="gtteam-logo-container">
+                                            <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="gtteam-logo" />
+                                        </div>
+                                        <div className="gtteam-details">
+                                            <h3>{game.homeTeam}</h3>
+                                            {homeIsFCS && <span className="gtteam-division">FCS</span>}
+                                        </div>
+                                        <span className="gtscore">{game.homePoints || "-"}</span>
                                     </div>
-                                </div>
-                                
-                                <div className="gtvs-circle">
-                                    <span>VS</span>
-                                </div>
+                                    
+                                    <div className="gtvs-circle">
+                                        <span>VS</span>
+                                    </div>
 
-                                <div className="gtteam">
-                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="gtteam-logo" />
-                                    <div className="gtteam-details">
-                                        <h3>{game.awayTeam}</h3>
-                                        {awayIsFCS && <span className="gtteam-division"></span>}
-                                        <span className="gtscore">{game.awayPoints}</span>
+                                    <div className="gtteam away-team">
+                                        <div className="gtteam-logo-container">
+                                            <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="gtteam-logo" />
+                                        </div>
+                                        <div className="gtteam-details">
+                                            <h3>{game.awayTeam}</h3>
+                                            {awayIsFCS && <span className="gtteam-division">FCS</span>}
+                                        </div>
+                                        <span className="gtscore">{game.awayPoints || "-"}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="gtgame-info">
+                            {/* Game Info Grid */}
+                            <div className="gtgame-info-grid">
                                 <div className="gtinfo-item">
                                     <svg className="gticon" viewBox="0 0 24 24">
                                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
                                     </svg>
-                                    <span>{game.venue}</span>
+                                    <div>
+                                        <span className="gtinfo-label">Venue</span>
+                                        <span className="gtinfo-value">{game.venue}</span>
+                                    </div>
                                 </div>
                                 
                                 <div className="gtinfo-item">
                                     <svg className="gticon" viewBox="0 0 24 24">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                                     </svg>
-                                    {game.status === 'final' ? (
-                                        <span className="gtfinal">Final Score</span>
-                                    ) : (
-                                        <span>{formatGameDate(game)}</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="gtgame-meta">
-                                <div className="gtbroadcast-weather-row">
-                                    <TvIcon />
-                                    <span className="gtnetwork">{tvNetwork || 'N/A'}</span>
-                                    <WeatherIcon condition={gameWeather?.weatherCondition} />
-                                    <span className="gttemperature">
-                                        {gameWeather?.temperature || '--'}°F
-                                    </span>
-                                    <span className="gtcondition">
-                                        {gameWeather?.weatherCondition || 'N/A'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {gameLines && (
-                            <div className="gtbetting-section">
-                                <h4>Betting Lines</h4>
-                                <div className="gtsportsbooks">
-                                {gameLines.lines && gameLines.lines.map((line) => (
-                                    <div key={line.provider} className="gtsportsbook-line">
-                                        <img 
-                                            src={getSportsbookLogo(line.provider)} 
-                                            alt={line.provider} 
-                                            className="gtsportsbook-logo" 
-                                        />
-                                        <span className="gtspread">SP: {line.spread || 'N/A'}</span>
-                                        <span className="gtoverunder">O/U: {line.overUnder || 'N/A'}</span>
+                                    <div>
+                                        <span className="gtinfo-label">Time</span>
+                                        <span className="gtinfo-value">
+                                            {game.status === 'final' ? (
+                                                <span className="gtfinal">Final</span>
+                                            ) : (
+                                                formatGameDate(game)
+                                            )}
+                                        </span>
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className="gtinfo-item">
+                                    <TvIcon />
+                                    <div>
+                                        <span className="gtinfo-label">Network</span>
+                                        <span className="gtinfo-value">{tvNetwork}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="gtinfo-item">
+                                    <WeatherIcon condition={gameWeather?.weatherCondition} />
+                                    <div>
+                                        <span className="gtinfo-label">Weather</span>
+                                        <span className="gtinfo-value">
+                                            {gameWeather?.temperature ? `${gameWeather.temperature}°F` : '--'} 
+                                            <span className="gtweather-condition">
+                                                {gameWeather?.weatherCondition || 'N/A'}
+                                            </span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            )}
 
-                            <div className="gtadvanced-details-section">
-                                <button 
-                                    className="gtadvanced-details-button"
-                                    onClick={() => navigateToGameDetails(game.id)}
-                                >
-                                    View Advanced Game Details
-                                </button>
-                            </div>
+                            {/* 🔴 ADDED: Toggle details button */}
+                            <button 
+                                className="gtview-details-btn"
+                                onClick={() => toggleGameDetails(game.id)}
+                            >
+                                {expandedGames[game.id] ? 'Hide Details' : 'View Details'}
+                            </button>
+                            
+                            {/* 🔴 ADDED: Expandable Details Section */}
+                            {expandedGames[game.id] && (
+                                <div className="gtgame-details">
+                                    {gameLines && (
+                                        <div className="gtbetting-lines">
+                                            <h4>Betting Lines</h4>
+                                            <div className="gtlines-grid">
+                                                {gameLines.lines && gameLines.lines.map((line) => (
+                                                    <div key={line.provider} className="gtline-item">
+                                                        <div className="gtline-provider">
+                                                            <img 
+                                                                src={getSportsbookLogo(line.provider)} 
+                                                                alt={line.provider} 
+                                                                className="gtsportsbook-logo" 
+                                                            />
+                                                            <span>{line.provider}</span>
+                                                        </div>
+                                                        <div className="gtline-values">
+                                                            <div className="gtline-value">
+                                                                <span className="gtline-label">Spread</span>
+                                                                <span className="gtline-number">{line.spread || 'N/A'}</span>
+                                                            </div>
+                                                            <div className="gtline-value">
+                                                                <span className="gtline-label">O/U</span>
+                                                                <span className="gtline-number">{line.overUnder || 'N/A'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="gtdetails-actions">
+                                        <button 
+                                            className="gtadvanced-details-button"
+                                            onClick={() => navigateToGameDetails(game.id)}
+                                        >
+                                            View Advanced Game Details
+                                        </button>
+                                        
+                                        <button 
+                                            className="gtadvanced-player-button"
+                                            onClick={() => {/* Future functionality */}}
+                                        >
+                                            Advanced Player Stats
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </article>
                     );
                 }))}
