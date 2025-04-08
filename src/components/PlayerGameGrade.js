@@ -113,9 +113,9 @@ const PlayerGameGrade = ({ gameId }) => {
     const isCloseGame = scoreDifference <= 7;
     
     // Extract team data safely
-    const teams = data.boxScore.teams || [];
-    const homeTeamData = teams.find(t => t.team === homeTeam) || {};
-    const awayTeamData = teams.find(t => t.team === awayTeam) || {};
+    const teams = Array.isArray(data.boxScore?.teams) ? data.boxScore.teams : [];
+    const homeTeamData = teams.find(t => t?.team === homeTeam) || {};
+    const awayTeamData = teams.find(t => t?.team === awayTeam) || {};
     
     // Quarter-by-quarter performance
     const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
