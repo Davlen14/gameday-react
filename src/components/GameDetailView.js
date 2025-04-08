@@ -1294,19 +1294,6 @@ const GameDetailView = () => {
   z-index: 20;
 }
 
-.field-scoreboard {
-  position: absolute;
-  top: 10px;
-  right: 60px;
-  background: #FF8200; /* Tennessee orange */
-  padding: 8px 12px;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  z-index: 20;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
 .stat-label {
   font-weight: 600;
   min-width: 120px;
