@@ -1,0 +1,730 @@
+/* PlayerGameGrade.css */
+
+/* Main container */
+.tppg-container {
+    width: 96%;
+    margin: 2% auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eaeaea;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    color: #333;
+  }
+  
+  /* Heading styles */
+  .tppg-heading {
+    text-align: center;
+    margin-bottom: 28px;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  /* Game analysis section */
+  .tppg-analysis {
+    margin-bottom: 32px;
+  }
+  
+  .tppg-analysis-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .tppg-game-score {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .tppg-team-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+  
+  .tppg-team-name {
+    font-weight: 600;
+  }
+  
+  .tppg-team-score {
+    font-weight: 700;
+    font-size: 1.6rem;
+  }
+  
+  .tppg-vs {
+    color: #888;
+  }
+  
+  /* Tab navigation */
+  .tppg-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 20px;
+    gap: 4px;
+  }
+  
+  .tppg-tab {
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    outline: none;
+    background: transparent;
+    border: none;
+    color: #666;
+  }
+  
+  .tppg-tab:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: #444;
+  }
+  
+  .tppg-tab.tppg-active {
+    color: #3b82f6;
+    font-weight: 700;
+  }
+  
+  .tppg-tab.tppg-active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background-color: #3b82f6;
+    border-radius: 2px;
+  }
+  
+  /* Tab content container */
+  .tppg-tab-content {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Overview tab */
+  .tppg-overview {
+    line-height: 1.6;
+  }
+  
+  .tppg-overview-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+  }
+  
+  .tppg-overview-text {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+  
+  .tppg-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  
+  .tppg-stat-card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+  }
+  
+  .tppg-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tppg-stat-card-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+  }
+  
+  /* Quarter breakdown */
+  .tppg-quarter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  
+  .tppg-quarter-card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  .tppg-quarter-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  
+  .tppg-team-comparison {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .tppg-team-ppa {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  .tppg-advantage-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    gap: 4px;
+  }
+  
+  /* Key plays section */
+  .tppg-key-play {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 16px;
+    transition: transform 0.2s ease;
+  }
+  
+  .tppg-key-play:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tppg-play-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .tppg-play-epa {
+    font-weight: 700;
+  }
+  
+  .tppg-play-epa.tppg-positive {
+    color: #10b981;
+  }
+  
+  .tppg-play-epa.tppg-negative {
+    color: #ef4444;
+  }
+  
+  .tppg-play-text {
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  
+  .tppg-play-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .tppg-scoring-badge {
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  /* Star players */
+  .tppg-star-players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .tppg-player-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tppg-player-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tppg-player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .tppg-player-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  
+  .tppg-team-badge {
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .tppg-player-position {
+    color: #666;
+    margin-bottom: 12px;
+  }
+  
+  .tppg-player-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  
+  .tppg-player-stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tppg-stat-label {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .tppg-stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  
+  /* Player grades section */
+  .tppg-grades-container {
+    margin-top: 32px;
+  }
+  
+  .tppg-grades-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .tppg-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .tppg-select-container {
+    position: relative;
+    min-width: 180px;
+  }
+  
+  .tppg-select {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 40px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    font-size: 1rem;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+  
+  .tppg-select:hover {
+    border-color: #d0d0d0;
+  }
+  
+  .tppg-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+  
+  .tppg-select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+  }
+  
+  /* Table styles */
+  .tppg-table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 32px;
+  }
+  
+  .tppg-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .tppg-table thead {
+    background-color: #f8f9fa;
+  }
+  
+  .tppg-table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+    border-bottom: 2px solid #e0e0e0;
+    white-space: nowrap;
+  }
+  
+  .tppg-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
+  .tppg-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+  
+  .tppg-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .tppg-player-name-cell {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .tppg-grade {
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    text-align: center;
+    min-width: 50px;
+  }
+  
+  .tppg-grade-elite {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+  
+  .tppg-grade-exceptional {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+  
+  .tppg-grade-good {
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+  }
+  
+  .tppg-grade-average {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+  }
+  
+  .tppg-grade-poor {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+  
+  .tppg-insights-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .tppg-insights-item {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  .tppg-insights-item::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #3b82f6;
+    font-weight: bold;
+  }
+  
+  /* Chart container */
+  .tppg-chart-container {
+    margin: 32px 0;
+    height: 400px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Methodology section */
+  .tppg-methodology {
+    background-color: #f8f9fa;
+    padding: 24px;
+    border-radius: 12px;
+    margin: 32px 0;
+  }
+  
+  .tppg-methodology-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .tppg-methodology-content {
+    color: #444;
+    line-height: 1.6;
+  }
+  
+  .tppg-methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .tppg-methodology-card {
+    background-color: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  
+  .tppg-methodology-subtitle {
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .tppg-scale-list, .tppg-kpi-list, .tppg-position-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .tppg-scale-list li, .tppg-kpi-list li, .tppg-position-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  
+  .tppg-scale-list li::before, .tppg-kpi-list li::before, .tppg-position-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #3b82f6;
+    font-weight: bold;
+  }
+  
+  /* Game context */
+  .tppg-game-context {
+    background-color: rgba(59, 130, 246, 0.08);
+    padding: 24px;
+    border-radius: 12px;
+    margin: 32px 0;
+  }
+  
+  .tppg-context-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e40af;
+  }
+  
+  .tppg-context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .tppg-context-item h4 {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e40af;
+  }
+  
+  /* Position group insights */
+  .tppg-position-insights {
+    margin: 32px 0;
+  }
+  
+  .tppg-position-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .tppg-position-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .tppg-position-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+  }
+  
+  .tppg-position-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .tppg-position-card h4 {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .tppg-position-grade {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 10px 0;
+  }
+  
+  .tppg-position-info {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  /* Media queries */
+  @media (max-width: 768px) {
+    .tppg-tabs {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 8px;
+    }
+    
+    .tppg-tab {
+      padding: 10px 16px;
+    }
+    
+    .tppg-grade {
+      padding: 4px 6px;
+      min-width: 40px;
+    }
+    
+    .tppg-filters {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .tppg-select-container {
+      width: 100%;
+    }
+    
+    .tppg-table th, .tppg-table td {
+      padding: 12px 16px;
+    }
+  }
+  
+  /* Loading and error states */
+  .tppg-loading {
+    text-align: center;
+    padding: 40px;
+    font-weight: 600;
+    color: #3b82f6;
+    font-size: 1.2rem;
+  }
+  
+  .tppg-error {
+    text-align: center;
+    padding: 40px;
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 1.2rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+  }
+  
+  /* Tooltips */
+  .tppg-tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .tppg-tooltip .tppg-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .tppg-tooltip:hover .tppg-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }

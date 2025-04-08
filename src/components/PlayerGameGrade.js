@@ -16,6 +16,32 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { 
+  FaTrophy, 
+  FaChartBar, 
+  FaFootballBall, 
+  FaChartLine, 
+  FaRegLightbulb, 
+  FaStar,
+  FaArrowUp, 
+  FaArrowDown, 
+  FaUserAlt, 
+  FaUsers, 
+  FaRunning, 
+  FaShieldAlt,
+  FaFilter,
+  FaAngleDown,
+  FaRegChartBar,
+  FaRegListAlt,
+  FaFireAlt,
+  FaInfoCircle,
+  FaMedal,
+  FaClipboardList,
+  FaBullseye
+} from 'react-icons/fa';
+
+// Import CSS styles
+import "../styles/PlayerGameGrade.css"; // Adjust the path as necessary
 
 const PlayerGameGrade = ({ gameId }) => {
   // State management
@@ -457,13 +483,13 @@ const PlayerGameGrade = ({ gameId }) => {
     });
   }, [playerGrades, selectedTeam, selectedPosition]);
 
-  // Grade color and description helpers
-  const getGradeColor = (grade) => {
-    if (grade >= 90) return 'text-emerald-600';
-    if (grade >= 80) return 'text-green-500';
-    if (grade >= 70) return 'text-yellow-500';
-    if (grade >= 60) return 'text-orange-500';
-    return 'text-red-600';
+  // Grade class and description helpers
+  const getGradeClass = (grade) => {
+    if (grade >= 90) return 'tppg-grade-elite';
+    if (grade >= 80) return 'tppg-grade-exceptional';
+    if (grade >= 70) return 'tppg-grade-good';
+    if (grade >= 60) return 'tppg-grade-average';
+    return 'tppg-grade-poor';
   };
 
   const getGradeDescription = (grade) => {
@@ -474,203 +500,279 @@ const PlayerGameGrade = ({ gameId }) => {
     return 'Below Average';
   };
 
-  if (isLoading) return <div className="p-6 text-center font-bold text-blue-600">Loading comprehensive game analysis...</div>;
-  if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
+  // Get the grade icon based on performance
+  const getGradeIcon = (grade) => {
+    if (grade >= 90) return <FaTrophy />;
+    if (grade >= 80) return <FaMedal />;
+    if (grade >= 70) return <FaStar />;
+    if (grade >= 60) return <FaRegLightbulb />;
+    return <FaRegChartBar />;
+  };
+
+  if (isLoading) return <div className="tppg-loading"><FaFootballBall /> Loading comprehensive game analysis...</div>;
+  if (error) return <div className="tppg-error">{error}</div>;
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6">
+    <div className="tppg-container">
       {gameAnalysis && (
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Game Analysis</h1>
-          <h2 className="text-xl mb-6">
-            {gameAnalysis.gameInfo.homeTeam} {gameAnalysis.gameInfo.homePoints} - {gameAnalysis.gameInfo.awayTeam} {gameAnalysis.gameInfo.awayPoints}
-          </h2>
-          <div className="mb-6 border-b">
-            <div className="flex flex-wrap -mb-px">
-              {['overview', 'quarterBreakdown', 'keyPlays', 'starPlayers'].map(tab => (
-                <button
-                  key={tab}
-                  className={`mr-2 inline-block p-4 rounded-t-lg ${
-                    activeAnalysisTab === tab 
-                      ? 'text-blue-600 border-b-2 border-blue-600 font-bold' 
-                      : 'hover:text-gray-600 hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveAnalysisTab(tab)}
-                >
-                  {tab === 'overview'
-                    ? 'Overview'
-                    : tab === 'quarterBreakdown'
-                      ? 'Quarter Analysis'
-                      : tab === 'keyPlays'
-                        ? 'Key Plays'
-                        : 'Star Players'}
-                </button>
-              ))}
-            </div>
+        <div className="tppg-analysis">
+          <h1 className="tppg-analysis-heading">
+            <FaFootballBall /> Game Analysis
+          </h1>
+          
+          <div className="tppg-game-score">
+            <span className="tppg-team-name">{gameAnalysis.gameInfo.homeTeam}</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo.homePoints}</span>
+            <span className="tppg-vs">vs</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo.awayPoints}</span>
+            <span className="tppg-team-name">{gameAnalysis.gameInfo.awayTeam}</span>
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          
+          <div className="tppg-tabs">
+            {[
+              { id: 'overview', label: 'Overview', icon: <FaRegListAlt /> },
+              { id: 'quarterBreakdown', label: 'Quarter Analysis', icon: <FaChartLine /> },
+              { id: 'keyPlays', label: 'Key Plays', icon: <FaFireAlt /> },
+              { id: 'starPlayers', label: 'Star Players', icon: <FaStar /> }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                className={`tppg-tab ${activeAnalysisTab === tab.id ? 'tppg-active' : ''}`}
+                onClick={() => setActiveAnalysisTab(tab.id)}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="tppg-tab-content">
             {activeAnalysisTab === 'overview' && (
-              <div>
-                <h3 className="text-xl font-bold mb-4">Game Overview</h3>
-                <p className="text-lg mb-4">{gameAnalysis.overview}</p>
-                <p className="mb-4">{gameAnalysis.gameStory}</p>
-                <div className="grid md:grid-cols-2 gap-4 mt-6">
-                  <div className="bg-white p-4 rounded shadow">
-                    <h4 className="font-bold mb-2">Game Flow</h4>
-                    <p>
-                      {gameAnalysis.quarterSummaries.map((summary, i) => (
-                        <span key={i} className="block mb-1">{summary}</span>
-                      ))}
-                    </p>
+              <div className="tppg-overview">
+                <h3 className="tppg-overview-title">Game Overview</h3>
+                <p className="tppg-overview-text">{gameAnalysis.overview}</p>
+                <p className="tppg-overview-text">{gameAnalysis.gameStory}</p>
+                
+                <div className="tppg-stats-grid">
+                  <div className="tppg-stat-card">
+                    <h4 className="tppg-stat-card-title">
+                      <FaChartLine /> Game Flow
+                    </h4>
+                    {gameAnalysis.quarterSummaries.map((summary, i) => (
+                      <div key={i} className="tppg-overview-text">{summary}</div>
+                    ))}
                   </div>
-                  <div className="bg-white p-4 rounded shadow">
-                    <h4 className="font-bold mb-2">Key Statistics</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                  
+                  <div className="tppg-stat-card">
+                    <h4 className="tppg-stat-card-title">
+                      <FaChartBar /> Key Statistics
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div>
-                        <span className="font-semibold block">Success Rate</span>
-                        <span className="block">
+                        <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Success Rate</span>
+                        <div>
                           {gameAnalysis.gameInfo.homeTeam}: {(gameAnalysis.teamEfficiency.successRates[gameAnalysis.gameInfo.homeTeam] * 100).toFixed(1)}%
-                        </span>
-                        <span className="block">
+                        </div>
+                        <div>
                           {gameAnalysis.gameInfo.awayTeam}: {(gameAnalysis.teamEfficiency.successRates[gameAnalysis.gameInfo.awayTeam] * 100).toFixed(1)}%
-                        </span>
+                        </div>
                       </div>
                       <div>
-                        <span className="font-semibold block">Explosiveness</span>
-                        <span className="block">
+                        <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Explosiveness</span>
+                        <div>
                           {gameAnalysis.gameInfo.homeTeam}: {gameAnalysis.teamEfficiency.explosiveness[gameAnalysis.gameInfo.homeTeam].toFixed(2)}
-                        </span>
-                        <span className="block">
+                        </div>
+                        <div>
                           {gameAnalysis.gameInfo.awayTeam}: {gameAnalysis.teamEfficiency.explosiveness[gameAnalysis.gameInfo.awayTeam].toFixed(2)}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
+            
             {activeAnalysisTab === 'quarterBreakdown' && (
               <div>
-                <h3 className="text-xl font-bold mb-4">Quarter-by-Quarter Analysis</h3>
-                <div className="mb-6" style={{ height: '300px' }}>
+                <h3 className="tppg-overview-title">
+                  <FaChartLine /> Quarter-by-Quarter Analysis
+                </h3>
+                <div style={{ height: '300px', marginBottom: '24px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={gameAnalysis.quarterAnalysis}
                       margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="quarter" label={{ value: 'Quarter', position: 'insideBottom', offset: -10 }} />
-                      <YAxis label={{ value: 'Team PPA', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                      <XAxis 
+                        dataKey="quarter" 
+                        label={{ value: 'Quarter', position: 'insideBottom', offset: -10 }}
+                        tick={{ fill: '#555' }} 
+                      />
+                      <YAxis 
+                        label={{ value: 'Team PPA', angle: -90, position: 'insideLeft' }}
+                        tick={{ fill: '#555' }} 
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e0e0e0',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }} 
+                      />
                       <Legend />
                       <Line 
                         type="monotone" 
                         dataKey="homePPA" 
                         name={gameAnalysis.gameInfo.homeTeam} 
                         stroke="#3b82f6" 
-                        activeDot={{ r: 8 }} 
+                        strokeWidth={3}
+                        dot={{ r: 6, fill: '#3b82f6' }}
+                        activeDot={{ r: 8, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }} 
                       />
                       <Line 
                         type="monotone" 
                         dataKey="awayPPA" 
                         name={gameAnalysis.gameInfo.awayTeam} 
                         stroke="#ef4444" 
-                        activeDot={{ r: 8 }} 
+                        strokeWidth={3}
+                        dot={{ r: 6, fill: '#ef4444' }}
+                        activeDot={{ r: 8, fill: '#ef4444', stroke: 'white', strokeWidth: 2 }} 
                       />
-                      <ReferenceLine y={0} stroke="#666" />
+                      <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                
+                <div className="tppg-quarter-grid">
                   {gameAnalysis.quarterAnalysis.map((quarter, index) => (
-                    <div key={index} className="bg-white rounded shadow p-4">
-                      <h4 className="font-bold">Quarter {quarter.quarter}</h4>
-                      <div className="flex justify-between items-center mt-2">
+                    <div key={index} className="tppg-quarter-card">
+                      <h4 className="tppg-quarter-title">Quarter {quarter.quarter}</h4>
+                      <div className="tppg-team-comparison">
                         <div>
-                          <span className="block text-blue-600 font-bold">{gameAnalysis.gameInfo.homeTeam}</span>
-                          <span className="block text-lg">{quarter.homePPA.toFixed(2)} PPA</span>
+                          <span style={{ display: 'block', color: '#3b82f6', fontWeight: 600 }}>{gameAnalysis.gameInfo.homeTeam}</span>
+                          <span className="tppg-team-ppa">{quarter.homePPA.toFixed(2)}</span>
                         </div>
-                        <div className="text-center">
-                          <span className={`text-sm ${quarter.homeAdvantage ? 'text-blue-600' : 'text-red-600'}`}>
-                            {quarter.homeAdvantage ? '↑' : '↓'} {Math.abs(quarter.homePPA - quarter.awayPPA).toFixed(2)}
-                          </span>
+                        <div className="tppg-advantage-indicator">
+                          {quarter.homeAdvantage ? (
+                            <FaArrowUp style={{ color: '#3b82f6' }} />
+                          ) : (
+                            <FaArrowDown style={{ color: '#ef4444' }} />
+                          )}
+                          <span>{Math.abs(quarter.homePPA - quarter.awayPPA).toFixed(2)}</span>
                         </div>
                         <div>
-                          <span className="block text-red-600 font-bold">{gameAnalysis.gameInfo.awayTeam}</span>
-                          <span className="block text-lg">{quarter.awayPPA.toFixed(2)} PPA</span>
+                          <span style={{ display: 'block', color: '#ef4444', fontWeight: 600 }}>{gameAnalysis.gameInfo.awayTeam}</span>
+                          <span className="tppg-team-ppa">{quarter.awayPPA.toFixed(2)}</span>
                         </div>
                       </div>
-                      <p className="mt-3 text-sm text-gray-600">
+                      <p style={{ marginTop: '12px', fontSize: '0.9rem', color: '#666' }}>
                         {quarter.significance === 'significant' 
                           ? 'Significant advantage for ' 
                           : 'Slight edge for '}
-                        {quarter.homeAdvantage ? gameAnalysis.gameInfo.homeTeam : gameAnalysis.gameInfo.awayTeam}
+                        <span style={{ fontWeight: 600 }}>
+                          {quarter.homeAdvantage ? gameAnalysis.gameInfo.homeTeam : gameAnalysis.gameInfo.awayTeam}
+                        </span>
                       </p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
+            
             {activeAnalysisTab === 'keyPlays' && (
               <div>
-                <h3 className="text-xl font-bold mb-4">Key Game-Changing Plays</h3>
-                <div className="space-y-4">
+                <h3 className="tppg-overview-title">
+                  <FaFireAlt /> Key Game-Changing Plays
+                </h3>
+                <div>
                   {gameAnalysis.keyPlays.map((play, index) => (
-                    <div key={index} className="bg-white p-4 rounded shadow">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold">
+                    <div key={index} className="tppg-key-play">
+                      <div className="tppg-play-header">
+                        <span>
                           Q{play.period} - {play.clock.minutes}:{play.clock.seconds < 10 ? '0' : ''}{play.clock.seconds}
                         </span>
-                        <span className={`font-bold ${play.epa > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {play.epa > 0 ? '+' : ''}{play.epa.toFixed(2)} EPA
+                        <span className={`tppg-play-epa ${play.epa > 0 ? 'tppg-positive' : 'tppg-negative'}`}>
+                          {play.epa > 0 ? (
+                            <><FaArrowUp style={{ marginRight: '4px' }} /> +{play.epa.toFixed(2)} EPA</>
+                          ) : (
+                            <><FaArrowDown style={{ marginRight: '4px' }} /> {play.epa.toFixed(2)} EPA</>
+                          )}
                         </span>
                       </div>
-                      <p className="mt-2">{play.playText}</p>
-                      <div className="mt-1 flex justify-between items-center">
-                        <span className="text-sm text-gray-600">{play.team}</span>
-                        {play.scoringPlay && <span className="text-sm bg-yellow-100 px-2 py-1 rounded">Scoring Play</span>}
+                      <p className="tppg-play-text">{play.playText}</p>
+                      <div className="tppg-play-footer">
+                        <span>{play.team}</span>
+                        {play.scoringPlay && (
+                          <span className="tppg-scoring-badge">
+                            <FaFootballBall /> Scoring Play
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
                   {gameAnalysis.keyPlays.length === 0 && (
-                    <p className="text-center text-gray-600 italic">No significant game-changing plays detected</p>
+                    <p style={{ textAlign: 'center', color: '#666', fontStyle: 'italic', padding: '20px' }}>
+                      No significant game-changing plays detected
+                    </p>
                   )}
                 </div>
               </div>
             )}
+            
             {activeAnalysisTab === 'starPlayers' && (
               <div>
-                <h3 className="text-xl font-bold mb-4">Star Performers</h3>
+                <h3 className="tppg-overview-title">
+                  <FaStar /> Star Performers
+                </h3>
                 {gameAnalysis.starPlayers.length > 0 ? (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="tppg-star-players-grid">
                     {gameAnalysis.starPlayers.map((player, index) => (
-                      <div key={index} className={`bg-white rounded shadow p-4 border-l-4 ${player.team === gameAnalysis.gameInfo.homeTeam ? 'border-blue-500' : 'border-red-500'}`}>
-                        <div className="flex justify-between items-center">
-                          <h4 className="font-bold text-lg">{player.name}</h4>
-                          <span className={`text-sm ${player.team === gameAnalysis.gameInfo.homeTeam ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'} px-2 py-1 rounded`}>
+                      <div 
+                        key={index} 
+                        className="tppg-player-card"
+                        style={{ 
+                          borderLeft: `4px solid ${player.team === gameAnalysis.gameInfo.homeTeam ? '#3b82f6' : '#ef4444'}`
+                        }}
+                      >
+                        <div className="tppg-player-header">
+                          <h4 className="tppg-player-name">{player.name}</h4>
+                          <span 
+                            className="tppg-team-badge"
+                            style={{ 
+                              backgroundColor: player.team === gameAnalysis.gameInfo.homeTeam ? 
+                                'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                              color: player.team === gameAnalysis.gameInfo.homeTeam ? 
+                                '#1e40af' : '#b91c1c'
+                            }}
+                          >
                             {player.team}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">{player.position}</p>
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          <div>
-                            <span className="block text-sm text-gray-500">Average PPA</span>
-                            <span className="block font-bold text-lg">{player.ppaAverage.toFixed(2)}</span>
+                        <p className="tppg-player-position">{player.position}</p>
+                        <div className="tppg-player-stats">
+                          <div className="tppg-player-stat-item">
+                            <span className="tppg-stat-label">Average PPA</span>
+                            <span className="tppg-stat-value">{player.ppaAverage.toFixed(2)}</span>
                           </div>
-                          <div>
-                            <span className="block text-sm text-gray-500">Total Impact</span>
-                            <span className="block font-bold text-lg">{player.ppaCumulative.toFixed(1)}</span>
+                          <div className="tppg-player-stat-item">
+                            <span className="tppg-stat-label">Total Impact</span>
+                            <span className="tppg-stat-value">{player.ppaCumulative.toFixed(1)}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-gray-600 italic">No standout performers detected</p>
+                  <p style={{ textAlign: 'center', color: '#666', fontStyle: 'italic', padding: '20px' }}>
+                    No standout performers detected
+                  </p>
                 )}
-                <div className="mt-6 bg-white rounded shadow p-4">
-                  <h4 className="font-bold mb-2">Understanding PPA (Predicted Points Added)</h4>
-                  <p className="text-sm text-gray-700">
+                <div style={{ marginTop: '24px', backgroundColor: 'white', borderRadius: '10px', padding: '16px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
+                  <h4 style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FaInfoCircle /> Understanding PPA (Predicted Points Added)
+                  </h4>
+                  <p style={{ fontSize: '0.9rem', color: '#555', lineHeight: '1.5' }}>
                     PPA measures a player's contribution to scoring. A high average PPA indicates efficiency, 
                     while cumulative PPA shows overall game impact. Values above 0.8 are considered exceptional,
                     with elite players consistently averaging over 1.0 PPA per play.
@@ -681,210 +783,275 @@ const PlayerGameGrade = ({ gameId }) => {
           </div>
         </div>
       )}
-      <h2 className="text-2xl font-bold mb-4">Player Performance Grades</h2>
-      <div className="flex space-x-4 mb-6">
-        <select 
-          value={selectedTeam} 
-          onChange={(e) => setSelectedTeam(e.target.value)}
-          className="border rounded p-2"
-        >
-          <option value="all">All Teams</option>
-          {Array.from(new Set(playerGrades.map(g => g.team))).map(team => (
-            <option key={team} value={team}>{team}</option>
-          ))}
-        </select>
-        <select 
-          value={selectedPosition} 
-          onChange={(e) => setSelectedPosition(e.target.value)}
-          className="border rounded p-2"
-        >
-          <option value="all">All Positions</option>
-          {Array.from(new Set(playerGrades.map(g => g.position))).map(pos => (
-            <option key={pos} value={pos}>{pos}</option>
-          ))}
-        </select>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-3 text-left">Player</th>
-              <th className="p-3">Team</th>
-              <th className="p-3">Position</th>
-              <th className="p-3">Grade</th>
-              <th className="p-3">Description</th>
-              <th className="p-3">Plays</th>
-              <th className="p-3">Key Insights</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredGrades.slice(0, 20).map((player, index) => (
-              <tr key={index} className="border-b hover:bg-gray-50">
-                <td className="p-3 font-bold">{player.name}</td>
-                <td className="p-3 text-center">{player.team}</td>
-                <td className="p-3 text-center">{player.position}</td>
-                <td className={`p-3 text-center font-bold ${getGradeColor(player.overallGrade)}`}>
-                  {player.overallGrade.toFixed(1)}
-                </td>
-                <td className="p-3 text-center">{getGradeDescription(player.overallGrade)}</td>
-                <td className="p-3 text-center">{player.playCount}</td>
-                <td className="p-3 text-sm">
-                  {player.insights && player.insights.length > 0 ? (
-                    <ul className="list-disc pl-4">
-                      {player.insights.map((insight, i) => (
-                        <li key={i}>{insight}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <span className="text-gray-500 italic">No special insights</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-8" style={{ height: '400px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart 
-            data={filteredGrades.slice(0, 15)}
-            margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-          >
-            <XAxis 
-              dataKey="name" 
-              angle={-45} 
-              textAnchor="end" 
-              interval={0}
-            />
-            <YAxis domain={[0, 100]} />
-            <Tooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const player = payload[0].payload;
-                  return (
-                    <div className="bg-white p-4 shadow-lg rounded-lg">
-                      <h3 className="font-bold">{player.name}</h3>
-                      <p>Position: {player.position}</p>
-                      <p>Team: {player.team}</p>
-                      <p>Grade: {player.overallGrade.toFixed(1)}</p>
-                      <p>Performance: {getGradeDescription(player.overallGrade)}</p>
-                      <p>Total Plays: {player.playCount}</p>
-                      {player.insights && player.insights.length > 0 && (
-                        <div className="mt-2">
-                          <p className="font-semibold">Insights:</p>
-                          <ul className="list-disc pl-4">
-                            {player.insights.map((insight, i) => (
-                              <li key={i}>{insight}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Bar dataKey="overallGrade">
-              {filteredGrades.slice(0, 15).map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={
-                    entry.overallGrade >= 90 ? '#10b981' :
-                    entry.overallGrade >= 80 ? '#22c55e' :
-                    entry.overallGrade >= 70 ? '#eab308' :
-                    entry.overallGrade >= 60 ? '#f97316' : '#ef4444'
-                  }
-                />
+      
+      <div className="tppg-grades-container">
+        <h2 className="tppg-grades-heading">
+          <FaClipboardList /> Player Performance Grades
+        </h2>
+        
+        <div className="tppg-filters">
+          <div className="tppg-select-container">
+            <select 
+              value={selectedTeam} 
+              onChange={(e) => setSelectedTeam(e.target.value)}
+              className="tppg-select"
+            >
+              <option value="all">All Teams</option>
+              {Array.from(new Set(playerGrades.map(g => g.team))).map(team => (
+                <option key={team} value={team}>{team}</option>
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="mt-8 bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-xl font-bold mb-4">Grading Methodology</h3>
-        <p className="text-gray-700">
-          Our advanced grading system evaluates player performance beyond traditional 
-          statistics. Each play is analyzed for its Expected Points Added (EPA), considering 
-          the player's role, contribution, and impact on the game. Grades are calculated 
-          on a 0-100 scale, with 60 representing an average performance.
-        </p>
-        <div className="mt-4 grid md:grid-cols-3 gap-4">
-          <div>
-            <h4 className="font-semibold">🏆 Grading Scale</h4>
-            <ul className="list-disc pl-5">
-              <li>90-100: Elite Performance</li>
-              <li>80-89: Exceptional</li>
-              <li>70-79: Very Good</li>
-              <li>60-69: Average</li>
-              <li>Below 60: Poor Performance</li>
-            </ul>
+            </select>
+            <FaAngleDown className="tppg-select-arrow" />
           </div>
-          <div>
-            <h4 className="font-semibold">📊 Key Performance Indicators</h4>
-            <ul className="list-disc pl-5">
-              <li>Expected Points Added (EPA)</li>
-              <li>Positive Play Contributions</li>
-              <li>Role-Specific Impact</li>
-              <li>Consistency</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold">🔍 Position Weightings</h4>
-            <ul className="list-disc pl-5">
-              <li>QB: Highest scrutiny</li>
-              <li>RB/WR: Explosive play potential</li>
-              <li>Defensive Positions: Disruptive impact</li>
-            </ul>
+          
+          <div className="tppg-select-container">
+            <select 
+              value={selectedPosition} 
+              onChange={(e) => setSelectedPosition(e.target.value)}
+              className="tppg-select"
+            >
+              <option value="all">All Positions</option>
+              {Array.from(new Set(playerGrades.map(g => g.position))).map(pos => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+            <FaAngleDown className="tppg-select-arrow" />
           </div>
         </div>
-      </div>
-      {gameData && (
-        <div className="mt-8 bg-blue-50 p-6 rounded-lg">
-          <h3 className="text-xl font-bold mb-4">Game Context</h3>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <h4 className="font-semibold">Total Plays Analyzed</h4>
-              <p>{gameData.playByPlay?.plays?.length || 'N/A'}</p>
+        
+        <div className="tppg-table-container">
+          <table className="tppg-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
+                <th>Grade</th>
+                <th>Description</th>
+                <th>Plays</th>
+                <th>Key Insights</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredGrades.slice(0, 20).map((player, index) => (
+                <tr key={index}>
+                  <td className="tppg-player-name-cell">
+                    <FaUserAlt style={{ color: '#666' }} /> {player.name}
+                  </td>
+                  <td style={{ textAlign: 'center' }}>{player.team}</td>
+                  <td style={{ textAlign: 'center' }}>{player.position}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className={`tppg-grade ${getGradeClass(player.overallGrade)}`}>
+                      {getGradeIcon(player.overallGrade)} {player.overallGrade.toFixed(1)}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>{getGradeDescription(player.overallGrade)}</td>
+                  <td style={{ textAlign: 'center' }}>{player.playCount}</td>
+                  <td>
+                    {player.insights && player.insights.length > 0 ? (
+                      <ul className="tppg-insights-list">
+                        {player.insights.map((insight, i) => (
+                          <li key={i} className="tppg-insights-item">{insight}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span style={{ color: '#777', fontStyle: 'italic' }}>No special insights</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="tppg-chart-container">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={filteredGrades.slice(0, 15)}
+              margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45} 
+                textAnchor="end" 
+                interval={0}
+                tick={{ fill: '#555', fontSize: 12 }}
+                tickMargin={10}
+              />
+              <YAxis 
+                domain={[0, 100]}
+                tick={{ fill: '#555' }}
+              />
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const player = payload[0].payload;
+                    return (
+                      <div style={{ 
+                        backgroundColor: 'white', 
+                        padding: '16px', 
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                        border: '1px solid #e0e0e0'
+                      }}>
+                        <h3 style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                          {player.name}
+                        </h3>
+                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Position:</span> {player.position}</div>
+                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Team:</span> {player.team}</div>
+                        <div style={{ marginBottom: '8px' }}>
+                          <span style={{ fontWeight: '600' }}>Grade:</span> 
+                          <span className={getGradeClass(player.overallGrade)} style={{ 
+                            paddingLeft: '5px',
+                            fontWeight: '700'
+                          }}>
+                            {player.overallGrade.toFixed(1)}
+                          </span>
+                        </div>
+                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Performance:</span> {getGradeDescription(player.overallGrade)}</div>
+                        <div style={{ marginBottom: '8px' }}><span style={{ fontWeight: '600' }}>Total Plays:</span> {player.playCount}</div>
+                        
+                        {player.insights && player.insights.length > 0 && (
+                          <div>
+                            <p style={{ fontWeight: '600', marginBottom: '4px', marginTop: '8px' }}>Insights:</p>
+                            <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                              {player.insights.map((insight, i) => (
+                                <li key={i} style={{ marginBottom: '4px' }}>{insight}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar 
+                dataKey="overallGrade"
+                animationDuration={1500}
+              >
+                {filteredGrades.slice(0, 15).map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={
+                      entry.overallGrade >= 90 ? '#10b981' :
+                      entry.overallGrade >= 80 ? '#22c55e' :
+                      entry.overallGrade >= 70 ? '#eab308' :
+                      entry.overallGrade >= 60 ? '#f97316' : '#ef4444'
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="tppg-methodology">
+          <h3 className="tppg-methodology-title">
+            <FaBullseye /> Grading Methodology
+          </h3>
+          <p className="tppg-methodology-content">
+            Our advanced grading system evaluates player performance beyond traditional 
+            statistics. Each play is analyzed for its Expected Points Added (EPA), considering 
+            the player's role, contribution, and impact on the game. Grades are calculated 
+            on a 0-100 scale, with 60 representing an average performance.
+          </p>
+          <div className="tppg-methodology-grid">
+            <div className="tppg-methodology-card">
+              <h4 className="tppg-methodology-subtitle">
+                <FaTrophy /> Grading Scale
+              </h4>
+              <ul className="tppg-scale-list">
+                <li>90-100: Elite Performance</li>
+                <li>80-89: Exceptional</li>
+                <li>70-79: Very Good</li>
+                <li>60-69: Average</li>
+                <li>Below 60: Poor Performance</li>
+              </ul>
             </div>
-            <div>
-              <h4 className="font-semibold">Teams Involved</h4>
-              <p>
-                {gameData.advancedBoxScore?.gameInfo?.homeTeam} vs {gameData.advancedBoxScore?.gameInfo?.awayTeam}
-              </p>
+            <div className="tppg-methodology-card">
+              <h4 className="tppg-methodology-subtitle">
+                <FaChartBar /> Key Performance Indicators
+              </h4>
+              <ul className="tppg-kpi-list">
+                <li>Expected Points Added (EPA)</li>
+                <li>Positive Play Contributions</li>
+                <li>Role-Specific Impact</li>
+                <li>Consistency</li>
+              </ul>
             </div>
-            <div>
-              <h4 className="font-semibold">Game Dynamics</h4>
-              <p>Total Players Graded: {playerGrades.length}</p>
+            <div className="tppg-methodology-card">
+              <h4 className="tppg-methodology-subtitle">
+                <FaUserAlt /> Position Weightings
+              </h4>
+              <ul className="tppg-position-list">
+                <li>QB: Highest scrutiny</li>
+                <li>RB/WR: Explosive play potential</li>
+                <li>Defensive Positions: Disruptive impact</li>
+              </ul>
             </div>
           </div>
         </div>
-      )}
-      <div className="mt-8">
-        <h3 className="text-xl font-bold mb-4">Position Group Insights</h3>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {['QB', 'RB', 'WR', 'Defense'].map(posGroup => {
-            const positionGrades = playerGrades.filter(p => 
-              posGroup === 'QB' ? p.position === 'QB' :
-              posGroup === 'RB' ? p.position === 'RB' :
-              posGroup === 'WR' ? p.position === 'WR' :
-              ['DL', 'LB', 'DB', 'S', 'CB'].includes(p.position)
-            );
-            const avgGrade = positionGrades.length > 0 
-              ? positionGrades.reduce((sum, p) => sum + p.overallGrade, 0) / positionGrades.length 
-              : 0;
-            return (
-              <div key={posGroup} className="bg-white shadow rounded-lg p-4">
-                <h4 className="font-bold mb-2">{posGroup} Performance</h4>
-                <div className={`text-2xl font-bold ${getGradeColor(avgGrade)}`}>
-                  {avgGrade.toFixed(1)}
-                </div>
-                <p className="text-sm text-gray-600">
-                  Average Grade ({positionGrades.length} players)
+        
+        {gameData && (
+          <div className="tppg-game-context">
+            <h3 className="tppg-context-title">
+              <FaFootballBall /> Game Context
+            </h3>
+            <div className="tppg-context-grid">
+              <div className="tppg-context-item">
+                <h4>Total Plays Analyzed</h4>
+                <p>{gameData.playByPlay?.plays?.length || 'N/A'}</p>
+              </div>
+              <div className="tppg-context-item">
+                <h4>Teams Involved</h4>
+                <p>
+                  {gameData.advancedBoxScore?.gameInfo?.homeTeam} vs {gameData.advancedBoxScore?.gameInfo?.awayTeam}
                 </p>
               </div>
-            );
-          })}
+              <div className="tppg-context-item">
+                <h4>Game Dynamics</h4>
+                <p>Total Players Graded: {playerGrades.length}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="tppg-position-insights">
+          <h3 className="tppg-position-title">
+            <FaUsers /> Position Group Insights
+          </h3>
+          <div className="tppg-position-grid">
+            {[
+              { posGroup: 'QB', icon: <FaFootballBall />, label: 'QB Performance' },
+              { posGroup: 'RB', icon: <FaRunning />, label: 'RB Performance' },
+              { posGroup: 'WR', icon: <FaRegLightbulb />, label: 'WR Performance' },
+              { posGroup: 'Defense', icon: <FaShieldAlt />, label: 'Defense Performance' }
+            ].map(({ posGroup, icon, label }) => {
+              const positionGrades = playerGrades.filter(p => 
+                posGroup === 'QB' ? p.position === 'QB' :
+                posGroup === 'RB' ? p.position === 'RB' :
+                posGroup === 'WR' ? p.position === 'WR' :
+                ['DL', 'LB', 'DB', 'S', 'CB'].includes(p.position)
+              );
+              const avgGrade = positionGrades.length > 0 
+                ? positionGrades.reduce((sum, p) => sum + p.overallGrade, 0) / positionGrades.length 
+                : 0;
+              return (
+                <div key={posGroup} className="tppg-position-card">
+                  <h4>{icon} {label}</h4>
+                  <div className={`tppg-position-grade ${getGradeClass(avgGrade)}`}>
+                    {avgGrade.toFixed(1)}
+                  </div>
+                  <p className="tppg-position-info">
+                    Average Grade ({positionGrades.length} players)
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
