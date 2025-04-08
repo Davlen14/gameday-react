@@ -750,14 +750,6 @@ const GameDetailView = () => {
           <div className="field-position-indicator">
             {fieldPosition}
           </div>
-          
-          {/* The orange scoreboard display in the top-right corner */}
-          <div className="field-scoreboard">
-            {currentPlay && (
-              <span>{currentPlay.homeBall ? abbreviateTeamName(game.homeTeam) : abbreviateTeamName(game.awayTeam)} {currentPlay.yardLine}</span>
-            )}
-          </div>
-
           {/* Left Endzone = Home */}
           <div 
             className={`endzone left ${touchdownTeam === "home" && showFireworks ? "celebrating" : ""}`}
