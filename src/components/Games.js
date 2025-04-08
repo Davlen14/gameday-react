@@ -284,43 +284,43 @@ const Games = () => {
         return !fbsTeam; // If not found in FBS teams, assume it's FCS
     };
 
-    if (isLoading) return <div className="loading">Loading games...</div>;
-    if (error) return <div className="error">Error: {error}</div>;
+    if (isLoading) return <div className="gtloading">Loading games...</div>;
+    if (error) return <div className="gterror">Error: {error}</div>;
 
     return (
-        <div className="games-container">
-            <header className="header">
+        <div className="gtgames-container">
+            <header className="gtheader">
                 <h1>FBS Schedule</h1>
-                <div className="filters-container">
-                    <div className="week-selector">
+                <div className="gtfilters-container">
+                    <div className="gtweek-selector">
                         <label>Week:</label>
-                        <select value={week} onChange={handleWeekChange} className="week-dropdown">
+                        <select value={week} onChange={handleWeekChange} className="gtweek-dropdown">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((w) => (
                                 <option key={w} value={w}>Week {w}</option>
                             ))}
                         </select>
                     </div>
-                    <div className="year-selector">
+                    <div className="gtyear-selector">
                         <label>Year:</label>
-                        <select value={year} onChange={handleYearChange} className="year-dropdown">
+                        <select value={year} onChange={handleYearChange} className="gtyear-dropdown">
                             {[2020, 2021, 2022, 2023, 2024, 2025].map((y) => (
                                 <option key={y} value={y}>{y}</option>
                             ))}
                         </select>
                     </div>
-                    <div className="search-container">
+                    <div className="gtsearch-container">
                         <label>Search:</label>
-                        <div className="search-input-wrapper">
+                        <div className="gtsearch-input-wrapper">
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 placeholder="Team or Conference"
-                                className="search-input"
+                                className="gtsearch-input"
                             />
                             {searchTerm && (
                                 <button 
-                                    className="clear-search-btn"
+                                    className="gtclear-search-btn"
                                     onClick={() => {
                                         setSearchTerm("");
                                         setFilteredGames(games);
@@ -334,12 +334,12 @@ const Games = () => {
                 </div>
             </header>
 
-            <div className="games-grid">
+            <div className="gtgames-grid">
                 {filteredGames.length === 0 && !isLoading ? (
-                    <div className="no-results">
+                    <div className="gtno-results">
                         <p>No games found matching your search for "{searchTerm}"</p>
                         <button 
-                            className="clear-search-btn-large"
+                            className="gtclear-search-btn-large"
                             onClick={() => {
                                 setSearchTerm("");
                                 setFilteredGames(games);
@@ -360,87 +360,87 @@ const Games = () => {
                     const awayIsFCS = isTeamFCS(game.awayTeam);
 
                     return (
-                        <article key={game.id} className="game-card">
-                            <div className="teams-container">
-                                <div className="team">
-                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="team-logo" />
-                                    <div className="team-details">
+                        <article key={game.id} className="gtgame-card">
+                            <div className="gtteams-container">
+                                <div className="gtteam">
+                                    <img src={getTeamLogo(game.homeTeam)} alt={game.homeTeam} className="gtteam-logo" />
+                                    <div className="gtteam-details">
                                         <h3>{game.homeTeam}</h3>
-                                        {homeIsFCS && <span className="team-division"></span>}
-                                        <span className="score">{game.homePoints}</span>
+                                        {homeIsFCS && <span className="gtteam-division"></span>}
+                                        <span className="gtscore">{game.homePoints}</span>
                                     </div>
                                 </div>
                                 
-                                <div className="vs-circle">
+                                <div className="gtvs-circle">
                                     <span>VS</span>
                                 </div>
 
-                                <div className="team">
-                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="team-logo" />
-                                    <div className="team-details">
+                                <div className="gtteam">
+                                    <img src={getTeamLogo(game.awayTeam)} alt={game.awayTeam} className="gtteam-logo" />
+                                    <div className="gtteam-details">
                                         <h3>{game.awayTeam}</h3>
-                                        {awayIsFCS && <span className="team-division"></span>}
-                                        <span className="score">{game.awayPoints}</span>
+                                        {awayIsFCS && <span className="gtteam-division"></span>}
+                                        <span className="gtscore">{game.awayPoints}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="game-info">
-                                <div className="info-item">
-                                    <svg className="icon" viewBox="0 0 24 24">
+                            <div className="gtgame-info">
+                                <div className="gtinfo-item">
+                                    <svg className="gticon" viewBox="0 0 24 24">
                                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
                                     </svg>
                                     <span>{game.venue}</span>
                                 </div>
                                 
-                                <div className="info-item">
-                                    <svg className="icon" viewBox="0 0 24 24">
+                                <div className="gtinfo-item">
+                                    <svg className="gticon" viewBox="0 0 24 24">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                                     </svg>
                                     {game.status === 'final' ? (
-                                        <span className="final">Final Score</span>
+                                        <span className="gtfinal">Final Score</span>
                                     ) : (
                                         <span>{formatGameDate(game)}</span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="game-meta">
-                                <div className="broadcast-weather-row">
+                            <div className="gtgame-meta">
+                                <div className="gtbroadcast-weather-row">
                                     <TvIcon />
-                                    <span className="network">{tvNetwork || 'N/A'}</span>
+                                    <span className="gtnetwork">{tvNetwork || 'N/A'}</span>
                                     <WeatherIcon condition={gameWeather?.weatherCondition} />
-                                    <span className="temperature">
+                                    <span className="gttemperature">
                                         {gameWeather?.temperature || '--'}°F
                                     </span>
-                                    <span className="condition">
+                                    <span className="gtcondition">
                                         {gameWeather?.weatherCondition || 'N/A'}
                                     </span>
                                 </div>
                             </div>
 
                             {gameLines && (
-                            <div className="betting-section">
+                            <div className="gtbetting-section">
                                 <h4>Betting Lines</h4>
-                                <div className="sportsbooks">
+                                <div className="gtsportsbooks">
                                 {gameLines.lines && gameLines.lines.map((line) => (
-                                    <div key={line.provider} className="sportsbook-line">
+                                    <div key={line.provider} className="gtsportsbook-line">
                                         <img 
                                             src={getSportsbookLogo(line.provider)} 
                                             alt={line.provider} 
-                                            className="sportsbook-logo" 
+                                            className="gtsportsbook-logo" 
                                         />
-                                        <span className="spread">SP: {line.spread || 'N/A'}</span>
-                                        <span className="overunder">O/U: {line.overUnder || 'N/A'}</span>
+                                        <span className="gtspread">SP: {line.spread || 'N/A'}</span>
+                                        <span className="gtoverunder">O/U: {line.overUnder || 'N/A'}</span>
                                     </div>
                                 ))}
                                 </div>
                             </div>
                             )}
 
-                            <div className="advanced-details-section">
+                            <div className="gtadvanced-details-section">
                                 <button 
-                                    className="advanced-details-button"
+                                    className="gtadvanced-details-button"
                                     onClick={() => navigateToGameDetails(game.id)}
                                 >
                                     View Advanced Game Details

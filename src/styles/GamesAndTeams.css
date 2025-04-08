@@ -1,7 +1,7 @@
 /* GamesAndTeams.css - More Space-Efficient Layout */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
-.games-container {
+.gtgames-container {
     padding: 1.5rem;
     max-width: 99%; /* Changed from 1440px to 99% of screen width */
     width: 99%;
@@ -11,7 +11,7 @@
 }
 
 /* Header Styles */
-.header {
+.gtheader {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,7 +24,7 @@
     overflow: hidden;
 }
 
-.header::after {
+.gtheader::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -34,7 +34,7 @@
     background: linear-gradient(to right, #D4001C, #ff4d6d);
 }
 
-.header h1 {
+.gtheader h1 {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-weight: 700;
     font-size: 1.8rem;
@@ -44,13 +44,13 @@
     text-transform: uppercase;
 }
 
-.week-selector {
+.gtweek-selector {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.week-selector label {
+.gtweek-selector label {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-weight: 600;
     color: #D4001C;
@@ -58,7 +58,7 @@
     letter-spacing: 0.5px;
 }
 
-.week-dropdown {
+.gtweek-dropdown {
     padding: 0.5rem 2rem 0.5rem 0.75rem;
     border: 2px solid #e2e8f0;
     border-radius: 6px;
@@ -77,26 +77,26 @@
     min-width: 100px;
 }
 
-.week-dropdown:focus {
+.gtweek-dropdown:focus {
     outline: none;
     border-color: #D4001C;
     box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
 }
 
-.filters-container {
+.gtfilters-container {
     display: flex;
     align-items: center;
     gap: 1.5rem;
     flex-wrap: wrap;
 }
 
-.year-selector {
+.gtyear-selector {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.year-selector label {
+.gtyear-selector label {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-weight: 600;
     color: #D4001C;
@@ -104,7 +104,7 @@
     letter-spacing: 0.5px;
 }
 
-.year-dropdown {
+.gtyear-dropdown {
     padding: 0.5rem 2rem 0.5rem 0.75rem;
     border: 2px solid #e2e8f0;
     border-radius: 6px;
@@ -123,20 +123,20 @@
     min-width: 100px;
 }
 
-.year-dropdown:focus {
+.gtyear-dropdown:focus {
     outline: none;
     border-color: #D4001C;
     box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
 }
 
 /* Search Container Styles */
-.search-container {
+.gtsearch-container {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.search-container label {
+.gtsearch-container label {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-weight: 600;
     color: #D4001C;
@@ -144,13 +144,13 @@
     letter-spacing: 0.5px;
 }
 
-.search-input-wrapper {
+.gtsearch-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.search-input {
+.gtsearch-input {
     padding: 0.5rem 2rem 0.5rem 0.75rem;
     border: 2px solid #e2e8f0;
     border-radius: 6px;
@@ -167,13 +167,13 @@
     background-size: 1em;
 }
 
-.search-input:focus {
+.gtsearch-input:focus {
     outline: none;
     border-color: #D4001C;
     box-shadow: 0 0 0 2px rgba(212, 0, 28, 0.2);
 }
 
-.clear-search-btn {
+.gtclear-search-btn {
     position: absolute;
     right: 0.5rem;
     background: none;
@@ -192,13 +192,13 @@
     transition: all 0.2s ease;
 }
 
-.clear-search-btn:hover {
+.gtclear-search-btn:hover {
     color: #D4001C;
     background-color: rgba(212, 0, 28, 0.1);
 }
 
 /* No Results Message */
-.no-results {
+.gtno-results {
     grid-column: 1 / -1; /* Span all columns */
     padding: 3rem;
     text-align: center;
@@ -208,13 +208,13 @@
     margin: 2rem 0;
 }
 
-.no-results p {
+.gtno-results p {
     color: #64748b;
     font-size: 1.1rem;
     margin-bottom: 1rem;
 }
 
-.clear-search-btn-large {
+.gtclear-search-btn-large {
     background-color: #D4001C;
     color: white;
     border: none;
@@ -227,7 +227,7 @@
     transition: all 0.3s ease;
 }
 
-.clear-search-btn-large:hover {
+.gtclear-search-btn-large:hover {
     background-color: #b5001a;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(212, 0, 28, 0.2);
@@ -235,35 +235,35 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .filters-container {
+    .gtfilters-container {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
     
-    .search-input {
+    .gtsearch-input {
         min-width: 100%;
         width: 100%;
     }
     
-    .search-container {
+    .gtsearch-container {
         width: 100%;
     }
     
-    .search-input-wrapper {
+    .gtsearch-input-wrapper {
         width: 100%;
     }
 }
 
 /* Games Grid */
-.games-grid {
+.gtgames-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
 }
 
 /* Game Card */
-.game-card {
+.gtgame-card {
     background: #ffffff;
     border-radius: 10px;
     padding: 0;
@@ -276,13 +276,13 @@
     flex-direction: column;
 }
 
-.game-card:hover {
+.gtgame-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Teams Container */
-.teams-container {
+.gtteams-container {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -293,14 +293,14 @@
     background: linear-gradient(to bottom, #ffffff, #f8fafc);
 }
 
-.team {
+.gtteam {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.35rem;
 }
 
-.team-logo {
+.gtteam-logo {
     width: 52px;
     height: 52px;
     object-fit: contain;
@@ -311,15 +311,15 @@
     transition: transform 0.2s ease;
 }
 
-.game-card:hover .team-logo {
+.gtgame-card:hover .gtteam-logo {
     transform: scale(1.05);
 }
 
-.team-details {
+.gtteam-details {
     text-align: center;
 }
 
-.team-details h3 {
+.gtteam-details h3 {
     margin: 0;
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-size: 0.8rem;
@@ -332,7 +332,7 @@
     max-width: 80px;
 }
 
-.score {
+.gtscore {
     display: inline-block;
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-size: 1.25rem;
@@ -342,7 +342,7 @@
     letter-spacing: 0.5px;
 }
 
-.vs-circle {
+.gtvs-circle {
     background: #D4001C;
     color: white;
     width: 32px;
@@ -360,7 +360,7 @@
     z-index: 1;
 }
 
-.vs-circle::before {
+.gtvs-circle::before {
     content: '';
     position: absolute;
     top: -2px;
@@ -374,7 +374,7 @@
 }
 
 /* Game Info */
-.game-info {
+.gtgame-info {
     display: grid;
     gap: 0.25rem;
     padding: 0.5rem 0.75rem;
@@ -383,7 +383,7 @@
     border-bottom: 1px solid #f0f0f0;
 }
 
-.info-item {
+.gtinfo-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -392,21 +392,21 @@
     padding: 0.25rem 0;
 }
 
-.info-item .icon {
+.gtinfo-item .gticon {
     width: 14px;
     height: 14px;
     fill: #64748b;
     flex-shrink: 0;
 }
 
-.info-item span {
+.gtinfo-item span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
 }
 
-.final {
+.gtfinal {
     color: #D4001C;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -414,7 +414,7 @@
 }
 
 /* Broadcast & Weather - Combined in a Single Row */
-.broadcast-weather-row {
+.gtbroadcast-weather-row {
     display: flex;
     align-items: center;
     padding: 0.35rem 0.75rem;
@@ -425,13 +425,13 @@
 }
 
 /* Separator for inline items */
-.separator {
+.gtseparator {
     margin: 0 0.5rem;
     color: #64748b;
 }
 
 /* Text Styling for Network & Weather Info */
-.temperature, .network {
+.gttemperature, .gtnetwork {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
@@ -443,7 +443,7 @@
     max-width: 100%;
 }
 
-.condition, .time {
+.gtcondition, .gttime {
     font-size: 0.65rem;
     color: #64748b;
     line-height: 1.2;
@@ -454,14 +454,14 @@
 }
 
 /* Betting Section */
-.betting-section {
+.gtbetting-section {
     padding: 0.6rem 0.75rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
-.betting-section h4 {
+.gtbetting-section h4 {
     margin: 0 0 0.5rem 0;
     color: #1e293b;
     font-family: "Orbitron", "Titillium Web", sans-serif;
@@ -473,7 +473,7 @@
     padding-bottom: 0.15rem;
 }
 
-.betting-section h4::after {
+.gtbetting-section h4::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -484,14 +484,14 @@
 }
 
 /* New Betting Lines Layout */
-.sportsbooks {
+.gtsportsbooks {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
     flex-grow: 1;
 }
 
-.sportsbook-line {
+.gtsportsbook-line {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -502,12 +502,12 @@
     transition: transform 0.2s ease;
 }
 
-.sportsbook-line:hover {
+.gtsportsbook-line:hover {
     transform: translateX(3px);
     background: #f0f5ff;
 }
 
-.sportsbook-logo {
+.gtsportsbook-logo {
     width: 42px;
     height: 21px;
     object-fit: contain;
@@ -519,7 +519,7 @@
 }
 
 /* Inline Odds styling */
-.spread, .overunder, .moneyline {
+.gtspread, .gtoverunder, .gtmoneyline {
     font-family: "Orbitron", "Titillium Web", sans-serif;
     font-size: 0.8rem;
     font-weight: 700;
@@ -528,14 +528,14 @@
 }
 
 /* Advanced Details */
-.advanced-details-section {
+.gtadvanced-details-section {
     margin-top: 15px;
     text-align: center;
     padding: 10px 0;
     border-top: 1px solid #eee;
 }
 
-.advanced-details-button {
+.gtadvanced-details-button {
     background-color: #D4001C;
     color: white;
     border: none;
@@ -546,13 +546,13 @@
     transition: background-color 0.2s;
 }
 
-.advanced-details-button:hover {
+.gtadvanced-details-button:hover {
     background-color: #d12d43;
 }
 
 
 /* Loading & Error States */
-.loading, .error {
+.gtloading, .gterror {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -565,51 +565,51 @@
     text-align: center;
 }
 
-.loading::before {
+.gtloading::before {
     content: '';
     width: 40px;
     height: 40px;
     border: 3px solid rgba(212, 0, 28, 0.2);
     border-left-color: #D4001C;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: gtspin 1s linear infinite;
     display: block;
     margin-bottom: 0.75rem;
 }
 
-@keyframes spin {
+@keyframes gtspin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-.error {
+.gterror {
     color: #D4001C;
 }
 
 /* Media Queries */
 @media (max-width: 768px) {
-    .header {
+    .gtheader {
         flex-direction: column;
         align-items: stretch;
         gap: 1rem;
     }
     
-    .teams-container {
+    .gtteams-container {
         grid-template-columns: 1fr auto 1fr;
     }
     
-    .vs-circle {
+    .gtvs-circle {
         margin: 0 0.25rem;
     }
 }
 
 @media (max-width: 480px) {
-    .games-container {
+    .gtgames-container {
         padding: 0.75rem 0.5rem;
         width: 98%; /* Slightly smaller on mobile for better edge appearance */
     }
     
-    .games-grid {
+    .gtgames-grid {
         gap: 0.75rem;
     }
 }
