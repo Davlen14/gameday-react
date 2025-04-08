@@ -21,6 +21,14 @@ const Games = () => {
     // 🔴 ADDED: New state variable for toggling the detailed view of a game
     const [expandedGames, setExpandedGames] = useState({});
 
+    // 🔴 ADDED: Function to toggle game details
+    const toggleGameDetails = (gameId) => {
+        setExpandedGames(prev => ({
+            ...prev,
+            [gameId]: !prev[gameId]
+        }));
+    };
+
     useEffect(() => {
         const fetchGamesAndRelatedData = async () => {
             try {
