@@ -39,13 +39,11 @@ const convertYearToText = (yearNumber) => {
 const TeamPlayerModal = ({
   isOpen,
   onClose,
-  player = {},            // Real data: fullName, year, weight, height, draftEligibleYear
+  player = {},            // Player data with: firstName, lastName, year, weight, height, jersey, position
   teamName = "",          // Team name to fetch logo if teamLogo is not provided
   teamLogo = "",          // Real team logo URL (the same logo is used in two places)
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
-  position = "QB",        // Player's position
-  jerseyNumber = "1",    // Player's jersey number
 }) => {
   // State for team logos - primary and secondary
   const [primaryLogo, setPrimaryLogo] = useState(teamLogo);
@@ -94,6 +92,22 @@ const TeamPlayerModal = ({
 
   // Convert numeric year to text for class designation
   const playerClass = convertYearToText(player.year || 1);
+  
+  // Get player's full name
+  const playerFullName = player.firstName && player.lastName ? 
+    `${player.firstName} ${player.lastName}` : "Player Name";
+    
+  // Format height from inches to feet and inches
+  const formatHeight = (heightInches) => {
+    if (!heightInches) return "N/A";
+    
+    const feet = Math.floor(heightInches / 12);
+    const inches = heightInches % 12;
+    return `${feet}'${inches}\"`;  
+  };
+  
+  // Format height for display
+  const displayHeight = formatHeight(player.height);
 
   // Draft eligibility calculation based on class year
   const calculateDraftEligibility = (yearNumber) => {
@@ -611,16 +625,16 @@ const TeamPlayerModal = ({
           )}
           <div className="team-name">{teamName}</div>
           <div className="player-header-content">
-            <h2 className="player-name">{player.fullName || "Player Name"}</h2>
-            <div className="player-position">{position} #{jerseyNumber}</div>
+            <h2 className="player-name">{playerFullName}</h2>
+            <div className="player-position">{player.position || "QB"} #{player.jersey || "0"}</div>
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
-                <span className="player-info-value">{player.height || "N/A"}</span>
+                <span className="player-info-value">{displayHeight}</span>
               </div>
               <div className="player-info-item">
                 <span className="player-info-label">Weight</span>
-                <span className="player-info-value">{player.weight || "N/A"}</span>
+                <span className="player-info-value">{player.weight ? `${player.weight} lbs` : "N/A"}</span>
               </div>
               <div className="player-info-item">
                 <span className="player-info-label">Class</span>
