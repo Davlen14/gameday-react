@@ -94,7 +94,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   const maxRadius = size * 0.42; // Slightly reduce triangle size
   const labelOffset = size * 0.52; // Increase label distance
   
-  // Normalize data for radar chart - adjusted order to Overall, Offense, Defense
+  // Normalize data for radar chart
   const metrics = [
     { id: "overall", label: "Overall", min: 0, max: 32 },
     { id: "offense", label: "Offense", min: 20, max: 45 },
@@ -418,7 +418,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           max-width: 250px;
           transition: all 0.2s ease;
           border: 2px solid transparent;
-          height: 120px;
+          height: 170px;
           display: flex;
           flex-direction: column;
         }
@@ -431,8 +431,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         .metric-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 0.75rem;
+          height: 85px;
           position: relative;
         }
         
@@ -444,9 +445,14 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         .performance-indicator {
           font-size: 11px;
           font-weight: 700;
-          padding: 4px 8px;
+          padding: 5px 8px;
           border-radius: 6px;
           color: white;
+          writing-mode: vertical-lr;
+          transform: rotate(180deg);
+          height: auto;
+          min-height: 70px;
+          width: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -485,6 +491,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           font-size: 18px;
           font-weight: 700;
         }
+        
+
         
         .loading-spinner {
           width: 40px;
