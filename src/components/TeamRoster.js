@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaExclamationTriangle } from "react-icons/fa"; // Added FaExclamationTriangle import
+import { FaUser, FaExclamationTriangle } from "react-icons/fa";
 import teamsService from "../services/teamsService";
-import "../styles/TeamDetail.css";
-import TeamPlayerModal from "./TeamPlayerModal"; // NEW: Import the modal component
+import TeamPlayerModal from "./TeamPlayerModal";
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
@@ -206,12 +205,184 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         )}
       </div>
 
-      {/* Custom CSS for team-specific styling */}
+      {/* Component-specific styles */}
       <style>{`
-        /* Player icon using team colors */
+        /* Dashboard Card */
+        .dashboard-card {
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          animation: fadeIn 0.6s ease-out;
+          width: 100%;
+        }
+        
+        .dashboard-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+          padding: 1.2rem 1.5rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          font-weight: 600;
+          font-size: 1.2rem;
+          color: rgb(108, 108, 108);
+          display: flex;
+          align-items: center;
+        }
+        
+        .card-header::before {
+          content: '';
+          display: inline-block;
+          width: 8px;
+          height: 24px;
+          background: var(--team-color);
+          margin-right: 12px;
+          border-radius: 4px;
+        }
+        
+        .card-body {
+          padding: 1.5rem;
+        }
+
+        /* UPDATED: Roster Table - More modern and enhanced */
+        .roster-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0 8px;
+        }
+        
+        .roster-table th {
+          text-align: left;
+          padding: 0.75rem 1rem;
+          background: rgba(0, 0, 0, 0.03);
+          color: #666;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.8rem;
+          letter-spacing: 0.05em;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+        
+        .roster-table th:first-child {
+          border-top-left-radius: 10px;
+          border-bottom-left-radius: 10px;
+        }
+        
+        .roster-table th:last-child {
+          border-top-right-radius: 10px;
+          border-bottom-right-radius: 10px;
+        }
+        
+        .roster-table tbody tr {
+          background: white;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          border-radius: 10px;
+          transition: all 0.2s ease;
+        }
+        
+        .roster-table tbody tr:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .roster-table td {
+          padding: 1rem;
+          border: none;
+          position: relative;
+        }
+        
+        .roster-table td:first-child {
+          border-top-left-radius: 10px;
+          border-bottom-left-radius: 10px;
+        }
+        
+        .roster-table td:last-child {
+          border-top-right-radius: 10px;
+          border-bottom-right-radius: 10px;
+        }
+        
+        .player-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
         .player-icon {
-          background-color: ${teamColor}10 !important;
-          color: ${teamColor} !important;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 1rem;
+        }
+        
+        .player-name {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .player-position {
+          display: inline-block;
+          background: rgba(0, 0, 0, 0.03);
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .player-height {
+          font-family: sans-serif;
+          font-weight: 500;
+        }
+        
+        .player-year {
+          font-weight: 500;
+          padding: 3px 10px;
+          border-radius: 20px;
+          background: rgba(0, 0, 0, 0.05);
+          display: inline-block;
+        }
+
+        /* Loading indicator */
+        .loading-indicator {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          gap: 1rem;
+          color: #666;
+        }
+        
+        .loading-spinner {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        /* Error message */
+        .error-message {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          color: #ff4d4d;
+          font-weight: 500;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
 
