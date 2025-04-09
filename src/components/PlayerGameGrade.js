@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import teamsService from '../services/teamsService';
 import { 
   ResponsiveContainer, 
@@ -43,7 +44,11 @@ import {
 // Import CSS styles
 import "../styles/PlayerGameGrade.css"; // Adjust the path as necessary
 
-const PlayerGameGrade = ({ gameId }) => {
+const PlayerGameGrade = ({ gameId: propGameId }) => {
+  const { gameId: urlGameId } = useParams();
+  
+  // Use the prop gameId if provided, otherwise use the URL parameter
+  const gameId = propGameId || urlGameId;
   // State management
   const [gameData, setGameData] = useState(null);
   const [playerGrades, setPlayerGrades] = useState([]);
