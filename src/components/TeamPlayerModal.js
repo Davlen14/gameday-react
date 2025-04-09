@@ -250,9 +250,12 @@ const TeamPlayerModal = ({
           font: { 
             size: 11, 
             family: "'Inter', 'Helvetica', 'Arial', sans-serif" 
-          } 
+          },
+          stepSize: 10,
+          padding: 5
         },
         suggestedMax: 90,
+        beginAtZero: true,
       },
     },
   };
@@ -347,31 +350,20 @@ const TeamPlayerModal = ({
             z-index: 2;
           }
           .player-name {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             margin: 0;
             color: #333;
-            letter-spacing: -0.01em;
           }
           .player-info-row {
             display: flex;
-            gap: 1.8rem;
-            margin-top: 0.7rem;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
             font-size: 0.95rem;
             color: #555;
           }
-          .player-info-row div {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-          }
           .player-info-row div strong {
             color: #333;
-            margin-bottom: 2px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #666;
           }
           /* -----------------------------------
            * Body: Grades, Doughnut, and Weekly Bar Charts
@@ -379,9 +371,8 @@ const TeamPlayerModal = ({
            */
           .modal-body {
             display: flex;
-            padding: 1.5rem 1.5rem 2rem;
+            padding: 1.5rem;
             gap: 2rem;
-            background-color: #FAFAFA;
           }
           /* Grades Column for Season & Career Grades */
           .grades-column {
@@ -413,30 +404,26 @@ const TeamPlayerModal = ({
           }
           .grade-bar-container {
             flex: 1;
-            background-color: #F0F0F0;
-            height: 10px;
-            border-radius: 5px;
+            background-color: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
             position: relative;
-            margin-right: 10px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+            margin-right: 8px;
           }
           .grade-bar-fill {
             position: absolute;
             top: 0;
             left: 0;
-            height: 10px;
-            border-radius: 5px;
-            transition: width 0.5s ease;
+            height: 8px;
+            border-radius: 4px;
+            /* Colors set individually in the style prop */
           }
           .grade-value {
-            width: 45px;
+            width: 40px;
             text-align: right;
             color: #333;
-            font-weight: 600;
-            font-size: 0.95rem;
           }
-          /* Doughnut Chart Column */
+          /* Doughnut Chart Column for 2024 Snaps */
           .snaps-column {
             flex: 0 0 260px;
             text-align: center;
@@ -445,26 +432,11 @@ const TeamPlayerModal = ({
             font-size: 1.1rem;
             margin-bottom: 1rem;
             color: #333;
-            font-weight: 600;
-          }
-          .doughnut-container {
-            position: relative;
-            margin: 0 auto;
-            max-width: 200px;
           }
           .snaps-total {
-            margin-top: 1.2rem;
+            margin-top: 1rem;
             font-size: 0.95rem;
-            color: #333;
-            font-weight: 500;
-          }
-          .snaps-position {
-            margin-top: 0.75rem;
-            font-size: 0.9rem;
             color: #444;
-          }
-          .snaps-position span {
-            font-weight: 500;
           }
           /* Weekly Stacked Bar Column */
           .weekly-column {
@@ -474,11 +446,6 @@ const TeamPlayerModal = ({
             font-size: 1.1rem;
             margin-bottom: 1rem;
             color: #333;
-            font-weight: 600;
-          }
-          .weekly-chart-container {
-            height: 280px;
-            position: relative;
           }
           /* -----------------------------------
            * Close Button
@@ -488,36 +455,24 @@ const TeamPlayerModal = ({
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: ${teamColor};
             border: none;
-            color: #333;
-            padding: 0.4rem 0.8rem;
+            color: #fff;
+            padding: 0.5rem 1rem;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.85rem;
             z-index: 10;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s ease;
           }
           .close-button:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-          }
-          .close-button svg {
-            margin-right: 2px;
+            opacity: 0.85;
           }
         `}
       </style>
 
       <div className="modal-container">
         {/* Close Button */}
-        <button className="close-button" onClick={onClose}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-          </svg>
-          <span>Close</span>
-        </button>
+        <button className="close-button" onClick={onClose}>Close</button>
         {/* HEADER */}
         <div className="modal-header">
           <div className="angled-block-main"></div>
@@ -535,22 +490,10 @@ const TeamPlayerModal = ({
           <div className="player-header-content">
             <h2 className="player-name">{player.fullName || "Player Name"}</h2>
             <div className="player-info-row">
-              <div>
-                <strong>HEIGHT</strong> 
-                <span>{player.height || "N/A"}</span>
-              </div>
-              <div>
-                <strong>WEIGHT</strong> 
-                <span>{player.weight || "N/A"} lbs</span>
-              </div>
-              <div>
-                <strong>CLASS</strong> 
-                <span>{playerClass}</span>
-              </div>
-              <div>
-                <strong>DRAFT ELIGIBLE</strong> 
-                <span>{player.draftEligibleYear || "N/A"}</span>
-              </div>
+              <div><strong>Height:</strong> {player.height || "N/A"}</div>
+              <div><strong>Weight:</strong> {player.weight || "N/A"} lbs</div>
+              <div><strong>Class:</strong> {playerClass}</div>
+              <div><strong>Draft Eligible:</strong> {player.draftEligibleYear || "N/A"}</div>
             </div>
           </div>
         </div>
@@ -559,9 +502,9 @@ const TeamPlayerModal = ({
         <div className="modal-body">
           {/* Grades Column */}
           <div className="grades-column">
-            {/* 2026 Season Grades */}
+            {/* 2024 Season Grades */}
             <div className="grades-section">
-              <h3>2026 Season Grades</h3>
+              <h3>2024 Season Grades</h3>
               <div className="grade-list">
                 {seasonGrades.map((grade, idx) => {
                   const fillPercent = (grade.value / 100) * 100;
@@ -569,14 +512,7 @@ const TeamPlayerModal = ({
                     <div className="grade-item" key={idx}>
                       <div className="label">{grade.label}</div>
                       <div className="grade-bar-container">
-                        <div 
-                          className="grade-bar-fill" 
-                          style={{ 
-                            width: `${fillPercent}%`,
-                            backgroundColor: grade.color || "#3B82F6",
-                            borderRadius: "4px"
-                          }}
-                        ></div>
+                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%`, backgroundColor: grade.color }}></div>
                       </div>
                       <div className="grade-value">{grade.value}</div>
                     </div>
@@ -586,7 +522,7 @@ const TeamPlayerModal = ({
             </div>
             {/* Career Grades */}
             <div className="grades-section">
-              <h3>Career Progression</h3>
+              <h3>Career Grades</h3>
               <div className="grade-list">
                 {careerGrades.map((grade, idx) => {
                   const fillPercent = (grade.value / 100) * 100;
@@ -594,14 +530,7 @@ const TeamPlayerModal = ({
                     <div className="grade-item" key={idx}>
                       <div className="label">{grade.label}</div>
                       <div className="grade-bar-container">
-                        <div 
-                          className="grade-bar-fill" 
-                          style={{ 
-                            width: `${fillPercent}%`, 
-                            backgroundColor: grade.color || "#3B82F6",
-                            borderRadius: "4px"
-                          }}
-                        ></div>
+                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%`, backgroundColor: grade.color }}></div>
                       </div>
                       <div className="grade-value">{grade.value}</div>
                     </div>
@@ -612,23 +541,21 @@ const TeamPlayerModal = ({
           </div>
           {/* Doughnut Chart Column */}
           <div className="snaps-column">
-            <h3>{currentYear} Snaps</h3>
-            <div className="doughnut-container">
-              <Doughnut data={doughnutData} options={doughnutOptions} />
-            </div>
+            <h3>2024 Snaps</h3>
+            <Doughnut data={doughnutData} />
             <div className="snaps-total">
               <strong>Total Snaps:</strong> {snapsData.passSnaps + snapsData.runSnaps}
             </div>
-            <div className="snaps-position">
-              <strong>By Position:</strong> <span>QB • {snapsData.passSnaps + snapsData.runSnaps}</span>
+            {/* Additional label to match the screenshot */}
+            <div style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "#444" }}>
+              <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>BY POSITION</div>
+              <div>QB • 868</div>
             </div>
           </div>
           {/* Weekly Column */}
           <div className="weekly-column">
             <h3>Weekly</h3>
-            <div className="weekly-chart-container">
-              <Bar data={barData} options={barOptions} />
-            </div>
+            <Bar data={barData} options={barOptions} />
           </div>
         </div>
       </div>
