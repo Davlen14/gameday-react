@@ -152,7 +152,7 @@ body.dark-mode {
   color: var(--text-color);
   position: relative;
   letter-spacing: -0.01em;
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
