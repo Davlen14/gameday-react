@@ -309,7 +309,7 @@
     width: 52px;
     height: 52px;
     object-fit: contain;
-    border-radius: 50%;
+    border-radius: 8px;
     padding: 0.4rem;
     background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
@@ -382,7 +382,7 @@
 .gtgame-info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
     padding: 0.75rem 1.25rem 1.25rem;
     margin-top: 0.5rem;
 }
@@ -393,34 +393,81 @@
     gap: 0.5rem;
     color: #64748b;
     font-size: 0.75rem;
-    padding: 0.25rem 0;
+    padding: 0.5rem 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.gtinfo-item:hover {
+    background-color: #f1f5f9;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.gticon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.gtinfo-item:hover .gticon {
+    transform: scale(1.1);
 }
 
 /* 🔴 ADDED: Toggle Details Button Styling */
 .gtview-details-btn {
     width: 100%;
-    background: none;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: none;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding: 0.85rem;
-    color: #555;
-    font-weight: 500;
+    color: #333;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
     height: 50px;
     font-family: 'Orbitron', 'Titillium Web', sans-serif;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
 }
 
 .gtview-details-btn:hover {
-    background-color: var(--dark-shade);
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #D4001C;
+}
+
+.gtview-details-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, #D4001C, transparent);
+    transform: scaleX(0.3);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.gtview-details-btn:hover::after {
+    transform: scaleX(1);
 }
 
 /* 🔴 ADDED: Expandable Details Section Styling */
 .gtgame-details {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding: 1.25rem;
-    background-color: rgba(0, 0, 0, 0.01);
+    background-color: #fcfcfd;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Betting Lines Section */
@@ -454,16 +501,18 @@
 .gtline-item {
     display: flex;
     flex-direction: column;
-    padding: 0.75rem;
+    padding: 0.9rem;
     background-color: #f8fafc;
-    border-radius: 6px;
+    border-radius: 10px;
     border: 1px solid #edf2f7;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .gtline-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(212, 0, 28, 0.1);
 }
 
 .gtline-provider {
@@ -477,11 +526,16 @@
     width: 42px;
     height: 21px;
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 6px;
     background: white;
-    padding: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    padding: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.gtline-item:hover .gtsportsbook-logo {
+    transform: scale(1.05);
 }
 
 .gtline-values {
@@ -517,32 +571,56 @@
     background-color: #D4001C;
     color: white;
     border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: 'Orbitron', 'Titillium Web', sans-serif;
     font-size: 0.85rem;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(212, 0, 28, 0.2);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
 .gtadvanced-player-button {
     background-color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.gtadvanced-details-button::before,
+.gtadvanced-player-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+    z-index: -1;
+    transition: opacity 0.3s ease;
 }
 
 .gtadvanced-details-button:hover,
 .gtadvanced-player-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .gtadvanced-details-button:hover {
-    background-color: #d12d43;
+    background-color: #c1001a;
 }
 
 .gtadvanced-player-button:hover {
-    background-color: #444;
+    background-color: #222;
+}
+
+.gtadvanced-details-button:active,
+.gtadvanced-player-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Loading & Error States */

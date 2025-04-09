@@ -381,7 +381,7 @@ const Games = () => {
                                         </div>
                                         <div className="gtteam-details">
                                             <h3>{game.homeTeam}</h3>
-                                            {homeIsFCS && <span className="gtteam-division">FCS</span>}
+
                                         </div>
                                         <span className="gtscore">{game.homePoints || "-"}</span>
                                     </div>
@@ -396,7 +396,7 @@ const Games = () => {
                                         </div>
                                         <div className="gtteam-details">
                                             <h3>{game.awayTeam}</h3>
-                                            {awayIsFCS && <span className="gtteam-division">FCS</span>}
+
                                         </div>
                                         <span className="gtscore">{game.awayPoints || "-"}</span>
                                     </div>
@@ -406,8 +406,9 @@ const Games = () => {
                             {/* Game Info Grid */}
                             <div className="gtgame-info-grid">
                                 <div className="gtinfo-item">
-                                    <svg className="gticon" viewBox="0 0 24 24">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+                                    <svg className="gticon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 21C15.5 17.4 19 14.1764 19 9.88235C19 5.58824 15.866 2 12 2C8.13401 2 5 5.58824 5 9.88235C5 14.1764 8.5 17.4 12 21Z" fill="#E6EDF3" stroke="#64748B" strokeWidth="1.5"/>
+                                        <circle cx="12" cy="10" r="3" fill="#D4001C" stroke="#64748B" strokeWidth="0.5"/>
                                     </svg>
                                     <div>
                                         <span className="gtinfo-label">Venue</span>
@@ -416,8 +417,10 @@ const Games = () => {
                                 </div>
                                 
                                 <div className="gtinfo-item">
-                                    <svg className="gticon" viewBox="0 0 24 24">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                    <svg className="gticon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="9" fill="#E6EDF3" stroke="#64748B" strokeWidth="1.5"/>
+                                        <path d="M12 7V12L15.5 14.5" stroke="#D4001C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <circle cx="12" cy="12" r="1" fill="#64748B"/>
                                     </svg>
                                     <div>
                                         <span className="gtinfo-label">Time</span>

@@ -27,6 +27,9 @@ import CoachOverview from "./components/CoachOverview";
 // NEW: Import PlayerGrade Component
 import PlayerGrade from "./components/PlayerGrade";
 
+// NEW: Import PlayerGameGrade Component
+import PlayerGameGrade from "./components/PlayerGameGrade";
+
 // NEW: Import VisualizeTrends Component (for Visualize Trends route)
 import VisualizeTrends from "./components/VisualizeTrends";
 
@@ -516,6 +519,7 @@ function App() {
               <Route path="/coach-overview" element={<CoachOverview />} />
               
               {/* NEW: Player Grade Routes */}
+              <Route path="/playerGameGrade/:gameId" element={<PlayerGameGrade />} />
               <Route path="/player-grade" element={<PlayerGrade />} />
               <Route path="/player-grade/:teamId" element={<PlayerGrade />} />
               <Route path="/player-grade/:teamId/:gameId" element={<PlayerGrade />} />
