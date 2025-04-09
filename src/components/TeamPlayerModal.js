@@ -93,7 +93,7 @@ const TeamPlayerModal = ({
   // Convert numeric year to text for class designation
   const playerClass = convertYearToText(player.year || 1);
   
-  // Get player's full name
+  // Get player's full name (firstName + lastName format from your player data)
   const playerFullName = player.firstName && player.lastName ? 
     `${player.firstName} ${player.lastName}` : "Player Name";
     
@@ -626,7 +626,7 @@ const TeamPlayerModal = ({
           <div className="team-name">{teamName}</div>
           <div className="player-header-content">
             <h2 className="player-name">{playerFullName}</h2>
-            <div className="player-position">{player.position || "QB"} #{player.jersey !== undefined ? player.jersey : "0"}</div>
+            <div className="player-position">{player.position || ""} #{player.jersey}</div>
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
