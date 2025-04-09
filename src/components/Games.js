@@ -121,6 +121,11 @@ const Games = () => {
         navigate(`/game/${gameId}`);
     };
 
+    const navigateToPlayerGameGrade = (gameId) => {
+        navigate(`/playerGameGrade/${gameId}`);
+    };
+
+    
     const getTeamLogo = (teamName) => {
         // First check FBS teams
         const fbsTeam = teams.find(
