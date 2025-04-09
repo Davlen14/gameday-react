@@ -140,8 +140,8 @@ const VisualizeTrends = () => {
     switch(activeViz) {
       case "teamWins":
         return (
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="vtfilters-container">
+            <div className="vtfilter-group">
               <label>Year Range</label>
               <select value={selectedYearRange} onChange={handleYearRangeChange}>
                 <option value="2000-2023">2000-2023</option>
@@ -150,7 +150,7 @@ const VisualizeTrends = () => {
                 <option value="2020-2023">2020-2023</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Conference</label>
               <select value={selectedConference} onChange={handleConferenceChange}>
                 {conferences.map((conf) => (
@@ -158,7 +158,7 @@ const VisualizeTrends = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Top Teams</label>
               <select value={topTeamCount} onChange={handleTopTeamCountChange}>
                 <option value="5">Top 5</option>
@@ -172,8 +172,8 @@ const VisualizeTrends = () => {
         
       case "pollRankings":
         return (
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="vtfilters-container">
+            <div className="vtfilter-group">
               <label>Week Range</label>
               <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                 <option value="Week 1 - 5">Week 1 - 5</option>
@@ -182,7 +182,7 @@ const VisualizeTrends = () => {
                 <option value="Week 1 - Postseason">Week 1 - Postseason</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Poll Type</label>
               <select value={selectedPollType} onChange={handlePollTypeChange}>
                 <option value="AP Poll">AP Poll</option>
@@ -195,8 +195,8 @@ const VisualizeTrends = () => {
         
       case "playerStats":
         return (
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="vtfilters-container">
+            <div className="vtfilter-group">
               <label>Player</label>
               <select value={selectedPlayer} onChange={handlePlayerChange}>
                 <option value="All Players">All Players</option>
@@ -207,7 +207,7 @@ const VisualizeTrends = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Stat Type</label>
               <select value={selectedStatType} onChange={handleStatTypeChange}>
                 <option value="Passing Yards">Passing Yards</option>
@@ -216,7 +216,7 @@ const VisualizeTrends = () => {
                 <option value="Touchdowns">Touchdowns</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Week Range</label>
               <select value={selectedWeekRange} onChange={handleWeekRangeChange}>
                 <option value="Week 1 - 5">Week 1 - 5</option>
@@ -230,8 +230,8 @@ const VisualizeTrends = () => {
         
       case "teamPoints":
         return (
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="vtfilters-container">
+            <div className="vtfilter-group">
               <label>Team</label>
               <select value={selectedTeam} onChange={handleTeamChange}>
                 <option value="All Teams">All Teams</option>
@@ -242,7 +242,7 @@ const VisualizeTrends = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Year</label>
               <select>
                 <option>2023</option>
@@ -250,7 +250,7 @@ const VisualizeTrends = () => {
                 <option>2021</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Season Type</label>
               <select>
                 <option>Regular Season</option>
@@ -263,8 +263,8 @@ const VisualizeTrends = () => {
         
       case "offenseDefense":
         return (
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="vtfilters-container">
+            <div className="vtfilter-group">
               <label>Offensive Stat</label>
               <select value={selectedOffensiveStat} onChange={handleOffensiveStatChange}>
                 <option>Total Yards</option>
@@ -272,7 +272,7 @@ const VisualizeTrends = () => {
                 <option>Passing Yards</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Defensive Stat</label>
               <select value={selectedDefensiveStat} onChange={handleDefensiveStatChange}>
                 <option>Yards Allowed</option>
@@ -280,7 +280,7 @@ const VisualizeTrends = () => {
                 <option>Sacks</option>
               </select>
             </div>
-            <div className="filter-group">
+            <div className="vtfilter-group">
               <label>Conference</label>
               <select value={selectedConference} onChange={handleConferenceChange}>
                 {conferences.map((conf) => (
@@ -300,8 +300,8 @@ const VisualizeTrends = () => {
   const renderVisualization = () => {
     if (isLoading) {
       return (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
+        <div className="vtloading-spinner">
+          <div className="vtspinner"></div>
         </div>
       );
     }
@@ -309,7 +309,7 @@ const VisualizeTrends = () => {
     switch(activeViz) {
       case "teamWins":
         return (
-          <div className="chart-container">
+          <div className="vtchart-container">
             <TeamWinsTimeline
               width={800}
               height={600}
@@ -322,7 +322,7 @@ const VisualizeTrends = () => {
         
       case "pollRankings":
         return (
-          <div className="chart-container">
+          <div className="vtchart-container">
             <PollsBumpChart
               width={700}
               height={450}
@@ -334,7 +334,7 @@ const VisualizeTrends = () => {
         
       case "playerStats":
         return (
-          <div className="chart-container">
+          <div className="vtchart-container">
             <PlayerStatsChart
               width={700}
               height={450}
@@ -347,11 +347,11 @@ const VisualizeTrends = () => {
         
       case "teamPoints":
         return (
-          <div className="chart-container">
-            <div className="empty-state">
-              <div className="empty-state-icon">📊</div>
-              <h3 className="empty-state-title">Coming Soon</h3>
-              <p className="empty-state-text">
+          <div className="vtchart-container">
+            <div className="vtempty-state">
+              <div className="vtempty-state-icon">📊</div>
+              <h3 className="vtempty-state-title">Coming Soon</h3>
+              <p className="vtempty-state-text">
                 Team Points visualization is under development and will be available soon.
               </p>
             </div>
@@ -360,11 +360,11 @@ const VisualizeTrends = () => {
         
       case "offenseDefense":
         return (
-          <div className="chart-container">
-            <div className="empty-state">
-              <div className="empty-state-icon">⚔️</div>
-              <h3 className="empty-state-title">Coming Soon</h3>
-              <p className="empty-state-text">
+          <div className="vtchart-container">
+            <div className="vtempty-state">
+              <div className="vtempty-state-icon">⚔️</div>
+              <h3 className="vtempty-state-title">Coming Soon</h3>
+              <p className="vtempty-state-text">
                 Offense vs. Defense trends visualization is under development and will be available soon.
               </p>
             </div>
@@ -377,40 +377,40 @@ const VisualizeTrends = () => {
   };
 
   return (
-    <div className="visualize-container">
+    <div className="vtvisualize-container">
       {/* Sidebar with navigation */}
-      <aside className="dashboard-sidebar">
-        <header className="visualize-header">
+      <aside className="vtdashboard-sidebar">
+        <header className="vtvisualize-header">
           <h1>Visualize</h1>
           <p>Interactive data & trends</p>
         </header>
         
-        <div className="viz-nav-title">Visualizations</div>
-        <ul className="viz-nav">
+        <div className="vtviz-nav-title">Visualizations</div>
+        <ul className="vtviz-nav">
           {navItems.map((item) => (
-            <li key={item.id} className="viz-nav-item">
+            <li key={item.id} className="vtviz-nav-item">
               <div 
-                className={`viz-nav-link ${activeViz === item.id ? 'active' : ''}`}
+                className={`vtviz-nav-link ${activeViz === item.id ? 'active' : ''}`}
                 onClick={() => setActiveViz(item.id)}
               >
-                <span className="viz-nav-icon">{item.icon}</span>
+                <span className="vtviz-nav-icon">{item.icon}</span>
                 {item.title}
               </div>
             </li>
           ))}
         </ul>
         
-        <div className="viz-nav-title">About</div>
-        <ul className="viz-nav">
-          <li className="viz-nav-item">
-            <div className="viz-nav-link">
-              <span className="viz-nav-icon">🔍</span>
+        <div className="vtviz-nav-title">About</div>
+        <ul className="vtviz-nav">
+          <li className="vtviz-nav-item">
+            <div className="vtviz-nav-link">
+              <span className="vtviz-nav-icon">🔍</span>
               How to Use
             </div>
           </li>
-          <li className="viz-nav-item">
-            <div className="viz-nav-link">
-              <span className="viz-nav-icon">📚</span>
+          <li className="vtviz-nav-item">
+            <div className="vtviz-nav-link">
+              <span className="vtviz-nav-icon">📚</span>
               Data Sources
             </div>
           </li>
@@ -418,8 +418,8 @@ const VisualizeTrends = () => {
       </aside>
       
       {/* Main content area */}
-      <main className="dashboard-content">
-        <div className="viz-title-bar">
+      <main className="vtdashboard-content">
+        <div className="vtviz-title-bar">
           <h2>{navItems.find(item => item.id === activeViz)?.title}</h2>
         </div>
         
@@ -427,7 +427,7 @@ const VisualizeTrends = () => {
         {renderFilters()}
         
         {/* Active visualization */}
-        <div className="visualization-container">
+        <div className="vtvisualization-container">
           {renderVisualization()}
         </div>
       </main>
