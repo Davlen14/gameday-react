@@ -91,8 +91,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   // Chart dimensions
   const size = 320;
   const center = size / 2;
-  const maxRadius = size * 0.45;
-  const labelOffset = size * 0.47;
+  const maxRadius = size * 0.42; // Slightly reduce triangle size
+  const labelOffset = size * 0.52; // Increase label distance
   
   // Normalize data for radar chart
   const metrics = [
@@ -148,6 +148,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const angle = (Math.PI * 2 * i) / metrics.length;
     const x2 = center + maxRadius * Math.sin(angle);
     const y2 = center - maxRadius * Math.cos(angle);
+    
+    // Calculate label position with increased offset for better visibility
     const labelX = center + labelOffset * Math.sin(angle);
     const labelY = center - labelOffset * Math.cos(angle);
     
@@ -318,6 +320,14 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               fontSize="14"
               fontWeight="600"
               fill="#555555"
+              style={{
+                filter: 'drop-shadow(0px 0px 2px white)',
+                paintOrder: 'stroke fill',
+                stroke: 'white',
+                strokeWidth: '2px',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+              }}
             >
               {axis.label.text}
             </text>
@@ -347,9 +357,14 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
                 <span className="metric-name">{metric.label}</span>
                 <span 
                   className="performance-indicator" 
-                  style={{ backgroundColor: performanceColor }}
+                  style={{ 
+                    backgroundColor: performanceColor,
+                    boxShadow: `0 3px 6px ${performanceColor}40`
+                  }}
                 >
-                  {performanceLevel}
+                  {performanceLevel === "Below Average" ? "Below Avg" : 
+                   performanceLevel === "Above Average" ? "Above Avg" : 
+                   "Average"}
                 </span>
               </div>
               <div className="metric-values">
@@ -399,10 +414,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           padding: 0.75rem 1rem;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           flex: 1;
-          min-width: 200px;
+          min-width: 220px;
           max-width: 250px;
           transition: all 0.2s ease;
           border: 2px solid transparent;
+          height: 170px;
+          display: flex;
+          flex-direction: column;
         }
         
         .metric-card:hover, .metric-card.active {
@@ -413,8 +431,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         .metric-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 0.75rem;
+          height: 85px;
+          position: relative;
         }
         
         .metric-name {
@@ -423,11 +443,24 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         }
         
         .performance-indicator {
-          font-size: 12px;
-          font-weight: 600;
-          padding: 3px 6px;
-          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 5px 8px;
+          border-radius: 6px;
           color: white;
+          writing-mode: vertical-lr;
+          transform: rotate(180deg);
+          height: auto;
+          min-height: 70px;
+          width: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          white-space: nowrap;
+          letter-spacing: 0.5px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          margin-left: 6px;
         }
         
         .metric-values {
