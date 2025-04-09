@@ -411,7 +411,7 @@ const Games = () => {
                                         <circle cx="12" cy="10" r="3" fill="#D4001C" stroke="#64748B" strokeWidth="0.5"/>
                                     </svg>
                                     <div>
-                                        <span className="gtinfo-label">Venue</span>
+                                        <span className="gtinfo-label"></span>
                                         <span className="gtinfo-value">{game.venue}</span>
                                     </div>
                                 </div>
@@ -423,7 +423,7 @@ const Games = () => {
                                         <circle cx="12" cy="12" r="1" fill="#64748B"/>
                                     </svg>
                                     <div>
-                                        <span className="gtinfo-label">Time</span>
+                                        <span className="gtinfo-label"></span>
                                         <span className="gtinfo-value">
                                             {game.status === 'final' ? (
                                                 <span className="gtfinal">Final</span>
@@ -437,7 +437,7 @@ const Games = () => {
                                 <div className="gtinfo-item">
                                     <TvIcon />
                                     <div>
-                                        <span className="gtinfo-label">Network</span>
+                                        <span className="gtinfo-label"></span>
                                         <span className="gtinfo-value">{tvNetwork}</span>
                                     </div>
                                 </div>
@@ -445,7 +445,7 @@ const Games = () => {
                                 <div className="gtinfo-item">
                                     <WeatherIcon condition={gameWeather?.weatherCondition} />
                                     <div>
-                                        <span className="gtinfo-label">Weather</span>
+                                        <span className="gtinfo-label"></span>
                                         <span className="gtinfo-value">
                                             {gameWeather?.temperature ? `${gameWeather.temperature}°F` : '--'} 
                                             <span className="gtweather-condition">
@@ -507,7 +507,7 @@ const Games = () => {
                                         
                                         <button 
                                             className="gtadvanced-player-button"
-                                            onClick={() => navigate(`/playerGameGrade/${game.id}`)}
+                                            onClick={() => navigateToPlayerGameGrade(game.id)}
                                         >
                                             Advanced Player Stats
                                         </button>
