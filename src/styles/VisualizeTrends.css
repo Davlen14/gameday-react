@@ -18,7 +18,7 @@
   --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
   --sidebar-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
   --transition-speed: 0.3s;
-  --border-radius: 8px;
+  --border-radius: 0; /* Removed border radius */
   --hover-scale: 1.02;
 }
 
@@ -38,6 +38,7 @@
 
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -58,16 +59,20 @@ h1, h2, h3, h4, h5, h6 {
 .vtvisualize-container {
   display: grid;
   grid-template-columns: 240px 1fr;
-  height: calc(100vh - 120px);
+  height: 100vh; /* Full viewport height */
   max-height: 100vh;
-  width: 99%;
-  margin: 0 auto;
+  width: 100%; /* Full width */
+  margin: 0; /* Remove margins */
+  padding: 0; /* Remove padding */
   gap: 0;
   position: relative;
   overflow: hidden;
   background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
+  border-radius: 0; /* No border radius */
+  box-shadow: none; /* Remove shadow */
+  top: 0;
+  left: 0;
+  right: a;
 }
 
 /* Dashboard sidebar */
@@ -80,6 +85,9 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 10;
   overflow-y: auto;
   position: relative;
+  height: 100vh; /* Full height */
+  margin: 0; /* Remove margins */
+  border-radius: 0; /* No border radius */
 }
 
 /* Dashboard content */
@@ -88,6 +96,9 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   background-color: var(--card-bg);
   position: relative;
+  height: 100vh; /* Full height */
+  margin: 0; /* Remove margins */
+  border-radius: 0; /* No border radius */
 }
 
 /* Header */
@@ -142,7 +153,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 0.75rem;
-  border-radius: var(--border-radius);
+  border-radius: 6px; /* Keep some radius for nav items */
   color: var(--text-color);
   text-decoration: none;
   transition: all 0.3s ease;
@@ -193,6 +204,8 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .vtviz-title-bar h2 {
@@ -204,14 +217,13 @@ h1, h2, h3, h4, h5, h6 {
 /* Filters container */
 .vtfilters-container {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
   width: 100%;
   padding: 1rem;
   background: var(--card-bg);
-  border-radius: var(--border-radius);
-  margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  border-radius: 0; /* No border radius */
+  margin-bottom: 0; /* Remove margin */
+  box-shadow: none; /* Remove shadow */
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -221,6 +233,20 @@ h1, h2, h3, h4, h5, h6 {
 /* Remove the red top border */
 .vtfilters-container::before {
   display: none;
+}
+
+.vtfilter-title {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.vtfilter-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
 }
 
 .vtfilter-group {
@@ -244,7 +270,7 @@ h1, h2, h3, h4, h5, h6 {
 .vtfilter-group select {
   padding: 0.7rem 0.8rem;
   border: 1px solid var(--border-color);
-  border-radius: calc(var(--border-radius) - 2px);
+  border-radius: 4px; /* Keep some radius for selects */
   background-color: var(--card-bg);
   color: var(--text-color);
   font-family: inherit;
@@ -271,8 +297,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Chart container - make it a direct continuation of the filters */
 .vtchart-container {
   background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  border-radius: 0; /* No border radius */
+  box-shadow: none; /* Remove shadow */
   padding: 1rem;
   flex: 1;
   width: 100%;
@@ -283,9 +309,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
-  margin-top: -1px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  margin-top: 0; /* Remove negative margin */
 }
 
 .vtchart-wrapper {
@@ -305,7 +329,7 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.97);
-  border-radius: var(--border-radius);
+  border-radius: 6px; /* Keep some radius for tooltip */
   padding: 0.8rem;
   font-size: 0.85rem;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
@@ -332,7 +356,7 @@ h1, h2, h3, h4, h5, h6 {
   gap: 1rem;
   padding: 0.8rem 1rem;
   background: var(--card-bg);
-  border-radius: var(--border-radius);
+  border-radius: 0; /* No border radius */
   border: 1px solid var(--border-color);
   flex-wrap: wrap;
 }
@@ -343,7 +367,7 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
   border: none;
   padding: 0.6rem 1.2rem;
-  border-radius: var(--border-radius);
+  border-radius: 4px; /* Keep some radius for button */
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -415,7 +439,7 @@ h1, h2, h3, h4, h5, h6 {
 .vttimeline-speed-select {
   padding: 0.5rem 1.8rem 0.5rem 0.8rem;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: 4px; /* Keep some radius for dropdown */
   background-color: var(--card-bg);
   color: var(--text-color);
   font-family: inherit;
@@ -466,6 +490,13 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0.5;
 }
 
+.vtempty-state-icon svg {
+  width: 50px;
+  height: 50px;
+  stroke: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
 .vtempty-state-title {
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
@@ -482,7 +513,7 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
   border: none;
   padding: 0.7rem 1.2rem;
-  border-radius: var(--border-radius);
+  border-radius: 4px; /* Keep some radius for button */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -497,6 +528,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Loading state */
 .vtloading-spinner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -511,54 +543,14 @@ h1, h2, h3, h4, h5, h6 {
   animation: spinner 1s linear infinite;
 }
 
+.vtloading-spinner p {
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 @keyframes spinner {
   to { transform: rotate(360deg); }
-}
-
-/* Responsive styles */
-@media (max-width: 1024px) {
-  .vtvisualize-container {
-    grid-template-columns: 200px 1fr;
-  }
-  
-  .vtfilter-group {
-    min-width: 160px;
-  }
-}
-
-@media (max-width: 768px) {
-  .vtvisualize-container {
-    grid-template-columns: 1fr;
-    height: auto;
-    max-height: none;
-  }
-  
-  .vtdashboard-sidebar {
-    display: none;
-  }
-  
-  .vtdashboard-content {
-    padding: 1rem;
-  }
-  
-  .vtviz-title-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
-  }
-  
-  .vtfilters-container {
-    padding: 0.8rem;
-  }
-  
-  .vtfilter-group {
-    min-width: 100%;
-    max-width: none;
-  }
-  
-  .vtchart-container {
-    min-height: 50vh;
-  }
 }
 
 /* Mobile menu button */
@@ -573,7 +565,7 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 4px; /* Keep some radius for button */
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -587,15 +579,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Title area with action buttons */
-.vtviz-title-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
 .vtviz-actions {
   display: flex;
   gap: 0.75rem;
@@ -607,7 +590,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--border-radius);
+  border-radius: 4px; /* Keep some radius for button */
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-color);
@@ -621,21 +604,6 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--accent-color);
 }
 
-/* Improved filters container */
-.vtfilter-title {
-  font-size: 1rem;
-  margin: 0 0 1rem 0;
-  color: var(--text-color);
-  font-weight: 600;
-}
-
-.vtfilter-groups {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  width: 100%;
-}
-
 /* Collapsible sidebar */
 .vtdashboard-sidebar.collapsed {
   transform: translateX(-100%);
@@ -646,15 +614,17 @@ h1, h2, h3, h4, h5, h6 {
   grid-column: 1 / span 2;
 }
 
-/* SVG icons in empty state */
-.vtempty-state-icon svg {
-  width: 50px;
-  height: 50px;
-  stroke: var(--text-muted);
-  margin-bottom: 1rem;
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .vtvisualize-container {
+    grid-template-columns: 200px 1fr;
+  }
+  
+  .vtfilter-group {
+    min-width: 160px;
+  }
 }
 
-/* Media queries for responsive design */
 @media (max-width: 768px) {
   .vtmenu-button {
     display: flex;
@@ -678,6 +648,25 @@ h1, h2, h3, h4, h5, h6 {
   
   .vtdashboard-content {
     padding-top: 60px;
+  }
+  
+  .vtviz-title-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .vtfilters-container {
+    padding: 0.8rem;
+  }
+  
+  .vtfilter-group {
+    min-width: 100%;
+    max-width: none;
+  }
+  
+  .vtchart-container {
+    min-height: 50vh;
   }
 }
 

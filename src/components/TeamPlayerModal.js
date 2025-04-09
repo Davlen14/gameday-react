@@ -45,7 +45,7 @@ const TeamPlayerModal = ({
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
   position = "QB",        // Player's position
-  positionNumber = "#1",  // Player's position number
+  jerseyNumber = "1",    // Player's jersey number
 }) => {
   // State for team logos - primary and secondary
   const [primaryLogo, setPrimaryLogo] = useState(teamLogo);
@@ -95,9 +95,27 @@ const TeamPlayerModal = ({
   // Convert numeric year to text for class designation
   const playerClass = convertYearToText(player.year || 1);
 
-  // Determine draft eligibility (for mock purposes, using draftEligibleYear from player)
-  const isDraftEligible =
-    player.draftEligibleYear && player.draftEligibleYear <= new Date().getFullYear();
+  // Draft eligibility calculation based on class year
+  const calculateDraftEligibility = (yearNumber) => {
+    const currentYear = new Date().getFullYear();
+    
+    switch (yearNumber) {
+      case 1: // Freshman
+        return currentYear + 3;
+      case 2: // Sophomore
+        return currentYear + 2;
+      case 3: // Junior
+        return currentYear + 1;
+      case 4: // Senior
+      case 5: // 5th Year
+        return currentYear;
+      default:
+        return "N/A";
+    }
+  };
+
+  // Draft eligibility year (calculated if not provided)
+  const draftEligibleYear = player.draftEligibleYear || calculateDraftEligibility(player.year || 1);
 
   /*********************************************************
    * MOCK CHART DATA (these stats are placeholders)
@@ -556,10 +574,11 @@ const TeamPlayerModal = ({
             right: 15px;
             background: none;
             border: none;
-            color: #666;
+            color: #333;
             padding: 0;
             cursor: pointer;
             font-size: 1.5rem;
+            font-weight: bold;
             z-index: 10;
             display: flex;
             align-items: center;
@@ -590,10 +609,10 @@ const TeamPlayerModal = ({
           ) : (
             <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
           )}
-          <div className="team-name">{teamName} Rebels</div>
+          <div className="team-name">{teamName}</div>
           <div className="player-header-content">
             <h2 className="player-name">{player.fullName || "Player Name"}</h2>
-            <div className="player-position">{position} {positionNumber}</div>
+            <div className="player-position">{position} #{jerseyNumber}</div>
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
@@ -609,7 +628,7 @@ const TeamPlayerModal = ({
               </div>
               <div className="player-info-item">
                 <span className="player-info-label">Draft Eligible Year</span>
-                <span className="player-info-value">{player.draftEligibleYear || "N/A"}</span>
+                <span className="player-info-value">{draftEligibleYear}</span>
               </div>
             </div>
           </div>
