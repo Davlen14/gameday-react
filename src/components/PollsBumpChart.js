@@ -232,12 +232,12 @@ const PollsBumpChart = ({ width, height, pollType, weekRange }) => {
       .curve(d3.curveMonotoneX);
 
     // Shared tooltip
-    const container = d3.select(chartRef.current.closest(".chart-wrapper"));
-    let tooltip = container.select(".tooltip");
+    const container = d3.select(chartRef.current.closest(".vtchart-wrapper"));
+    let tooltip = container.select(".vttooltip");
     if (tooltip.empty()) {
       tooltip = container
         .append("div")
-        .attr("class", "tooltip")
+        .attr("class", "vttooltip")
         .style("position", "absolute")
         .style("padding", "8px")
         .style("background", "rgba(255, 255, 255, 0.9)")

@@ -284,43 +284,43 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 <td><strong>Division I ({team.classification || 'FBS/FCS'})</strong></td>
               </tr>
               {coachData && (
-              <tr>
-                <td>
-                  <div className="flex-align-center">
-                    <FaUserTie size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
-                    Coach:
-                  </div>
-                </td>
-                <td>
-                  <strong>
-                    {coachData.firstName} {coachData.lastName}
-                    {coachData.hireDate && (
-                      <span className="coach-tenure">
-                        Since {new Date(coachData.hireDate).getFullYear()}
-                      </span>
-                    )}
-                  </strong>
-                  {coachData.seasons && coachData.seasons.length > 0 && (
-                    <div className="coach-record">
-                      <span className="record-detail">
-                        Team Record: {coachData.seasons[0].wins}-{coachData.seasons[0].losses}
-                      </span>
-                      {(coachData.seasons[0].preseasonRank || coachData.seasons[0].postseasonRank) && (
-                        <span className="rank-detail">
-                          {coachData.seasons[0].preseasonRank && (
-                            <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Preseason: #{coachData.seasons[0].preseasonRank}</span>
-                          )}
-                          {coachData.seasons[0].preseasonRank && coachData.seasons[0].postseasonRank && ' • '}
-                          {coachData.seasons[0].postseasonRank && (
-                            <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Final: #{coachData.seasons[0].postseasonRank}</span>
-                          )}
+                <tr>
+                  <td>
+                    <div className="flex-align-center">
+                      <FaUserTie size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
+                      Coach:
+                    </div>
+                  </td>
+                  <td>
+                    <strong>
+                      {coachData.firstName} {coachData.lastName}
+                      {coachData.hireDate && (
+                        <span className="coach-tenure">
+                          Since {new Date(coachData.hireDate).getFullYear()}
                         </span>
                       )}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            )}
+                    </strong>
+                    {coachData.seasons && coachData.seasons.length > 0 && (
+                      <div className="coach-record">
+                        <span className="record-detail">
+                          Record: {coachData.seasons[0].wins}-{coachData.seasons[0].losses}
+                        </span>
+                        {(coachData.seasons[0].preseasonRank || coachData.seasons[0].postseasonRank) && (
+                          <span className="rank-detail">
+                            {coachData.seasons[0].preseasonRank && (
+                              <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Preseason: #{coachData.seasons[0].preseasonRank}</span>
+                            )}
+                            {coachData.seasons[0].preseasonRank && coachData.seasons[0].postseasonRank && ' • '}
+                            {coachData.seasons[0].postseasonRank && (
+                              <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Final: #{coachData.seasons[0].postseasonRank}</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )}
                {recordData && (
                 <tr>
                   <td>
