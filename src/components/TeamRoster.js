@@ -101,7 +101,20 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
       setError(null); // Reset error state on new fetch
       try {
         const data = await teamsService.getTeamRoster(teamName, year);
-        setRoster(data);
+        
+        // Log the first player to help debug field names
+        if (data && data.length > 0) {
+          console.log("Sample player data:", data[0]);
+        }
+        
+        // Process the data to ensure jersey numbers are properly handled
+        const processedData = data.map(player => ({
+          ...player,
+          // Create a fullName if it doesn't exist
+          fullName: player.fullName || `${player.firstName || ''} ${player.lastName || ''}`.trim()
+        }));
+        
+        setRoster(processedData);
       } catch (err) {
         console.error("Error fetching roster:", err.message);
         setError("Failed to load roster information."); // Set error message
@@ -136,7 +149,16 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
 
   // NEW: Handler to open the modal with the selected player info
   const handlePlayerClick = (player) => {
-    setSelectedPlayer(player);
+    // Ensure the player object contains the new fields
+    const playerWithFormattedData = {
+      ...player,
+      formattedHometown: player.homeCity && player.homeState 
+        ? `${player.homeCity}, ${player.homeState}` 
+        : player.homeCity || player.homeState || "N/A",
+      jerseyNumber: player.jersey || "N/A",
+      weightLbs: player.weight ? `${player.weight} lbs` : "N/A"
+    };
+    setSelectedPlayer(playerWithFormattedData);
     setIsModalOpen(true);
   };
 
@@ -189,7 +211,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                     <span className="player-position">{player.position || "N/A"}</span>
                   </td>
                   <td>
-                    <span className="player-jersey">{player.jersey || "N/A"}</span>
+                    <span className="player-jersey">{player.jersey || player.number || player.jerseyNumber || "N/A"}</span>
                   </td>
                   <td>
                     <span className="player-height">{formatHeight(player.height) || "N/A"}</span>
@@ -211,7 +233,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
               ))}
               {roster.length === 0 && !isLoading && !error && (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: "center" }}>
+                  <td colSpan="7" style={{ textAlign: "center" }}>
                     No roster information available
                   </td>
                 </tr>
