@@ -45,12 +45,10 @@ const TeamPlayerModal = ({
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
 }) => {
-  if (!player) return null;
-  
-  // State for team logo
+  // State for team logo - MOVED BEFORE CONDITIONAL
   const [logo, setLogo] = useState(teamLogo);
   
-  // Fetch team logo if not provided
+  // Fetch team logo if not provided - MOVED BEFORE CONDITIONAL
   useEffect(() => {
     const fetchTeamLogo = async () => {
       if (!teamLogo && teamName) {
@@ -71,6 +69,9 @@ const TeamPlayerModal = ({
     
     fetchTeamLogo();
   }, [teamLogo, teamName]);
+
+  // Early return AFTER hooks are declared
+  if (!player) return null;
 
   // Fallback: if no altColor is provided, use teamColor
   const effectiveAltColor = altColor || teamColor;
