@@ -22,7 +22,10 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
         const data = await teamsService.getCoaches();
         const teamCoach = data.find(coach =>
           coach.seasons.some(season =>
-            season.school === team.school && season.year === year
+            season.school === team.school &&
+            season.year === year &&
+            season.wins !== undefined &&
+            season.losses !== undefined
           )
         );
         setCoachData(teamCoach);
@@ -80,7 +83,6 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     const B_clamped = Math.max(0, Math.min(255, B));
     return '#' + (0x1000000 + R_clamped * 0x10000 + G_clamped * 0x100 + B_clamped).toString(16).slice(1);
   };
-
 
   // Get contrast color for text based on background color
   const getContrastColor = (hexColor) => {
@@ -153,7 +155,6 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     // Default to first letter
     return schoolName.charAt(0);
   };
-
 
   // Style for card headers
   const cardHeaderStyle = {
@@ -229,44 +230,39 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   <div className="team-spirit-items">
                     {/* Team Logo Block (Stick removed) */}
                     <div className="spirit-item logo-block">
-                      <div className="logo-container" style={{ backgroundColor: team.alt_color || '#ffffff' }}> {/* Added fallback */}
+                      <div className="logo-container" style={{ backgroundColor: team.alt_color || '#ffffff' }}>
                         <img
-                          src={team.logos ? team.logos[0] : '/photos/default_team.png'} // Added default placeholder path
-                          alt={team.mascot ? `${team.mascot} Logo` : 'Team Logo'} // Improved alt text
+                          src={team.logos ? team.logos[0] : '/photos/default_team.png'}
+                          alt={team.mascot ? `${team.mascot} Logo` : 'Team Logo'}
                           className="team-logo-stick"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "/photos/default_team.png"; // Ensure fallback path is correct
+                            e.target.src = "/photos/default_team.png";
                           }}
                         />
                       </div>
-                      {/* <div className="wood-stick"></div> REMOVED STICK */}
                     </div>
 
                     {/* Modern Foam Finger (Stick removed, styles enhanced) */}
                     <div className="spirit-item modern-finger">
                       <div className="finger-container" style={{
-                           // Gradient background using helpers, with fallback
                            background: `linear-gradient(145deg, ${lightenColor(teamColor || '#cccccc', 10)}, ${darkenColor(teamColor || '#999999', 10)})`,
                            }}>
                         <div className="finger-text" style={{ color: contrastColor }}>
                           #1
                         </div>
                       </div>
-                      {/* <div className="wood-stick"></div> REMOVED STICK */}
                     </div>
 
                     {/* Team Pennant (Stick removed, styles enhanced) */}
                     <div className="spirit-item modern-pennant">
                       <div className="pennant-container" style={{
-                            // Gradient background using helpers, with fallback
                            background: `linear-gradient(to right, ${teamColor || '#cccccc'}, ${darkenColor(teamColor || '#999999', 15)})`,
                            }}>
                         <span style={{ color: contrastColor }}>
-                          {team.mascot || 'Team'} {/* Added fallback */}
+                          {team.mascot || 'Team'}
                         </span>
                       </div>
-                      {/* <div className="wood-stick pennant-stick"></div> REMOVED STICK */}
                     </div>
                   </div>
                 </td>
@@ -308,11 +304,15 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                         {(coachData.seasons[0].preseasonRank || coachData.seasons[0].postseasonRank) && (
                           <span className="rank-detail">
                             {coachData.seasons[0].preseasonRank && (
-                              <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Preseason: #{coachData.seasons[0].preseasonRank}</span>
+                              <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                                Preseason: #{coachData.seasons[0].preseasonRank}
+                              </span>
                             )}
                             {coachData.seasons[0].preseasonRank && coachData.seasons[0].postseasonRank && ' • '}
                             {coachData.seasons[0].postseasonRank && (
-                              <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>Final: #{coachData.seasons[0].postseasonRank}</span>
+                              <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                                Final: #{coachData.seasons[0].postseasonRank}
+                              </span>
                             )}
                           </span>
                         )}
@@ -321,7 +321,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   </td>
                 </tr>
               )}
-               {recordData && (
+              {recordData && (
                 <tr>
                   <td>
                     <div className="flex-align-center">
@@ -362,11 +362,10 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      background: teamColor || '#cccccc', // Fallback color
+                      background: teamColor || '#cccccc',
                       border: '1px solid rgba(0,0,0,0.1)'
                     }}></div>
                     <strong>{teamColor || 'N/A'}</strong>
-                    {/* Optionally display alt_color if available */}
                     {team.alt_color && (
                        <div style={{
                          width: '20px',
@@ -384,7 +383,6 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             </tbody>
           </table>
 
-          {/* MODIFIED: Updated styles for spirit items */}
           <style jsx>{`
             .dashboard-card { /* Basic card styling example */
               background-color: #fff;
@@ -399,55 +397,44 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-size: 1.1rem;
               display: flex;
               align-items: center;
-               /* Style set dynamically */
             }
             .card-body {
               padding: 16px;
             }
-
             .info-table {
               width: 100%;
               border-collapse: separate;
               border-spacing: 0;
-              margin-top: 10px; /* Add some space above table */
+              margin-top: 10px;
             }
-
-            /* Add hover effect to table rows */
             .info-table tr:hover {
-               /* Using rgba for hover effect - 08 is approx 5% opacity */
               background-color: ${teamColor ? teamColor + '0D' : '#f0f0f0'};
             }
-
             .info-table td {
-              padding: 10px 12px; /* Adjust padding */
+              padding: 10px 12px;
               border-bottom: 1px solid #f0f0f0;
-              vertical-align: middle; /* Default align middle */
-              font-size: 0.95rem; /* Standardize font size */
+              vertical-align: middle;
+              font-size: 0.95rem;
             }
-
-             .info-table tr:last-child td {
-              border-bottom: none; /* Remove border for last row */
+            .info-table tr:last-child td {
+              border-bottom: none;
             }
-
             .info-table td:first-child {
-              width: 150px; /* Slightly wider for "Team Spirit:" */
+              width: 150px;
               color: #555;
               font-weight: 500;
-              vertical-align: top; /* Align label to top */
-              padding-top: 15px; /* Adjust padding for top alignment */
+              vertical-align: top;
+              padding-top: 15px;
             }
-
-            strong { /* Style for bolded text in table */
+            strong {
               font-weight: 600;
               color: #333;
             }
-
             .ratings-explanation-container {
               position: relative;
               margin-top: 1.5rem;
               width: 100%;
             }
-
             .ratings-explanation-container::before {
               content: '';
               position: absolute;
@@ -455,11 +442,9 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               left: 0;
               right: 0;
               height: 4px;
-               /* Use dynamic colors with fallbacks */
               background: linear-gradient(to right, ${teamColor || '#ccc'}, ${lightenColor(teamColor || '#ccc', 30)}, ${teamColor || '#ccc'});
               border-radius: 2px 2px 0 0;
             }
-
             .ratings-explanation {
               background-color: #f9f9f9;
               border-radius: 8px;
@@ -468,151 +453,118 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               line-height: 1.5;
               color: #555;
               width: 100%;
-              border: 1px solid #eee; /* Add subtle border */
+              border: 1px solid #eee;
             }
-
             .ratings-explanation h3 {
               margin-top: 0;
               margin-bottom: 0.75rem;
-              color: ${teamColor || '#333333'}; /* Fallback color */
+              color: ${teamColor || '#333333'};
               font-weight: 600;
             }
-
             .ratings-explanation p {
-              margin-bottom: 0.5rem; /* Adjust paragraph spacing */
+              margin-bottom: 0.5rem;
             }
-             .ratings-explanation strong {
+            .ratings-explanation strong {
               font-weight: 600;
               color: #444;
             }
-
-            /* === Team Spirit Items Styling Updates === */
             .team-spirit-items {
               display: flex;
               justify-content: flex-start;
-              align-items: center; /* Align items center vertically now */
-              gap: 35px; /* Slightly increased gap */
-              padding: 15px 0 15px; /* Adjusted padding as sticks are removed */
+              align-items: center;
+              gap: 35px;
+              padding: 15px 0 15px;
               margin-top: 5px;
-              min-height: 80px; /* Ensure enough height */
-              flex-wrap: wrap; /* Allow wrapping on smaller screens */
+              min-height: 80px;
+              flex-wrap: wrap;
             }
-
             .spirit-item {
               position: relative;
               cursor: pointer;
               transition: transform 0.3s ease-out, filter 0.3s ease-out;
-              /* Enhanced drop shadow for more depth */
               filter: drop-shadow(3px 5px 5px rgba(0,0,0,0.2));
-              animation: subtle-float 4s ease-in-out infinite alternate; /* Slower, smoother float */
+              animation: subtle-float 4s ease-in-out infinite alternate;
             }
-
             .spirit-item:hover {
-              transform: translateY(-6px) scale(1.05); /* Add slight scale on hover */
-              filter: drop-shadow(4px 7px 8px rgba(0,0,0,0.3)); /* Enhance shadow on hover */
+              transform: translateY(-6px) scale(1.05);
+              filter: drop-shadow(4px 7px 8px rgba(0,0,0,0.3));
               animation-play-state: paused;
             }
-
             @keyframes subtle-float {
               from { transform: translateY(0px); }
-              to { transform: translateY(-5px); } /* Adjust float distance */
+              to { transform: translateY(-5px); }
             }
-
-            /* Wooden sticks styling REMOVED */
-            /* .wood-stick { ... } */
-
-            /* Logo Block - Styles adjusted slightly */
             .logo-block {
-              width: 65px; /* Slightly larger */
+              width: 65px;
               height: 65px;
               display: flex;
               justify-content: center;
               align-items: center;
             }
-
             .logo-container {
               width: 100%;
               height: 100%;
-              border-radius: 12px; /* More rounded */
+              border-radius: 12px;
               padding: 8px;
               display: flex;
               justify-content: center;
               align-items: center;
-              /* Use a subtle gradient or keep alt_color */
               background: ${team.alt_color ? `linear-gradient(145deg, ${lightenColor(team.alt_color, 5)}, ${darkenColor(team.alt_color, 5)})` : '#f0f0f0'};
-              box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1); /* Inner and outer shadow */
+              box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1);
               overflow: hidden;
-              border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
+              border: 1px solid rgba(0,0,0,0.05);
             }
-
             .team-logo-stick {
-              max-width: 90%; /* Ensure logo fits well */
+              max-width: 90%;
               max-height: 90%;
               object-fit: contain;
-              /* Removed filter: drop-shadow - handled by spirit-item */
             }
-
-            /* Modern Foam Finger - Enhanced Styles */
             .modern-finger {
-              width: 60px; /* Slightly wider */
-              height: 75px; /* Slightly taller */
+              width: 60px;
+              height: 75px;
               display: flex;
               justify-content: center;
               align-items: center;
             }
-
             .finger-container {
               width: 100%;
               height: 100%;
-              border-radius: 15px 15px 10px 10px; /* More pronounced rounding */
+              border-radius: 15px 15px 10px 10px;
               display: flex;
               justify-content: center;
               align-items: center;
-              box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15), /* Inner shadow bottom */
-                          inset 0 1px 2px rgba(255,255,255,0.2); /* Inner highlight top */
+              box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.2);
               position: relative;
-              /* Gradient set via inline style for dynamic color */
-              border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
-              overflow: hidden; /* Ensure gradient doesn't bleed */
+              border: 1px solid rgba(0,0,0,0.1);
+              overflow: hidden;
             }
-
             .finger-text {
-              font-weight: 700; /* Bolder */
+              font-weight: 700;
               font-size: 24px;
-              /* Softer text shadow */
               text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-              /* Color set via inline style */
-              font-family: 'Arial Black', Gadget, sans-serif; /* Example sporty font */
-               -webkit-font-smoothing: antialiased; /* Smoother text */
+              font-family: 'Arial Black', Gadget, sans-serif;
+              -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
             }
-
-            /* Modern Pennant - Enhanced Styles */
             .modern-pennant {
-              width: 130px; /* Slightly wider */
+              width: 130px;
               height: 60px;
               display: flex;
               justify-content: center;
               align-items: center;
             }
-
             .pennant-container {
               width: 100%;
               height: 100%;
               display: flex;
               justify-content: center;
               align-items: center;
-              /* Kept clip-path */
               clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
-              /* Gradient set via inline style */
-               box-shadow: inset -2px 0px 4px rgba(0,0,0,0.15), /* Inner shadow left */
-                           1px 1px 3px rgba(0,0,0,0.1); /* Subtle outer shadow */
+              box-shadow: inset -2px 0px 4px rgba(0,0,0,0.15), 1px 1px 3px rgba(0,0,0,0.1);
               position: relative;
-               border: 1px solid rgba(0,0,0,0.05); /* Very subtle border */
-               overflow: hidden; /* Ensure gradient doesn't bleed */
+              border: 1px solid rgba(0,0,0,0.05);
+              overflow: hidden;
             }
-
-            /* Add a pseudo element for the 'pole sleeve' effect */
             .pennant-container::before {
               content: '';
               position: absolute;
@@ -624,30 +576,24 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               border-radius: 3px;
               box-shadow: inset 1px 0px 2px rgba(0,0,0,0.1);
             }
-
             .modern-pennant span {
-              font-size: 16px; /* Adjusted size */
-              font-weight: 600; /* Slightly bolder */
+              font-size: 16px;
+              font-weight: 600;
               white-space: nowrap;
-              overflow: hidden; /* Prevent overflow */
-              text-overflow: ellipsis; /* Add ellipsis if too long */
-              padding-left: 15px; /* Space for pseudo element */
-              padding-right: 25px; /* Ensure text doesn't hit the point */
-              /* Softer text shadow */
+              overflow: hidden;
+              text-overflow: ellipsis;
+              padding-left: 15px;
+              padding-right: 25px;
               text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-              /* Color set via inline style */
-               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Example clean font */
-               -webkit-font-smoothing: antialiased; /* Smoother text */
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
             }
-
-            /* === Additional Helper Styles === */
             .flex-align-center {
               display: flex;
               align-items: center;
-              gap: 6px; /* Add gap for icon and text */
+              gap: 6px;
             }
-
             .coach-tenure {
               font-size: 0.8rem;
               opacity: 0.8;
@@ -655,47 +601,40 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: normal;
               color: #666;
             }
-
             .coach-record {
               margin-top: 5px;
               display: flex;
               flex-direction: column;
               gap: 4px;
-              font-size: 0.9rem; /* Slightly smaller */
+              font-size: 0.9rem;
             }
-
             .record-detail {
               font-size: 0.85rem;
               opacity: 0.8;
               font-weight: normal;
               display: inline-block;
-              margin-left: 8px; /* Space out details */
+              margin-left: 8px;
               color: #666;
             }
-
-            .record-display { /* Style for main W-L record */
-               font-weight: 600;
+            .record-display {
+              font-weight: 600;
             }
-
             .rank-detail {
               display: flex;
-              flex-wrap: wrap; /* Allow wrapping */
+              flex-wrap: wrap;
               gap: 10px;
               font-size: 0.8rem;
               color: #555;
-              margin-top: 4px; /* Space from record */
+              margin-top: 4px;
             }
-
             .preseason-rank, .postseason-rank {
-              /* Background and border set dynamically */
               border-radius: 3px;
               padding: 2px 6px;
               font-size: 0.75rem;
               font-weight: 500;
-              color: #333; /* Darker text for readability */
-              white-space: nowrap; /* Prevent rank text wrapping */
+              color: #333;
+              white-space: nowrap;
             }
-
           `}</style>
         </div>
       </div>
