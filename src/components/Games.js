@@ -504,7 +504,7 @@ const Games = () => {
                                         
                                         <button 
                                             className="gtadvanced-player-button"
-                                            onClick={() => {/* Future functionality */}}
+                                            onClick={() => navigate(`/playerGameGrade/${game.id}`)}
                                         >
                                             Advanced Player Stats
                                         </button>
