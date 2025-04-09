@@ -86,7 +86,7 @@ const darkenColor = (color, percent) => {
   );
 };
 
-const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
+const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
   // Initialize roster as an empty array
   const [roster, setRoster] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -215,13 +215,13 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
         }
       `}</style>
 
-      {/* NEW: Integrate the TeamPlayerModal component */}
+      {/* Integrate the TeamPlayerModal component */}
       <TeamPlayerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         player={selectedPlayer}
         teamColor={teamColor}
-        teamLogo={"" /* Pass your team's logo URL if available */}
+        teamLogo={teamLogo}
       />
     </div>
   );
