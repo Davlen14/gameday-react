@@ -1,29 +1,4 @@
-  // Get player's position - handles different data formats
-  const getPlayerPosition = () => {
-    return player.position || "";
-  };
-  
-  // Get player's jersey number - handles different data formats
-  const getPlayerJerseyNumber = () => {
-    // First check number property
-    if (player.number !== undefined) {
-      return player.number;
-    }
-    // Then check jersey property
-    else if (player.jersey !== undefined) {
-      return player.jersey;
-    }
-    // Then check jerseyNumber property
-    else if (player.jerseyNumber !== undefined) {
-      return player.jerseyNumber;
-    }
-    // Default fallback
-    return "";
-  };
-  
-  // Get position and jersey number
-  const playerPosition = getPlayerPosition();
-  const playerJerseyNumber = getPlayerJerseyNumber();import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
@@ -172,7 +147,7 @@ const TeamPlayerModal = ({
     
     const feet = Math.floor(heightInches / 12);
     const inches = heightInches % 12;
-    return `${feet}'${inches}\"`;  
+    return `${feet}'${inches}"`;  
   };
   
   // Format height for display
@@ -326,7 +301,7 @@ const TeamPlayerModal = ({
     ],
   };
   
-  // Modern bar chart options
+  // Modern bar chart options with improved axis styling to match the screenshot
   const barOptions = {
     responsive: true,
     maintainAspectRatio: true,
