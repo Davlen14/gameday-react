@@ -45,29 +45,43 @@ const TeamPlayerModal = ({
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
 }) => {
-  // State for team logo - MOVED BEFORE CONDITIONAL
-  const [logo, setLogo] = useState(teamLogo);
+  // State for team logos - primary and secondary
+  const [primaryLogo, setPrimaryLogo] = useState(teamLogo);
+  const [secondaryLogo, setSecondaryLogo] = useState("");
   
-  // Fetch team logo if not provided - MOVED BEFORE CONDITIONAL
+  // Fetch team logos if not provided
   useEffect(() => {
-    const fetchTeamLogo = async () => {
+    const fetchTeamLogos = async () => {
       if (!teamLogo && teamName) {
         try {
-          // Fetch all teams to get the logo
+          // Fetch all teams to get the logos
           const teams = await teamsService.getTeams();
           const foundTeam = teams.find(t => t.school.toLowerCase() === teamName.toLowerCase());
-          if (foundTeam && foundTeam.logos && foundTeam.logos.length > 0) {
-            setLogo(foundTeam.logos[0]);
+          if (foundTeam && foundTeam.logos) {
+            // Set primary logo (index 0)
+            if (foundTeam.logos.length > 0) {
+              setPrimaryLogo(foundTeam.logos[0]);
+            }
+            
+            // Set secondary logo (index 1 - dark version) if available
+            if (foundTeam.logos.length > 1) {
+              setSecondaryLogo(foundTeam.logos[1]);
+            } else if (foundTeam.logos.length > 0) {
+              // Fallback to primary logo if secondary doesn't exist
+              setSecondaryLogo(foundTeam.logos[0]);
+            }
           }
         } catch (error) {
-          console.error("Error fetching team logo:", error);
+          console.error("Error fetching team logos:", error);
         }
       } else {
-        setLogo(teamLogo);
+        // If teamLogo is provided, set it as primary and use it for secondary as well
+        setPrimaryLogo(teamLogo);
+        setSecondaryLogo(teamLogo);
       }
     };
     
-    fetchTeamLogo();
+    fetchTeamLogos();
   }, [teamLogo, teamName]);
 
   // Early return AFTER hooks are declared
@@ -478,13 +492,13 @@ const TeamPlayerModal = ({
         <div className="modal-header">
           <div className="angled-block-main"></div>
           <div className="angled-block-secondary"></div>
-          {logo ? (
-            <img src={logo} alt="Team Logo" className="big-team-logo" />
+          {secondaryLogo ? (
+            <img src={secondaryLogo} alt="Team Logo" className="big-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/100" alt="Team Logo" className="big-team-logo" />
           )}
-          {logo ? (
-            <img src={logo} alt="Team Logo" className="top-right-team-logo" />
+          {primaryLogo ? (
+            <img src={primaryLogo} alt="Team Logo" className="top-right-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
           )}
