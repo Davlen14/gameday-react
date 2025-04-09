@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import teamsService from '../services/teamsService';
 
-const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }) => {
+const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRange, conference, topTeamCount }) => {
   const svgRef = useRef();
   const [currentYear, setCurrentYear] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -15,10 +15,26 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   const [yearlyRankings, setYearlyRankings] = useState({});
   const [interpolatedYear, setInterpolatedYear] = useState(null);
   const containerRef = useRef(null);
+  // State to manage dynamic height
+  const [dynamicHeight, setDynamicHeight] = useState(initialHeight);
+  const [dynamicWidth, setDynamicWidth] = useState(initialWidth);
 
   // Parse year range
   const startYear = parseInt(yearRange.split('-')[0]);
   const endYear = parseInt(yearRange.split('-')[1]);
+
+  // Calculate dynamic size based on team count
+  useEffect(() => {
+    const teamCount = parseInt(topTeamCount);
+    // Minimum height per team to ensure readability
+    const heightPerTeam = 50; 
+    // Calculate height based on team count
+    const calculatedHeight = Math.max(initialHeight, teamCount * heightPerTeam);
+    // Update dynamic height
+    setDynamicHeight(calculatedHeight);
+    // Width should be at least 800px to accommodate team names and values
+    setDynamicWidth(Math.max(initialWidth, 800));
+  }, [topTeamCount, initialHeight, initialWidth]);
 
   // Helper function to get team logo
   const getTeamLogo = (teamName) => {
@@ -185,16 +201,32 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
 
     const svg = d3.select(svgRef.current);
 
-    // Dynamic margins based on the container size
+    // Get the current data
+    const interpolatedData = getInterpolatedData(year);
+    if (interpolatedData.length === 0) return;
+
+    // Recalculate dynamic height based on actual data
+    const teamCount = interpolatedData.length;
+    const minHeightPerTeam = 50; // Ensure each team has at least this much space
+    const calculatedHeight = Math.max(initialHeight, teamCount * minHeightPerTeam);
+    
+    // If height needs to change
+    if (calculatedHeight !== dynamicHeight) {
+      setDynamicHeight(calculatedHeight);
+      // Since we're changing height mid-render, we'll need to recreate the chart
+      svg.selectAll("*").remove();
+    }
+
+    // Dynamic margins based on the container size - more space for team labels
     const margin = { 
-      top: Math.max(20, height * 0.05), 
-      right: Math.max(30, width * 0.05), 
-      bottom: Math.max(40, height * 0.08), 
-      left: Math.max(60, width * 0.1) 
+      top: Math.max(30, dynamicHeight * 0.05), 
+      right: Math.max(100, dynamicWidth * 0.15), // More space for logos on right
+      bottom: Math.max(40, dynamicHeight * 0.08), 
+      left: Math.max(120, dynamicWidth * 0.15) // More space for team names on left
     };
     
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerWidth = dynamicWidth - margin.left - margin.right;
+    const innerHeight = dynamicHeight - margin.top - margin.bottom;
 
     // If no chart-container yet, create initial elements
     if (svg.select(".vtchart-container").empty()) {
@@ -202,8 +234,8 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
 
       // Add a subtle gradient background
       svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", dynamicWidth)
+        .attr("height", dynamicHeight)
         .attr("fill", "url(#vtchart-gradient)")
         .attr("rx", 12)
         .attr("ry", 12)
@@ -234,14 +266,14 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .attr("class", "vtchart-container")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      // Large year label (upper-right)
+      // Large year label (upper-right) - positioned proportionally
       svg
         .append("text")
         .attr("class", "vtyear-label")
-        .attr("x", width - 80)
-        .attr("y", height / 2)
+        .attr("x", dynamicWidth - dynamicWidth * 0.2)
+        .attr("y", dynamicHeight / 2)
         .attr("text-anchor", "middle")
-        .attr("font-size", "80px")
+        .attr("font-size", Math.min(100, dynamicHeight * 0.15) + "px") // Scale with height
         .attr("font-weight", "800")
         .attr("opacity", 0.12)
         .style("font-family", "'Orbitron', 'Titillium Web', sans-serif")
@@ -251,7 +283,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       svg
         .append("text")
         .attr("class", "vtchart-title")
-        .attr("x", width / 2)
+        .attr("x", dynamicWidth / 2)
         .attr("y", margin.top / 2)
         .attr("text-anchor", "middle")
         .attr("font-size", "18px")
@@ -263,7 +295,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       const textGroup = svg
         .append("g")
         .attr("class", "vtpresented-by")
-        .attr("transform", `translate(${width - 20}, ${height - 20})`);
+        .attr("transform", `translate(${dynamicWidth - 20}, ${dynamicHeight - 20})`);
 
       textGroup
         .append("text")
@@ -289,38 +321,32 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .style("text-anchor", "end");
     }
 
-    // Get the current data
-    const interpolatedData = getInterpolatedData(year);
-    if (interpolatedData.length === 0) return;
-
-    // Dynamically calculate optimal bar height based on data size and container height
-    const teamCount = interpolatedData.length;
+    // Calculate optimal bar height based on available space and team count
+    const optimalBandHeight = innerHeight / teamCount;
     
-    // Set a minimum and maximum bar height for aesthetics
-    let optimalBandHeight = innerHeight / teamCount;
-    const minBarHeight = 28; // Minimum height for readability
-    const maxBarHeight = 60; // Maximum height to prevent oversized bars
+    // Set minimum and maximum bar heights for aesthetics
+    const minBarHeight = 35; // Ensure bars aren't too short
+    const maxBarHeight = 60; // Prevent oversized bars
     
-    // Clamp the bar height
+    // Use the calculated bar height, but keep within min/max bounds
     const bandHeight = Math.max(minBarHeight, Math.min(maxBarHeight, optimalBandHeight));
     
-    // If content exceeds container, adjust the height to maintain proportions
-    const contentHeight = bandHeight * teamCount;
-    const useHeight = Math.max(innerHeight, contentHeight);
-
+    // Total height needed for all teams with the chosen band height
+    const requiredHeight = bandHeight * teamCount;
+    
     // Scales
     const xScale = d3
       .scaleLinear()
       .domain([
         0,
-        d3.max(interpolatedData, (d) => d.currentWins) * 1.1, // more padding
+        d3.max(interpolatedData, (d) => d.currentWins) * 1.15, // more padding
       ])
       .range([0, innerWidth]);
 
     const yScale = d3
       .scaleBand()
       .domain(interpolatedData.map((d) => d.team))
-      .range([0, Math.min(useHeight, bandHeight * teamCount)])
+      .range([0, requiredHeight])
       .padding(0.3); // Increased padding for more space between bars
 
     const g = svg.select(".vtchart-container");
@@ -329,7 +355,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (g.select(".x-axis").empty()) {
       g.append("g")
         .attr("class", "x-axis")
-        .attr("transform", `translate(0, ${yScale.range()[1]})`)
+        .attr("transform", `translate(0, ${requiredHeight})`)
         .call(d3.axisBottom(xScale).ticks(5)
           .tickFormat(d => d3.format(",")(d))) // Add thousands separators
         .selectAll("text")
@@ -340,7 +366,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       g.append("text")
         .attr("class", "x-axis-label")
         .attr("x", innerWidth / 2)
-        .attr("y", yScale.range()[1] + 35) // a bit more below the axis
+        .attr("y", requiredHeight + 35) // a bit more below the axis
         .attr("text-anchor", "middle")
         .attr("font-size", "13px")
         .attr("fill", "#666")
@@ -357,7 +383,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .transition()
         .duration(300)
         .ease(d3.easePolyOut)
-        .attr("transform", `translate(0, ${yScale.range()[1]})`)
+        .attr("transform", `translate(0, ${requiredHeight})`)
         .call(d3.axisBottom(xScale).ticks(5)
           .tickFormat(d => d3.format(",")(d))); // Add thousands separators
 
@@ -366,7 +392,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .transition()
         .duration(300)
         .ease(d3.easePolyOut)
-        .attr("y", yScale.range()[1] + 35);
+        .attr("y", requiredHeight + 35);
     }
 
     // Update y-axis with softer animation
@@ -388,7 +414,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
         .attr("x1", xScale(tick))
         .attr("x2", xScale(tick))
         .attr("y1", 0)
-        .attr("y2", yScale.range()[1])
+        .attr("y2", requiredHeight)
         .attr("stroke", "#e0e0e0")
         .attr("stroke-dasharray", "2,2")
         .attr("opacity", 0.5);
@@ -585,7 +611,7 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
     if (!isLoading && interpolatedYear !== null) {
       drawChart(interpolatedYear);
     }
-  }, [teamData, interpolatedYear, width, height, isLoading]);
+  }, [teamData, interpolatedYear, dynamicWidth, dynamicHeight, isLoading]);
 
   // Smooth interpolation for the "Play" animation with improved timing
   useEffect(() => {
@@ -687,7 +713,15 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
   }
 
   return (
-    <div className="vtteam-wins-chart-container" ref={containerRef}>
+    <div 
+      className="vtteam-wins-chart-container" 
+      ref={containerRef}
+      style={{
+        width: '100%',
+        overflow: 'auto',
+        maxHeight: '80vh' // Allow scrolling if chart gets too tall
+      }}
+    >
       <div className="vtchart-controls">
         <button
           onClick={togglePlayPause}
@@ -727,17 +761,38 @@ const TeamWinsTimeline = ({ width, height, yearRange, conference, topTeamCount }
       </div>
       <svg
         ref={svgRef}
-        width={width}
-        height={height}
+        width={dynamicWidth}
+        height={dynamicHeight}
         style={{ 
           background: "transparent", 
-          maxWidth: "100%",
+          width: '100%',
+          height: 'auto',
+          maxWidth: '100%', // Ensure it fits within container
           borderRadius: "12px",
           transition: "all 0.3s ease"
         }}
         aria-label="Team wins timeline chart"
         role="img"
-      ></svg>
+        preserveAspectRatio="xMinYMin meet"
+      >
+        <title>Cumulative Football Wins Chart</title>
+        <desc>
+          Interactive bar chart showing cumulative football wins for top teams across multiple years.
+        </desc>
+      </svg>
+
+      {/* Display how many teams are showing out of total selected */}
+      <div 
+        style={{ 
+          textAlign: 'right', 
+          padding: '10px', 
+          fontSize: '0.85rem', 
+          color: 'var(--text-muted)',
+          fontFamily: "'Titillium Web', system-ui, sans-serif" 
+        }}
+      >
+        Showing {yearlyRankings[currentYear || startYear]?.length || 0} of top {topTeamCount} teams
+      </div>
     </div>
   );
 };
