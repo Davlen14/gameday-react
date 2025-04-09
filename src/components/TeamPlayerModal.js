@@ -1,4 +1,29 @@
-import React, { useState, useEffect } from "react";
+  // Get player's position - handles different data formats
+  const getPlayerPosition = () => {
+    return player.position || "";
+  };
+  
+  // Get player's jersey number - handles different data formats
+  const getPlayerJerseyNumber = () => {
+    // First check number property
+    if (player.number !== undefined) {
+      return player.number;
+    }
+    // Then check jersey property
+    else if (player.jersey !== undefined) {
+      return player.jersey;
+    }
+    // Then check jerseyNumber property
+    else if (player.jerseyNumber !== undefined) {
+      return player.jerseyNumber;
+    }
+    // Default fallback
+    return "";
+  };
+  
+  // Get position and jersey number
+  const playerPosition = getPlayerPosition();
+  const playerJerseyNumber = getPlayerJerseyNumber();import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
@@ -93,9 +118,53 @@ const TeamPlayerModal = ({
   // Convert numeric year to text for class designation
   const playerClass = convertYearToText(player.year || 1);
   
-  // Get player's full name (firstName + lastName format from your player data)
-  const playerFullName = player.firstName && player.lastName ? 
-    `${player.firstName} ${player.lastName}` : "Player Name";
+  // Get player's full name - handles different data formats
+  const getPlayerName = () => {
+    // First check if we have a fullName property
+    if (player.fullName) {
+      return player.fullName;
+    }
+    // Then check firstName/lastName combination
+    else if (player.firstName && player.lastName) {
+      return `${player.firstName} ${player.lastName}`;
+    }
+    // Then check name property
+    else if (player.name) {
+      return player.name;
+    }
+    // Default fallback
+    return "Player Name";
+  };
+  
+  // Get player fullName using the flexible function
+  const playerFullName = getPlayerName();
+  
+  // Get player's position - handles different data formats
+  const getPlayerPosition = () => {
+    return player.position || "";
+  };
+  
+  // Get player's jersey number - handles different data formats
+  const getPlayerJerseyNumber = () => {
+    // First check number property
+    if (player.number !== undefined) {
+      return player.number;
+    }
+    // Then check jersey property
+    else if (player.jersey !== undefined) {
+      return player.jersey;
+    }
+    // Then check jerseyNumber property
+    else if (player.jerseyNumber !== undefined) {
+      return player.jerseyNumber;
+    }
+    // Default fallback
+    return "";
+  };
+  
+  // Get position and jersey number
+  const playerPosition = getPlayerPosition();
+  const playerJerseyNumber = getPlayerJerseyNumber();
     
   // Format height from inches to feet and inches
   const formatHeight = (heightInches) => {
@@ -626,7 +695,7 @@ const TeamPlayerModal = ({
           <div className="team-name">{teamName}</div>
           <div className="player-header-content">
             <h2 className="player-name">{playerFullName}</h2>
-            <div className="player-position">{player.position || ""} #{player.jersey}</div>
+            <div className="player-position">{playerPosition} #{playerJerseyNumber}</div>
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
