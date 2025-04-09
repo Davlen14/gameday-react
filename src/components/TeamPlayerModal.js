@@ -626,7 +626,7 @@ const TeamPlayerModal = ({
           <div className="team-name">{teamName}</div>
           <div className="player-header-content">
             <h2 className="player-name">{playerFullName}</h2>
-            <div className="player-position">{player.position || "QB"} #{player.jersey || "0"}</div>
+            <div className="player-position">{player.position || "QB"} #{player.jersey !== undefined ? player.jersey : "0"}</div>
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
