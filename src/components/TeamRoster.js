@@ -163,8 +163,11 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
               <tr style={{ borderBottom: `2px solid ${teamColor}30` }}>
                 <th>Player</th>
                 <th>Position</th>
+                <th>Jersey #</th>
                 <th>Height</th>
+                <th>Weight</th>
                 <th>Year</th>
+                <th>Hometown</th>
               </tr>
             </thead>
             <tbody>
@@ -186,16 +189,29 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                     <span className="player-position">{player.position || "N/A"}</span>
                   </td>
                   <td>
+                    <span className="player-jersey">{player.jersey || "N/A"}</span>
+                  </td>
+                  <td>
                     <span className="player-height">{formatHeight(player.height) || "N/A"}</span>
                   </td>
                   <td>
+                    <span className="player-weight">{player.weight ? `${player.weight} lbs` : "N/A"}</span>
+                  </td>
+                  <td>
                     <span className="player-year">{player.year || "N/A"}</span>
+                  </td>
+                  <td>
+                    <span className="player-hometown">
+                      {player.homeCity && player.homeState 
+                        ? `${player.homeCity}, ${player.homeState}` 
+                        : player.homeCity || player.homeState || "N/A"}
+                    </span>
                   </td>
                 </tr>
               ))}
               {roster.length === 0 && !isLoading && !error && (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: "center" }}>
+                  <td colSpan="6" style={{ textAlign: "center" }}>
                     No roster information available
                   </td>
                 </tr>
@@ -339,6 +355,16 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #333;
         }
         
+        .player-jersey {
+          display: inline-block;
+          background: rgba(0, 0, 0, 0.05);
+          padding: 5px 12px;
+          border-radius: 50%;
+          font-weight: 700;
+          font-size: 0.9rem;
+          color: #444;
+        }
+        
         .player-height {
           font-family: sans-serif;
           font-weight: 500;
@@ -350,6 +376,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 20px;
           background: rgba(0, 0, 0, 0.05);
           display: inline-block;
+        }
+        
+        .player-weight {
+          font-family: sans-serif;
+          font-weight: 500;
+          color: #555;
+        }
+        
+        .player-hometown {
+          font-weight: 500;
+          color: #555;
+          font-size: 0.9rem;
         }
 
         /* Loading indicator */
