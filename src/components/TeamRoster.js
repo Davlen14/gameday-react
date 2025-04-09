@@ -221,6 +221,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         onClose={() => setIsModalOpen(false)}
         player={selectedPlayer}
         teamColor={teamColor}
+        teamName={teamName}
         teamLogo={teamLogo}
       />
     </div>

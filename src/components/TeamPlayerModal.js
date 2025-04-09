@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import teamsService from "../services/teamsService";
 
 // Register required Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
@@ -39,11 +40,37 @@ const TeamPlayerModal = ({
   isOpen,
   onClose,
   player = {},            // Real data: fullName, year, weight, height, draftEligibleYear
+  teamName = "",          // Team name to fetch logo if teamLogo is not provided
   teamLogo = "",          // Real team logo URL (the same logo is used in two places)
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
 }) => {
   if (!player) return null;
+  
+  // State for team logo
+  const [logo, setLogo] = useState(teamLogo);
+  
+  // Fetch team logo if not provided
+  useEffect(() => {
+    const fetchTeamLogo = async () => {
+      if (!teamLogo && teamName) {
+        try {
+          // Fetch all teams to get the logo
+          const teams = await teamsService.getTeams();
+          const foundTeam = teams.find(t => t.school.toLowerCase() === teamName.toLowerCase());
+          if (foundTeam && foundTeam.logos && foundTeam.logos.length > 0) {
+            setLogo(foundTeam.logos[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching team logo:", error);
+        }
+      } else {
+        setLogo(teamLogo);
+      }
+    };
+    
+    fetchTeamLogo();
+  }, [teamLogo, teamName]);
 
   // Fallback: if no altColor is provided, use teamColor
   const effectiveAltColor = altColor || teamColor;
@@ -363,13 +390,13 @@ const TeamPlayerModal = ({
         <div className="modal-header">
           <div className="angled-block-main"></div>
           <div className="angled-block-secondary"></div>
-          {teamLogo ? (
-            <img src={teamLogo} alt="Team Logo" className="big-team-logo" />
+          {logo ? (
+            <img src={logo} alt="Team Logo" className="big-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/100" alt="Team Logo" className="big-team-logo" />
           )}
-          {teamLogo ? (
-            <img src={teamLogo} alt="Team Logo" className="top-right-team-logo" />
+          {logo ? (
+            <img src={logo} alt="Team Logo" className="top-right-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
           )}
