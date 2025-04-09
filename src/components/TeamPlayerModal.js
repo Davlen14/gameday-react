@@ -44,6 +44,8 @@ const TeamPlayerModal = ({
   teamLogo = "",          // Real team logo URL (the same logo is used in two places)
   teamColor = "",         // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
+  position = "QB",        // Player's position
+  positionNumber = "#1",  // Player's position number
 }) => {
   // State for team logos - primary and secondary
   const [primaryLogo, setPrimaryLogo] = useState(teamLogo);
@@ -123,9 +125,20 @@ const TeamPlayerModal = ({
 
   // Current year Snaps (passing vs. running)
   const snapsData = {
-    passSnaps: 313,
-    runSnaps: 555,
+    passSnaps: 382,
+    runSnaps: 502,
   };
+  
+  // Position breakdown data
+  const positionBreakdown = [
+    { position: "QB", snaps: 855 },
+    { position: "Backfield", snaps: 20 },
+    { position: "Slot", snaps: 5 },
+    { position: "Wide", snaps: 4 }
+  ];
+  
+  // Total snaps calculation
+  const totalSnaps = snapsData.passSnaps + snapsData.runSnaps;
   
   // Modern doughnut chart with vibrant colors
   const doughnutData = {
@@ -315,70 +328,106 @@ const TeamPlayerModal = ({
            */
           .modal-header {
             position: relative;
-            padding: 1.5rem 1.5rem 1rem 1.5rem;
+            padding: 0;
             overflow: hidden;
-            background-color: #f9f9f9;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background-color: #fff;
           }
           .angled-block-main {
             position: absolute;
             top: 0;
             left: 0;
-            width: 220px;
+            width: 100%;
             height: 100%;
+            clip-path: polygon(0 0, 100% 0, 45% 100%, 0 100%);
             background-color: ${teamColor};
-            transform: skewX(-20deg);
-            transform-origin: top left;
           }
           .angled-block-secondary {
             position: absolute;
             top: 0;
-            left: 170px;
-            width: 220px;
+            left: 0;
+            width: 100%;
             height: 100%;
+            clip-path: polygon(45% 100%, 0 100%, 0 0, 25% 0);
             background-color: ${effectiveAltColor};
-            transform: skewX(-20deg);
-            transform-origin: top left;
           }
           /* Big team logo on the left */
           .big-team-logo {
-            position: relative;
-            width: 100px;
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 120px;
             height: auto;
             object-fit: contain;
-            margin-right: 1rem;
             z-index: 2;
           }
-          /* The same logo, but smaller, in the top-right corner */
+          /* The standard logo in the top-right corner */
           .top-right-team-logo {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 80px;
+            top: 15px;
+            right: 15px;
+            width: 50px;
             height: auto;
             object-fit: contain;
             z-index: 2;
           }
-          /* Player info to the right of the big logo */
+          /* Player info on the right */
           .player-header-content {
-            margin-left: 120px;
             position: relative;
             z-index: 2;
+            padding: 20px 30px;
+            margin-left: 45%;
+            display: flex;
+            flex-direction: column;
           }
           .player-name {
-            font-size: 1.6rem;
+            font-size: 2rem;
             font-weight: 700;
             margin: 0;
             color: #333;
-          }
-          .player-info-row {
             display: flex;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
-            font-size: 0.95rem;
-            color: #555;
+            flex-direction: column;
           }
-          .player-info-row div strong {
+          .player-position {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #666;
+          }
+          .player-info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 30px;
+            margin-top: 1rem;
+          }
+          .player-info-item {
+            display: flex;
+            flex-direction: column;
+          }
+          .player-info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .player-info-value {
+            font-size: 1.1rem;
+            font-weight: 500;
             color: #333;
+          }
+          .team-name {
+            position: absolute;
+            top: 15px;
+            right: 80px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            z-index: 2;
           }
           /* -----------------------------------
            * Body: Grades, Doughnut, and Weekly Bar Charts
@@ -388,6 +437,8 @@ const TeamPlayerModal = ({
             display: flex;
             padding: 1.5rem;
             gap: 2rem;
+            background-color: #fff;
+            border-top: 1px solid #eee;
           }
           /* Grades Column for Season & Career Grades */
           .grades-column {
@@ -416,6 +467,8 @@ const TeamPlayerModal = ({
           .grade-item .label {
             flex: 0 0 110px;
             color: #555;
+            font-weight: 500;
+            text-transform: uppercase;
           }
           .grade-bar-container {
             flex: 1;
@@ -437,21 +490,51 @@ const TeamPlayerModal = ({
             width: 40px;
             text-align: right;
             color: #333;
+            font-weight: 600;
           }
           /* Doughnut Chart Column for 2024 Snaps */
           .snaps-column {
-            flex: 0 0 260px;
+            flex: 0 0 280px;
             text-align: center;
+            border-left: 1px solid #eee;
+            border-right: 1px solid #eee;
+            padding: 0 1.5rem;
           }
           .snaps-column h3 {
             font-size: 1.1rem;
             margin-bottom: 1rem;
             color: #333;
+            font-weight: 600;
           }
           .snaps-total {
             margin-top: 1rem;
-            font-size: 0.95rem;
+            font-size: 1rem;
             color: #444;
+            font-weight: 600;
+          }
+          /* Position breakdown table */
+          .positions-table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+          }
+          .positions-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding: 0.5rem 0;
+          }
+          .positions-table td {
+            font-size: 0.9rem;
+            color: #333;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #eee;
+          }
+          .positions-table td:last-child {
+            text-align: right;
           }
           /* Weekly Stacked Bar Column */
           .weekly-column {
@@ -461,6 +544,7 @@ const TeamPlayerModal = ({
             font-size: 1.1rem;
             margin-bottom: 1rem;
             color: #333;
+            font-weight: 600;
           }
           /* -----------------------------------
            * Close Button
@@ -468,26 +552,30 @@ const TeamPlayerModal = ({
            */
           .close-button {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: ${teamColor};
+            top: 15px;
+            right: 15px;
+            background: none;
             border: none;
-            color: #fff;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
+            color: #666;
+            padding: 0;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 1.5rem;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
           }
           .close-button:hover {
-            opacity: 0.85;
+            color: #333;
           }
         `}
       </style>
 
       <div className="modal-container">
         {/* Close Button */}
-        <button className="close-button" onClick={onClose}>Close</button>
+        <button className="close-button" onClick={onClose}>×</button>
         {/* HEADER */}
         <div className="modal-header">
           <div className="angled-block-main"></div>
@@ -502,13 +590,27 @@ const TeamPlayerModal = ({
           ) : (
             <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
           )}
+          <div className="team-name">{teamName} Rebels</div>
           <div className="player-header-content">
             <h2 className="player-name">{player.fullName || "Player Name"}</h2>
-            <div className="player-info-row">
-              <div><strong>Height:</strong> {player.height || "N/A"}</div>
-              <div><strong>Weight:</strong> {player.weight || "N/A"} lbs</div>
-              <div><strong>Class:</strong> {playerClass}</div>
-              <div><strong>Draft Eligible:</strong> {player.draftEligibleYear || "N/A"}</div>
+            <div className="player-position">{position} {positionNumber}</div>
+            <div className="player-info-grid">
+              <div className="player-info-item">
+                <span className="player-info-label">Height</span>
+                <span className="player-info-value">{player.height || "N/A"}</span>
+              </div>
+              <div className="player-info-item">
+                <span className="player-info-label">Weight</span>
+                <span className="player-info-value">{player.weight || "N/A"}</span>
+              </div>
+              <div className="player-info-item">
+                <span className="player-info-label">Class</span>
+                <span className="player-info-value">{playerClass}</span>
+              </div>
+              <div className="player-info-item">
+                <span className="player-info-label">Draft Eligible Year</span>
+                <span className="player-info-value">{player.draftEligibleYear || "N/A"}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -557,14 +659,28 @@ const TeamPlayerModal = ({
           {/* Doughnut Chart Column */}
           <div className="snaps-column">
             <h3>2024 Snaps</h3>
-            <Doughnut data={doughnutData} />
+            <Doughnut data={doughnutData} options={doughnutOptions} />
             <div className="snaps-total">
-              <strong>Total Snaps:</strong> {snapsData.passSnaps + snapsData.runSnaps}
+              <strong>TOTAL</strong>
+              <div>{totalSnaps}</div>
             </div>
-            {/* Additional label to match the screenshot */}
-            <div style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "#444" }}>
-              <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>BY POSITION</div>
-              <div>QB • 868</div>
+            <div className="position-breakdown">
+              <table className="positions-table">
+                <thead>
+                  <tr>
+                    <th>BY POSITION</th>
+                    <th>SNAPS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {positionBreakdown.map((pos, idx) => (
+                    <tr key={idx}>
+                      <td>{pos.position}</td>
+                      <td>{pos.snaps}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
           {/* Weekly Column */}
