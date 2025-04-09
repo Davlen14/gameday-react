@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaExclamationTriangle } from "react-icons/fa"; // Added FaExclamationTriangle import
 import teamsService from "../services/teamsService";
 import "../styles/TeamDetail.css";
+import TeamPlayerModal from "./TeamPlayerModal"; // NEW: Import the modal component
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
@@ -22,7 +23,8 @@ const LoadingSpinner = ({ color = "#9e9e9e" }) => (
           from="0 25 25"
           to="360 25 25"
           dur="1s"
-          repeatCount="indefinite" />
+          repeatCount="indefinite"
+        />
       </circle>
     </svg>
   </div>
@@ -90,6 +92,10 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null); // Add error state
 
+  // NEW: State for handling modal display and selected player
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
   useEffect(() => {
     const fetchRoster = async () => {
       setIsLoading(true);
@@ -129,6 +135,12 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
     justifyContent: "center"
   };
 
+  // NEW: Handler to open the modal with the selected player info
+  const handlePlayerClick = (player) => {
+    setSelectedPlayer(player);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="dashboard-card full-width-card">
       <div className="card-header" style={cardHeaderStyle}>
@@ -158,7 +170,11 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
             </thead>
             <tbody>
               {roster.map((player, index) => (
-                <tr key={index} style={{ borderBottom: `1px solid ${teamColor}10` }}>
+                <tr
+                  key={index}
+                  style={{ borderBottom: `1px solid ${teamColor}10`, cursor: "pointer" }}
+                  onClick={() => handlePlayerClick(player)} // NEW: Open modal on row click
+                >
                   <td>
                     <div className="player-info">
                       <div className="player-icon" style={playerIconStyle}>
@@ -198,6 +214,15 @@ const TeamRoster = ({ teamName, teamColor, year = 2024 }) => {
           color: ${teamColor} !important;
         }
       `}</style>
+
+      {/* NEW: Integrate the TeamPlayerModal component */}
+      <TeamPlayerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        player={selectedPlayer}
+        teamColor={teamColor}
+        teamLogo={"" /* Pass your team's logo URL if available */}
+      />
     </div>
   );
 };
