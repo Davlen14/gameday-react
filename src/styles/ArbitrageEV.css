@@ -6,14 +6,14 @@
 :root {
   /* Base colors */
   --primary-color: #ffffff;
-  --background-color: #f8f9fa;
-  --text-color: #252525;
-  --border-color: #e2e8f0;
+  --background-color: #f5f7fa;
+  --text-color: #1a1f36;
+  --border-color: rgba(226, 232, 240, 0.6);
   
   /* Accent colors */
   --accent-color: #D4001C;
   --accent-hover: #b00017;
-  --accent-light: rgba(212, 0, 28, 0.1);
+  --accent-light: rgba(212, 0, 28, 0.08);
   
   /* Status colors */
   --positive-color: #0ca678;
@@ -29,20 +29,20 @@
   --neutral-color: #adb5bd;
   
   /* UI colors */
-  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --hover-bg: #f1f3f5;
-  --active-bg: #e9ecef;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --hover-bg: #f9fafb;
+  --active-bg: #f1f5f9;
   
   /* Chart colors */
   --chart-primary: rgba(75, 192, 192, 0.7);
   --chart-secondary: rgba(255, 159, 64, 0.7);
   
   /* Dark mode colors (used with .dark-mode class) */
-  --dark-bg: #1a1a1a;
-  --dark-card: #2d2d2d;
-  --dark-text: #e9ecef;
-  --dark-border: #444444;
-  --dark-hover: #333333;
+  --dark-bg: #0f172a;
+  --dark-card: #1e293b;
+  --dark-text: #f1f5f9;
+  --dark-border: rgba(148, 163, 184, 0.2);
+  --dark-hover: #334155;
 }
 
 /* Dark Mode Styling */
@@ -59,14 +59,34 @@ body.dark-mode {
 .dark-mode .arb-ev-game-card,
 .dark-mode .arb-ev-modal-content,
 .dark-mode .arb-ev-pair-item,
-.dark-mode .arb-ev-odds-table th {
+.dark-mode .arb-ev-odds-table th,
+.dark-mode .arb-ev-filter-panel,
+.dark-mode .arb-ev-settings-panel,
+.dark-mode .arb-ev-data-status,
+.dark-mode .arb-ev-week-filter,
+.dark-mode .arb-ev-summary-stat,
+.dark-mode .arb-ev-filter-button,
+.dark-mode .arb-ev-settings-button,
+.dark-mode .arb-ev-refresh-button,
+.dark-mode .arb-ev-search-input,
+.dark-mode .evbet-game-card,
+.dark-mode .evbet-calculator,
+.dark-mode .evbet-bet-type-btn,
+.dark-mode .evbet-sort-btn,
+.dark-mode .evbet-expected-returns-table {
   background-color: var(--dark-card);
   color: var(--dark-text);
 }
 
 .dark-mode .arb-ev-border-color,
 .dark-mode .arb-ev-odds-table th,
-.dark-mode .arb-ev-odds-table td {
+.dark-mode .arb-ev-odds-table td,
+.dark-mode .arb-ev-filter-button,
+.dark-mode .arb-ev-settings-button,
+.dark-mode .arb-ev-refresh-button,
+.dark-mode .arb-ev-search-input,
+.dark-mode .evbet-bet-type-btn,
+.dark-mode .evbet-sort-btn {
   border-color: var(--dark-border);
 }
 
@@ -74,8 +94,14 @@ body.dark-mode {
 .dark-mode .arb-ev-team-info,
 .dark-mode .arb-ev-stake-input label,
 .dark-mode .arb-ev-close-button,
-.dark-mode .arb-ev-tab-nav button:not(.active) {
+.dark-mode .arb-ev-tab-nav button:not(.active),
+.dark-mode .arb-ev-search-icon,
+.dark-mode .arb-ev-stat-label,
+.dark-mode .evbet-calculator-description,
+.dark-mode .evbet-info-icon,
+.dark-mode .evbet-expand-toggle {
   color: var(--dark-text);
+  opacity: 0.8;
 }
 
 /* Animation Keyframes */
@@ -120,11 +146,14 @@ body.dark-mode {
 /* Base Layout Styling */
 .arb-ev-container {
   width: 100%;
-  padding: 20px;
+  padding: 24px;
   background: var(--background-color);
-  font-family: "Titillium Web", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-color);
   position: relative;
+  letter-spacing: -0.01em;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Main Header Styling */
@@ -132,29 +161,31 @@ body.dark-mode {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 18px;
 }
 
 .arb-ev-app-title {
-  font-family: "Orbitron", "Titillium Web", sans-serif;
-  font-size: 1.8rem;
+  font-family: "SF Pro Display", "Inter", sans-serif;
+  font-size: 1.75rem;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--accent-color);
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .arb-ev-title-icon {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
 .arb-ev-main-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -164,27 +195,31 @@ body.dark-mode {
 
 .arb-ev-search-icon {
   position: absolute;
-  left: 10px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #aaa;
+  color: #94a3b8;
   pointer-events: none;
+  font-size: 0.875rem;
 }
 
 .arb-ev-search-input {
-  padding: 8px 8px 8px 35px;
-  border-radius: 20px;
+  padding: 10px 14px 10px 40px;
+  border-radius: 24px;
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
-  width: 200px;
+  width: 220px;
   transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .arb-ev-search-input:focus {
   outline: none;
-  width: 220px;
+  width: 240px;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: 0 2px 8px rgba(212, 0, 28, 0.08);
 }
 
 .arb-ev-filter-button,
@@ -192,14 +227,17 @@ body.dark-mode {
 .arb-ev-refresh-button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 15px;
-  border-radius: 20px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 24px;
   border: 1px solid var(--border-color);
-  background-color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .arb-ev-filter-button:hover,
@@ -207,11 +245,14 @@ body.dark-mode {
 .arb-ev-refresh-button:hover {
   background-color: var(--hover-bg);
   transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 .arb-ev-refresh-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .arb-ev-spinner {
@@ -222,47 +263,55 @@ body.dark-mode {
 .arb-ev-filter-panel,
 .arb-ev-settings-panel {
   background-color: var(--primary-color);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
   box-shadow: var(--card-shadow);
   animation: slideDown 0.3s ease;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
 }
 
 .arb-ev-filter-section,
 .arb-ev-setting-option {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .arb-ev-filter-section h3,
 .arb-ev-settings-panel h3 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .arb-ev-sportsbook-selector {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 .arb-ev-sportsbook-option {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 6px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
+  background-color: var(--primary-color);
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .arb-ev-sportsbook-option:hover {
   background-color: var(--hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
 }
 
 .arb-ev-sportsbook-option.selected {
@@ -274,29 +323,35 @@ body.dark-mode {
   width: 20px;
   height: 20px;
   object-fit: contain;
+  border-radius: 4px;
 }
 
 .arb-ev-setting-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.arb-ev-setting-option:last-child {
+  border-bottom: none;
 }
 
 /* Tab Navigation */
 .arb-ev-tab-nav {
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 18px;
   border-bottom: 2px solid var(--border-color);
   padding-bottom: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .arb-ev-tab-nav button {
   background: none;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: 1rem;
   cursor: pointer;
   color: var(--text-color);
@@ -304,9 +359,10 @@ body.dark-mode {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: "Orbitron", "Titillium Web", sans-serif;
+  gap: 10px;
+  font-family: "SF Pro Display", "Inter", sans-serif;
   position: relative;
+  font-weight: 500;
 }
 
 .arb-ev-tab-nav button:hover {
@@ -315,7 +371,7 @@ body.dark-mode {
 
 .arb-ev-tab-nav .active {
   color: var(--accent-color);
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .arb-ev-tab-nav .active::after {
@@ -338,20 +394,23 @@ body.dark-mode {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background-color: var(--primary-color);
-  border-radius: 8px;
-  margin-bottom: 20px;
+  padding: 14px 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  margin-bottom: 24px;
   font-size: 0.9rem;
-  color: #666;
+  color: #64748b;
   box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .arb-ev-auto-refresh-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--info-color);
+  font-weight: 500;
 }
 
 /* Loading & Error States */
@@ -363,69 +422,79 @@ body.dark-mode {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 50px 20px;
+  padding: 60px 20px;
   text-align: center;
   background-color: var(--primary-color);
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: var(--card-shadow);
 }
 
 .arb-ev-loading-spinner {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: var(--accent-color);
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   animation: spin 1.5s linear infinite;
 }
 
 .arb-ev-error-message {
   color: var(--negative-color);
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  font-weight: 500;
 }
 
 .arb-ev-retry-button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
   background-color: var(--accent-color);
   color: white;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(212, 0, 28, 0.2);
 }
 
 .arb-ev-retry-button:hover {
   background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(212, 0, 28, 0.3);
 }
 
 .arb-ev-empty-icon {
-  color: #aaa;
+  color: #94a3b8;
   margin-bottom: 15px;
+  font-size: 2.5rem;
 }
 
 .arb-ev-empty-subtext {
-  color: #666;
-  font-size: 0.9rem;
-  max-width: 400px;
-  margin: 5px auto 20px;
+  color: #64748b;
+  font-size: 0.95rem;
+  max-width: 420px;
+  margin: 10px auto 24px;
+  line-height: 1.5;
 }
 
 /* Tab Content */
 .arb-ev-tab-content {
   background: var(--primary-color);
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: var(--card-shadow);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 /* Week Filter */
 .arb-ev-week-filter {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 15px;
-  background-color: var(--primary-color);
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 18px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
   box-shadow: var(--card-shadow);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
 }
 
 .arb-ev-week-filter label {
@@ -434,64 +503,103 @@ body.dark-mode {
 }
 
 .arb-ev-week-filter select {
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 10px;
   border: 1px solid var(--border-color);
   background-color: var(--primary-color);
   cursor: pointer;
   font-family: inherit;
-  min-width: 100px;
+  min-width: 120px;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.arb-ev-week-filter select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 /* Arbitrage Container - Modern Grid Layout */
 .arb-ev-arbitrage-container {
-  padding: 20px;
+  padding: 24px;
 }
 
 .arb-ev-arbitrage-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 16px;
 }
 
 .arb-ev-filter-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .arb-ev-filter-select {
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 10px 16px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
   background-color: var(--primary-color);
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.arb-ev-filter-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 .arb-ev-arbitrage-summary {
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 18px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
 }
 
 .arb-ev-summary-stat {
   flex: 1;
-  min-width: 150px;
-  background-color: var(--primary-color);
-  border-radius: 8px;
-  padding: 15px;
+  min-width: 180px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 20px;
   box-shadow: var(--card-shadow);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.arb-ev-summary-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
 }
 
 .arb-ev-summary-icon {
   color: var(--accent-color);
-  font-size: 1.8rem;
+  font-size: 2rem;
+  opacity: 0.9;
 }
 
 .arb-ev-stat-content {
@@ -500,26 +608,29 @@ body.dark-mode {
 }
 
 .arb-ev-stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: var(--text-color);
+  letter-spacing: -0.03em;
 }
 
 .arb-ev-stat-label {
-  font-size: 0.85rem;
-  color: #666;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 4px;
 }
 
 .arb-ev-game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
 }
 
 /* Game Card Styling */
 .arb-ev-game-card {
-  background-color: var(--primary-color);
-  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -530,26 +641,29 @@ body.dark-mode {
 
 .arb-ev-game-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .arb-ev-game-card.has-arbitrage {
   border: 1px solid var(--positive-color);
+  box-shadow: 0 8px 16px rgba(12, 166, 120, 0.1);
 }
 
 .arb-ev-arbitrage-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 14px;
+  right: 14px;
   background-color: var(--positive-color);
   color: white;
-  padding: 5px 10px;
-  border-radius: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 0.85rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   z-index: 2;
+  box-shadow: 0 4px 8px rgba(12, 166, 120, 0.2);
 }
 
 .arb-ev-trophy-icon {
@@ -557,106 +671,130 @@ body.dark-mode {
 }
 
 .arb-ev-game-header {
-  padding: 15px;
+  padding: 20px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .arb-ev-teams-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .arb-ev-team-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   min-width: 100px;
 }
 
 .arb-ev-team-logo {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.arb-ev-game-card:hover .arb-ev-team-logo {
+  transform: scale(1.05);
 }
 
 .arb-ev-team-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   text-align: center;
+  line-height: 1.3;
 }
 
 .arb-ev-versus {
   font-style: italic;
   font-size: 0.9rem;
-  color: #666;
+  color: #64748b;
 }
 
 .arb-ev-game-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 5px;
+  gap: 8px;
 }
 
 .arb-ev-game-week {
   font-size: 0.85rem;
-  color: #666;
+  color: #64748b;
   background-color: var(--hover-bg);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 10px;
+  font-weight: 500;
 }
 
 .arb-ev-info-icon-container {
   cursor: pointer;
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.95rem;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.arb-ev-info-icon-container:hover {
+  color: var(--accent-color);
 }
 
 .arb-ev-odds-comparison {
-  padding: 15px;
+  padding: 20px;
 }
 
 .arb-ev-sportsbook {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .arb-ev-sportsbook-logo {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .arb-ev-highlighted-odds {
-  font-weight: bold;
+  font-weight: 700;
   color: var(--positive-color);
 }
 
 .arb-ev-view-details-button {
   width: 100%;
-  padding: 10px;
+  padding: 14px;
   background-color: var(--accent-color);
   color: white;
   border: none;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 10px rgba(212, 0, 28, 0.2);
 }
 
 .arb-ev-view-details-button:hover {
   background-color: var(--accent-hover);
+  box-shadow: 0 6px 12px rgba(212, 0, 28, 0.3);
+  transform: translateY(-2px);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+  .arb-ev-container {
+    padding: 16px;
+  }
+  
   .arb-ev-main-header, 
   .arb-ev-arbitrage-controls {
     flex-direction: column;
@@ -669,7 +807,7 @@ body.dark-mode {
   }
   
   .arb-ev-search-input {
-    width: 150px;
+    width: 100%;
   }
   
   .arb-ev-game-grid {
@@ -687,8 +825,10 @@ body.dark-mode {
 
 /* Toast Notifications Styling */
 .Toastify__toast {
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  backdrop-filter: blur(8px);
 }
 
 .Toastify__toast--success {
@@ -707,23 +847,33 @@ body.dark-mode {
   background-color: var(--info-color);
 }
 
+.Toastify__toast-body {
+  font-weight: 500;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.Toastify__progress-bar {
+  height: 4px;
+  border-radius: 2px;
+}
+
 /* EVBetting Component Specific Styles */
 .evbet-container {
-  padding: 20px;
+  padding: 24px;
 }
 
 .evbet-controls {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 16px;
 }
 
 .evbet-filter-section,
 .evbet-sort-section {
   display: flex;
-  gap: 15px;
+  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -731,51 +881,70 @@ body.dark-mode {
 .evbet-filter {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .evbet-bet-type-filters {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .evbet-bet-type-options {
   display: flex;
-  gap: 5px;
+  gap: 6px;
 }
-
 .evbet-bet-type-btn {
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 10px;
   background: none;
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.evbet-bet-type-btn:hover {
+  background-color: var(--hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
 }
 
 .evbet-bet-type-btn.selected {
   background-color: var(--accent-color);
   color: white;
   border-color: var(--accent-color);
+  box-shadow: 0 3px 8px rgba(212, 0, 28, 0.15);
 }
 
 .evbet-sort-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 4px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
   background: none;
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.evbet-sort-btn:hover {
+  background-color: var(--hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
 }
 
 .evbet-sort-btn.active {
   background-color: var(--accent-light);
   border-color: var(--accent-color);
   color: var(--accent-color);
+  box-shadow: 0 2px 6px rgba(212, 0, 28, 0.08);
 }
 
 .evbet-sort-icon {
@@ -783,82 +952,136 @@ body.dark-mode {
 }
 
 .evbet-game-card {
-  background-color: var(--primary-color);
-  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--card-shadow);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   border: 1px solid var(--border-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.evbet-game-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
 }
 
 .evbet-game-header {
-  padding: 15px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.evbet-game-header:hover {
+  background-color: var(--hover-bg);
 }
 
 .evbet-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .evbet-best-ev-badge {
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
   color: white;
   font-size: 0.85rem;
   font-weight: 600;
+  box-shadow: 0 3px 8px rgba(12, 166, 120, 0.15);
+  background-color: var(--high-ev-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .evbet-expand-toggle {
-  font-size: 1.2rem;
-  color: #aaa;
+  font-size: 1.25rem;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.evbet-game-card:hover .evbet-expand-toggle {
+  color: var(--accent-color);
+  transform: translateY(-2px);
 }
 
 .evbet-lines-preview {
-  padding: 15px;
+  padding: 20px;
 }
 
 .evbet-more-lines-prompt {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px;
+  gap: 10px;
+  padding: 12px;
   background-color: var(--hover-bg);
-  border-radius: 4px;
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #666;
+  border-radius: 12px;
+  margin-top: 14px;
+  font-size: 0.95rem;
+  color: #64748b;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.evbet-more-lines-prompt:hover {
+  background-color: var(--active-bg);
+  color: var(--accent-color);
+  transform: translateY(-2px);
 }
 
 .evbet-info-icon {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--info-color);
 }
 
 .evbet-lines-expanded {
-  padding: 15px;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
 }
 
 .evbet-tabs {
   display: flex;
-  gap: 5px;
-  margin-bottom: 15px;
+  gap: 6px;
+  margin-bottom: 18px;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.evbet-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.evbet-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.evbet-tabs::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
 }
 
 .evbet-tab {
-  padding: 8px 15px;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 10px;
   background: none;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.evbet-tab:hover {
+  background-color: var(--hover-bg);
+  color: var(--accent-color);
 }
 
 .evbet-tab.active {
@@ -868,11 +1091,13 @@ body.dark-mode {
 }
 
 .evbet-tab-content {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
 }
 
 .evbet-positive-ev {
   position: relative;
+  border-radius: 10px;
 }
 
 .evbet-positive-ev::after {
@@ -880,52 +1105,77 @@ body.dark-mode {
   position: absolute;
   inset: 0;
   background-color: var(--high-ev-color);
-  opacity: 0.1;
-  border-radius: 4px;
+  opacity: 0.08;
+  border-radius: 8px;
   pointer-events: none;
 }
 
 .evbet-odds-cell {
   position: relative;
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.evbet-odds-cell:hover {
+  background-color: var(--hover-bg);
 }
 
 .evbet-odds-main {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.05rem;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .evbet-ev-indicator {
   font-size: 0.8rem;
   font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: rgba(12, 166, 120, 0.08);
+  color: var(--high-ev-color);
+  display: inline-block;
 }
 
 .evbet-calculator {
-  background-color: var(--hover-bg);
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
+  background-color: rgba(241, 245, 249, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.03);
 }
 
 .evbet-calculator h4 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: var(--text-color);
 }
 
 .evbet-calc-icon {
   color: var(--info-color);
+  font-size: 1.2rem;
 }
 
 .evbet-calculator-description {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 15px;
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 16px;
 }
 
 .evbet-expected-returns-table {
   background-color: var(--primary-color);
-  border-radius: 6px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
 }
 
 .evbet-return-header {
@@ -933,15 +1183,22 @@ body.dark-mode {
   grid-template-columns: 1fr 1fr 1fr;
   background-color: var(--accent-color);
   color: white;
-  padding: 10px;
+  padding: 12px 16px;
   font-weight: 600;
+  text-align: center;
 }
 
 .evbet-return-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  padding: 10px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.evbet-return-row:hover {
+  background-color: var(--hover-bg);
 }
 
 .evbet-return-row:last-child {
@@ -950,8 +1207,179 @@ body.dark-mode {
 
 .evbet-stake-amount {
   font-weight: 600;
+  color: var(--text-color);
 }
 
 .evbet-expected-profit {
   font-weight: 600;
+  color: var(--high-ev-color);
+}
+
+.evbet-expected-profit.negative {
+  color: var(--negative-color);
+}
+
+/* Add glassy effect to various elements */
+.arb-ev-game-card,
+.evbet-game-card,
+.arb-ev-summary-stat,
+.arb-ev-filter-panel,
+.arb-ev-settings-panel,
+.arb-ev-data-status,
+.evbet-calculator,
+.arb-ev-week-filter {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+.dark-mode .arb-ev-game-card,
+.dark-mode .evbet-game-card,
+.dark-mode .arb-ev-summary-stat,
+.dark-mode .arb-ev-filter-panel,
+.dark-mode .arb-ev-settings-panel,
+.dark-mode .arb-ev-data-status,
+.dark-mode .evbet-calculator,
+.dark-mode .arb-ev-week-filter {
+  backdrop-filter: blur(8px);
+  background-color: rgba(30, 41, 59, 0.92);
+}
+
+/* Add subtle hover animations */
+.arb-ev-game-card,
+.evbet-game-card,
+.arb-ev-summary-stat,
+.evbet-bet-type-btn,
+.evbet-sort-btn,
+.arb-ev-filter-button,
+.arb-ev-settings-button,
+.arb-ev-refresh-button {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+}
+
+.arb-ev-game-card:hover,
+.evbet-game-card:hover,
+.arb-ev-summary-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Input and form elements enhancements */
+input[type="text"],
+input[type="number"],
+input[type="checkbox"],
+select,
+textarea {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* Modern custom checkbox styling */
+input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin: 0;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+  border-radius: 3px;
+  background-color: var(--accent-color);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+/* Tables enhancement */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  margin: 16px 0;
+}
+
+th {
+  background-color: #f8fafc;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Add responsive design improvements */
+@media (max-width: 480px) {
+  .arb-ev-container {
+    padding: 12px;
+  }
+  
+  .arb-ev-app-title {
+    font-size: 1.5rem;
+  }
+  
+  .arb-ev-filter-button,
+  .arb-ev-settings-button,
+  .arb-ev-refresh-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .arb-ev-summary-stat {
+    padding: 16px;
+  }
+  
+  .arb-ev-stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .evbet-controls,
+  .evbet-filter-section,
+  .evbet-sort-section {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .evbet-filter-section > *,
+  .evbet-sort-section > * {
+    width: 100%;
+  }
+  
+  .evbet-bet-type-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
 }
