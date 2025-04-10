@@ -283,46 +283,48 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         if (!plays || !Array.isArray(plays)) return;
         plays.forEach(play => {
           if (["Timeout", "End Period", "Kickoff"].includes(play.playType)) return;
+          
           const parsePlayers = () => {
             const playerMatches = [];
             const playText = play.playText || '';
             if (!playText) return playerMatches;
+            // Updated regex patterns with 'i' flag for case-insensitive matching
             const playerRegexes = [
               { 
-                regex: /([A-Za-z'\-\.\s]+) pass complete to ([A-Za-z'\-\.\s]+) for/,
+                regex: /([A-Za-z'\-\.\s]+) pass complete to ([A-Za-z'\-\.\s]+) for/i,
                 roles: [
                   { name: 1, position: 'QB', role: 'passer' },
                   { name: 2, position: 'WR', role: 'receiver' }
                 ]
               },
               {
-                regex: /([A-Za-z'\-\.\s]+) pass incomplete to ([A-Za-z'\-\.\s]+)/,
+                regex: /([A-Za-z'\-\.\s]+) pass incomplete to ([A-Za-z'\-\.\s]+)/i,
                 roles: [
                   { name: 1, position: 'QB', role: 'passer' },
                   { name: 2, position: 'WR', role: 'target' }
                 ]
               },
               { 
-                regex: /([A-Za-z'\-\.\s]+) run for/,
+                regex: /([A-Za-z'\-\.\s]+) run for/i,
                 roles: [
                   { name: 1, position: 'RB', role: 'rusher' }
                 ]
               },
               {
-                regex: /([A-Za-z'\-\.\s]+) sacked by ([A-Za-z'\-\.\s]+)/,
+                regex: /([A-Za-z'\-\.\s]+) sacked by ([A-Za-z'\-\.\s]+)/i,
                 roles: [
                   { name: 1, position: 'QB', role: 'sacked' },
                   { name: 2, position: 'DL', role: 'defender' }
                 ]
               },
               {
-                regex: /([A-Za-z'\-\.\s]+) pass intercepted/,
+                regex: /([A-Za-z'\-\.\s]+) pass intercepted/i,
                 roles: [
                   { name: 1, position: 'QB', role: 'intercepted' }
                 ]
               },
               {
-                regex: /([A-Za-z'\-\.\s]+) fumbled/,
+                regex: /([A-Za-z'\-\.\s]+) fumbled/i,
                 roles: [
                   { name: 1, position: 'SKILL', role: 'fumble' }
                 ]
