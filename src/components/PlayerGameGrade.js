@@ -42,7 +42,7 @@ import {
 } from 'react-icons/fa';
 
 // Import CSS styles
-import "../styles/PlayerGameGrade.css"; // Adjust the path as necessary
+import "../styles/PlayerGameGrade.css";
 
 const PlayerGameGrade = ({ gameId: propGameId }) => {
   const { gameId: urlGameId } = useParams();
@@ -60,10 +60,17 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
   const [gameAnalysis, setGameAnalysis] = useState(null);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState('overview');
 
-  // Debug logging - Add this to help diagnose the issue
+  // Debug logging to help diagnose issues
   useEffect(() => {
     console.log('Current active tab:', activeAnalysisTab);
-    console.log('Game Analysis data:', gameAnalysis);
+    console.log('Game Analysis data available:', !!gameAnalysis);
+    if (gameAnalysis) {
+      console.log('Game Info:', gameAnalysis.gameInfo);
+      console.log('Overview data available:', !!gameAnalysis.overview);
+      console.log('Quarter data count:', gameAnalysis.quarterAnalysis?.length || 0);
+      console.log('Key plays count:', gameAnalysis.keyPlays?.length || 0);
+      console.log('Star players count:', gameAnalysis.starPlayers?.length || 0);
+    }
   }, [activeAnalysisTab, gameAnalysis]);
 
   // Comprehensive data fetching with better error handling
@@ -79,14 +86,13 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         setIsLoading(true);
         setError(null);
         
-        // Fetch data sequentially to better handle errors
         console.log("Fetching play-by-play data for game ID:", gameId);
         const playByPlayData = await teamsService.getPlayByPlay(gameId)
           .catch(err => {
             console.error("Error fetching play-by-play:", err);
             return { plays: [] };
           });
-        console.log("Received play-by-play data:", playByPlayData);
+        console.log("Play-by-play data received:", playByPlayData ? "Yes" : "No");
           
         console.log("Fetching advanced box score for game ID:", gameId);
         const advancedBoxScore = await teamsService.getAdvancedBoxScore(gameId)
@@ -94,13 +100,17 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
             console.error("Error fetching advanced box score:", err);
             return { teams: [], players: { usage: [], ppa: [] } };
           });
-        console.log("Received advanced box score:", advancedBoxScore);
+        console.log("Advanced box score received:", advancedBoxScore ? "Yes" : "No");
           
-        // Only proceed if we have minimum required data
-        if ((!playByPlayData.plays && !advancedBoxScore.teams) || 
-            (playByPlayData.plays && playByPlayData.plays.length === 0 && 
-             (!advancedBoxScore.teams || advancedBoxScore.teams.length === 0))) {
-          throw new Error("Missing critical game data");
+        // Use a default game object if we don't have the game info
+        if (!advancedBoxScore.gameInfo) {
+          console.warn("Game info missing, creating placeholder");
+          advancedBoxScore.gameInfo = {
+            homeTeam: "Home Team",
+            awayTeam: "Away Team",
+            homePoints: 0,
+            awayPoints: 0
+          };
         }
 
         // Generate game analysis
@@ -109,7 +119,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore
         });
-        console.log("Generated game analysis:", gameAnalysisData);
+        console.log("Game analysis generated:", gameAnalysisData ? "Yes" : "No");
         
         // Process player grades
         console.log("Calculating player grades");
@@ -117,7 +127,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore
         });
-        console.log("Calculated player grades:", processedGrades);
+        console.log("Player grades calculated:", processedGrades.length);
 
         // Update state with all data
         setGameData({
@@ -132,7 +142,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           setSelectedTeam(advancedBoxScore.gameInfo.homeTeam);
         }
         
-        // Ensure we start with the overview tab
+        // Always start with the overview tab to ensure it's selected
         setActiveAnalysisTab('overview');
         
       } catch (err) {
@@ -146,134 +156,134 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
     fetchGameData();
   }, [gameId]);
 
-  // Generate comprehensive game analysis
+  // Generate comprehensive game analysis with enhanced fallbacks
   const generateGameAnalysis = (data) => {
-    console.log("Inside generateGameAnalysis with data:", data);
-    if (!data.boxScore?.gameInfo) {
-      console.warn("Missing game info in box score data");
-      return null;
-    }
+    try {
+      if (!data?.boxScore?.gameInfo) {
+        console.warn("No game info available in box score");
+        return null;
+      }
 
-    const { homeTeam, awayTeam, homePoints, awayPoints } = data.boxScore.gameInfo;
-    console.log(`Game between ${homeTeam} (${homePoints}) and ${awayTeam} (${awayPoints})`);
-    
-    // Extract key data points
-    const homeWin = homePoints > awayPoints;
-    const winner = homeWin ? homeTeam : awayTeam;
-    const loser = homeWin ? awayTeam : homeTeam;
-    const scoreDifference = Math.abs(homePoints - awayPoints);
-    const isCloseGame = scoreDifference <= 7;
-    
-    // Extract team data safely
-    const teams = Array.isArray(data.boxScore?.teams) ? data.boxScore.teams : [];
-    console.log("Teams data array length:", teams.length);
-    
-    const homeTeamData = teams.find(t => t?.team === homeTeam) || {};
-    const awayTeamData = teams.find(t => t?.team === awayTeam) || {};
-    
-    console.log("Home team data found:", Object.keys(homeTeamData).length > 0);
-    console.log("Away team data found:", Object.keys(awayTeamData).length > 0);
-    
-    // Quarter-by-quarter performance
-    const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
-    const quarterAnalysis = quarters.map((quarter, index) => {
-      const homeQuarterPPA = homeTeamData?.ppa?.[0]?.overall?.[quarter] || 0;
-      const awayQuarterPPA = awayTeamData?.ppa?.[0]?.overall?.[quarter] || 0;
-      return {
-        quarter: index + 1,
-        homePPA: homeQuarterPPA,
-        awayPPA: awayQuarterPPA,
-        homeAdvantage: homeQuarterPPA > awayQuarterPPA,
-        significance: Math.abs(homeQuarterPPA - awayQuarterPPA) > 0.3 ? 'significant' : 'moderate'
+      // Create fallbacks for the game info
+      const gameInfo = {
+        homeTeam: data.boxScore.gameInfo.homeTeam || "Home Team",
+        awayTeam: data.boxScore.gameInfo.awayTeam || "Away Team",
+        homePoints: data.boxScore.gameInfo.homePoints || 0,
+        awayPoints: data.boxScore.gameInfo.awayPoints || 0
       };
-    });
-    
-    console.log("Quarter analysis generated:", quarterAnalysis);
-    
-    // Key plays analysis - look for high EPA plays
-    const keyPlays = [];
-    const plays = data.playByPlay?.plays || [];
-    console.log("Total plays to analyze:", plays.length);
-    
-    plays.forEach(play => {
-      if (play.epa && Math.abs(play.epa) > 2) {
-        keyPlays.push({
-          period: play.period,
-          clock: play.clock || { minutes: 0, seconds: 0 },
-          playText: play.playText || "Play description unavailable",
-          team: play.offense || play.team || "Unknown",
-          epa: play.epa,
-          scoringPlay: play.scoring || false
+      
+      // Extract key data points
+      const homeWin = gameInfo.homePoints > gameInfo.awayPoints;
+      const winner = homeWin ? gameInfo.homeTeam : gameInfo.awayTeam;
+      const loser = homeWin ? gameInfo.awayTeam : gameInfo.homeTeam;
+      const scoreDifference = Math.abs(gameInfo.homePoints - gameInfo.awayPoints);
+      const isCloseGame = scoreDifference <= 7;
+      
+      // Extract team data safely
+      const teams = Array.isArray(data.boxScore?.teams) ? data.boxScore.teams : [];
+      const homeTeamData = teams.find(t => t?.team === gameInfo.homeTeam) || {};
+      const awayTeamData = teams.find(t => t?.team === gameInfo.awayTeam) || {};
+      
+      // Quarter-by-quarter performance (with fallbacks)
+      const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
+      const quarterAnalysis = quarters.map((quarter, index) => {
+        const homeQuarterPPA = homeTeamData?.ppa?.[0]?.overall?.[quarter] || 0;
+        const awayQuarterPPA = awayTeamData?.ppa?.[0]?.overall?.[quarter] || 0;
+        return {
+          quarter: index + 1,
+          homePPA: homeQuarterPPA,
+          awayPPA: awayQuarterPPA,
+          homeAdvantage: homeQuarterPPA > awayQuarterPPA,
+          significance: Math.abs(homeQuarterPPA - awayQuarterPPA) > 0.3 ? 'significant' : 'moderate'
+        };
+      });
+      
+      // Key plays analysis - look for high EPA plays (with fallbacks)
+      const keyPlays = [];
+      if (data.playByPlay?.plays && Array.isArray(data.playByPlay.plays)) {
+        data.playByPlay.plays.forEach(play => {
+          if (play.epa && Math.abs(play.epa) > 2) {
+            keyPlays.push({
+              period: play.period || 1,
+              clock: play.clock || { minutes: 0, seconds: 0 },
+              playText: play.playText || "Play description unavailable",
+              team: play.offense || play.team || "Unknown",
+              epa: play.epa,
+              scoringPlay: play.scoring || false
+            });
+          }
         });
       }
-    });
-    keyPlays.sort((a, b) => Math.abs(b.epa) - Math.abs(a.epa));
-    console.log("Key plays identified:", keyPlays.length);
-    
-    // Team efficiency analysis (with error checks)
-    const teamEfficiency = {
-      passingComparison: {
-        [homeTeam]: homeTeamData?.ppa?.[0]?.passing?.total || 0,
-        [awayTeam]: awayTeamData?.ppa?.[0]?.passing?.total || 0,
-        advantage: (homeTeamData?.ppa?.[0]?.passing?.total || 0) > (awayTeamData?.ppa?.[0]?.passing?.total || 0) ? homeTeam : awayTeam
-      },
-      rushingComparison: {
-        [homeTeam]: homeTeamData?.ppa?.[0]?.rushing?.total || 0,
-        [awayTeam]: awayTeamData?.ppa?.[0]?.rushing?.total || 0,
-        advantage: (homeTeamData?.ppa?.[0]?.rushing?.total || 0) > (awayTeamData?.ppa?.[0]?.rushing?.total || 0) ? homeTeam : awayTeam
-      },
-      successRates: {
-        [homeTeam]: homeTeamData?.successRates?.[0]?.overall?.total || 0,
-        [awayTeam]: awayTeamData?.successRates?.[0]?.overall?.total || 0
-      },
-      explosiveness: {
-        [homeTeam]: homeTeamData?.explosiveness?.[0]?.overall?.total || 0,
-        [awayTeam]: awayTeamData?.explosiveness?.[0]?.overall?.total || 0
-      }
-    };
-    
-    console.log("Team efficiency data calculated");
-    
-    // Star player analysis (with error checks)
-    const topPlayers = data.boxScore.players?.ppa || [];
-    console.log("Top players data count:", topPlayers.length);
-    
-    const starPlayers = topPlayers
-      .filter(player => player.average && player.average.total > 0.7)
-      .map(player => ({
-        name: player.player || "Unknown Player",
-        team: player.team || "Unknown Team",
-        position: player.position || "Unknown Pos",
-        ppaAverage: player.average?.total || 0,
-        ppaCumulative: player.cumulative?.total || 0
-      }))
-      .sort((a, b) => b.ppaCumulative - a.ppaCumulative)
-      .slice(0, 5);
-    
-    console.log("Star players identified:", starPlayers.length);
-    
-    // Generate narrative
-    const overview = `${winner} defeated ${loser} ${homeWin ? homePoints + '-' + awayPoints : awayPoints + '-' + homePoints} in ${isCloseGame ? 'a close battle' : 'a commanding victory'}. ${starPlayers[0]?.name || 'The leading player'} made the biggest impact with a cumulative PPA of ${starPlayers[0]?.ppaCumulative?.toFixed(1) || 'N/A'}.`;
-    
-    const quarterSummaries = quarterAnalysis.map(q => {
-      return `Q${q.quarter}: ${q.homeAdvantage ? homeTeam : awayTeam} had the advantage (${Math.abs(q.homePPA - q.awayPPA).toFixed(2)} PPA difference).`;
-    });
+      
+      keyPlays.sort((a, b) => Math.abs(b.epa) - Math.abs(a.epa));
+      
+      // Team efficiency analysis (with fallbacks)
+      const teamEfficiency = {
+        passingComparison: {
+          [gameInfo.homeTeam]: homeTeamData?.ppa?.[0]?.passing?.total || 0,
+          [gameInfo.awayTeam]: awayTeamData?.ppa?.[0]?.passing?.total || 0,
+          advantage: (homeTeamData?.ppa?.[0]?.passing?.total || 0) > (awayTeamData?.ppa?.[0]?.passing?.total || 0) ? gameInfo.homeTeam : gameInfo.awayTeam
+        },
+        rushingComparison: {
+          [gameInfo.homeTeam]: homeTeamData?.ppa?.[0]?.rushing?.total || 0,
+          [gameInfo.awayTeam]: awayTeamData?.ppa?.[0]?.rushing?.total || 0,
+          advantage: (homeTeamData?.ppa?.[0]?.rushing?.total || 0) > (awayTeamData?.ppa?.[0]?.rushing?.total || 0) ? gameInfo.homeTeam : gameInfo.awayTeam
+        },
+        successRates: {
+          [gameInfo.homeTeam]: homeTeamData?.successRates?.[0]?.overall?.total || 0,
+          [gameInfo.awayTeam]: awayTeamData?.successRates?.[0]?.overall?.total || 0
+        },
+        explosiveness: {
+          [gameInfo.homeTeam]: homeTeamData?.explosiveness?.[0]?.overall?.total || 0,
+          [gameInfo.awayTeam]: awayTeamData?.explosiveness?.[0]?.overall?.total || 0
+        }
+      };
+      
+      // Star player analysis (with fallbacks)
+      const topPlayers = data.boxScore.players?.ppa || [];
+      const starPlayers = topPlayers
+        .filter(player => player.average && player.average.total > 0.7)
+        .map(player => ({
+          name: player.player || "Unknown Player",
+          team: player.team || "Unknown Team",
+          position: player.position || "Unknown",
+          ppaAverage: player.average?.total || 0,
+          ppaCumulative: player.cumulative?.total || 0
+        }))
+        .sort((a, b) => b.ppaCumulative - a.ppaCumulative)
+        .slice(0, 5);
+      
+      // Generate narrative (with fallbacks)
+      const starPlayerName = starPlayers[0]?.name || 'The leading player';
+      const starPlayerPPA = starPlayers[0]?.ppaCumulative?.toFixed(1) || 'N/A';
+      
+      const overview = `${winner} defeated ${loser} ${homeWin ? gameInfo.homePoints + '-' + gameInfo.awayPoints : gameInfo.awayPoints + '-' + gameInfo.homePoints} in ${isCloseGame ? 'a close battle' : 'a commanding victory'}. ${starPlayerName} made the biggest impact with a cumulative PPA of ${starPlayerPPA}.`;
+      
+      const quarterSummaries = quarterAnalysis.map(q => {
+        return `Q${q.quarter}: ${q.homeAdvantage ? gameInfo.homeTeam : gameInfo.awayTeam} had the advantage (${Math.abs(q.homePPA - q.awayPPA).toFixed(2)} PPA difference).`;
+      });
 
-    const gameStory = `The game ${isCloseGame ? 'came down to the wire' : 'showed a clear difference in performance'} with ${teamEfficiency.passingComparison.advantage} dominating through the air (${teamEfficiency.passingComparison[teamEfficiency.passingComparison.advantage].toFixed(2)} passing PPA) and ${teamEfficiency.rushingComparison.advantage} controlling the ground game (${teamEfficiency.rushingComparison[teamEfficiency.rushingComparison.advantage].toFixed(2)} rushing PPA).`;
-    
-    const result = {
-      gameInfo: data.boxScore.gameInfo,
-      overview,
-      quarterAnalysis,
-      keyPlays: keyPlays.slice(0, 8),
-      teamEfficiency,
-      starPlayers,
-      gameStory,
-      quarterSummaries
-    };
-    
-    console.log("Game analysis result generated");
-    return result;
+      const passingAdvantageTeam = teamEfficiency.passingComparison.advantage;
+      const rushingAdvantageTeam = teamEfficiency.rushingComparison.advantage;
+      const passingPPA = teamEfficiency.passingComparison[passingAdvantageTeam].toFixed(2);
+      const rushingPPA = teamEfficiency.rushingComparison[rushingAdvantageTeam].toFixed(2);
+
+      const gameStory = `The game ${isCloseGame ? 'came down to the wire' : 'showed a clear difference in performance'} with ${passingAdvantageTeam} dominating through the air (${passingPPA} passing PPA) and ${rushingAdvantageTeam} controlling the ground game (${rushingPPA} rushing PPA).`;
+      
+      return {
+        gameInfo,
+        overview,
+        quarterAnalysis,
+        keyPlays: keyPlays.slice(0, 8),
+        teamEfficiency,
+        starPlayers,
+        gameStory,
+        quarterSummaries
+      };
+    } catch (err) {
+      console.error("Error generating game analysis:", err);
+      return null;
+    }
   };
 
   // Enhanced grade calculation function with better error handling
@@ -491,7 +501,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           }
           if (playerData.position === 'QB') {
             const passPlays = playerData.playDetails.filter(p => p.role === 'passer');
-            const completionRatio = passPlays.filter(p => !p.playType.includes('Incompletion')).length / (passPlays.length || 1);
+            const completionRatio = passPlays.filter(p => !p.playType?.includes('Incompletion')).length / (passPlays.length || 1);
             if (completionRatio > 0.65) {
               insights.push('Efficient passer');
             }
@@ -573,10 +583,10 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
     return gameAnalysis && gameAnalysis.starPlayers && gameAnalysis.starPlayers.length > 0;
   };
 
-  // Debugging function to check tab content
+  // Handle tab changes with logging
   const handleTabClick = (tabId) => {
     console.log(`Tab clicked: ${tabId}`);
-    console.log(`Has data for this tab:`, 
+    console.log(`Has data for ${tabId}:`, 
       tabId === 'overview' ? hasOverviewData() : 
       tabId === 'quarterBreakdown' ? hasQuarterData() : 
       tabId === 'keyPlays' ? hasKeyPlaysData() : 
@@ -590,8 +600,8 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
 
   // Add a debug message if gameAnalysis is null
   if (!gameAnalysis) {
-    console.error("gameAnalysis is null when it should be populated");
-    return <div className="tppg-error">Error: Game analysis data could not be generated. Check console for details.</div>;
+    console.error("Game analysis data is null when it should be populated");
+    return <div className="tppg-error">Error: Game analysis data could not be generated. Please check the console for details.</div>;
   }
 
   return (
@@ -603,11 +613,11 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           </h1>
           
           <div className="tppg-game-score">
-            <span className="tppg-team-name">{gameAnalysis.gameInfo?.homeTeam || 'Home'}</span>
-            <span className="tppg-team-score">{gameAnalysis.gameInfo?.homePoints || '0'}</span>
+            <span className="tppg-team-name">{gameAnalysis.gameInfo?.homeTeam}</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo?.homePoints}</span>
             <span className="tppg-vs">vs</span>
-            <span className="tppg-team-score">{gameAnalysis.gameInfo?.awayPoints || '0'}</span>
-            <span className="tppg-team-name">{gameAnalysis.gameInfo?.awayTeam || 'Away'}</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo?.awayPoints}</span>
+            <span className="tppg-team-name">{gameAnalysis.gameInfo?.awayTeam}</span>
           </div>
           
           <div className="tppg-tabs">
@@ -624,7 +634,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                 disabled={!tab.hasData}
               >
                 {tab.icon} {tab.label}
-                {!tab.hasData && <span className="tppg-no-data"> (No Data)</span>}
+                {!tab.hasData && <span style={{fontSize: '0.8rem', marginLeft: '4px', color: '#999'}}>(No Data)</span>}
               </button>
             ))}
           </div>
@@ -641,7 +651,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <h4 className="tppg-stat-card-title">
                       <FaChartLine /> Game Flow
                     </h4>
-                    {gameAnalysis.quarterSummaries && gameAnalysis.quarterSummaries.map((summary, i) => (
+                    {gameAnalysis.quarterSummaries?.map((summary, i) => (
                       <div key={i} className="tppg-overview-text">{summary}</div>
                     ))}
                   </div>
@@ -654,19 +664,19 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <div>
                         <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Success Rate</span>
                         <div>
-                          {gameAnalysis.gameInfo?.homeTeam}: {(gameAnalysis.teamEfficiency?.successRates?.[gameAnalysis.gameInfo?.homeTeam] * 100)?.toFixed(1) || '0.0'}%
+                          {gameAnalysis.gameInfo?.homeTeam}: {(gameAnalysis.teamEfficiency?.successRates[gameAnalysis.gameInfo?.homeTeam] * 100).toFixed(1)}%
                         </div>
                         <div>
-                          {gameAnalysis.gameInfo?.awayTeam}: {(gameAnalysis.teamEfficiency?.successRates?.[gameAnalysis.gameInfo?.awayTeam] * 100)?.toFixed(1) || '0.0'}%
+                          {gameAnalysis.gameInfo?.awayTeam}: {(gameAnalysis.teamEfficiency?.successRates[gameAnalysis.gameInfo?.awayTeam] * 100).toFixed(1)}%
                         </div>
                       </div>
                       <div>
                         <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Explosiveness</span>
                         <div>
-                          {gameAnalysis.gameInfo?.homeTeam}: {gameAnalysis.teamEfficiency?.explosiveness?.[gameAnalysis.gameInfo?.homeTeam]?.toFixed(2) || '0.00'}
+                          {gameAnalysis.gameInfo?.homeTeam}: {gameAnalysis.teamEfficiency?.explosiveness[gameAnalysis.gameInfo?.homeTeam].toFixed(2)}
                         </div>
                         <div>
-                          {gameAnalysis.gameInfo?.awayTeam}: {gameAnalysis.teamEfficiency?.explosiveness?.[gameAnalysis.gameInfo?.awayTeam]?.toFixed(2) || '0.00'}
+                          {gameAnalysis.gameInfo?.awayTeam}: {gameAnalysis.teamEfficiency?.explosiveness[gameAnalysis.gameInfo?.awayTeam].toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -774,7 +784,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <div key={index} className="tppg-key-play">
                       <div className="tppg-play-header">
                         <span>
-                          Q{play.period} - {play.clock?.minutes || '0'}:{(play.clock?.seconds || 0) < 10 ? '0' : ''}{play.clock?.seconds || '00'}
+                          Q{play.period} - {play.clock.minutes}:{play.clock.seconds < 10 ? '0' : ''}{play.clock.seconds}
                         </span>
                         <span className={`tppg-play-epa ${play.epa > 0 ? 'tppg-positive' : 'tppg-negative'}`}>
                           {play.epa > 0 ? (
@@ -956,7 +966,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           </table>
         </div>
         
-        {filteredGrades.length > 0 && (
+        {filteredGrades.length > 0 ? (
           <div className="tppg-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
@@ -1039,6 +1049,19 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="tppg-no-data-message" style={{
+            textAlign: 'center', 
+            padding: '40px', 
+            color: '#666', 
+            fontStyle: 'italic',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            margin: '20px 0'
+          }}>
+            <FaInfoCircle style={{ marginRight: '8px', fontSize: '1.2rem' }} />
+            No player data available with the current filters
           </div>
         )}
         
