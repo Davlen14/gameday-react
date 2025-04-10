@@ -415,17 +415,263 @@ const TeamPlayerModal = ({
         },
       }}
     >
-      {/* Rest of the existing Modal code remains the same */}
+      {/* Inline styling to match the screenshot */}
       <style>
         {`
-          /* Existing styles from the previous implementation */
           .modal-container {
             display: flex;
             flex-direction: column;
             background: #fff;
           }
-          
-          /* ... (rest of the existing CSS) ... */
+          /* -----------------------------------
+           * Header: angled backgrounds, logos, & player info
+           * -----------------------------------
+           */
+          .modal-header {
+            position: relative;
+            padding: 0;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background-color: #fff;
+          }
+          .angled-block-main {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 45% 100%, 0 100%);
+            background-color: ${teamColor};
+          }
+          .angled-block-secondary {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(45% 100%, 0 100%, 0 0, 25% 0);
+            background-color: ${effectiveAltColor};
+          }
+          /* Big team logo on the left */
+          .big-team-logo {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 120px;
+            height: auto;
+            object-fit: contain;
+            z-index: 2;
+          }
+          /* The standard logo in the top-right corner */
+          .top-right-team-logo {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: auto;
+            object-fit: contain;
+            z-index: 2;
+          }
+          /* Player info on the right */
+          .player-header-content {
+            position: relative;
+            z-index: 2;
+            padding: 20px 30px;
+            margin-left: 45%;
+            display: flex;
+            flex-direction: column;
+          }
+          .player-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+          }
+          .player-position {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #666;
+          }
+          .player-info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 30px;
+            margin-top: 1rem;
+          }
+          .player-info-item {
+            display: flex;
+            flex-direction: column;
+          }
+          .player-info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .player-info-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+          }
+          .team-name {
+            position: absolute;
+            top: 15px;
+            right: 80px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            z-index: 2;
+          }
+          /* -----------------------------------
+           * Body: Grades, Doughnut, and Weekly Bar Charts
+           * -----------------------------------
+           */
+          .modal-body {
+            display: flex;
+            padding: 1.5rem;
+            gap: 2rem;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+          }
+          /* Grades Column for Season & Career Grades */
+          .grades-column {
+            flex: 0 0 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+          }
+          .grades-section h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+          }
+          .grade-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .grade-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+          }
+          .grade-item .label {
+            flex: 0 0 110px;
+            color: #555;
+            font-weight: 500;
+            text-transform: uppercase;
+          }
+          .grade-bar-container {
+            flex: 1;
+            background-color: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            position: relative;
+            margin-right: 8px;
+          }
+          .grade-bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 8px;
+            border-radius: 4px;
+            /* Colors set individually in the style prop */
+          }
+          .grade-value {
+            width: 40px;
+            text-align: right;
+            color: #333;
+            font-weight: 600;
+          }
+          /* Doughnut Chart Column for 2024 Snaps */
+          .snaps-column {
+            flex: 0 0 280px;
+            text-align: center;
+            border-left: 1px solid #eee;
+            border-right: 1px solid #eee;
+            padding: 0 1.5rem;
+          }
+          .snaps-column h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-weight: 600;
+          }
+          .snaps-total {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #444;
+            font-weight: 600;
+          }
+          /* Position breakdown table */
+          .positions-table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+          }
+          .positions-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding: 0.5rem 0;
+          }
+          .positions-table td {
+            font-size: 0.9rem;
+            color: #333;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #eee;
+          }
+          .positions-table td:last-child {
+            text-align: right;
+          }
+          /* Weekly Stacked Bar Column */
+          .weekly-column {
+            flex: 1 1 auto;
+          }
+          .weekly-column h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-weight: 600;
+          }
+          /* -----------------------------------
+           * Close Button
+           * -----------------------------------
+           */
+          .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #333;
+            padding: 0;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+          }
+          .close-button:hover {
+            color: #333;
+          }
         `}
       </style>
 
