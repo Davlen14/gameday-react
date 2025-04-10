@@ -49,6 +49,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
   
   // Use the prop gameId if provided, otherwise use the URL parameter
   const gameId = propGameId || urlGameId;
+  
   // State management
   const [gameData, setGameData] = useState(null);
   const [playerGrades, setPlayerGrades] = useState([]);
@@ -58,6 +59,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
   const [error, setError] = useState(null);
   const [gameAnalysis, setGameAnalysis] = useState(null);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState('overview');
+
+  // Debug logging - Add this to help diagnose the issue
+  useEffect(() => {
+    console.log('Current active tab:', activeAnalysisTab);
+    console.log('Game Analysis data:', gameAnalysis);
+  }, [activeAnalysisTab, gameAnalysis]);
 
   // Comprehensive data fetching with better error handling
   useEffect(() => {
@@ -73,17 +80,21 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         setError(null);
         
         // Fetch data sequentially to better handle errors
+        console.log("Fetching play-by-play data for game ID:", gameId);
         const playByPlayData = await teamsService.getPlayByPlay(gameId)
           .catch(err => {
             console.error("Error fetching play-by-play:", err);
             return { plays: [] };
           });
+        console.log("Received play-by-play data:", playByPlayData);
           
+        console.log("Fetching advanced box score for game ID:", gameId);
         const advancedBoxScore = await teamsService.getAdvancedBoxScore(gameId)
           .catch(err => {
             console.error("Error fetching advanced box score:", err);
             return { teams: [], players: { usage: [], ppa: [] } };
           });
+        console.log("Received advanced box score:", advancedBoxScore);
           
         // Only proceed if we have minimum required data
         if ((!playByPlayData.plays && !advancedBoxScore.teams) || 
@@ -93,16 +104,20 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         }
 
         // Generate game analysis
+        console.log("Generating game analysis");
         const gameAnalysisData = generateGameAnalysis({
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore
         });
+        console.log("Generated game analysis:", gameAnalysisData);
         
         // Process player grades
+        console.log("Calculating player grades");
         const processedGrades = calculatePlayerGrades({
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore
         });
+        console.log("Calculated player grades:", processedGrades);
 
         // Update state with all data
         setGameData({
@@ -117,6 +132,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           setSelectedTeam(advancedBoxScore.gameInfo.homeTeam);
         }
         
+        // Ensure we start with the overview tab
+        setActiveAnalysisTab('overview');
+        
       } catch (err) {
         console.error("Error processing game data:", err);
         setError("Failed to load or process game data. Please check the game ID and try again.");
@@ -130,11 +148,14 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
 
   // Generate comprehensive game analysis
   const generateGameAnalysis = (data) => {
+    console.log("Inside generateGameAnalysis with data:", data);
     if (!data.boxScore?.gameInfo) {
+      console.warn("Missing game info in box score data");
       return null;
     }
 
     const { homeTeam, awayTeam, homePoints, awayPoints } = data.boxScore.gameInfo;
+    console.log(`Game between ${homeTeam} (${homePoints}) and ${awayTeam} (${awayPoints})`);
     
     // Extract key data points
     const homeWin = homePoints > awayPoints;
@@ -145,8 +166,13 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
     
     // Extract team data safely
     const teams = Array.isArray(data.boxScore?.teams) ? data.boxScore.teams : [];
+    console.log("Teams data array length:", teams.length);
+    
     const homeTeamData = teams.find(t => t?.team === homeTeam) || {};
     const awayTeamData = teams.find(t => t?.team === awayTeam) || {};
+    
+    console.log("Home team data found:", Object.keys(homeTeamData).length > 0);
+    console.log("Away team data found:", Object.keys(awayTeamData).length > 0);
     
     // Quarter-by-quarter performance
     const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
@@ -162,22 +188,27 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       };
     });
     
+    console.log("Quarter analysis generated:", quarterAnalysis);
+    
     // Key plays analysis - look for high EPA plays
     const keyPlays = [];
     const plays = data.playByPlay?.plays || [];
+    console.log("Total plays to analyze:", plays.length);
+    
     plays.forEach(play => {
       if (play.epa && Math.abs(play.epa) > 2) {
         keyPlays.push({
           period: play.period,
-          clock: play.clock,
-          playText: play.playText,
-          team: play.offense,
+          clock: play.clock || { minutes: 0, seconds: 0 },
+          playText: play.playText || "Play description unavailable",
+          team: play.offense || play.team || "Unknown",
           epa: play.epa,
-          scoringPlay: play.scoring
+          scoringPlay: play.scoring || false
         });
       }
     });
     keyPlays.sort((a, b) => Math.abs(b.epa) - Math.abs(a.epa));
+    console.log("Key plays identified:", keyPlays.length);
     
     // Team efficiency analysis (with error checks)
     const teamEfficiency = {
@@ -201,19 +232,25 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       }
     };
     
+    console.log("Team efficiency data calculated");
+    
     // Star player analysis (with error checks)
     const topPlayers = data.boxScore.players?.ppa || [];
+    console.log("Top players data count:", topPlayers.length);
+    
     const starPlayers = topPlayers
       .filter(player => player.average && player.average.total > 0.7)
       .map(player => ({
-        name: player.player,
-        team: player.team,
-        position: player.position,
-        ppaAverage: player.average.total,
-        ppaCumulative: player.cumulative.total
+        name: player.player || "Unknown Player",
+        team: player.team || "Unknown Team",
+        position: player.position || "Unknown Pos",
+        ppaAverage: player.average?.total || 0,
+        ppaCumulative: player.cumulative?.total || 0
       }))
       .sort((a, b) => b.ppaCumulative - a.ppaCumulative)
       .slice(0, 5);
+    
+    console.log("Star players identified:", starPlayers.length);
     
     // Generate narrative
     const overview = `${winner} defeated ${loser} ${homeWin ? homePoints + '-' + awayPoints : awayPoints + '-' + homePoints} in ${isCloseGame ? 'a close battle' : 'a commanding victory'}. ${starPlayers[0]?.name || 'The leading player'} made the biggest impact with a cumulative PPA of ${starPlayers[0]?.ppaCumulative?.toFixed(1) || 'N/A'}.`;
@@ -224,7 +261,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
 
     const gameStory = `The game ${isCloseGame ? 'came down to the wire' : 'showed a clear difference in performance'} with ${teamEfficiency.passingComparison.advantage} dominating through the air (${teamEfficiency.passingComparison[teamEfficiency.passingComparison.advantage].toFixed(2)} passing PPA) and ${teamEfficiency.rushingComparison.advantage} controlling the ground game (${teamEfficiency.rushingComparison[teamEfficiency.rushingComparison.advantage].toFixed(2)} rushing PPA).`;
     
-    return {
+    const result = {
       gameInfo: data.boxScore.gameInfo,
       overview,
       quarterAnalysis,
@@ -234,6 +271,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       gameStory,
       quarterSummaries
     };
+    
+    console.log("Game analysis result generated");
+    return result;
   };
 
   // Enhanced grade calculation function with better error handling
@@ -516,8 +556,43 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
     return <FaRegChartBar />;
   };
 
+  // Check if we have all required data for a tab before showing it
+  const hasOverviewData = () => {
+    return gameAnalysis && gameAnalysis.overview && gameAnalysis.gameStory;
+  };
+
+  const hasQuarterData = () => {
+    return gameAnalysis && gameAnalysis.quarterAnalysis && gameAnalysis.quarterAnalysis.length > 0;
+  };
+
+  const hasKeyPlaysData = () => {
+    return gameAnalysis && gameAnalysis.keyPlays && gameAnalysis.keyPlays.length > 0;
+  };
+
+  const hasStarPlayersData = () => {
+    return gameAnalysis && gameAnalysis.starPlayers && gameAnalysis.starPlayers.length > 0;
+  };
+
+  // Debugging function to check tab content
+  const handleTabClick = (tabId) => {
+    console.log(`Tab clicked: ${tabId}`);
+    console.log(`Has data for this tab:`, 
+      tabId === 'overview' ? hasOverviewData() : 
+      tabId === 'quarterBreakdown' ? hasQuarterData() : 
+      tabId === 'keyPlays' ? hasKeyPlaysData() : 
+      tabId === 'starPlayers' ? hasStarPlayersData() : false
+    );
+    setActiveAnalysisTab(tabId);
+  };
+
   if (isLoading) return <div className="tppg-loading"><FaFootballBall /> Loading comprehensive game analysis...</div>;
   if (error) return <div className="tppg-error">{error}</div>;
+
+  // Add a debug message if gameAnalysis is null
+  if (!gameAnalysis) {
+    console.error("gameAnalysis is null when it should be populated");
+    return <div className="tppg-error">Error: Game analysis data could not be generated. Check console for details.</div>;
+  }
 
   return (
     <div className="tppg-container">
@@ -528,32 +603,34 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           </h1>
           
           <div className="tppg-game-score">
-            <span className="tppg-team-name">{gameAnalysis.gameInfo.homeTeam}</span>
-            <span className="tppg-team-score">{gameAnalysis.gameInfo.homePoints}</span>
+            <span className="tppg-team-name">{gameAnalysis.gameInfo?.homeTeam || 'Home'}</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo?.homePoints || '0'}</span>
             <span className="tppg-vs">vs</span>
-            <span className="tppg-team-score">{gameAnalysis.gameInfo.awayPoints}</span>
-            <span className="tppg-team-name">{gameAnalysis.gameInfo.awayTeam}</span>
+            <span className="tppg-team-score">{gameAnalysis.gameInfo?.awayPoints || '0'}</span>
+            <span className="tppg-team-name">{gameAnalysis.gameInfo?.awayTeam || 'Away'}</span>
           </div>
           
           <div className="tppg-tabs">
             {[
-              { id: 'overview', label: 'Overview', icon: <FaRegListAlt /> },
-              { id: 'quarterBreakdown', label: 'Quarter Analysis', icon: <FaChartLine /> },
-              { id: 'keyPlays', label: 'Key Plays', icon: <FaFireAlt /> },
-              { id: 'starPlayers', label: 'Star Players', icon: <FaStar /> }
+              { id: 'overview', label: 'Overview', icon: <FaRegListAlt />, hasData: hasOverviewData() },
+              { id: 'quarterBreakdown', label: 'Quarter Analysis', icon: <FaChartLine />, hasData: hasQuarterData() },
+              { id: 'keyPlays', label: 'Key Plays', icon: <FaFireAlt />, hasData: hasKeyPlaysData() },
+              { id: 'starPlayers', label: 'Star Players', icon: <FaStar />, hasData: hasStarPlayersData() }
             ].map(tab => (
               <button
                 key={tab.id}
-                className={`tppg-tab ${activeAnalysisTab === tab.id ? 'tppg-active' : ''}`}
-                onClick={() => setActiveAnalysisTab(tab.id)}
+                className={`tppg-tab ${activeAnalysisTab === tab.id ? 'tppg-active' : ''} ${!tab.hasData ? 'tppg-disabled' : ''}`}
+                onClick={() => tab.hasData && handleTabClick(tab.id)}
+                disabled={!tab.hasData}
               >
                 {tab.icon} {tab.label}
+                {!tab.hasData && <span className="tppg-no-data"> (No Data)</span>}
               </button>
             ))}
           </div>
           
           <div className="tppg-tab-content">
-            {activeAnalysisTab === 'overview' && (
+            {activeAnalysisTab === 'overview' && hasOverviewData() && (
               <div className="tppg-overview">
                 <h3 className="tppg-overview-title">Game Overview</h3>
                 <p className="tppg-overview-text">{gameAnalysis.overview}</p>
@@ -564,7 +641,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <h4 className="tppg-stat-card-title">
                       <FaChartLine /> Game Flow
                     </h4>
-                    {gameAnalysis.quarterSummaries.map((summary, i) => (
+                    {gameAnalysis.quarterSummaries && gameAnalysis.quarterSummaries.map((summary, i) => (
                       <div key={i} className="tppg-overview-text">{summary}</div>
                     ))}
                   </div>
@@ -577,19 +654,19 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <div>
                         <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Success Rate</span>
                         <div>
-                          {gameAnalysis.gameInfo.homeTeam}: {(gameAnalysis.teamEfficiency.successRates[gameAnalysis.gameInfo.homeTeam] * 100).toFixed(1)}%
+                          {gameAnalysis.gameInfo?.homeTeam}: {(gameAnalysis.teamEfficiency?.successRates?.[gameAnalysis.gameInfo?.homeTeam] * 100)?.toFixed(1) || '0.0'}%
                         </div>
                         <div>
-                          {gameAnalysis.gameInfo.awayTeam}: {(gameAnalysis.teamEfficiency.successRates[gameAnalysis.gameInfo.awayTeam] * 100).toFixed(1)}%
+                          {gameAnalysis.gameInfo?.awayTeam}: {(gameAnalysis.teamEfficiency?.successRates?.[gameAnalysis.gameInfo?.awayTeam] * 100)?.toFixed(1) || '0.0'}%
                         </div>
                       </div>
                       <div>
                         <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Explosiveness</span>
                         <div>
-                          {gameAnalysis.gameInfo.homeTeam}: {gameAnalysis.teamEfficiency.explosiveness[gameAnalysis.gameInfo.homeTeam].toFixed(2)}
+                          {gameAnalysis.gameInfo?.homeTeam}: {gameAnalysis.teamEfficiency?.explosiveness?.[gameAnalysis.gameInfo?.homeTeam]?.toFixed(2) || '0.00'}
                         </div>
                         <div>
-                          {gameAnalysis.gameInfo.awayTeam}: {gameAnalysis.teamEfficiency.explosiveness[gameAnalysis.gameInfo.awayTeam].toFixed(2)}
+                          {gameAnalysis.gameInfo?.awayTeam}: {gameAnalysis.teamEfficiency?.explosiveness?.[gameAnalysis.gameInfo?.awayTeam]?.toFixed(2) || '0.00'}
                         </div>
                       </div>
                     </div>
@@ -598,7 +675,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               </div>
             )}
             
-            {activeAnalysisTab === 'quarterBreakdown' && (
+            {activeAnalysisTab === 'quarterBreakdown' && hasQuarterData() && (
               <div>
                 <h3 className="tppg-overview-title">
                   <FaChartLine /> Quarter-by-Quarter Analysis
@@ -631,7 +708,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="homePPA" 
-                        name={gameAnalysis.gameInfo.homeTeam} 
+                        name={gameAnalysis.gameInfo?.homeTeam} 
                         stroke="#3b82f6" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#3b82f6' }}
@@ -640,7 +717,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="awayPPA" 
-                        name={gameAnalysis.gameInfo.awayTeam} 
+                        name={gameAnalysis.gameInfo?.awayTeam} 
                         stroke="#ef4444" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#ef4444' }}
@@ -657,7 +734,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <h4 className="tppg-quarter-title">Quarter {quarter.quarter}</h4>
                       <div className="tppg-team-comparison">
                         <div>
-                          <span style={{ display: 'block', color: '#3b82f6', fontWeight: 600 }}>{gameAnalysis.gameInfo.homeTeam}</span>
+                          <span style={{ display: 'block', color: '#3b82f6', fontWeight: 600 }}>{gameAnalysis.gameInfo?.homeTeam}</span>
                           <span className="tppg-team-ppa">{quarter.homePPA.toFixed(2)}</span>
                         </div>
                         <div className="tppg-advantage-indicator">
@@ -669,7 +746,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           <span>{Math.abs(quarter.homePPA - quarter.awayPPA).toFixed(2)}</span>
                         </div>
                         <div>
-                          <span style={{ display: 'block', color: '#ef4444', fontWeight: 600 }}>{gameAnalysis.gameInfo.awayTeam}</span>
+                          <span style={{ display: 'block', color: '#ef4444', fontWeight: 600 }}>{gameAnalysis.gameInfo?.awayTeam}</span>
                           <span className="tppg-team-ppa">{quarter.awayPPA.toFixed(2)}</span>
                         </div>
                       </div>
@@ -678,7 +755,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           ? 'Significant advantage for ' 
                           : 'Slight edge for '}
                         <span style={{ fontWeight: 600 }}>
-                          {quarter.homeAdvantage ? gameAnalysis.gameInfo.homeTeam : gameAnalysis.gameInfo.awayTeam}
+                          {quarter.homeAdvantage ? gameAnalysis.gameInfo?.homeTeam : gameAnalysis.gameInfo?.awayTeam}
                         </span>
                       </p>
                     </div>
@@ -687,7 +764,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               </div>
             )}
             
-            {activeAnalysisTab === 'keyPlays' && (
+            {activeAnalysisTab === 'keyPlays' && hasKeyPlaysData() && (
               <div>
                 <h3 className="tppg-overview-title">
                   <FaFireAlt /> Key Game-Changing Plays
@@ -697,7 +774,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <div key={index} className="tppg-key-play">
                       <div className="tppg-play-header">
                         <span>
-                          Q{play.period} - {play.clock.minutes}:{play.clock.seconds < 10 ? '0' : ''}{play.clock.seconds}
+                          Q{play.period} - {play.clock?.minutes || '0'}:{(play.clock?.seconds || 0) < 10 ? '0' : ''}{play.clock?.seconds || '00'}
                         </span>
                         <span className={`tppg-play-epa ${play.epa > 0 ? 'tppg-positive' : 'tppg-negative'}`}>
                           {play.epa > 0 ? (
@@ -727,7 +804,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               </div>
             )}
             
-            {activeAnalysisTab === 'starPlayers' && (
+            {activeAnalysisTab === 'starPlayers' && hasStarPlayersData() && (
               <div>
                 <h3 className="tppg-overview-title">
                   <FaStar /> Star Performers
@@ -739,7 +816,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                         key={index} 
                         className="tppg-player-card"
                         style={{ 
-                          borderLeft: `4px solid ${player.team === gameAnalysis.gameInfo.homeTeam ? '#3b82f6' : '#ef4444'}`
+                          borderLeft: `4px solid ${player.team === gameAnalysis.gameInfo?.homeTeam ? '#3b82f6' : '#ef4444'}`
                         }}
                       >
                         <div className="tppg-player-header">
@@ -747,9 +824,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           <span 
                             className="tppg-team-badge"
                             style={{ 
-                              backgroundColor: player.team === gameAnalysis.gameInfo.homeTeam ? 
+                              backgroundColor: player.team === gameAnalysis.gameInfo?.homeTeam ? 
                                 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                              color: player.team === gameAnalysis.gameInfo.homeTeam ? 
+                              color: player.team === gameAnalysis.gameInfo?.homeTeam ? 
                                 '#1e40af' : '#b91c1c'
                             }}
                           >
@@ -840,120 +917,130 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               </tr>
             </thead>
             <tbody>
-              {filteredGrades.slice(0, 20).map((player, index) => (
-                <tr key={index}>
-                  <td className="tppg-player-name-cell">
-                    <FaUserAlt style={{ color: '#666' }} /> {player.name}
-                  </td>
-                  <td style={{ textAlign: 'center' }}>{player.team}</td>
-                  <td style={{ textAlign: 'center' }}>{player.position}</td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span className={`tppg-grade ${getGradeClass(player.overallGrade)}`}>
-                      {getGradeIcon(player.overallGrade)} {player.overallGrade.toFixed(1)}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>{getGradeDescription(player.overallGrade)}</td>
-                  <td style={{ textAlign: 'center' }}>{player.playCount}</td>
-                  <td>
-                    {player.insights && player.insights.length > 0 ? (
-                      <ul className="tppg-insights-list">
-                        {player.insights.map((insight, i) => (
-                          <li key={i} className="tppg-insights-item">{insight}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <span style={{ color: '#777', fontStyle: 'italic' }}>No special insights</span>
-                    )}
+              {filteredGrades.length > 0 ? (
+                filteredGrades.slice(0, 20).map((player, index) => (
+                  <tr key={index}>
+                    <td className="tppg-player-name-cell">
+                      <FaUserAlt style={{ color: '#666' }} /> {player.name}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{player.team}</td>
+                    <td style={{ textAlign: 'center' }}>{player.position}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`tppg-grade ${getGradeClass(player.overallGrade)}`}>
+                        {getGradeIcon(player.overallGrade)} {player.overallGrade.toFixed(1)}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{getGradeDescription(player.overallGrade)}</td>
+                    <td style={{ textAlign: 'center' }}>{player.playCount}</td>
+                    <td>
+                      {player.insights && player.insights.length > 0 ? (
+                        <ul className="tppg-insights-list">
+                          {player.insights.map((insight, i) => (
+                            <li key={i} className="tppg-insights-item">{insight}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span style={{ color: '#777', fontStyle: 'italic' }}>No special insights</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '20px', color: '#666', fontStyle: 'italic' }}>
+                    No player data available with the current filters
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
         
-        <div className="tppg-chart-container">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={filteredGrades.slice(0, 15)}
-              margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45} 
-                textAnchor="end" 
-                interval={0}
-                tick={{ fill: '#555', fontSize: 12 }}
-                tickMargin={10}
-              />
-              <YAxis 
-                domain={[0, 100]}
-                tick={{ fill: '#555' }}
-              />
-              <Tooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const player = payload[0].payload;
-                    return (
-                      <div style={{ 
-                        backgroundColor: 'white', 
-                        padding: '16px', 
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                        border: '1px solid #e0e0e0'
-                      }}>
-                        <h3 style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
-                          {player.name}
-                        </h3>
-                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Position:</span> {player.position}</div>
-                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Team:</span> {player.team}</div>
-                        <div style={{ marginBottom: '8px' }}>
-                          <span style={{ fontWeight: '600' }}>Grade:</span> 
-                          <span className={getGradeClass(player.overallGrade)} style={{ 
-                            paddingLeft: '5px',
-                            fontWeight: '700'
-                          }}>
-                            {player.overallGrade.toFixed(1)}
-                          </span>
-                        </div>
-                        <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Performance:</span> {getGradeDescription(player.overallGrade)}</div>
-                        <div style={{ marginBottom: '8px' }}><span style={{ fontWeight: '600' }}>Total Plays:</span> {player.playCount}</div>
-                        
-                        {player.insights && player.insights.length > 0 && (
-                          <div>
-                            <p style={{ fontWeight: '600', marginBottom: '4px', marginTop: '8px' }}>Insights:</p>
-                            <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                              {player.insights.map((insight, i) => (
-                                <li key={i} style={{ marginBottom: '4px' }}>{insight}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Bar 
-                dataKey="overallGrade"
-                animationDuration={1500}
+        {filteredGrades.length > 0 && (
+          <div className="tppg-chart-container">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={filteredGrades.slice(0, 15)}
+                margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
               >
-                {filteredGrades.slice(0, 15).map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={
-                      entry.overallGrade >= 90 ? '#10b981' :
-                      entry.overallGrade >= 80 ? '#22c55e' :
-                      entry.overallGrade >= 70 ? '#eab308' :
-                      entry.overallGrade >= 60 ? '#f97316' : '#ef4444'
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  interval={0}
+                  tick={{ fill: '#555', fontSize: 12 }}
+                  tickMargin={10}
+                />
+                <YAxis 
+                  domain={[0, 100]}
+                  tick={{ fill: '#555' }}
+                />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const player = payload[0].payload;
+                      return (
+                        <div style={{ 
+                          backgroundColor: 'white', 
+                          padding: '16px', 
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                          border: '1px solid #e0e0e0'
+                        }}>
+                          <h3 style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                            {player.name}
+                          </h3>
+                          <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Position:</span> {player.position}</div>
+                          <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Team:</span> {player.team}</div>
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: '600' }}>Grade:</span> 
+                            <span className={getGradeClass(player.overallGrade)} style={{ 
+                              paddingLeft: '5px',
+                              fontWeight: '700'
+                            }}>
+                              {player.overallGrade.toFixed(1)}
+                            </span>
+                          </div>
+                          <div style={{ marginBottom: '2px' }}><span style={{ fontWeight: '600' }}>Performance:</span> {getGradeDescription(player.overallGrade)}</div>
+                          <div style={{ marginBottom: '8px' }}><span style={{ fontWeight: '600' }}>Total Plays:</span> {player.playCount}</div>
+                          
+                          {player.insights && player.insights.length > 0 && (
+                            <div>
+                              <p style={{ fontWeight: '600', marginBottom: '4px', marginTop: '8px' }}>Insights:</p>
+                              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                                {player.insights.map((insight, i) => (
+                                  <li key={i} style={{ marginBottom: '4px' }}>{insight}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
                     }
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+                    return null;
+                  }}
+                />
+                <Bar 
+                  dataKey="overallGrade"
+                  animationDuration={1500}
+                >
+                  {filteredGrades.slice(0, 15).map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={
+                        entry.overallGrade >= 90 ? '#10b981' :
+                        entry.overallGrade >= 80 ? '#22c55e' :
+                        entry.overallGrade >= 70 ? '#eab308' :
+                        entry.overallGrade >= 60 ? '#f97316' : '#ef4444'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
         
         <div className="tppg-methodology">
           <h3 className="tppg-methodology-title">
@@ -1015,7 +1102,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               <div className="tppg-context-item">
                 <h4>Teams Involved</h4>
                 <p>
-                  {gameData.advancedBoxScore?.gameInfo?.homeTeam} vs {gameData.advancedBoxScore?.gameInfo?.awayTeam}
+                  {gameData.advancedBoxScore?.gameInfo?.homeTeam || 'Home'} vs {gameData.advancedBoxScore?.gameInfo?.awayTeam || 'Away'}
                 </p>
               </div>
               <div className="tppg-context-item">
