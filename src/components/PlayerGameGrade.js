@@ -207,32 +207,11 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       const plays = Array.isArray(data.playByPlay?.plays) ? data.playByPlay.plays : [];
       const playsByQuarter = {};
       for (let i = 1; i <= 4; i++) {
-        playsByQuarter[i] = plays.filter(p => p.period === i || p.quarter === i);
+        playsByQuarter[i] = plays.filter(p => p.period === i);
       }
       
       // Calculate scoring by period (quarter)
-      // Since the play-by-play scoring data might be incomplete, we need to extract
-      // scoring data from other sources when available
-      let scoringByQuarter = {};
-      
-      // First try to get scoring data from explicit quarter scores if available
-      if (data.boxScore?.gameInfo?.quarterScores) {
-        console.log("Using quarter scores from game info");
-        const quarterScores = data.boxScore.gameInfo.quarterScores;
-        for (let i = 1; i <= 4; i++) {
-          if (quarterScores && quarterScores[i-1]) {
-            scoringByQuarter[i] = {
-              [gameInfo.homeTeam]: quarterScores[i-1].homeScore || 0,
-              [gameInfo.awayTeam]: quarterScores[i-1].awayScore || 0
-            };
-          }
-        }
-      } else {
-        // If we don't have explicit quarter scores, try to extract from plays
-        console.log("Attempting to extract scoring from play-by-play data");
-        
-        // Try to extract from play-by-play data
-      const scoringFromPlays = {};
+      const scoringByQuarter = {};
       for (let i = 1; i <= 4; i++) {
         const quarterPlays = playsByQuarter[i] || [];
         const homeScoring = quarterPlays
@@ -254,219 +233,33 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
             return sum + (p.pointsScored || 0);
           }, 0);
         
-        scoringFromPlays[i] = {
+        scoringByQuarter[i] = {
           [gameInfo.homeTeam]: homeScoring,
           [gameInfo.awayTeam]: awayScoring
         };
       }
       
-      // Calculate total points from play-by-play
-        const totalHomeFromPlays = Object.values(scoringFromPlays).reduce((sum, q) => sum + q[gameInfo.homeTeam], 0);
-        const totalAwayFromPlays = Object.values(scoringFromPlays).reduce((sum, q) => sum + q[gameInfo.awayTeam], 0);
-        
-        // If play-by-play scoring seems accurate compared to final score, use it
-        if (totalHomeFromPlays > 0 || totalAwayFromPlays > 0) {
-          console.log("Using scoring data from plays");
-          scoringByQuarter = scoringFromPlays;
-        } else {
-          console.log("No reliable scoring data from plays, using final score distribution");
-          
-          // If we don't have reliable play-by-play data, distribute the final score
-          // This is a fallback when we can't get quarter-by-quarter breakdown
-          const homeTotal = gameInfo.homePoints || 0;
-          const awayTotal = gameInfo.awayPoints || 0;
-          
-          // Check if we can use PPA data to estimate when scores happened
-          const homeTeamData = teams.find(t => t?.team === gameInfo.homeTeam) || {};
-          const awayTeamData = teams.find(t => t?.team === gameInfo.awayTeam) || {};
-          
-          // If we have quarter PPA data, use it to estimate scoring distribution
-          if (homeTeamData?.overall && awayTeamData?.overall) {
-            // Calculate PPA proportions by quarter for home team
-            const homeQuarterPPAs = [];
-            const awayQuarterPPAs = [];
-            let homeTotalPPA = 0;
-            let awayTotalPPA = 0;
-            
-            for (let i = 1; i <= 4; i++) {
-              const quarterKey = `quarter${i}`;
-              const homePPA = homeTeamData.overall[quarterKey] || 0;
-              const awayPPA = awayTeamData.overall[quarterKey] || 0;
-              
-              // Only count positive PPA for scoring estimation
-              homeQuarterPPAs.push(Math.max(0, homePPA));
-              awayQuarterPPAs.push(Math.max(0, awayPPA));
-              homeTotalPPA += Math.max(0, homePPA);
-              awayTotalPPA += Math.max(0, awayPPA);
-            }
-            
-            for (let i = 1; i <= 4; i++) {
-              // If total PPA is 0, distribute evenly
-              const homeProportion = homeTotalPPA === 0 ? 0.25 : homeQuarterPPAs[i-1] / homeTotalPPA;
-              const awayProportion = awayTotalPPA === 0 ? 0.25 : awayQuarterPPAs[i-1] / awayTotalPPA;
-              
-              // Distribute points according to PPA proportion, rounding to integers
-              scoringByQuarter[i] = {
-                [gameInfo.homeTeam]: Math.round(homeTotal * homeProportion),
-                [gameInfo.awayTeam]: Math.round(awayTotal * awayProportion)
-              };
-            }
-            
-            // Adjust to ensure total points match
-            let adjustedHomeTotal = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.homeTeam], 0);
-            let adjustedAwayTotal = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.awayTeam], 0);
-            
-            // Distribute any remaining points to the highest PPA quarter
-            if (adjustedHomeTotal !== homeTotal) {
-              const diff = homeTotal - adjustedHomeTotal;
-              const highestQuarter = homeQuarterPPAs.indexOf(Math.max(...homeQuarterPPAs)) + 1;
-              scoringByQuarter[highestQuarter][gameInfo.homeTeam] += diff;
-            }
-            
-            if (adjustedAwayTotal !== awayTotal) {
-              const diff = awayTotal - adjustedAwayTotal;
-              const highestQuarter = awayQuarterPPAs.indexOf(Math.max(...awayQuarterPPAs)) + 1;
-              scoringByQuarter[highestQuarter][gameInfo.awayTeam] += diff;
-            }
-          } else {
-            // If we don't have PPA data, distribute evenly across quarters
-            for (let i = 1; i <= 4; i++) {
-              scoringByQuarter[i] = {
-                [gameInfo.homeTeam]: Math.floor(homeTotal / 4) + (i === 4 ? homeTotal % 4 : 0),
-                [gameInfo.awayTeam]: Math.floor(awayTotal / 4) + (i === 4 ? awayTotal % 4 : 0)
-              };
-            }
-          }
-        }
-      }
-      
-      // Ensure we have entries for all quarters
-      for (let i = 1; i <= 4; i++) {
-        if (!scoringByQuarter[i]) {
-          scoringByQuarter[i] = {
-            [gameInfo.homeTeam]: 0,
-            [gameInfo.awayTeam]: 0
-          };
-        }
-      }
-      
-      console.log('Final Scoring By Quarter:', scoringByQuarter);
-      
       // Extract period-by-period (quarter) PPA performance
       const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
-      
-      console.log('Home Team Data:', homeTeamData);
-      console.log('Away Team Data:', awayTeamData);
-      console.log('Scoring By Quarter:', scoringByQuarter);
-      
-      // Manually create scoring data if we need to
-      // This is a fallback for when we can't extract it from play data
-      let manualScoringByQuarter = {};
-      
-      // If we have enough team data with quarter breakdowns, we can estimate the scoring
-      if (homeTeamData?.overall && awayTeamData?.overall) {
-        // Check which team has positive PPA in each quarter and give them appropriate points
-        for (let i = 1; i <= 4; i++) {
-          const quarterKey = `quarter${i}`;
-          const homeQuarterPPA = homeTeamData.overall[quarterKey] || 0;
-          const awayQuarterPPA = awayTeamData.overall[quarterKey] || 0;
-          
-          // Default to 0 points
-          let homeScoring = 0;
-          let awayScoring = 0;
-          
-          // Estimate based on PPA if we don't have reliable scoring data
-          if (!scoringByQuarter[i] || 
-              (scoringByQuarter[i][gameInfo.homeTeam] === 0 && 
-               scoringByQuarter[i][gameInfo.awayTeam] === 0)) {
-            
-            // Basic scoring estimates based on PPA values
-            // This is a very rough approximation
-            if (homeQuarterPPA > 0.5) homeScoring += 7;
-            else if (homeQuarterPPA > 0.2) homeScoring += 3;
-            
-            if (awayQuarterPPA > 0.5) awayScoring += 7;
-            else if (awayQuarterPPA > 0.2) awayScoring += 3;
-            
-            // Ensure we have some non-zero scoring data if both teams have PPA
-            if (homeScoring === 0 && awayScoring === 0) {
-              // If both teams have positive PPA but not enough for points,
-              // give a token amount to the team with higher PPA
-              if (homeQuarterPPA > 0 && awayQuarterPPA > 0) {
-                if (homeQuarterPPA > awayQuarterPPA) {
-                  homeScoring = 3;
-                } else if (awayQuarterPPA > homeQuarterPPA) {
-                  awayScoring = 3;
-                } else {
-                  // If they're equal, give both teams some points
-                  homeScoring = 3;
-                  awayScoring = 3;
-                }
-              }
-            }
-            
-            // Create a safe fallback object with the correct team keys
-            // This ensures we don't have undefined keys in our scoring object
-            const homeTeamKey = gameInfo.homeTeam || 'Home';
-            const awayTeamKey = gameInfo.awayTeam || 'Away';
-              
-              manualScoringByQuarter[i] = {};
-              manualScoringByQuarter[i][homeTeamKey] = homeScoring;
-              manualScoringByQuarter[i][awayTeamKey] = awayScoring;
-              
-              console.log(`Created manual scoring for quarter ${i}:`, 
-                        manualScoringByQuarter[i]);
-              
-          }
-        }
-      }
-      
-      console.log('Manual Scoring By Quarter:', manualScoringByQuarter);
-      
       const quarterAnalysis = quarters.map((quarter, index) => {
-        // Get PPA values or default to total PPA / 4 if quarter data isn't available
-        // This is a fallback to ensure we have something to display
-        let homeQuarterPPA = homeTeamData?.overall?.[quarter];
-        let awayQuarterPPA = awayTeamData?.overall?.[quarter];
+        // Get PPA values or default to 0
+        const homeQuarterPPA = homeTeamData?.overall?.[quarter] || 0;
+        const awayQuarterPPA = awayTeamData?.overall?.[quarter] || 0;
         
-        // If we don't have quarter data but have total PPA, distribute it
-        if (homeQuarterPPA === undefined && homeTeamData?.overall?.total) {
-          homeQuarterPPA = homeTeamData.overall.total / 4;
-          console.log(`Using estimated PPA for home team in ${quarter}: ${homeQuarterPPA}`);
-        } else if (homeQuarterPPA === undefined) {
-          homeQuarterPPA = 0;
-        }
+        // Get scoring from the calculated values
+        const homeScoring = scoringByQuarter[index + 1]?.[gameInfo.homeTeam] || 0;
+        const awayScoring = scoringByQuarter[index + 1]?.[gameInfo.awayTeam] || 0;
         
-        if (awayQuarterPPA === undefined && awayTeamData?.overall?.total) {
-          awayQuarterPPA = awayTeamData.overall.total / 4;
-          console.log(`Using estimated PPA for away team in ${quarter}: ${awayQuarterPPA}`);
-        } else if (awayQuarterPPA === undefined) {
-          awayQuarterPPA = 0;
-        }
-        
-        // Get scoring from the calculated values or manual estimates
-        let homeScoring = scoringByQuarter[index + 1]?.[gameInfo.homeTeam];
-        let awayScoring = scoringByQuarter[index + 1]?.[gameInfo.awayTeam];
-        
-        // If we don't have scoring data, use our manual estimates
-        if (homeScoring === undefined || awayScoring === undefined) {
-          homeScoring = manualScoringByQuarter[index + 1]?.[gameInfo.homeTeam] || 0;
-          awayScoring = manualScoringByQuarter[index + 1]?.[gameInfo.awayTeam] || 0;
-        }
-        
-        const result = {
+        return {
           quarter: index + 1,
           homePPA: homeQuarterPPA,
           awayPPA: awayQuarterPPA,
           homeAdvantage: homeQuarterPPA > awayQuarterPPA,
           significance: Math.abs(homeQuarterPPA - awayQuarterPPA) > 0.3 ? 'significant' : 'moderate',
-          homeScoring: homeScoring || 0,  // Ensure we never have undefined
-          awayScoring: awayScoring || 0,  // Ensure we never have undefined
-          scoringDiff: (homeScoring || 0) - (awayScoring || 0)
+          homeScoring: homeScoring,
+          awayScoring: awayScoring,
+          scoringDiff: homeScoring - awayScoring
         };
-        
-        console.log(`Quarter ${index + 1} analysis:`, result);
-        return result;
       });
       
       // Extract offensive and defensive efficiency by play type
@@ -821,20 +614,20 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       // Create a game description based on the scoring pattern
       const gameFlow = determineGameFlow(quarterAnalysis, gameInfo);
       
-      // Generate detailed period (quarter) summaries
+      // Generate detailed quarter summaries
       const quarterSummaries = quarterAnalysis.map((q, index) => {
         let quarterDescription = '';
         const homePts = q.homeScoring;
         const awayPts = q.awayScoring;
         const scoringDiff = homePts - awayPts;
-        const periodNum = index + 1;
+        const quarterNum = index + 1;
         
         if (Math.abs(scoringDiff) === 0) {
-          quarterDescription = `P${periodNum}: Both teams scored ${homePts} points in an even period.`;
+          quarterDescription = `Q${quarterNum}: Both teams scored ${homePts} points in an even quarter.`;
         } else {
           const dominantTeam = scoringDiff > 0 ? gameInfo.homeTeam : gameInfo.awayTeam;
           const scoringMargin = Math.abs(scoringDiff);
-          quarterDescription = `P${periodNum}: ${dominantTeam} outscored their opponent ${scoringDiff > 0 ? homePts : awayPts}-${scoringDiff > 0 ? awayPts : homePts}`;
+          quarterDescription = `Q${quarterNum}: ${dominantTeam} outscored their opponent ${scoringDiff > 0 ? homePts : awayPts}-${scoringDiff > 0 ? awayPts : homePts}`;
           
           if (q.homeAdvantage !== (scoringDiff > 0)) {
             // Team with PPA advantage didn't outscore opponent
@@ -1586,7 +1379,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         <div className="tppg-tabs">
           {[
             { id: 'overview', label: 'Game Overview', icon: <FaRegListAlt />, hasData: hasOverviewData() },
-            { id: 'quarterBreakdown', label: 'Period Analysis', icon: <FaChartLine />, hasData: hasQuarterData() },
+            { id: 'quarterBreakdown', label: 'Quarter Analysis', icon: <FaChartLine />, hasData: hasQuarterData() },
             { id: 'keyPlays', label: 'Key Plays', icon: <FaFireAlt />, hasData: hasKeyPlaysData() },
             { id: 'starPlayers', label: 'Star Players', icon: <FaStar />, hasData: hasStarPlayersData() }
           ].map(tab => (
@@ -1732,7 +1525,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           {activeAnalysisTab === 'quarterBreakdown' && hasQuarterData() && (
             <div>
               <h3 className="tppg-overview-title">
-                <FaChartLine /> Period-by-Period Analysis
+                <FaChartLine /> Quarter-by-Quarter Analysis
               </h3>
               
               <div className="tppg-quarter-charts">
@@ -1831,7 +1624,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               <div className="tppg-quarter-grid">
                 {gameAnalysis.quarterAnalysis.map((quarter, index) => (
                   <div key={index} className="tppg-quarter-card">
-                    <h4 className="tppg-quarter-title">Period {quarter.quarter}</h4>
+                    <h4 className="tppg-quarter-title">Quarter {quarter.quarter}</h4>
                     <div className="tppg-quarter-score">
                       <div className="tppg-team-score">
                         <span className="tppg-team-name">{gameAnalysis.gameInfo?.homeTeam}</span>
