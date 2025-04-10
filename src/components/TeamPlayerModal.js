@@ -42,7 +42,7 @@ const TeamPlayerModal = ({
   player = {},            // Player data with: firstName, lastName, year, weight, height, jersey, position
   teamName = "",          // Team name to fetch logo if teamLogo is not provided
   teamLogo = "",          // Real team logo URL (the same logo is used in two places)
-  teamColor = "",         // Primary team color (from team data)
+  teamColor = "#1e3a8a",  // Primary team color (from team data)
   altColor = "",          // Alternate team color (if not provided, falls back to teamColor)
 }) => {
   // State for team logos - primary and secondary
@@ -175,34 +175,86 @@ const TeamPlayerModal = ({
   // Draft eligibility year (calculated if not provided)
   const draftEligibleYear = player.draftEligibleYear || calculateDraftEligibility(player.year || 1);
 
-  /*********************************************************
-   * MOCK CHART DATA (these stats are placeholders)
-   * Replace these with real stats when available.
-   *********************************************************/
   // Current year for season labels
   const currentYear = new Date().getFullYear();
   
-  // Season Grades (Horizontal bar-like representation)
+  // Colors for the charts
+  const chartColors = {
+    blue: "#4778F5",       // Main blue for offense metrics
+    darkBlue: "#1e3a8a",   // Dark blue for passing metrics
+    green: "#73BD5F",      // Green for rush metrics
+    yellow: "#F6CB45",     // Yellow for below average metrics
+    lightGreen: "#A3DD89", // Light green for average metrics
+    lightBlue: "#DDE8FC",  // Light gray-blue for background
+    gray: "#F0F0F0",       // Light gray for background
+  };
+  
+  // Season Grades
   const seasonGrades = [
-    { label: "OFFENSE GRADE", value: 92.9, color: "#3B82F6" }, // Blue
-    { label: "PASS GRADE", value: 91.7, color: "#3B82F6" }, // Blue
-    { label: "RUSH GRADE", value: 77.8, color: "#65A30D" }, // Green
-    { label: "RATING", value: 88.2, color: "#3B82F6" }, // Blue
+    { 
+      label: "OFFENSE GRADE", 
+      value: 92.9, 
+      color: chartColors.blue,
+      rankInfo: "2nd / 306 QB" 
+    },
+    { 
+      label: "PASS GRADE", 
+      value: 91.7, 
+      color: chartColors.blue,
+      rankInfo: "2nd / 274 QB"  
+    },
+    { 
+      label: "RUSH GRADE", 
+      value: 77.8, 
+      color: chartColors.green,
+      rankInfo: "" 
+    },
+    { 
+      label: "RATING", 
+      value: 88.2, 
+      color: chartColors.blue,
+      rankInfo: "" 
+    },
   ];
 
   // Career Grades with modern color scheme
   const careerGrades = [
-    { label: "2020", value: 67.0, color: "#84CC16" }, // Light green
-    { label: "2021", value: 66.9, color: "#84CC16" }, // Light green
-    { label: "2022", value: 59.9, color: "#FACC15" }, // Yellow
-    { label: "2023", value: 80.2, color: "#4ADE80" }, // Green
-    { label: `${currentYear}`, value: 92.9, color: "#3B82F6" }, // Blue
+    { 
+      label: "2020", 
+      value: 67.0, 
+      color: chartColors.green,
+      info: "38th/213" 
+    },
+    { 
+      label: "2021", 
+      value: 66.9, 
+      color: chartColors.green,
+      info: "12nd/294" 
+    },
+    { 
+      label: "2022", 
+      value: 59.9, 
+      color: chartColors.yellow,
+      info: "43rd/308" 
+    },
+    { 
+      label: "2023", 
+      value: 80.2, 
+      color: chartColors.green,
+      info: "70th/307" 
+    },
+    { 
+      label: `${currentYear}`, 
+      value: 92.9, 
+      color: chartColors.blue,
+      info: "2nd/306" 
+    },
   ];
 
   // Current year Snaps (passing vs. running)
   const snapsData = {
-    passSnaps: 382,
-    runSnaps: 502,
+    passSnaps: 555,
+    runSnaps: 313,
   };
   
   // Position breakdown data
@@ -216,16 +268,16 @@ const TeamPlayerModal = ({
   // Total snaps calculation
   const totalSnaps = snapsData.passSnaps + snapsData.runSnaps;
   
-  // Modern doughnut chart with vibrant colors
+  // Modern doughnut chart with vibrant colors matching the reference image
   const doughnutData = {
     labels: ["Passing Snaps", "Running Snaps"],
     datasets: [
       {
         data: [snapsData.passSnaps, snapsData.runSnaps],
-        backgroundColor: ["#1E3A8A", "#2563EB"], // Dark blue, Royal blue
-        hoverBackgroundColor: ["#1E4D8A", "#3373FB"],
+        backgroundColor: [chartColors.darkBlue, chartColors.blue],
+        hoverBackgroundColor: ["#162a66", "#3569e6"],
         borderWidth: 0,
-        borderRadius: 3,
+        borderRadius: 0,
         hoverOffset: 5,
         cutout: "70%"
       },
@@ -238,20 +290,15 @@ const TeamPlayerModal = ({
     maintainAspectRatio: true,
     plugins: {
       legend: {
-        position: "bottom",
-        labels: {
-          boxWidth: 12,
-          padding: 15,
-          font: {
-            size: 12,
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500
-          }
-        }
+        display: false,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(30, 41, 59, 0.9)",
         padding: 10,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
         bodyFont: {
           size: 13,
         },
@@ -285,18 +332,18 @@ const TeamPlayerModal = ({
       {
         label: "Passing Snaps",
         data: weeklySnaps.map((d) => d.pass),
-        backgroundColor: "#1E3A8A", // Dark blue
-        borderRadius: 3,
-        barPercentage: 0.8,
-        categoryPercentage: 0.9
+        backgroundColor: chartColors.darkBlue,
+        borderRadius: 0,
+        barPercentage: 0.9,
+        categoryPercentage: 0.8
       },
       {
         label: "Running Snaps",
         data: weeklySnaps.map((d) => d.run),
-        backgroundColor: "#2563EB", // Royal blue
-        borderRadius: 3,
-        barPercentage: 0.8,
-        categoryPercentage: 0.9
+        backgroundColor: chartColors.blue,
+        borderRadius: 0,
+        barPercentage: 0.9,
+        categoryPercentage: 0.8
       },
     ],
   };
@@ -307,63 +354,67 @@ const TeamPlayerModal = ({
     maintainAspectRatio: true,
     plugins: {
       legend: { 
-        position: "bottom",
-        labels: {
-          boxWidth: 12,
-          padding: 15,
-          font: {
-            size: 12,
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500
-          }
-        }
+        display: false,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(30, 41, 59, 0.9)",
         padding: 10,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
         bodyFont: {
           size: 13,
         },
         bodySpacing: 4,
         boxPadding: 5,
-        callbacks: {
-          label: function(context) {
-            return `${context.dataset.label}: ${context.parsed.y}`;
-          }
-        }
       }
     },
     scales: {
       x: {
         stacked: true,
-        grid: { display: false },
-        border: { display: false },
+        grid: { 
+          display: false 
+        },
+        border: { 
+          display: false 
+        },
         ticks: { 
           font: { 
-            size: 11, 
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500 
-          } 
+            size: 12,
+            family: "Titillium Web, sans-serif",
+            weight: 'normal' 
+          },
+          color: '#777777'
         },
       },
       y: {
         stacked: true,
-        grid: { color: "rgba(0, 0, 0, 0.05)" },
-        border: { display: false },
+        grid: { 
+          color: "#f0f0f0",
+          lineWidth: 1,
+        },
+        border: { 
+          display: false 
+        },
         ticks: { 
           font: { 
-            size: 11, 
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif" 
+            size: 12,
+            family: "Titillium Web, sans-serif",
           },
           stepSize: 10,
-          padding: 5
+          padding: 5,
+          color: '#777777'
         },
-        suggestedMax: 90,
+        max: 100,
         beginAtZero: true,
       },
     },
   };
 
+  // Generate the status display
+  const statusDisplay = player.status || "DFD"; // Example status
+  
   /********************************************
    * Render the Modal Layout with Dynamic Styling
    ********************************************/
@@ -379,7 +430,7 @@ const TeamPlayerModal = ({
           margin: "auto",
           padding: 0,
           border: "none",
-          borderRadius: "6px",
+          borderRadius: "0",
           overflow: "hidden",
           boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
           backgroundColor: "#fff",
@@ -393,11 +444,15 @@ const TeamPlayerModal = ({
       {/* Inline styling to match the screenshot */}
       <style>
         {`
+          @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+          
           .modal-container {
             display: flex;
             flex-direction: column;
             background: #fff;
+            font-family: 'Titillium Web', sans-serif;
           }
+          
           /* -----------------------------------
            * Header: angled backgrounds, logos, & player info
            * -----------------------------------
@@ -406,41 +461,46 @@ const TeamPlayerModal = ({
             position: relative;
             padding: 0;
             overflow: hidden;
-            height: 200px;
+            height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             background-color: #fff;
           }
+          
           .angled-block-main {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            clip-path: polygon(0 0, 100% 0, 45% 100%, 0 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
             background-color: ${teamColor};
           }
-          .angled-block-secondary {
+          
+          .angled-block-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            clip-path: polygon(45% 100%, 0 100%, 0 0, 25% 0);
+            clip-path: polygon(0 0, 35% 100%, 0 100%);
             background-color: ${effectiveAltColor};
+            z-index: 1;
           }
+          
           /* Big team logo on the left */
           .big-team-logo {
             position: absolute;
-            left: 30px;
+            left: 80px;
             top: 50%;
             transform: translateY(-50%);
-            width: 120px;
+            width: 140px;
             height: auto;
             object-fit: contain;
             z-index: 2;
           }
+          
           /* The standard logo in the top-right corner */
           .top-right-team-logo {
             position: absolute;
@@ -451,201 +511,364 @@ const TeamPlayerModal = ({
             object-fit: contain;
             z-index: 2;
           }
+          
           /* Player info on the right */
           .player-header-content {
             position: relative;
             z-index: 2;
-            padding: 20px 30px;
-            margin-left: 45%;
+            padding: 30px;
+            margin-left: 30px;
             display: flex;
             flex-direction: column;
+            color: white;
           }
+          
           .player-name {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
             margin: 0;
-            color: #333;
             display: flex;
             flex-direction: column;
           }
+          
           .player-position {
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            margin: 0 0 10px 0;
-            color: #666;
+            margin: 0 0 15px 0;
+            opacity: 0.9;
           }
+          
           .player-info-grid {
             display: grid;
             grid-template-columns: repeat(4, auto);
-            gap: 30px;
-            margin-top: 1rem;
+            gap: 40px;
+            margin-top: 1.5rem;
           }
+          
           .player-info-item {
             display: flex;
             flex-direction: column;
           }
+          
           .player-info-label {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: #777;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            opacity: 0.8;
           }
+          
           .player-info-value {
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 500;
-            color: #333;
+            margin-top: 5px;
           }
+          
           .team-name {
             position: absolute;
-            top: 15px;
+            top: 28px;
             right: 80px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            color: #333;
+            color: white;
             z-index: 2;
           }
+          
           /* -----------------------------------
-           * Body: Grades, Doughnut, and Weekly Bar Charts
+           * New Content Body
            * -----------------------------------
            */
-          .modal-body {
+          .player-content {
             display: flex;
-            padding: 1.5rem;
-            gap: 2rem;
-            background-color: #fff;
-            border-top: 1px solid #eee;
+            flex-direction: row;
+            border-bottom: 1px solid #eee;
           }
-          /* Grades Column for Season & Career Grades */
-          .grades-column {
-            flex: 0 0 220px;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
+          
+          /* Season Grades Column */
+          .season-grades-column {
+            width: 320px;
+            padding: 25px;
+            border-right: 1px solid #eee;
           }
-          .grades-section h3 {
-            margin: 0 0 0.5rem;
+          
+          .grades-heading {
             font-size: 1.1rem;
-            color: #333;
             font-weight: 600;
+            margin: 0 0 25px 0;
+            color: #333;
           }
-          .grade-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+          
+          .grade-box {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
           }
-          .grade-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.9rem;
-          }
-          .grade-item .label {
-            flex: 0 0 110px;
-            color: #555;
-            font-weight: 500;
+          
+          .grade-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #777;
+            margin-bottom: 5px;
             text-transform: uppercase;
           }
-          .grade-bar-container {
-            flex: 1;
-            background-color: #e0e0e0;
-            height: 8px;
-            border-radius: 4px;
-            position: relative;
-            margin-right: 8px;
+          
+          .grade-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
           }
-          .grade-bar-fill {
+          
+          .grade-box-blue .grade-number {
+            color: ${chartColors.blue};
+          }
+          
+          .grade-box-green .grade-number {
+            color: ${chartColors.green};
+          }
+          
+          .grade-rank {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 3px;
+          }
+          
+          /* Career Grades Column */
+          .career-grades-column {
+            width: 320px;
+            padding: 25px;
+            border-right: 1px solid #eee;
+          }
+          
+          .career-grade-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+          }
+          
+          .career-year {
+            width: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+          }
+          
+          .career-info {
+            width: 70px;
+            font-size: 0.75rem;
+            color: #888;
+            text-align: right;
+          }
+          
+          .career-bar-container {
+            flex: 1;
+            height: 28px;
+            background-color: #f0f0f0;
+            margin: 0 10px;
+            position: relative;
+          }
+          
+          .career-bar-fill {
             position: absolute;
             top: 0;
             left: 0;
-            height: 8px;
-            border-radius: 4px;
-            /* Colors set individually in the style prop */
-          }
-          .grade-value {
-            width: 40px;
-            text-align: right;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #333;
             font-weight: 600;
+            font-size: 0.9rem;
           }
-          /* Doughnut Chart Column for 2024 Snaps */
+          
+          /* Snaps Column */
           .snaps-column {
-            flex: 0 0 280px;
-            text-align: center;
-            border-left: 1px solid #eee;
+            flex: 1;
+            display: flex;
+          }
+          
+          .snaps-donut-container {
+            width: 300px;
+            padding: 25px;
             border-right: 1px solid #eee;
-            padding: 0 1.5rem;
+            text-align: center;
           }
-          .snaps-column h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: #333;
-            font-weight: 600;
+          
+          .snaps-donut-chart {
+            margin: 15px auto;
+            position: relative;
+            width: 200px;
+            height: 200px;
           }
-          .snaps-total {
-            margin-top: 1rem;
-            font-size: 1rem;
-            color: #444;
-            font-weight: 600;
+          
+          .snaps-total-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
           }
-          /* Position breakdown table */
-          .positions-table {
-            width: 100%;
-            margin-top: 1.5rem;
-            border-collapse: collapse;
-          }
-          .positions-table th {
-            font-size: 0.75rem;
+          
+          .snaps-total-label {
+            font-size: 0.7rem;
             font-weight: 600;
             color: #777;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: left;
-            padding: 0.5rem 0;
+            margin-bottom: 5px;
           }
-          .positions-table td {
-            font-size: 0.9rem;
+          
+          .snaps-total-number {
+            font-size: 1.3rem;
+            font-weight: 700;
             color: #333;
-            padding: 0.3rem 0;
+          }
+          
+          .snaps-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+          }
+          
+          .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #555;
+          }
+          
+          .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+          }
+          
+          .position-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+          }
+          
+          .position-table th {
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            padding: 5px 0;
             border-bottom: 1px solid #eee;
           }
-          .positions-table td:last-child {
+          
+          .position-table th:last-child {
             text-align: right;
           }
-          /* Weekly Stacked Bar Column */
-          .weekly-column {
-            flex: 1 1 auto;
-          }
-          .weekly-column h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+          
+          .position-table td {
+            padding: 5px 0;
+            font-size: 0.9rem;
             color: #333;
+            border-bottom: 1px solid #f5f5f5;
+          }
+          
+          .position-table td:last-child {
+            text-align: right;
             font-weight: 600;
           }
+          
+          /* Weekly Column */
+          .weekly-chart-container {
+            flex: 1;
+            padding: 25px;
+          }
+          
+          .weekly-chart {
+            margin-top: 10px;
+            height: 260px;
+          }
+          
+          .weekly-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+          }
+          
+          /* Player Status */
+          .player-status {
+            padding: 10px 25px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+          }
+          
+          .status-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+          }
+          
+          .status-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+          }
+          
           /* -----------------------------------
            * Close Button
            * -----------------------------------
            */
           .close-button {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
+            top: 20px;
+            right: 20px;
+            background: white;
             border: none;
             color: #333;
-            padding: 0;
-            cursor: pointer;
-            font-size: 1.5rem;
-            font-weight: bold;
-            z-index: 10;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s;
           }
+          
           .close-button:hover {
-            color: #333;
+            background-color: #f5f5f5;
+            transform: scale(1.1);
+          }
+          
+          /* Responsive adjustments */
+          @media (max-width: 1200px) {
+            .player-content {
+              flex-direction: column;
+            }
+            
+            .season-grades-column,
+            .career-grades-column {
+              width: 100%;
+              border-right: none;
+              border-bottom: 1px solid #eee;
+            }
+            
+            .snaps-column {
+              flex-direction: column;
+            }
+            
+            .snaps-donut-container {
+              width: 100%;
+              border-right: none;
+              border-bottom: 1px solid #eee;
+            }
           }
         `}
       </style>
@@ -653,96 +876,122 @@ const TeamPlayerModal = ({
       <div className="modal-container">
         {/* Close Button */}
         <button className="close-button" onClick={onClose}>×</button>
+        
         {/* HEADER */}
         <div className="modal-header">
           <div className="angled-block-main"></div>
-          <div className="angled-block-secondary"></div>
+          <div className="angled-block-overlay"></div>
+          
           {secondaryLogo ? (
             <img src={secondaryLogo} alt="Team Logo" className="big-team-logo" />
           ) : (
-            <img src="https://via.placeholder.com/100" alt="Team Logo" className="big-team-logo" />
+            <img src="https://via.placeholder.com/140" alt="Team Logo" className="big-team-logo" />
           )}
+          
           {primaryLogo ? (
             <img src={primaryLogo} alt="Team Logo" className="top-right-team-logo" />
           ) : (
-            <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
+            <img src="https://via.placeholder.com/50" alt="Team Logo" className="top-right-team-logo" />
           )}
-          <div className="team-name">{teamName}</div>
+          
+          <div className="team-name">{teamName} Hurricanes</div>
+          
           <div className="player-header-content">
             <h2 className="player-name">{playerFullName}</h2>
             <div className="player-position">{playerPosition} #{playerJerseyNumber}</div>
+            
             <div className="player-info-grid">
               <div className="player-info-item">
-                <span className="player-info-label">Height</span>
+                <span className="player-info-label">HEIGHT</span>
                 <span className="player-info-value">{displayHeight}</span>
               </div>
               <div className="player-info-item">
-                <span className="player-info-label">Weight</span>
+                <span className="player-info-label">WEIGHT</span>
                 <span className="player-info-value">{player.weight ? `${player.weight} lbs` : "N/A"}</span>
               </div>
               <div className="player-info-item">
-                <span className="player-info-label">Class</span>
+                <span className="player-info-label">CLASS</span>
                 <span className="player-info-value">{playerClass}</span>
               </div>
               <div className="player-info-item">
-                <span className="player-info-label">Draft Eligible Year</span>
+                <span className="player-info-label">DRAFT ELIGIBLE YEAR</span>
                 <span className="player-info-value">{draftEligibleYear}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* BODY */}
-        <div className="modal-body">
-          {/* Grades Column */}
-          <div className="grades-column">
-            {/* 2024 Season Grades */}
-            <div className="grades-section">
-              <h3>2024 Season Grades</h3>
-              <div className="grade-list">
-                {seasonGrades.map((grade, idx) => {
-                  const fillPercent = (grade.value / 100) * 100;
-                  return (
-                    <div className="grade-item" key={idx}>
-                      <div className="label">{grade.label}</div>
-                      <div className="grade-bar-container">
-                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%`, backgroundColor: grade.color }}></div>
-                      </div>
-                      <div className="grade-value">{grade.value}</div>
-                    </div>
-                  );
-                })}
+        {/* CONTENT BODY */}
+        <div className="player-content">
+          {/* Season Grades Column */}
+          <div className="season-grades-column">
+            <h3 className="grades-heading">2024 Season Grades</h3>
+            
+            {seasonGrades.map((grade, index) => (
+              <div key={index} className={`grade-box ${grade.color === chartColors.blue ? 'grade-box-blue' : 'grade-box-green'}`}>
+                <div className="grade-label">{grade.label}</div>
+                <div className="grade-number">
+                  {grade.value}
+                </div>
+                {grade.rankInfo && <div className="grade-rank">{grade.rankInfo}</div>}
               </div>
-            </div>
-            {/* Career Grades */}
-            <div className="grades-section">
-              <h3>Career Grades</h3>
-              <div className="grade-list">
-                {careerGrades.map((grade, idx) => {
-                  const fillPercent = (grade.value / 100) * 100;
-                  return (
-                    <div className="grade-item" key={idx}>
-                      <div className="label">{grade.label}</div>
-                      <div className="grade-bar-container">
-                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%`, backgroundColor: grade.color }}></div>
-                      </div>
-                      <div className="grade-value">{grade.value}</div>
-                    </div>
-                  );
-                })}
-              </div>
+            ))}
+            
+            {/* Player Status */}
+            <div className="player-status">
+              <div className="status-label">STATUS</div>
+              <div className="status-value">{statusDisplay}</div>
             </div>
           </div>
-          {/* Doughnut Chart Column */}
+          
+          {/* Career Grades Column */}
+          <div className="career-grades-column">
+            <h3 className="grades-heading">Career Grades</h3>
+            
+            {careerGrades.map((grade, index) => (
+              <div key={index} className="career-grade-row">
+                <div className="career-year">{grade.label}</div>
+                <div className="career-bar-container">
+                  <div 
+                    className="career-bar-fill" 
+                    style={{ 
+                      width: `${grade.value}%`, 
+                      backgroundColor: grade.color 
+                    }}
+                  >
+                    {grade.value}
+                  </div>
+                </div>
+                <div className="career-info">{grade.info}</div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Snaps Column */}
           <div className="snaps-column">
-            <h3>2024 Snaps</h3>
-            <Doughnut data={doughnutData} options={doughnutOptions} />
-            <div className="snaps-total">
-              <strong>TOTAL</strong>
-              <div>{totalSnaps}</div>
-            </div>
-            <div className="position-breakdown">
-              <table className="positions-table">
+            <div className="snaps-donut-container">
+              <h3 className="grades-heading">2024 Snaps</h3>
+              
+              <div className="snaps-donut-chart">
+                <Doughnut data={doughnutData} options={doughnutOptions} />
+                <div className="snaps-total-overlay">
+                  <div className="snaps-total-label">TOTAL</div>
+                  <div className="snaps-total-number">{totalSnaps}</div>
+                </div>
+              </div>
+              
+              <div className="snaps-legend">
+                <div className="legend-item">
+                  <div className="legend-color" style={{ backgroundColor: chartColors.darkBlue }}></div>
+                  <span>Passing Snaps</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-color" style={{ backgroundColor: chartColors.blue }}></div>
+                  <span>Running Snaps</span>
+                </div>
+              </div>
+              
+              <table className="position-table">
                 <thead>
                   <tr>
                     <th>BY POSITION</th>
@@ -759,11 +1008,25 @@ const TeamPlayerModal = ({
                 </tbody>
               </table>
             </div>
-          </div>
-          {/* Weekly Column */}
-          <div className="weekly-column">
-            <h3>Weekly</h3>
-            <Bar data={barData} options={barOptions} />
+            
+            <div className="weekly-chart-container">
+              <h3 className="grades-heading">Weekly</h3>
+              
+              <div className="weekly-chart">
+                <Bar data={barData} options={barOptions} />
+              </div>
+              
+              <div className="weekly-legend">
+                <div className="legend-item">
+                  <div className="legend-color" style={{ backgroundColor: chartColors.darkBlue }}></div>
+                  <span>Passing Snaps</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-color" style={{ backgroundColor: chartColors.blue }}></div>
+                  <span>Running Snaps</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
