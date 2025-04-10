@@ -69,23 +69,15 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
     setDynamicHeight(calculatedHeight);
   }, [topTeamCount, initialHeight]);
 
-  // Helper function to get team logo - IMPROVED
+  // Helper function to get team logo
   const getTeamLogo = (teamName) => {
     if (!teamName) return "/photos/default-team.png";
-    
-    // Find the team with matching name (case insensitive, ignoring special characters)
     const team = teams.find(
       (t) =>
         t.school?.toLowerCase().replace(/[^a-z]/g, "") ===
         teamName.toLowerCase().replace(/[^a-z]/g, "")
     );
-    
-    // Check if the team has valid logos array and return the first logo
-    if (team?.logos && Array.isArray(team.logos) && team.logos.length > 0) {
-      return team.logos[0];
-    }
-    
-    return "/photos/default-team.png";
+    return team?.logos?.[0] || "/photos/default-team.png";
   };
 
   // Pre-fetch ALL data for all years at once to avoid transition glitches
@@ -103,7 +95,7 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
         const processedTeams = teamsResponse.map((team) => ({
           id: team.id,
           team: team.school,
-          logo: team.logos && team.logos.length > 0 ? team.logos[0] : "/photos/default-team.png",
+          logo: getTeamLogo(team.school),
           abbreviation:
             team.abbreviation || team.school.substring(0, 4).toUpperCase(),
           color: team.color || "#333333",
@@ -284,9 +276,6 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
     gradient.append("stop")
       .attr("offset", "100%")
       .attr("stop-color", "#e5e7ec");
-      
-    // Add SVG namespace for xlink
-    svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
     // Improved margins - less right margin, more width for bars
     const margin = { 
@@ -540,19 +529,15 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
       .attr("ry", 3)
       .attr("fill", "rgba(255,255,255,0.3)");
       
-    // Team logos - FIXED: use image with proper xlink:href instead of href
+    // Team logos
     enterGroups
-      .append("image")
+      .append("svg:image")
       .attr("class", "vt-team-logo")
       .attr("x", d => xScale(d.currentWins) + 10)
       .attr("y", d => yScale(d.team) + (yScale.bandwidth() - Math.min(30, yScale.bandwidth())) / 2)
       .attr("width", d => Math.min(30, yScale.bandwidth()))
       .attr("height", d => Math.min(30, yScale.bandwidth()))
-      .attr("xlink:href", d => d.logo)
-      .on("error", function() {
-        // On error loading logo, replace with default image
-        d3.select(this).attr("xlink:href", "/photos/default-team.png");
-      });
+      .attr("href", d => d.logo);
       
     // Win values
     enterGroups
@@ -597,7 +582,7 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
       .attr("y", d => yScale(d.team))
       .attr("width", d => xScale(d.currentWins));
       
-    // Update logos - FIXED: use xlink:href
+    // Update logos
     allGroups.select(".vt-team-logo")
       .transition()
       .duration(300)
@@ -813,8 +798,6 @@ const TeamWinsTimeline = ({ width: initialWidth, height: initialHeight, yearRang
         aria-label="Team wins timeline chart"
         role="img"
         preserveAspectRatio="xMinYMin meet"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
       >
         <title>Cumulative Football Wins Chart</title>
         <desc>

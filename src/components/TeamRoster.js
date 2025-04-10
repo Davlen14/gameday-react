@@ -85,6 +85,21 @@ const darkenColor = (color, percent) => {
   );
 };
 
+// Function to safely get jersey number (handles 0 as valid)
+const getJerseyNumber = (player) => {
+  // Check each possible field, treating 0 as valid
+  if (player.jersey !== undefined && player.jersey !== null) {
+    return player.jersey.toString();
+  }
+  if (player.number !== undefined && player.number !== null) {
+    return player.number.toString();
+  }
+  if (player.jerseyNumber !== undefined && player.jerseyNumber !== null) {
+    return player.jerseyNumber.toString();
+  }
+  return "N/A";
+};
+
 const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
   // Initialize roster as an empty array
   const [roster, setRoster] = useState([]);
@@ -111,7 +126,15 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         const processedData = data.map(player => ({
           ...player,
           // Create a fullName if it doesn't exist
-          fullName: player.fullName || `${player.firstName || ''} ${player.lastName || ''}`.trim()
+          fullName: player.fullName || `${player.firstName || ''} ${player.lastName || ''}`.trim(),
+          // Properly format the jersey number (handle 0 as valid)
+          jerseyDisplay: getJerseyNumber(player),
+          // Format hometown
+          formattedHometown: player.homeCity && player.homeState 
+            ? `${player.homeCity}, ${player.homeState}` 
+            : player.homeCity || player.homeState || "N/A",
+          // Format weight
+          weightDisplay: player.weight ? `${player.weight} lbs` : "N/A"
         }));
         
         setRoster(processedData);
@@ -149,16 +172,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
 
   // NEW: Handler to open the modal with the selected player info
   const handlePlayerClick = (player) => {
-    // Ensure the player object contains the new fields
-    const playerWithFormattedData = {
-      ...player,
-      formattedHometown: player.homeCity && player.homeState 
-        ? `${player.homeCity}, ${player.homeState}` 
-        : player.homeCity || player.homeState || "N/A",
-      jerseyNumber: player.jersey || "N/A",
-      weightLbs: player.weight ? `${player.weight} lbs` : "N/A"
-    };
-    setSelectedPlayer(playerWithFormattedData);
+    setSelectedPlayer(player);
     setIsModalOpen(true);
   };
 
@@ -211,23 +225,19 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                     <span className="player-position">{player.position || "N/A"}</span>
                   </td>
                   <td>
-                    <span className="player-jersey">{player.jersey || player.number || player.jerseyNumber || "N/A"}</span>
+                    <span className="player-jersey">{player.jerseyDisplay}</span>
                   </td>
                   <td>
                     <span className="player-height">{formatHeight(player.height) || "N/A"}</span>
                   </td>
                   <td>
-                    <span className="player-weight">{player.weight ? `${player.weight} lbs` : "N/A"}</span>
+                    <span className="player-weight">{player.weightDisplay}</span>
                   </td>
                   <td>
                     <span className="player-year">{player.year || "N/A"}</span>
                   </td>
                   <td>
-                    <span className="player-hometown">
-                      {player.homeCity && player.homeState 
-                        ? `${player.homeCity}, ${player.homeState}` 
-                        : player.homeCity || player.homeState || "N/A"}
-                    </span>
+                    <span className="player-hometown">{player.formattedHometown}</span>
                   </td>
                 </tr>
               ))}
