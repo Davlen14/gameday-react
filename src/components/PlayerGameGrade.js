@@ -241,6 +241,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       
       // Extract period-by-period (quarter) PPA performance
       const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
+      
+      // Fix for the PPA values - use total PPA from the homeTeamData and awayTeamData
+      // This ensures the Team Efficiency chart uses the correct values
+      const homeTotalPPA = homeTeamData?.overall?.total || 0;
+      const awayTotalPPA = awayTeamData?.overall?.total || 0;
+      
       const quarterAnalysis = quarters.map((quarter, index) => {
         // Get PPA values or default to 0
         const homeQuarterPPA = homeTeamData?.overall?.[quarter] || 0;
@@ -1470,21 +1476,21 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                   
                   <div className="tppg-comparison-row">
                     <div className={gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.homeTeam] > gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.awayTeam] ? 'tppg-advantage' : ''}>
-                      {gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.homeTeam].toFixed(2)}
+                      {gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.homeTeam].toFixed(3)}
                     </div>
                     <div>Passing PPA</div>
                     <div className={gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.awayTeam] > gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.homeTeam] ? 'tppg-advantage' : ''}>
-                      {gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.awayTeam].toFixed(2)}
+                      {gameAnalysis.teamEfficiency.passingComparison[gameAnalysis.gameInfo?.awayTeam].toFixed(3)}
                     </div>
                   </div>
                   
                   <div className="tppg-comparison-row">
                     <div className={gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.homeTeam] > gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.awayTeam] ? 'tppg-advantage' : ''}>
-                      {gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.homeTeam].toFixed(2)}
+                      {gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.homeTeam].toFixed(3)}
                     </div>
                     <div>Rushing PPA</div>
                     <div className={gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.awayTeam] > gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.homeTeam] ? 'tppg-advantage' : ''}>
-                      {gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.awayTeam].toFixed(2)}
+                      {gameAnalysis.teamEfficiency.rushingComparison[gameAnalysis.gameInfo?.awayTeam].toFixed(3)}
                     </div>
                   </div>
                   
@@ -1572,7 +1578,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                 </div>
                 
                 <div className="tppg-chart-container">
-                  <h4 className="tppg-chart-title">Team Efficiency (PPA)</h4>
+                  <h4 className="tppg-chart-title">
+                    Team Efficiency (PPA)
+                    <span className="tppg-info-tooltip" title="Overall PPA values shown in parentheses in legend">
+                      <FaInfoCircle style={{ marginLeft: '8px', fontSize: '14px', cursor: 'help' }} />
+                    </span>
+                  </h4>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart
                       data={gameAnalysis.quarterAnalysis}
@@ -1587,6 +1598,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <YAxis 
                         label={{ value: 'Team PPA', angle: -90, position: 'insideLeft', offset: -5 }}
                         tick={{ fill: '#555' }} 
+                        domain={['auto', 'auto']}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -1594,13 +1606,17 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           border: '1px solid #e0e0e0',
                           borderRadius: '8px',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                        }} 
+                        }}
+                        formatter={(value, name) => {
+                          // Format the PPA value to 3 decimal places
+                          return [value.toFixed(3), name];
+                        }}
                       />
                       <Legend />
                       <Line 
                         type="monotone" 
                         dataKey="homePPA" 
-                        name={gameAnalysis.gameInfo?.homeTeam} 
+                        name={gameAnalysis.gameInfo?.homeTeam + ` (${homeTotalPPA.toFixed(3)})`} 
                         stroke="#3b82f6" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#3b82f6' }}
@@ -1609,7 +1625,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="awayPPA" 
-                        name={gameAnalysis.gameInfo?.awayTeam} 
+                        name={gameAnalysis.gameInfo?.awayTeam + ` (${awayTotalPPA.toFixed(3)})`} 
                         stroke="#ef4444" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#ef4444' }}
@@ -1640,7 +1656,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                         <span style={{ display: 'block', color: '#3b82f6', fontWeight: 600 }}>
                           {gameAnalysis.gameInfo?.homeTeam}
                         </span>
-                        <span className="tppg-team-ppa">{quarter.homePPA.toFixed(2)} PPA</span>
+                        <span className="tppg-team-ppa">{quarter.homePPA.toFixed(3)} PPA</span>
                       </div>
                       <div className="tppg-advantage-indicator">
                         {quarter.homeAdvantage ? (
@@ -1648,13 +1664,13 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                         ) : (
                           <FaArrowDown style={{ color: '#ef4444' }} />
                         )}
-                        <span>{Math.abs(quarter.homePPA - quarter.awayPPA).toFixed(2)}</span>
+                        <span>{Math.abs(quarter.homePPA - quarter.awayPPA).toFixed(3)}</span>
                       </div>
                       <div>
                         <span style={{ display: 'block', color: '#ef4444', fontWeight: 600 }}>
                           {gameAnalysis.gameInfo?.awayTeam}
                         </span>
-                        <span className="tppg-team-ppa">{quarter.awayPPA.toFixed(2)} PPA</span>
+                        <span className="tppg-team-ppa">{quarter.awayPPA.toFixed(3)} PPA</span>
                       </div>
                     </div>
                     <p className="tppg-quarter-description">
