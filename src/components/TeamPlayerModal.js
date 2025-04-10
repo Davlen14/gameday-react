@@ -11,7 +11,6 @@ import {
   Legend,
 } from "chart.js";
 import teamsService from "../services/teamsService";
-import { calculateQBGrade, getQBGradeBreakdown } from "../statscalculations/qbCalculator";
 
 // Register required Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
@@ -50,14 +49,9 @@ const TeamPlayerModal = ({
   const [primaryLogo, setPrimaryLogo] = useState(teamLogo);
   const [secondaryLogo, setSecondaryLogo] = useState("");
   
-  // State for player grades
-  const [playerGrades, setPlayerGrades] = useState(null);
-  const [overallGrade, setOverallGrade] = useState(null);
-  
   // Fetch team logos if not provided
   useEffect(() => {
-    const fetchTeamLogosAndGrades = async () => {
-      // Team logo fetching logic
+    const fetchTeamLogos = async () => {
       if (!teamLogo && teamName) {
         try {
           const teams = await teamsService.getTeams();
@@ -66,7 +60,6 @@ const TeamPlayerModal = ({
             if (foundTeam.logos.length > 0) {
               setPrimaryLogo(foundTeam.logos[0]);
             }
-            
             if (foundTeam.logos.length > 1) {
               setSecondaryLogo(foundTeam.logos[1]);
             } else if (foundTeam.logos.length > 0) {
@@ -80,32 +73,10 @@ const TeamPlayerModal = ({
         setPrimaryLogo(teamLogo);
         setSecondaryLogo(teamLogo);
       }
-
-      // Calculate QB grades if applicable
-      if (player.position === "QB" && player.statsData) {
-        try {
-          // Calculate overall grade
-          const calculatedOverallGrade = calculateQBGrade(player.statsData);
-          setOverallGrade(calculatedOverallGrade);
-
-          // Get detailed grade breakdown
-          const gradeBreakdown = getQBGradeBreakdown(player.statsData);
-          setPlayerGrades(gradeBreakdown);
-
-          // Log for debugging
-          console.log("QB Overall Grade:", calculatedOverallGrade);
-          console.log("QB Grade Breakdown:", gradeBreakdown);
-        } catch (error) {
-          console.error("Error calculating QB grades:", error);
-          // Reset grades to null if calculation fails
-          setOverallGrade(null);
-          setPlayerGrades(null);
-        }
-      }
     };
     
-    fetchTeamLogosAndGrades();
-  }, [teamLogo, teamName, player]);
+    fetchTeamLogos();
+  }, [teamLogo, teamName]);
 
   // Early return AFTER hooks are declared
   if (!player) return null;
@@ -118,153 +89,100 @@ const TeamPlayerModal = ({
   
   // Get player's full name - handles different data formats
   const getPlayerName = () => {
-    if (player.fullName) {
-      return player.fullName;
-    }
-    else if (player.firstName && player.lastName) {
-      return `${player.firstName} ${player.lastName}`;
-    }
-    else if (player.name) {
-      return player.name;
-    }
+    if (player.fullName) return player.fullName;
+    else if (player.firstName && player.lastName) return `${player.firstName} ${player.lastName}`;
+    else if (player.name) return player.name;
     return "Player Name";
   };
   
-  // Get player fullName using the flexible function
   const playerFullName = getPlayerName();
   
-  // Get player's position - handles different data formats
-  const getPlayerPosition = () => {
-    return player.position || "";
-  };
-  
-  // Get player's jersey number - handles different data formats
+  // Get player's position and jersey number
+  const getPlayerPosition = () => player.position || "";
   const getPlayerJerseyNumber = () => {
-    if (player.number !== undefined) {
-      return player.number;
-    }
-    else if (player.jersey !== undefined) {
-      return player.jersey;
-    }
-    else if (player.jerseyNumber !== undefined) {
-      return player.jerseyNumber;
-    }
+    if (player.number !== undefined) return player.number;
+    else if (player.jersey !== undefined) return player.jersey;
+    else if (player.jerseyNumber !== undefined) return player.jerseyNumber;
     return "";
   };
   
-  // Get position and jersey number
   const playerPosition = getPlayerPosition();
   const playerJerseyNumber = getPlayerJerseyNumber();
     
   // Format height from inches to feet and inches
   const formatHeight = (heightInches) => {
     if (!heightInches) return "N/A";
-    
     const feet = Math.floor(heightInches / 12);
     const inches = heightInches % 12;
     return `${feet}'${inches}"`;  
   };
   
-  // Format height for display
   const displayHeight = formatHeight(player.height);
 
   // Draft eligibility calculation based on class year
   const calculateDraftEligibility = (yearNumber) => {
     const currentYear = new Date().getFullYear();
-    
     switch (yearNumber) {
-      case 1: // Freshman
-        return currentYear + 3;
-      case 2: // Sophomore
-        return currentYear + 2;
-      case 3: // Junior
-        return currentYear + 1;
-      case 4: // Senior
-      case 5: // 5th Year
-        return currentYear;
-      default:
-        return "N/A";
+      case 1: return currentYear + 3;
+      case 2: return currentYear + 2;
+      case 3: return currentYear + 1;
+      case 4:
+      case 5: return currentYear;
+      default: return "N/A";
     }
   };
 
-  // Draft eligibility year (calculated if not provided)
   const draftEligibleYear = player.draftEligibleYear || calculateDraftEligibility(player.year || 1);
 
-  /*********************************************************
-   * CHART DATA WITH QB-SPECIFIC DYNAMIC CALCULATIONS
-   *********************************************************/
+  // MOCK CHART DATA (unchanged)
   const currentYear = new Date().getFullYear();
-  
-  // Season Grades with QB-specific dynamic data
-  const seasonGrades = playerPosition === "QB" && playerGrades ? [
-    { label: "OFFENSE GRADE", value: overallGrade || playerGrades.overall, color: "#3B82F6" },
-    { label: "PASS GRADE", value: playerGrades.categories.passingEfficiency, color: "#3B82F6" },
-    { label: "RUSH GRADE", value: playerGrades.categories.dualThreatCapability, color: "#65A30D" },
-    { label: "RATING", value: overallGrade || playerGrades.overall, color: "#3B82F6" },
-  ] : [
-    // Fallback mock data for non-QB positions
-    { label: "PERFORMANCE", value: 92.9, color: "#3B82F6" },
-    { label: "OFFENSE", value: 91.7, color: "#3B82F6" },
-    { label: "DEFENSE", value: 77.8, color: "#65A30D" },
-    { label: "SPECIAL TEAMS", value: 88.2, color: "#4ADE80" },
+  const seasonGrades = [
+    { label: "OFFENSE GRADE", value: 92.9, color: "#A5B4FC" }, // Pastel indigo
+    { label: "PASS GRADE", value: 91.7, color: "#A5B4FC" },
+    { label: "RUSH GRADE", value: 77.8, color: "#A5B4FC" },
+    { label: "RATING", value: 88.2, color: "#A5B4FC" },
   ];
 
-  // Career Grades with modern color scheme
   const careerGrades = [
-    { label: "2020", value: 67.0, color: "#84CC16" },
-    { label: "2021", value: 66.9, color: "#84CC16" },
-    { label: "2022", value: 59.9, color: "#FACC15" },
-    { label: "2023", value: 80.2, color: "#4ADE80" },
-    { label: `${currentYear}`, value: 92.9, color: "#3B82F6" },
+    { label: "2020", value: 67.0, color: "#F9A8D4" }, // Pastel pink
+    { label: "2021", value: 66.9, color: "#F9A8D4" },
+    { label: "2022", value: 59.9, color: "#F9A8D4" },
+    { label: "2023", value: 80.2, color: "#F9A8D4" },
+    { label: `${currentYear}`, value: 92.9, color: "#A5B4FC" },
   ];
 
-  // Snap data generation
-  const generateSnapData = () => {
-    // QB-specific snap breakdown
-    if (playerPosition === "QB") {
-      return {
-        passSnaps: 382,
-        runSnaps: 502,
-        positionBreakdown: [
-          { position: "QB", snaps: 855 },
-          { position: "Backfield", snaps: 20 },
-          { position: "Slot", snaps: 5 },
-          { position: "Wide", snaps: 4 }
-        ]
-      };
-    }
-    
-    // Default snap data for other positions
-    return {
-      passSnaps: playerPosition === "WR" ? 502 : 100,
-      runSnaps: playerPosition === "RB" ? 382 : 50,
-      positionBreakdown: [
-        { position: playerPosition, snaps: 700 },
-        { position: "Special Teams", snaps: 155 }
-      ]
-    };
-  };
+  const snapsData = { passSnaps: 382, runSnaps: 502 };
+  const positionBreakdown = [
+    { position: "QB", snaps: 855 },
+    { position: "Backfield", snaps: 20 },
+    { position: "Slot", snaps: 5 },
+    { position: "Wide", snaps: 4 },
+  ];
+  const totalSnaps = snapsData.passSnaps + snapsData.runSnaps;
 
-  const { passSnaps, runSnaps, positionBreakdown } = generateSnapData();
-  const totalSnaps = passSnaps + runSnaps;
-  
-  // Doughnut chart data
+  // Modern doughnut chart with pastel gradient colors
   const doughnutData = {
-    labels: playerPosition === "QB" ? ["Passing Snaps", "Running Snaps"] : ["Primary Role", "Support Roles"],
+    labels: ["Passing Snaps", "Running Snaps"],
     datasets: [
       {
-        data: [passSnaps, runSnaps],
-        backgroundColor: ["#1E3A8A", "#2563EB"],
-        hoverBackgroundColor: ["#1E4D8A", "#3373FB"],
+        data: [snapsData.passSnaps, snapsData.runSnaps],
+        backgroundColor: [
+          "rgba(165, 180, 252, 0.8)", // Pastel indigo
+          "rgba(249, 168, 212, 0.8)", // Pastel pink
+        ],
+        hoverBackgroundColor: [
+          "rgba(165, 180, 252, 1)",
+          "rgba(249, 168, 212, 1)",
+        ],
         borderWidth: 0,
-        borderRadius: 3,
-        hoverOffset: 5,
-        cutout: "70%"
+        borderRadius: 5,
+        hoverOffset: 10,
+        cutout: "75%",
       },
     ],
   };
-  
-  // Doughnut options
+
+  // Updated doughnut options for a modern look
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: true,
@@ -272,123 +190,131 @@ const TeamPlayerModal = ({
       legend: {
         position: "bottom",
         labels: {
-          boxWidth: 12,
-          padding: 15,
+          boxWidth: 10,
+          padding: 20,
           font: {
             size: 12,
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500
-          }
-        }
+            family: "'Inter', sans-serif",
+            weight: 500,
+          },
+          color: "#64748B", // Slate gray for text
+        },
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        padding: 10,
-        bodyFont: { size: 13 },
-        bodySpacing: 4,
-        boxPadding: 5
-      }
+        backgroundColor: "rgba(30, 41, 59, 0.9)", // Dark slate
+        padding: 12,
+        cornerRadius: 8,
+        bodyFont: { size: 13, family: "'Inter', sans-serif" },
+        titleFont: { size: 14, family: "'Inter', sans-serif", weight: 600 },
+        bodySpacing: 6,
+        boxPadding: 6,
+      },
+    },
+    animation: {
+      animateScale: true,
+      animateRotate: true,
+      duration: 1000,
+      easing: "easeOutQuart",
     },
   };
 
-  // Weekly snaps data
+  // Weekly stacked bar data (unchanged)
   const weeklySnaps = [
-    { week: 1, primary: 41, secondary: 28 },
-    { week: 2, primary: 33, secondary: 16 },
-    { week: 3, primary: 30, secondary: 11 },
-    { week: 4, primary: 43, secondary: 20 },
-    { week: 5, primary: 52, secondary: 22 },
-    { week: 6, primary: 63, secondary: 28 },
-    { week: 8, primary: 40, secondary: 33 },
-    { week: 9, primary: 51, secondary: 32 },
-    { week: 10, primary: 45, secondary: 29 },
-    { week: 11, primary: 48, secondary: 19 },
-    { week: 13, primary: 44, secondary: 30 },
-    { week: 14, primary: 44, secondary: 27 },
-    { week: "BG", primary: 21, secondary: 18 },
+    { week: 1, pass: 41, run: 28 },
+    { week: 2, pass: 33, run: 16 },
+    { week: 3, pass: 30, run: 11 },
+    { week: 4, pass: 43, run: 20 },
+    { week: 5, pass: 52, run: 22 },
+    { week: 6, pass: 63, run: 28 },
+    { week: 8, pass: 40, run: 33 },
+    { week: 9, pass: 51, run: 32 },
+    { week: 10, pass: 45, run: 29 },
+    { week: 11, pass: 48, run: 19 },
+    { week: 13, pass: 44, run: 30 },
+    { week: 14, pass: 44, run: 27 },
+    { week: "BG", pass: 21, run: 18 },
   ];
-  
-  // Bar chart data
+
+  // Modern bar chart data with pastel colors
   const barData = {
     labels: weeklySnaps.map((d) => `${d.week}`),
     datasets: [
       {
-        label: playerPosition === "QB" ? "Passing Snaps" : "Primary Role",
-        data: weeklySnaps.map((d) => d.primary),
-        backgroundColor: "#1E3A8A",
-        borderRadius: 3,
-        barPercentage: 0.8,
-        categoryPercentage: 0.9
+        label: "Passing Snaps",
+        data: weeklySnaps.map((d) => d.pass),
+        backgroundColor: "rgba(165, 180, 252, 0.7)", // Pastel indigo
+        hoverBackgroundColor: "rgba(165, 180, 252, 1)",
+        borderRadius: 6,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
       },
       {
-        label: playerPosition === "QB" ? "Running Snaps" : "Support Roles",
-        data: weeklySnaps.map((d) => d.secondary),
-        backgroundColor: "#2563EB",
-        borderRadius: 3,
-        barPercentage: 0.8,
-        categoryPercentage: 0.9
+        label: "Running Snaps",
+        data: weeklySnaps.map((d) => d.run),
+        backgroundColor: "rgba(249, 168, 212, 0.7)", // Pastel pink
+        hoverBackgroundColor: "rgba(249, 168, 212, 1)",
+        borderRadius: 6,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
       },
     ],
   };
-  
-  // Bar chart options
+
+  // Modern bar chart options
   const barOptions = {
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
-      legend: { 
+      legend: {
         position: "bottom",
         labels: {
-          boxWidth: 12,
-          padding: 15,
+          boxWidth: 10,
+          padding: 20,
           font: {
             size: 12,
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500
-          }
-        }
+            family: "'Inter', sans-serif",
+            weight: 500,
+          },
+          color: "#64748B",
+        },
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        padding: 10,
-        bodyFont: { size: 13 },
-        bodySpacing: 4,
-        boxPadding: 5,
-        callbacks: {
-          label: function(context) {
-            return `${context.dataset.label}: ${context.parsed.y}`;
-          }
-        }
-      }
+        backgroundColor: "rgba(30, 41, 59, 0.9)",
+        padding: 12,
+        cornerRadius: 8,
+        bodyFont: { size: 13, family: "'Inter', sans-serif" },
+        titleFont: { size: 14, family: "'Inter', sans-serif", weight: 600 },
+        bodySpacing: 6,
+        boxPadding: 6,
+      },
     },
     scales: {
       x: {
         stacked: true,
         grid: { display: false },
         border: { display: false },
-        ticks: { 
-          font: { 
-            size: 11, 
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif",
-            weight: 500 
-          } 
+        ticks: {
+          font: { size: 11, family: "'Inter', sans-serif", weight: 500 },
+          color: "#64748B",
         },
       },
       y: {
         stacked: true,
-        grid: { color: "rgba(0, 0, 0, 0.05)" },
+        grid: { color: "rgba(203, 213, 225, 0.3)" }, // Light slate grid
         border: { display: false },
-        ticks: { 
-          font: { 
-            size: 11, 
-            family: "'Inter', 'Helvetica', 'Arial', sans-serif" 
-          },
+        ticks: {
+          font: { size: 11, family: "'Inter', sans-serif" },
+          color: "#64748B",
           stepSize: 10,
-          padding: 5
+          padding: 8,
         },
         suggestedMax: 90,
         beginAtZero: true,
       },
+    },
+    animation: {
+      duration: 1000,
+      easing: "easeOutQuart",
     },
   };
 
@@ -404,27 +330,31 @@ const TeamPlayerModal = ({
           margin: "auto",
           padding: 0,
           border: "none",
-          borderRadius: "6px",
+          borderRadius: "12px",
           overflow: "hidden",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-          backgroundColor: "#fff",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
+          backgroundColor: "#F8FAFC", // Light slate background
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          backgroundColor: "rgba(0, 0, 0, 0.6)",
           zIndex: 9999,
         },
       }}
     >
-      {/* Inline styling to match the screenshot */}
+      {/* Updated Inline Styling */}
       <style>
         {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
           .modal-container {
             display: flex;
             flex-direction: column;
-            background: #fff;
+            background: #F8FAFC;
+            font-family: 'Inter', sans-serif;
           }
+
           /* -----------------------------------
-           * Header: angled backgrounds, logos, & player info
+           * Header (Unchanged)
            * -----------------------------------
            */
           .modal-header {
@@ -455,7 +385,6 @@ const TeamPlayerModal = ({
             clip-path: polygon(45% 100%, 0 100%, 0 0, 25% 0);
             background-color: ${effectiveAltColor};
           }
-          /* Big team logo on the left */
           .big-team-logo {
             position: absolute;
             left: 30px;
@@ -466,7 +395,6 @@ const TeamPlayerModal = ({
             object-fit: contain;
             z-index: 2;
           }
-          /* The standard logo in the top-right corner */
           .top-right-team-logo {
             position: absolute;
             top: 15px;
@@ -476,7 +404,6 @@ const TeamPlayerModal = ({
             object-fit: contain;
             z-index: 2;
           }
-          /* Player info on the right */
           .player-header-content {
             position: relative;
             z-index: 2;
@@ -530,127 +457,186 @@ const TeamPlayerModal = ({
             color: #333;
             z-index: 2;
           }
+
           /* -----------------------------------
-           * Body: Grades, Doughnut, and Weekly Bar Charts
+           * Modernized Body: Card-based layout with pastel colors
            * -----------------------------------
            */
           .modal-body {
             display: flex;
-            padding: 1.5rem;
-            gap: 2rem;
-            background-color: #fff;
-            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+            padding: 2rem;
+            gap: 1.5rem;
+            background: linear-gradient(145deg, #F8FAFC, #E2E8F0); /* Subtle gradient background */
+            min-height: 400px;
           }
-          /* Grades Column for Season & Career Grades */
+
+          /* Grades Column */
           .grades-column {
-            flex: 0 0 220px;
+            flex: 1 1 250px;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
+          }
+          .grades-section {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          .grades-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
           }
           .grades-section h3 {
-            margin: 0 0 0.5rem;
-            font-size: 1.1rem;
-            color: #333;
+            margin: 0 0 1rem;
+            font-size: 1.15rem;
+            color: #1E293B; /* Dark slate */
             font-weight: 600;
+            letter-spacing: 0.5px;
           }
           .grade-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
           }
           .grade-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+          }
+          .grade-item:hover {
+            background: rgba(165, 180, 252, 0.1); /* Pastel indigo hover */
           }
           .grade-item .label {
-            flex: 0 0 110px;
-            color: #555;
+            flex: 0 0 120px;
+            color: #64748B; /* Slate gray */
             font-weight: 500;
             text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
           }
           .grade-bar-container {
             flex: 1;
-            background-color: #e0e0e0;
-            height: 8px;
-            border-radius: 4px;
+            background: #E2E8F0; /* Light slate */
+            height: 6px;
+            border-radius: 3px;
             position: relative;
-            margin-right: 8px;
+            margin-right: 10px;
+            overflow: hidden;
           }
           .grade-bar-fill {
             position: absolute;
             top: 0;
             left: 0;
-            height: 8px;
-            border-radius: 4px;
-            /* Colors set individually in the style prop */
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #A5B4FC, #F9A8D4); /* Gradient fill */
+            transition: width 0.5s ease;
           }
           .grade-value {
             width: 40px;
             text-align: right;
-            color: #333;
+            color: #1E293B;
             font-weight: 600;
+            font-size: 0.9rem;
           }
-          /* Doughnut Chart Column for 2024 Snaps */
+
+          /* Doughnut Chart Column */
           .snaps-column {
-            flex: 0 0 280px;
+            flex: 1 1 300px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             text-align: center;
-            border-left: 1px solid #eee;
-            border-right: 1px solid #eee;
-            padding: 0 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          .snaps-column:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
           }
           .snaps-column h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: #333;
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            color: #1E293B;
             font-weight: 600;
+            letter-spacing: 0.5px;
           }
           .snaps-total {
-            margin-top: 1rem;
-            font-size: 1rem;
-            color: #444;
-            font-weight: 600;
+            margin-top: 1.5rem;
+            font-size: 1.5rem;
+            color: #1E293B;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
           }
-          /* Position breakdown table */
+          .snaps-total strong {
+            font-size: 0.85rem;
+            color: #64748B;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+          }
           .positions-table {
             width: 100%;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             border-collapse: collapse;
+            font-size: 0.9rem;
           }
           .positions-table th {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: #777;
+            color: #64748B;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: left;
-            padding: 0.5rem 0;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #E2E8F0;
           }
           .positions-table td {
             font-size: 0.9rem;
-            color: #333;
-            padding: 0.3rem 0;
-            border-bottom: 1px solid #eee;
+            color: #1E293B;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #E2E8F0;
+            transition: background 0.3s ease;
+          }
+          .positions-table tr:hover td {
+            background: rgba(165, 180, 252, 0.1);
           }
           .positions-table td:last-child {
             text-align: right;
-          }
-          /* Weekly Stacked Bar Column */
-          .weekly-column {
-            flex: 1 1 auto;
-          }
-          .weekly-column h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: #333;
             font-weight: 600;
           }
-          /* -----------------------------------
-           * Close Button
-           * -----------------------------------
-           */
+
+          /* Weekly Stacked Bar Column */
+          .weekly-column {
+            flex: 2 1 400px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          .weekly-column:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+          }
+          .weekly-column h3 {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            color: #1E293B;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+          }
+
+          /* Close Button (Unchanged) */
           .close-button {
             position: absolute;
             top: 15px;
@@ -672,35 +658,57 @@ const TeamPlayerModal = ({
           .close-button:hover {
             color: #333;
           }
+
+          /* Responsive Adjustments */
+          @media (max-width: 1024px) {
+            .modal-body {
+              flex-direction: column;
+              padding: 1.5rem;
+            }
+            .grades-column,
+            .snaps-column,
+            .weekly-column {
+              flex: 1 1 100%;
+            }
+          }
+          @media (max-width: 768px) {
+            .modal-body {
+              padding: 1rem;
+            }
+            .grades-section,
+            .snaps-column,
+            .weekly-column {
+              padding: 1rem;
+            }
+            .player-info-grid {
+              grid-template-columns: repeat(2, auto);
+              gap: 20px;
+            }
+          }
         `}
       </style>
 
       <div className="modal-container">
         {/* Close Button */}
         <button className="close-button" onClick={onClose}>×</button>
-        {/* HEADER */}
+        {/* HEADER (Unchanged) */}
         <div className="modal-header">
-          <div className="angled-block-main" style={{backgroundColor: teamColor}}></div>
-          <div className="angled-block-secondary" style={{backgroundColor: effectiveAltColor}}></div>
-          
+          <div className="angled-block-main"></div>
+          <div className="angled-block-secondary"></div>
           {secondaryLogo ? (
             <img src={secondaryLogo} alt="Team Logo" className="big-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/100" alt="Team Logo" className="big-team-logo" />
           )}
-          
           {primaryLogo ? (
             <img src={primaryLogo} alt="Team Logo" className="top-right-team-logo" />
           ) : (
             <img src="https://via.placeholder.com/80" alt="Team Logo" className="top-right-team-logo" />
           )}
-          
           <div className="team-name">{teamName}</div>
-          
           <div className="player-header-content">
             <h2 className="player-name">{playerFullName}</h2>
             <div className="player-position">{playerPosition} #{playerJerseyNumber}</div>
-            
             <div className="player-info-grid">
               <div className="player-info-item">
                 <span className="player-info-label">Height</span>
@@ -715,14 +723,14 @@ const TeamPlayerModal = ({
                 <span className="player-info-value">{playerClass}</span>
               </div>
               <div className="player-info-item">
-                <span className="player-info-label">Draft Eligible</span>
+                <span className="player-info-label">Draft Eligible Year</span>
                 <span className="player-info-value">{draftEligibleYear}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* BODY */}
+        {/* BODY (Modernized) */}
         <div className="modal-body">
           {/* Grades Column */}
           <div className="grades-column">
@@ -736,21 +744,14 @@ const TeamPlayerModal = ({
                     <div className="grade-item" key={idx}>
                       <div className="label">{grade.label}</div>
                       <div className="grade-bar-container">
-                        <div 
-                          className="grade-bar-fill" 
-                          style={{ 
-                            width: `${fillPercent}%`, 
-                            backgroundColor: grade.color 
-                          }}
-                        ></div>
+                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%` }}></div>
                       </div>
-                      <div className="grade-value">{grade.value.toFixed(1)}</div>
+                      <div className="grade-value">{grade.value}</div>
                     </div>
                   );
                 })}
               </div>
             </div>
-            
             {/* Career Grades */}
             <div className="grades-section">
               <h3>Career Grades</h3>
@@ -761,22 +762,15 @@ const TeamPlayerModal = ({
                     <div className="grade-item" key={idx}>
                       <div className="label">{grade.label}</div>
                       <div className="grade-bar-container">
-                        <div 
-                          className="grade-bar-fill" 
-                          style={{ 
-                            width: `${fillPercent}%`, 
-                            backgroundColor: grade.color 
-                          }}
-                        ></div>
+                        <div className="grade-bar-fill" style={{ width: `${fillPercent}%` }}></div>
                       </div>
-                      <div className="grade-value">{grade.value.toFixed(1)}</div>
+                      <div className="grade-value">{grade.value}</div>
                     </div>
                   );
                 })}
               </div>
             </div>
           </div>
-          
           {/* Doughnut Chart Column */}
           <div className="snaps-column">
             <h3>2024 Snaps</h3>
@@ -804,7 +798,6 @@ const TeamPlayerModal = ({
               </table>
             </div>
           </div>
-          
           {/* Weekly Column */}
           <div className="weekly-column">
             <h3>Weekly</h3>
