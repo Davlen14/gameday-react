@@ -203,14 +203,14 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       const homeFieldPos = fieldPosition.find(t => t?.team === gameInfo.homeTeam) || {};
       const awayFieldPos = fieldPosition.find(t => t?.team === gameInfo.awayTeam) || {};
       
-      // Extract plays by quarter
+      // Extract plays by period (quarters in college football)
       const plays = Array.isArray(data.playByPlay?.plays) ? data.playByPlay.plays : [];
       const playsByQuarter = {};
       for (let i = 1; i <= 4; i++) {
         playsByQuarter[i] = plays.filter(p => p.period === i);
       }
       
-      // Calculate scoring by quarter
+      // Calculate scoring by period (quarter)
       const scoringByQuarter = {};
       for (let i = 1; i <= 4; i++) {
         const quarterPlays = playsByQuarter[i] || [];
@@ -239,7 +239,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         };
       }
       
-      // Extract quarter-by-quarter PPA performance
+      // Extract period-by-period (quarter) PPA performance
       const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
       const quarterAnalysis = quarters.map((quarter, index) => {
         // Get PPA values or default to 0
@@ -614,20 +614,20 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       // Create a game description based on the scoring pattern
       const gameFlow = determineGameFlow(quarterAnalysis, gameInfo);
       
-      // Generate detailed quarter summaries
+      // Generate detailed period (quarter) summaries
       const quarterSummaries = quarterAnalysis.map((q, index) => {
         let quarterDescription = '';
         const homePts = q.homeScoring;
         const awayPts = q.awayScoring;
         const scoringDiff = homePts - awayPts;
-        const quarterNum = index + 1;
+        const periodNum = index + 1;
         
         if (Math.abs(scoringDiff) === 0) {
-          quarterDescription = `Q${quarterNum}: Both teams scored ${homePts} points in an even quarter.`;
+          quarterDescription = `P${periodNum}: Both teams scored ${homePts} points in an even period.`;
         } else {
           const dominantTeam = scoringDiff > 0 ? gameInfo.homeTeam : gameInfo.awayTeam;
           const scoringMargin = Math.abs(scoringDiff);
-          quarterDescription = `Q${quarterNum}: ${dominantTeam} outscored their opponent ${scoringDiff > 0 ? homePts : awayPts}-${scoringDiff > 0 ? awayPts : homePts}`;
+          quarterDescription = `P${periodNum}: ${dominantTeam} outscored their opponent ${scoringDiff > 0 ? homePts : awayPts}-${scoringDiff > 0 ? awayPts : homePts}`;
           
           if (q.homeAdvantage !== (scoringDiff > 0)) {
             // Team with PPA advantage didn't outscore opponent
@@ -1379,7 +1379,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         <div className="tppg-tabs">
           {[
             { id: 'overview', label: 'Game Overview', icon: <FaRegListAlt />, hasData: hasOverviewData() },
-            { id: 'quarterBreakdown', label: 'Quarter Analysis', icon: <FaChartLine />, hasData: hasQuarterData() },
+            { id: 'quarterBreakdown', label: 'Period Analysis', icon: <FaChartLine />, hasData: hasQuarterData() },
             { id: 'keyPlays', label: 'Key Plays', icon: <FaFireAlt />, hasData: hasKeyPlaysData() },
             { id: 'starPlayers', label: 'Star Players', icon: <FaStar />, hasData: hasStarPlayersData() }
           ].map(tab => (
@@ -1525,12 +1525,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           {activeAnalysisTab === 'quarterBreakdown' && hasQuarterData() && (
             <div>
               <h3 className="tppg-overview-title">
-                <FaChartLine /> Quarter-by-Quarter Analysis
+                <FaChartLine /> Period-by-Period Analysis
               </h3>
               
               <div className="tppg-quarter-charts">
                 <div className="tppg-chart-container">
-                  <h4 className="tppg-chart-title">Scoring by Quarter</h4>
+                  <h4 className="tppg-chart-title">Scoring by Period</h4>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart
                       data={gameAnalysis.quarterAnalysis}
@@ -1539,7 +1539,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                       <XAxis 
                         dataKey="quarter" 
-                        label={{ value: 'Quarter', position: 'insideBottom', offset: -15 }}
+                        label={{ value: 'Period', position: 'insideBottom', offset: -15 }}
                         tick={{ fill: '#555' }} 
                       />
                       <YAxis 
@@ -1581,7 +1581,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                       <XAxis 
                         dataKey="quarter" 
-                        label={{ value: 'Quarter', position: 'insideBottom', offset: -15 }}
+                        label={{ value: 'Period', position: 'insideBottom', offset: -15 }}
                         tick={{ fill: '#555' }} 
                       />
                       <YAxis 
@@ -1624,7 +1624,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
               <div className="tppg-quarter-grid">
                 {gameAnalysis.quarterAnalysis.map((quarter, index) => (
                   <div key={index} className="tppg-quarter-card">
-                    <h4 className="tppg-quarter-title">Quarter {quarter.quarter}</h4>
+                    <h4 className="tppg-quarter-title">Period {quarter.quarter}</h4>
                     <div className="tppg-quarter-score">
                       <div className="tppg-team-score">
                         <span className="tppg-team-name">{gameAnalysis.gameInfo?.homeTeam}</span>
