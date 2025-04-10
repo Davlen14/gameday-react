@@ -5,7 +5,7 @@ import TeamPlayerModal from "./TeamPlayerModal";
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
-  <div className="loading-spinner">
+  <div className="tr-loading-spinner">
     <svg width="50" height="50" viewBox="0 0 50 50">
       <circle
         cx="25"
@@ -99,7 +99,11 @@ const darkenColor = (color, percent) => {
 
 // Function to safely get jersey number (handles 0 as valid)
 const getJerseyNumber = (player) => {
-  // Check each possible field, treating 0 as valid
+  // FIXED: Added additional checks for more possible jersey number fields
+  // Also directly access the property without method syntax
+  if (player.jerseyDisplay !== undefined && player.jerseyDisplay !== null) {
+    return player.jerseyDisplay.toString();
+  }
   if (player.jersey !== undefined && player.jersey !== null) {
     return player.jersey.toString();
   }
@@ -109,6 +113,25 @@ const getJerseyNumber = (player) => {
   if (player.jerseyNumber !== undefined && player.jerseyNumber !== null) {
     return player.jerseyNumber.toString();
   }
+  // Add more possible field names for jersey number
+  if (player.uniform !== undefined && player.uniform !== null) {
+    return player.uniform.toString();
+  }
+  if (player.jerseyNum !== undefined && player.jerseyNum !== null) {
+    return player.jerseyNum.toString();
+  }
+  if (player.uniformNumber !== undefined && player.uniformNumber !== null) {
+    return player.uniformNumber.toString();
+  }
+  
+  // Check if there's a statType field with value "jersey" or similar
+  if (player.statType === "jersey" && player.stat) {
+    return player.stat.toString();
+  }
+  
+  // Log the player object to debug
+  console.log("Player with missing jersey number:", player);
+  
   return "N/A";
 };
 
@@ -151,23 +174,28 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         // Process the data to ensure jersey numbers are properly handled
-        const processedData = data.map(player => ({
-          ...player,
-          // Create a fullName if it doesn't exist
-          fullName: player.fullName || `${player.firstName || ''} ${player.lastName || ''}`.trim(),
-          // Properly format the jersey number (handle 0 as valid)
-          jerseyDisplay: getJerseyNumber(player),
-          // Format hometown
-          formattedHometown: player.homeCity && player.homeState 
-            ? `${player.homeCity}, ${player.homeState}` 
-            : player.homeCity || player.homeState || "N/A",
-          // Format weight
-          weightDisplay: player.weight ? `${player.weight} lbs` : "N/A",
-          // Format height
-          heightDisplay: formatHeight(player.height),
-          // Format year/class
-          yearDisplay: getYearText(player.year)
-        }));
+        const processedData = data.map(player => {
+          // FIXED: Log each player to help debug jersey number issues
+          console.log("Processing player:", player);
+          
+          return {
+            ...player,
+            // Create a fullName if it doesn't exist
+            fullName: player.fullName || `${player.firstName || ''} ${player.lastName || ''}`.trim(),
+            // Properly format the jersey number (handle 0 as valid)
+            jerseyDisplay: getJerseyNumber(player),
+            // Format hometown
+            formattedHometown: player.homeCity && player.homeState 
+              ? `${player.homeCity}, ${player.homeState}` 
+              : player.homeCity || player.homeState || "N/A",
+            // Format weight
+            weightDisplay: player.weight ? `${player.weight} lbs` : "N/A",
+            // Format height
+            heightDisplay: formatHeight(player.height),
+            // Format year/class
+            yearDisplay: getYearText(player.year)
+          };
+        });
         
         setRoster(processedData);
       } catch (err) {
@@ -206,39 +234,39 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
   };
 
   return (
-    <div className="dashboard-card full-width-card">
-      <div className="card-header" style={cardHeaderStyle}>
+    <div className="tr-dashboard-card tr-full-width-card">
+      <div className="tr-card-header" style={cardHeaderStyle}>
         <FaUser style={{ marginRight: "12px", color: teamColor }} />
         Team Roster
       </div>
-      <div className="card-body">
+      <div className="tr-card-body">
         {isLoading ? (
-          <div className="loading-indicator">
+          <div className="tr-loading-indicator">
             <LoadingSpinner color={teamColor} />
             <p>Loading roster...</p>
           </div>
         ) : error ? (
-          <div className="error-message">
+          <div className="tr-error-message">
             <FaExclamationTriangle color="red" style={{ marginRight: "8px" }} />
             {error}
           </div>
         ) : (
           <>
-            <div className="roster-filters">
-              <div className="search-box">
+            <div className="tr-roster-filters">
+              <div className="tr-search-box">
                 <input 
                   type="text" 
                   placeholder="Search players..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
+                  className="tr-search-input"
                 />
               </div>
-              <div className="position-filter">
+              <div className="tr-position-filter">
                 <select 
                   value={filterPosition} 
                   onChange={(e) => setFilterPosition(e.target.value)}
-                  className="position-select"
+                  className="tr-position-select"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map(pos => (
@@ -248,53 +276,56 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
               </div>
             </div>
             
-            <div className="players-count">
+            <div className="tr-players-count">
               <span>Showing {filteredPlayers.length} of {roster.length} players</span>
             </div>
             
-            <div className="player-cards-container">
+            <div className="tr-player-cards-container">
               {filteredPlayers.length > 0 ? (
                 filteredPlayers.map((player, index) => (
                   <div 
                     key={player.id || index} 
-                    className="player-card"
+                    className="tr-player-card"
                     onClick={() => handlePlayerClick(player)}
                   >
-                    <div className="player-card-header" style={{backgroundColor: teamColor}}>
-                      <div className="player-jersey-number">{player.jerseyDisplay}</div>
-                      <div className="player-position-badge">{player.position || "N/A"}</div>
+                    <div className="tr-player-card-header" style={{backgroundColor: teamColor}}>
+                      {/* FIXED: Added debugging output for jersey number */}
+                      <div className="tr-player-jersey-number">
+                        {player.jerseyDisplay}
+                      </div>
+                      <div className="tr-player-position-badge">{player.position || "N/A"}</div>
                     </div>
-                    <div className="player-card-body">
-                      <h3 className="player-name">{player.fullName}</h3>
+                    <div className="tr-player-card-body">
+                      <h3 className="tr-player-name">{player.fullName}</h3>
                       
-                      <div className="player-info-grid">
-                        <div className="info-item">
-                          <FaRulerVertical className="info-icon" />
-                          <span className="info-label">Height</span>
-                          <span className="info-value">{player.heightDisplay}</span>
+                      <div className="tr-player-info-grid">
+                        <div className="tr-info-item">
+                          <FaRulerVertical className="tr-info-icon" />
+                          <span className="tr-info-label">Height</span>
+                          <span className="tr-info-value">{player.heightDisplay}</span>
                         </div>
                         
-                        <div className="info-item">
-                          <FaWeight className="info-icon" />
-                          <span className="info-label">Weight</span>
-                          <span className="info-value">{player.weightDisplay}</span>
+                        <div className="tr-info-item">
+                          <FaWeight className="tr-info-icon" />
+                          <span className="tr-info-label">Weight</span>
+                          <span className="tr-info-value">{player.weightDisplay}</span>
                         </div>
                         
-                        <div className="info-item">
-                          <FaGraduationCap className="info-icon" />
-                          <span className="info-label">Year</span>
-                          <span className="info-value">{player.yearDisplay}</span>
+                        <div className="tr-info-item">
+                          <FaGraduationCap className="tr-info-icon" />
+                          <span className="tr-info-label">Year</span>
+                          <span className="tr-info-value">{player.yearDisplay}</span>
                         </div>
                         
-                        <div className="info-item">
-                          <FaRunning className="info-icon" />
-                          <span className="info-label">Team</span>
-                          <span className="info-value">{player.team || teamName}</span>
+                        <div className="tr-info-item">
+                          <FaRunning className="tr-info-icon" />
+                          <span className="tr-info-label">Team</span>
+                          <span className="tr-info-value">{player.team || teamName}</span>
                         </div>
                       </div>
 
-                      <div className="player-location">
-                        <FaMapMarkerAlt className="location-icon" />
+                      <div className="tr-player-location">
+                        <FaMapMarkerAlt className="tr-location-icon" />
                         <span>{player.formattedHometown}</span>
                         {player.homeCountry && player.homeCountry !== "USA" && (
                           <span>, {player.homeCountry}</span>
@@ -302,26 +333,26 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                       </div>
                       
                       {(player.homeLatitude || player.homeLongitude) && (
-                        <div className="player-coordinates">
+                        <div className="tr-player-coordinates">
                           Lat: {player.homeLatitude}, Long: {player.homeLongitude}
                         </div>
                       )}
                       
                       {player.homeCountyFIPS && (
-                        <div className="player-fips">
+                        <div className="tr-player-fips">
                           County FIPS: {player.homeCountyFIPS}
                         </div>
                       )}
                       
-                      <div className="player-id-section">
-                        <div className="player-id">
-                          <FaIdCard className="id-icon" />
+                      <div className="tr-player-id-section">
+                        <div className="tr-player-id">
+                          <FaIdCard className="tr-id-icon" />
                           <span>ID: {player.id || "N/A"}</span>
                         </div>
                         
                         {player.recruitIds && player.recruitIds.length > 0 && (
-                          <div className="recruit-ids">
-                            <FaHashtag className="id-icon" />
+                          <div className="tr-recruit-ids">
+                            <FaHashtag className="tr-id-icon" />
                             <span>Recruit IDs: {player.recruitIds.join(", ")}</span>
                           </div>
                         )}
@@ -330,7 +361,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   </div>
                 ))
               ) : (
-                <div className="no-players-message">
+                <div className="tr-no-players-message">
                   No players found. Please try a different search or filter.
                 </div>
               )}
@@ -342,21 +373,21 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
       {/* Component-specific styles */}
       <style>{`
         /* Dashboard Card */
-        .dashboard-card {
+        .tr-dashboard-card {
           background: white;
           border-radius: 20px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
           overflow: hidden;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
-          animation: fadeIn 0.6s ease-out;
+          animation: trFadeIn 0.6s ease-out;
           width: 100%;
         }
         
-        .dashboard-card:hover {
+        .tr-dashboard-card:hover {
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
         
-        .card-header {
+        .tr-card-header {
           padding: 1.2rem 1.5rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.08);
           font-weight: 600;
@@ -366,7 +397,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           align-items: center;
         }
         
-        .card-header::before {
+        .tr-card-header::before {
           content: '';
           display: inline-block;
           width: 8px;
@@ -376,24 +407,24 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 4px;
         }
         
-        .card-body {
+        .tr-card-body {
           padding: 1.5rem;
         }
 
         /* Filters */
-        .roster-filters {
+        .tr-roster-filters {
           display: flex;
           gap: 15px;
           margin-bottom: 20px;
           flex-wrap: wrap;
         }
         
-        .search-box {
+        .tr-search-box {
           flex: 1;
           min-width: 200px;
         }
         
-        .search-input {
+        .tr-search-input {
           width: 100%;
           padding: 10px 15px;
           border-radius: 8px;
@@ -402,17 +433,17 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           transition: all 0.2s;
         }
         
-        .search-input:focus {
+        .tr-search-input:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
         
-        .position-filter {
+        .tr-position-filter {
           width: 200px;
         }
         
-        .position-select {
+        .tr-position-select {
           width: 100%;
           padding: 10px 15px;
           border-radius: 8px;
@@ -422,20 +453,20 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           cursor: pointer;
         }
         
-        .position-select:focus {
+        .tr-position-select:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
         
-        .players-count {
+        .tr-players-count {
           margin-bottom: 15px;
           font-size: 14px;
           color: #666;
         }
 
         /* Player Cards Container */
-        .player-cards-container {
+        .tr-player-cards-container {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
           gap: 20px;
@@ -443,7 +474,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         /* Player Card */
-        .player-card {
+        .tr-player-card {
           background: white;
           border-radius: 12px;
           overflow: hidden;
@@ -455,12 +486,12 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           height: 100%;
         }
         
-        .player-card:hover {
+        .tr-player-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
         
-        .player-card-header {
+        .tr-player-card-header {
           background-color: ${teamColor};
           color: white;
           padding: 16px;
@@ -470,7 +501,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           align-items: center;
         }
         
-        .player-jersey-number {
+        .tr-player-jersey-number {
           font-size: 28px;
           font-weight: bold;
           background: rgba(255,255,255,0.2);
@@ -482,7 +513,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 50%;
         }
         
-        .player-position-badge {
+        .tr-player-position-badge {
           background: rgba(255,255,255,0.2);
           padding: 5px 12px;
           border-radius: 20px;
@@ -490,7 +521,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           font-size: 14px;
         }
         
-        .player-card-body {
+        .tr-player-card-body {
           padding: 20px;
           flex: 1;
           display: flex;
@@ -498,7 +529,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           gap: 15px;
         }
         
-        .player-name {
+        .tr-player-name {
           font-size: 18px;
           font-weight: 600;
           margin: 0 0 5px 0;
@@ -507,39 +538,39 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           padding-bottom: 10px;
         }
         
-        .player-info-grid {
+        .tr-player-info-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 15px;
           margin-bottom: 5px;
         }
         
-        .info-item {
+        .tr-info-item {
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
         
-        .info-icon {
+        .tr-info-icon {
           color: ${teamColor};
           font-size: 14px;
           margin-bottom: 2px;
         }
         
-        .info-label {
+        .tr-info-label {
           font-size: 12px;
           color: #777;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
         
-        .info-value {
+        .tr-info-value {
           font-size: 15px;
           font-weight: 500;
           color: #333;
         }
         
-        .player-location {
+        .tr-player-location {
           display: flex;
           align-items: center;
           gap: 5px;
@@ -548,25 +579,25 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           margin-top: 5px;
         }
         
-        .location-icon {
+        .tr-location-icon {
           color: ${teamColor};
         }
         
-        .player-coordinates {
+        .tr-player-coordinates {
           font-size: 12px;
           color: #999;
           margin-top: -10px;
           margin-left: 20px;
         }
         
-        .player-fips {
+        .tr-player-fips {
           font-size: 12px;
           color: #999;
           margin-top: -10px;
           margin-left: 20px;
         }
         
-        .player-id-section {
+        .tr-player-id-section {
           margin-top: 10px;
           border-top: 1px solid #f0f0f0;
           padding-top: 10px;
@@ -574,19 +605,19 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #777;
         }
         
-        .player-id, .recruit-ids {
+        .tr-player-id, .tr-recruit-ids {
           display: flex;
           align-items: center;
           gap: 5px;
           margin-top: 3px;
         }
         
-        .id-icon {
+        .tr-id-icon {
           color: #aaa;
         }
 
         /* Empty state */
-        .no-players-message {
+        .tr-no-players-message {
           text-align: center;
           padding: 40px;
           color: #777;
@@ -597,7 +628,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
 
         /* Loading indicator */
-        .loading-indicator {
+        .tr-loading-indicator {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -607,14 +638,14 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #666;
         }
         
-        .loading-spinner {
+        .tr-loading-spinner {
           display: flex;
           justify-content: center;
           align-items: center;
         }
         
         /* Error message */
-        .error-message {
+        .tr-error-message {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -624,18 +655,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         /* Animation */
-        @keyframes fadeIn {
+        @keyframes trFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-          .player-cards-container {
+          .tr-player-cards-container {
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           }
           
-          .player-info-grid {
+          .tr-player-info-grid {
             grid-template-columns: 1fr;
           }
         }
