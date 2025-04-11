@@ -92,59 +92,76 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         setIsLoading(false);
         return;
       }
-
+    
       try {
         setIsLoading(true);
         setError(null);
         
-        console.log("Fetching play-by-play data for game ID:", gameId);
-        const playByPlayData = await teamsService.getPlayByPlay(gameId)
-          .catch(err => {
-            console.error("Error fetching play-by-play:", err);
-            throw new Error("Failed to fetch play-by-play data");
-          });
+        // First, fetch all data sources in parallel for efficiency
+        console.log("Fetching data for game ID:", gameId);
+        
+        const [playByPlayData, advancedBoxScore, scoreboardData, gameInfoData] = await Promise.all([
+          // Play-by-play data
+          teamsService.getPlayByPlay(gameId)
+            .catch(err => {
+              console.error("Error fetching play-by-play:", err);
+              console.log("Continuing without play-by-play data");
+              return null;
+            }),
+            
+          // Advanced box score
+          teamsService.getAdvancedBoxScore(gameId)
+            .catch(err => {
+              console.error("Error fetching advanced box score:", err);
+              throw new Error("Failed to fetch advanced box score - this data is required");
+            }),
           
-        console.log("Fetching advanced box score for game ID:", gameId);
-        const advancedBoxScore = await teamsService.getAdvancedBoxScore(gameId)
-          .catch(err => {
-            console.error("Error fetching advanced box score:", err);
-            throw new Error("Failed to fetch advanced box score");
-          });
+          // Scoreboard data (contains quarter scores)
+          graphqlTeamsService.getGameScoreboard(gameId)
+            .catch(err => {
+              console.error("Error fetching scoreboard data:", err);
+              console.log("Continuing without scoreboard data");
+              return null;
+            }),
+          
+          // Game info for additional details
+          graphqlTeamsService.getGameInfo(gameId)
+            .catch(err => {
+              console.error("Error fetching game info:", err);
+              console.log("Continuing without game info data");
+              return null;
+            })
+        ]);
         
-        // Add scoreboard data fetch to get quarter-by-quarter scores
-        console.log("Fetching scoreboard data for game ID:", gameId);
-        const scoreboardData = await graphqlTeamsService.getGameScoreboard(gameId)
-          .catch(err => {
-            console.error("Error fetching scoreboard data:", err);
-            console.log("Continuing without scoreboard data");
-            return null;
-          });
+        console.log("Data fetching complete, generating analysis");
         
-        // Add game info fetch for additional details
-        console.log("Fetching game info for game ID:", gameId);
-        const gameInfoData = await graphqlTeamsService.getGameInfo(gameId)
-          .catch(err => {
-            console.error("Error fetching game info:", err);
-            console.log("Continuing without game info data");
-            return null;
-          });
-
-        // Generate game analysis with enhanced data including scoreboard
-        console.log("Generating comprehensive game analysis");
+        // Log what data sources we have to help with debugging
+        console.log("Available data sources:");
+        console.log("- Play-by-play:", playByPlayData ? "Yes" : "No");
+        console.log("- Advanced box score:", advancedBoxScore ? "Yes" : "No");
+        console.log("- Scoreboard:", scoreboardData ? "Yes" : "No");
+        console.log("- Game info:", gameInfoData ? "Yes" : "No");
+        
+        // Check for required box score data
+        if (!advancedBoxScore) {
+          throw new Error("No box score data available for this game");
+        }
+        
+        // Generate game analysis with all available data sources
         const gameAnalysisData = generateGameAnalysis({
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore,
-          scoreboard: scoreboardData,   // Add scoreboard data for quarter scores
-          gameInfo: gameInfoData        // Add additional game info
+          scoreboard: scoreboardData,
+          gameInfo: gameInfoData
         });
         
-        // Process player grades with improved algorithm
+        // Process player grades
         console.log("Calculating detailed player grades");
         const processedGrades = calculatePlayerGrades({
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore
         });
-
+    
         // Update state with all data
         setGameData({
           playByPlay: playByPlayData,
@@ -152,9 +169,10 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
           scoreboard: scoreboardData,
           gameInfo: gameInfoData
         });
+        
         setPlayerGrades(processedGrades);
         setGameAnalysis(gameAnalysisData);
-
+    
         // Set default selected team to home team
         if (advancedBoxScore.gameInfo?.homeTeam) {
           setSelectedTeam(advancedBoxScore.gameInfo.homeTeam);
