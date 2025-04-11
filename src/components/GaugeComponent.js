@@ -351,8 +351,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
       </svg>
       
-      {/* Metrics cards - restructured for a cleaner, more compact layout */}
-      <div className="g-metrics-cards">
+      {/* Metrics legend */}
+      <div className="g-metrics-legend">
         {allMetrics.map(metric => {
           const value = metric.value;
           const nationalAvg = NATIONAL_AVERAGES[metric.id];
@@ -368,24 +368,28 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               style={{ borderColor: hoveredMetric === metric.id ? performanceColor : 'transparent' }}
             >
               <div className="g-metric-header">
-                <div className="g-performance-badge"
-                  style={{ backgroundColor: performanceColor }}
+                <span className="g-metric-name">{metric.label}</span>
+                <span 
+                  className="g-performance-indicator" 
+                  style={{ 
+                    backgroundColor: performanceColor,
+                    boxShadow: `0 3px 6px ${performanceColor}40`
+                  }}
                 >
                   {performanceLevel === "Below Average" ? "Below Avg" : 
                    performanceLevel === "Above Average" ? "Above Avg" : 
                    "Average"}
-                </div>
-                <div className="g-metric-name">{metric.label}</div>
+                </span>
               </div>
-              
               <div className="g-metric-values">
-                <div className="g-value-row">
-                  <div className="g-value-label">Team</div>
-                  <div className="g-value-number" style={{ color: performanceColor }}>{value.toFixed(2)}</div>
+                <div className="g-team-value">
+                  <span className="g-value-label">Team</span>
+                  <span className="g-value-number" style={{ color: performanceColor }}>{value.toFixed(2)}</span>
                 </div>
-                <div className="g-value-row">
-                  <div className="g-value-label">National Avg</div>
-                  <div className="g-value-number">{nationalAvg.toFixed(2)}</div>
+                <div className="g-vs-divider">vs</div>
+                <div className="g-natl-value">
+                  <span className="g-value-label">National Avg</span>
+                  <span className="g-value-number">{nationalAvg.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -404,83 +408,105 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           border-radius: 12px;
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-          max-width: 900px;
-          margin: 0 auto;
         }
         
         .g-radar-svg {
           margin-bottom: 1.5rem;
         }
         
-        .g-metrics-cards {
+        .g-metrics-legend {
           display: flex;
+          flex-wrap: nowrap;
           justify-content: center;
-          gap: 20px;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
           width: 100%;
-          margin-bottom: 20px;
         }
         
         .g-metric-card {
           background: white;
           border-radius: 8px;
-          padding: 16px;
+          padding: 0.75rem 1rem;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          border: 1px solid #eaeaea;
           flex: 1;
-          max-width: 220px;
-          min-width: 180px;
+          min-width: 150px;
+          max-width: 200px;
           transition: all 0.2s ease;
+          border: 2px solid transparent;
+          height: 140px;
+          display: flex;
+          flex-direction: column;
         }
         
         .g-metric-card:hover, .g-metric-card.g-active {
           transform: translateY(-3px);
-          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         
         .g-metric-header {
           display: flex;
-          flex-direction: column;
-          margin-bottom: 12px;
-        }
-        
-        .g-performance-badge {
-          align-self: flex-start;
-          font-size: 11px;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 4px;
-          color: white;
-          margin-bottom: 6px;
+          justify-content: flex-start;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+          height: 35px;
+          position: relative;
+          padding-top: 25px;
         }
         
         .g-metric-name {
           font-weight: 600;
-          font-size: 16px;
-          color: #333;
+          font-size: 15px;
+        }
+        
+        .g-performance-indicator {
+          font-size: 11px;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 4px;
+          color: white;
+          height: 20px;
+          width: auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          white-space: nowrap;
+          letter-spacing: 0.5px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          position: absolute;
+          top: 0;
+          left: 0;
         }
         
         .g-metric-values {
           display: flex;
-          flex-direction: column;
-          gap: 6px;
+          align-items: center;
+          justify-content: space-between;
         }
         
-        .g-value-row {
+        .g-team-value, .g-natl-value {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-direction: column;
+          flex: 1;
+        }
+        
+        .g-vs-divider {
+          font-size: 13px;
+          color: #999;
+          margin: 0 0.5rem;
         }
         
         .g-value-label {
           font-size: 12px;
           color: #666;
+          margin-bottom: 0.25rem;
         }
         
         .g-value-number {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 700;
         }
-        
+      
         .g-loading-spinner {
           width: 40px;
           height: 40px;
@@ -507,20 +533,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           color: #666;
           text-align: center;
           height: 320px;
-        }
-        
-        /* Media Queries for Responsiveness */
-        @media (max-width: 768px) {
-          .g-metrics-cards {
-            flex-wrap: wrap;
-            justify-content: center;
-          }
-          
-          .g-metric-card {
-            min-width: 140px;
-            max-width: none;
-            margin-bottom: 10px;
-          }
         }
       `}</style>
     </div>
