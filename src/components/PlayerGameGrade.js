@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import teamsService from '../services/teamsService';
+import graphqlTeamsService from '../services/graphqlTeamsService'; // Add this import
 import { 
   ResponsiveContainer, 
   BarChart, 
@@ -109,12 +110,32 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
             console.error("Error fetching advanced box score:", err);
             throw new Error("Failed to fetch advanced box score");
           });
+        
+        // Add scoreboard data fetch to get quarter-by-quarter scores
+        console.log("Fetching scoreboard data for game ID:", gameId);
+        const scoreboardData = await graphqlTeamsService.getGameScoreboard(gameId)
+          .catch(err => {
+            console.error("Error fetching scoreboard data:", err);
+            console.log("Continuing without scoreboard data");
+            return null;
+          });
+        
+        // Add game info fetch for additional details
+        console.log("Fetching game info for game ID:", gameId);
+        const gameInfoData = await graphqlTeamsService.getGameInfo(gameId)
+          .catch(err => {
+            console.error("Error fetching game info:", err);
+            console.log("Continuing without game info data");
+            return null;
+          });
 
-        // Generate game analysis with enhanced data
+        // Generate game analysis with enhanced data including scoreboard
         console.log("Generating comprehensive game analysis");
         const gameAnalysisData = generateGameAnalysis({
           playByPlay: playByPlayData,
-          boxScore: advancedBoxScore
+          boxScore: advancedBoxScore,
+          scoreboard: scoreboardData,   // Add scoreboard data for quarter scores
+          gameInfo: gameInfoData        // Add additional game info
         });
         
         // Process player grades with improved algorithm
@@ -127,7 +148,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         // Update state with all data
         setGameData({
           playByPlay: playByPlayData,
-          advancedBoxScore
+          advancedBoxScore,
+          scoreboard: scoreboardData,
+          gameInfo: gameInfoData
         });
         setPlayerGrades(processedGrades);
         setGameAnalysis(gameAnalysisData);
