@@ -214,45 +214,60 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       }
       
       // Calculate scoring by period (quarter) using score progression
-      const scoringByQuarter = {};
+// Inside generateGameAnalysis function:
+const scoringByQuarter = {};
+
+for (let i = 1; i <= 4; i++) {
+  const quarterPlays = playsByQuarter[i] || [];
+  
+  // Initialize quarter scoring
+  let homeScoring = 0;
+  let awayScoring = 0;
+  
+  // Look for scoring plays in this quarter
+  quarterPlays.forEach(play => {
+    if (play.homeScore !== undefined && play.awayScore !== undefined) {
+      const isHomeScoringPlay = play.playText?.includes(gameInfo.homeTeam) && 
+                               (play.playType?.includes('Touchdown') || 
+                                play.playType?.includes('Field Goal') ||
+                                play.playType?.includes('Safety'));
+                                
+      const isAwayScoringPlay = play.playText?.includes(gameInfo.awayTeam) && 
+                               (play.playType?.includes('Touchdown') || 
+                                play.playType?.includes('Field Goal') ||
+                                play.playType?.includes('Safety'));
       
-      // Tracking variables for score progression
-      let prevHomeScore = 0;
-      let prevAwayScore = 0;
-      
-      for (let i = 1; i <= 4; i++) {
-        const quarterPlays = playsByQuarter[i] || [];
-        
-        if (quarterPlays.length === 0) {
-          // No plays in this quarter
-          scoringByQuarter[i] = {
-            [gameInfo.homeTeam]: 0,
-            [gameInfo.awayTeam]: 0
-          };
-          continue;
+      if (isHomeScoringPlay) {
+        // Calculate points based on play type
+        if (play.playType?.includes('Touchdown')) {
+          homeScoring += play.playText?.includes('KICK') ? 7 : 6;
+        } else if (play.playType?.includes('Field Goal')) {
+          homeScoring += 3;
+        } else if (play.playType?.includes('Safety')) {
+          homeScoring += 2;
         }
-        
-        // Get scores at the end of this quarter
-        const lastPlay = quarterPlays[quarterPlays.length - 1];
-        const endHomeScore = lastPlay.homeScore || 0;
-        const endAwayScore = lastPlay.awayScore || 0;
-        
-        // Calculate points scored in this quarter (difference from previous quarter)
-        const homeScoring = endHomeScore - prevHomeScore;
-        const awayScoring = endAwayScore - prevAwayScore;
-        
-        // Store quarter scoring
-        scoringByQuarter[i] = {
-          [gameInfo.homeTeam]: homeScoring,
-          [gameInfo.awayTeam]: awayScoring
-        };
-        
-        // Update for next quarter calculation
-        prevHomeScore = endHomeScore;
-        prevAwayScore = endAwayScore;
-        
-        console.log(`Quarter ${i}: ${gameInfo.homeTeam} scored ${homeScoring}, ${gameInfo.awayTeam} scored ${awayScoring}`);
       }
+      
+      if (isAwayScoringPlay) {
+        // Calculate points based on play type
+        if (play.playType?.includes('Touchdown')) {
+          awayScoring += play.playText?.includes('KICK') ? 7 : 6;
+        } else if (play.playType?.includes('Field Goal')) {
+          awayScoring += 3;
+        } else if (play.playType?.includes('Safety')) {
+          awayScoring += 2;
+        }
+      }
+    }
+  });
+  
+  scoringByQuarter[i] = {
+    [gameInfo.homeTeam]: homeScoring,
+    [gameInfo.awayTeam]: awayScoring
+  };
+
+  console.log(`Quarter ${i} scoring - Home: ${homeScoring}, Away: ${awayScoring}`);
+}
       
       // Extract period-by-period (quarter) PPA performance
       const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
