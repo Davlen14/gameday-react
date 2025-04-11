@@ -388,7 +388,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
                 </div>
                 <div className="ggc-vs-divider">vs</div>
                 <div className="ggc-natl-value">
-                  <span className="ggc-value-label">National Avg</span>
+                  <span className="ggc-value-label">Nat Avg</span>
                   <span className="ggc-value-number">{nationalAvg.toFixed(2)}</span>
                 </div>
               </div>
