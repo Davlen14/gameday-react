@@ -82,7 +82,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         setError("No game ID provided");
         setIsLoading(false);
         return;
-      }
+          }
 
       try {
         setIsLoading(true);
@@ -204,10 +204,13 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       const awayFieldPos = fieldPosition.find(t => t?.team === gameInfo.awayTeam) || {};
       
       // Extract plays by period (quarters in college football)
+      // Note: box score data uses 'quarter1', 'quarter2', etc. while play-by-play uses 'period' field
       const plays = Array.isArray(data.playByPlay?.plays) ? data.playByPlay.plays : [];
       const playsByQuarter = {};
       for (let i = 1; i <= 4; i++) {
+        // Filter plays by period number to match with box score quarter data
         playsByQuarter[i] = plays.filter(p => p.period === i);
+        console.log(`Period ${i} has ${playsByQuarter[i].length} plays`);
       }
       
       // Calculate scoring by period (quarter)
@@ -251,8 +254,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       
       const quarterAnalysis = quarters.map((quarter, index) => {
         // Get PPA values or default to 0
-        const homeQuarterPPA = homeTeamData?.overall?.[quarter] || 0;
-        const awayQuarterPPA = awayTeamData?.overall?.[quarter] || 0;
+        // Note: box score data might have null for some quarters even when play-by-play has data
+        const homeQuarterPPA = homeTeamData?.overall?.[quarter] !== null ? homeTeamData?.overall?.[quarter] || 0 : 0;
+        const awayQuarterPPA = awayTeamData?.overall?.[quarter] !== null ? awayTeamData?.overall?.[quarter] || 0 : 0;
         
         // Get scoring from the calculated values
         const homeScoring = scoringByQuarter[index + 1]?.[gameInfo.homeTeam] || 0;
@@ -1621,7 +1625,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="homePPA" 
-                        name={gameAnalysis.gameInfo?.homeTeam + ` (${gameAnalysis.teamEfficiency?.homeTotalPPA?.toFixed(3) || '0.000'})`} 
+                        name={`${gameAnalysis.gameInfo?.homeTeam} (PPA: ${gameAnalysis.teamEfficiency?.homeTotalPPA?.toFixed(3) || '0.000'})`} 
                         stroke="#3b82f6" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#3b82f6' }}
@@ -1630,7 +1634,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="awayPPA" 
-                        name={gameAnalysis.gameInfo?.awayTeam + ` (${gameAnalysis.teamEfficiency?.awayTotalPPA?.toFixed(3) || '0.000'})`} 
+                        name={`${gameAnalysis.gameInfo?.awayTeam} (PPA: ${gameAnalysis.teamEfficiency?.awayTotalPPA?.toFixed(3) || '0.000'})`} 
                         stroke="#ef4444" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#ef4444' }}
