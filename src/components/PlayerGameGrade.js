@@ -213,33 +213,45 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         console.log(`Period ${i} has ${playsByQuarter[i].length} plays`);
       }
       
-      // Calculate scoring by period (quarter)
+      // Calculate scoring by period (quarter) using score progression
       const scoringByQuarter = {};
+      
+      // Tracking variables for score progression
+      let prevHomeScore = 0;
+      let prevAwayScore = 0;
+      
       for (let i = 1; i <= 4; i++) {
         const quarterPlays = playsByQuarter[i] || [];
-        const homeScoring = quarterPlays
-          .filter(p => p.scoring && (p.offense === gameInfo.homeTeam || p.team === gameInfo.homeTeam))
-          .reduce((sum, p) => {
-            // Handle different scoring play types
-            if (p.playType?.includes('Touchdown')) return sum + 7;
-            if (p.playType?.includes('Field Goal')) return sum + 3;
-            if (p.playType?.includes('Safety')) return sum + 2;
-            return sum + (p.pointsScored || 0);
-          }, 0);
         
-        const awayScoring = quarterPlays
-          .filter(p => p.scoring && (p.offense === gameInfo.awayTeam || p.team === gameInfo.awayTeam))
-          .reduce((sum, p) => {
-            if (p.playType?.includes('Touchdown')) return sum + 7;
-            if (p.playType?.includes('Field Goal')) return sum + 3;
-            if (p.playType?.includes('Safety')) return sum + 2;
-            return sum + (p.pointsScored || 0);
-          }, 0);
+        if (quarterPlays.length === 0) {
+          // No plays in this quarter
+          scoringByQuarter[i] = {
+            [gameInfo.homeTeam]: 0,
+            [gameInfo.awayTeam]: 0
+          };
+          continue;
+        }
         
+        // Get scores at the end of this quarter
+        const lastPlay = quarterPlays[quarterPlays.length - 1];
+        const endHomeScore = lastPlay.homeScore || 0;
+        const endAwayScore = lastPlay.awayScore || 0;
+        
+        // Calculate points scored in this quarter (difference from previous quarter)
+        const homeScoring = endHomeScore - prevHomeScore;
+        const awayScoring = endAwayScore - prevAwayScore;
+        
+        // Store quarter scoring
         scoringByQuarter[i] = {
           [gameInfo.homeTeam]: homeScoring,
           [gameInfo.awayTeam]: awayScoring
         };
+        
+        // Update for next quarter calculation
+        prevHomeScore = endHomeScore;
+        prevAwayScore = endAwayScore;
+        
+        console.log(`Quarter ${i}: ${gameInfo.homeTeam} scored ${homeScoring}, ${gameInfo.awayTeam} scored ${awayScoring}`);
       }
       
       // Extract period-by-period (quarter) PPA performance
@@ -1428,9 +1440,22 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                   <h4 className="tppg-stat-card-title">
                     <FaChartLine /> Game Flow
                   </h4>
-                  {gameAnalysis.quarterSummaries?.map((summary, i) => (
-                    <div key={i} className="tppg-overview-text">{summary}</div>
-                  ))}
+                  {gameAnalysis.quarterAnalysis?.map((quarter, i) => {
+                    const homePts = quarter.homeScoring;
+                    const awayPts = quarter.awayScoring;
+                    const homeTeam = gameAnalysis.gameInfo?.homeTeam;
+                    const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                    
+                    return (
+                      <div key={i} className="tppg-overview-text">
+                        <strong>Q{quarter.quarter}:</strong> {homeTeam} {homePts}, {awayTeam} {awayPts}
+                        {homePts === awayPts ? " (Even quarter)" : 
+                          homePts > awayPts ? ` (${homeTeam} +${homePts-awayPts})` : 
+                          ` (${awayTeam} +${awayPts-homePts})`
+                        }
+                      </div>
+                    );
+                  })}                    
                 </div>
                 
                 <div className="tppg-stat-card">
