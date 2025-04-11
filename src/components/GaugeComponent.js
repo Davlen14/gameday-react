@@ -445,17 +445,16 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
         .ggc-metric-header {
           display: flex;
-          justify-content: flex-start;
-          align-items: flex-start;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 1rem;
           height: 35px;
-          position: relative;
-          padding-top: 25px;
         }
 
         .ggc-metric-name {
           font-weight: 600;
           font-size: 15px;
+          flex-grow: 1;
         }
 
         .ggc-performance-indicator {
@@ -473,9 +472,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           white-space: nowrap;
           letter-spacing: 0.5px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          position: absolute;
-          top: 0;
-          left: 0;
+          margin-left: 10px;
         }
 
         .ggc-metric-values {
