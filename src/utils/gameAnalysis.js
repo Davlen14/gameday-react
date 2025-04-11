@@ -5,7 +5,7 @@
 
 /**
  * Generates comprehensive game analysis based on play-by-play and box score data
- * @param {Object} data - Object containing playByPlay and boxScore data
+ * @param {Object} data - Object containing playByPlay, boxScore, and optionally scoreboard data
  * @returns {Object} Detailed game analysis object
  */
 export const generateGameAnalysis = (data) => {
@@ -68,7 +68,6 @@ export const generateGameAnalysis = (data) => {
       const awayFieldPos = fieldPosition.find(t => t?.team === gameInfo.awayTeam) || {};
       
       // Extract plays by period (quarters in college football)
-      // Note: box score data uses 'quarter1', 'quarter2', etc. while play-by-play uses 'period' field
       const plays = Array.isArray(data.playByPlay?.plays) ? data.playByPlay.plays : [];
       const playsByQuarter = {};
       for (let i = 1; i <= 4; i++) {
@@ -77,59 +76,109 @@ export const generateGameAnalysis = (data) => {
         console.log(`Period ${i} has ${playsByQuarter[i].length} plays`);
       }
       
-      // Calculate scoring by period (quarter) using score progression
+      // Calculate scoring by period (quarter) from multiple sources
       const scoringByQuarter = {};
-  
-      for (let i = 1; i <= 4; i++) {
-        const quarterPlays = playsByQuarter[i] || [];
+      
+      // Try to get quarter scores from scoreboard data first
+      if (data.scoreboard && data.scoreboard.homeLineScores && data.scoreboard.awayLineScores) {
+        console.log("Using scoreboard line scores for quarter data");
+        const homeLineScores = data.scoreboard.homeLineScores;
+        const awayLineScores = data.scoreboard.awayLineScores;
         
-        // Initialize quarter scoring
-        let homeScoring = 0;
-        let awayScoring = 0;
+        for (let i = 0; i < Math.min(4, homeLineScores.length); i++) {
+          scoringByQuarter[i + 1] = {
+            [gameInfo.homeTeam]: typeof homeLineScores[i] === 'number' ? homeLineScores[i] : 0,
+            [gameInfo.awayTeam]: typeof awayLineScores[i] === 'number' ? awayLineScores[i] : 0
+          };
+          console.log(`Quarter ${i + 1} scoring from scoreboard - Home: ${scoringByQuarter[i + 1][gameInfo.homeTeam]}, Away: ${scoringByQuarter[i + 1][gameInfo.awayTeam]}`);
+        }
+      } 
+      // If no scoreboard, try using boxScore quarters
+      else if (data.boxScore?.teams?.quarters && Array.isArray(data.boxScore.teams.quarters)) {
+        console.log("Using box score quarters data");
+        const quartersData = data.boxScore.teams.quarters;
         
-        // Look for scoring plays in this quarter
-        quarterPlays.forEach(play => {
-          if (play.homeScore !== undefined && play.awayScore !== undefined) {
-            const isHomeScoringPlay = play.playText?.includes(gameInfo.homeTeam) && 
-                                    (play.playType?.includes('Touchdown') || 
-                                      play.playType?.includes('Field Goal') ||
-                                      play.playType?.includes('Safety'));
-                                      
-            const isAwayScoringPlay = play.playText?.includes(gameInfo.awayTeam) && 
-                                    (play.playType?.includes('Touchdown') || 
-                                      play.playType?.includes('Field Goal') ||
-                                      play.playType?.includes('Safety'));
-            
-            if (isHomeScoringPlay) {
-              // Calculate points based on play type
-              if (play.playType?.includes('Touchdown')) {
-                homeScoring += play.playText?.includes('KICK') ? 7 : 6;
-              } else if (play.playType?.includes('Field Goal')) {
-                homeScoring += 3;
-              } else if (play.playType?.includes('Safety')) {
-                homeScoring += 2;
-              }
-            }
-            
-            if (isAwayScoringPlay) {
-              // Calculate points based on play type
-              if (play.playType?.includes('Touchdown')) {
-                awayScoring += play.playText?.includes('KICK') ? 7 : 6;
-              } else if (play.playType?.includes('Field Goal')) {
-                awayScoring += 3;
-              } else if (play.playType?.includes('Safety')) {
-                awayScoring += 2;
-              }
-            }
+        quartersData.forEach(qData => {
+          if (qData.quarter >= 1 && qData.quarter <= 4) {
+            scoringByQuarter[qData.quarter] = {
+              [gameInfo.homeTeam]: typeof qData.homeScore === 'number' ? qData.homeScore : 0,
+              [gameInfo.awayTeam]: typeof qData.awayScore === 'number' ? qData.awayScore : 0
+            };
+            console.log(`Quarter ${qData.quarter} from box score - Home: ${scoringByQuarter[qData.quarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[qData.quarter][gameInfo.awayTeam]}`);
           }
         });
+      }
+      // Fallback to calculating from play-by-play
+      else {
+        console.log("Calculating quarter scores from play-by-play data");
         
-        scoringByQuarter[i] = {
-          [gameInfo.homeTeam]: homeScoring,
-          [gameInfo.awayTeam]: awayScoring
+        for (let i = 1; i <= 4; i++) {
+          const quarterPlays = playsByQuarter[i] || [];
+          
+          // Initialize quarter scoring
+          let homeScoring = 0;
+          let awayScoring = 0;
+          
+          // Track scoring plays in this quarter
+          quarterPlays.forEach(play => {
+            if (play.scoring) {
+              const scoringTeam = play.offense || play.team;
+              let points = 0;
+              
+              // Calculate points based on play type
+              if (play.play_type === 'Rushing Touchdown' || play.play_type === 'Passing Touchdown' || play.playType?.includes('Touchdown')) {
+                points = play.play_text?.includes('KICK') || play.playText?.includes('KICK') ? 7 : 6;
+              } else if (play.play_type === 'Field Goal Good' || play.playType?.includes('Field Goal')) {
+                points = 3;
+              } else if (play.play_type?.includes('Safety') || play.playType?.includes('Safety')) {
+                points = 2;
+              }
+              
+              // Add points to the appropriate team
+              if (scoringTeam === gameInfo.homeTeam) {
+                homeScoring += points;
+              } else if (scoringTeam === gameInfo.awayTeam) {
+                awayScoring += points;
+              }
+            }
+          });
+          
+          scoringByQuarter[i] = {
+            [gameInfo.homeTeam]: homeScoring,
+            [gameInfo.awayTeam]: awayScoring
+          };
+      
+          console.log(`Quarter ${i} scoring calculated - Home: ${homeScoring}, Away: ${awayScoring}`);
+        }
+      }
+      
+      // Check for missing quarters (should have all 4)
+      for (let i = 1; i <= 4; i++) {
+        if (!scoringByQuarter[i]) {
+          scoringByQuarter[i] = {
+            [gameInfo.homeTeam]: 0,
+            [gameInfo.awayTeam]: 0
+          };
+        }
+      }
+      
+      // Validate total points match final score
+      const totalHomeScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.homeTeam], 0);
+      const totalAwayScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.awayTeam], 0);
+      
+      // If totals don't match final score, adjust the fourth quarter
+      if (totalHomeScore !== gameInfo.homePoints || totalAwayScore !== gameInfo.awayPoints) {
+        console.log(`Quarter score totals (${totalHomeScore}-${totalAwayScore}) don't match final score (${gameInfo.homePoints}-${gameInfo.awayPoints}), adjusting...`);
+        
+        const homeAdjustment = gameInfo.homePoints - totalHomeScore;
+        const awayAdjustment = gameInfo.awayPoints - totalAwayScore;
+        
+        scoringByQuarter[4] = {
+          [gameInfo.homeTeam]: Math.max(0, (scoringByQuarter[4][gameInfo.homeTeam] + homeAdjustment)),
+          [gameInfo.awayTeam]: Math.max(0, (scoringByQuarter[4][gameInfo.awayTeam] + awayAdjustment))
         };
-  
-        console.log(`Quarter ${i} scoring - Home: ${homeScoring}, Away: ${awayScoring}`);
+        
+        console.log(`Adjusted Q4 - Home: ${scoringByQuarter[4][gameInfo.homeTeam]}, Away: ${scoringByQuarter[4][gameInfo.awayTeam]}`);
       }
       
       // Extract period-by-period (quarter) PPA performance
@@ -217,7 +266,8 @@ export const generateGameAnalysis = (data) => {
       const keyPlays = [];
       plays.forEach(play => {
         // Skip non-meaningful plays
-        if (play.playType === "Timeout" || play.playType === "End Period" || play.playType === "Kickoff") {
+        if (play.playType === "Timeout" || play.playType === "End Period" || play.playType === "Kickoff" ||
+            play.play_type === "Timeout" || play.play_type === "End Period" || play.play_type === "Kickoff") {
           return;
         }
         
@@ -229,11 +279,11 @@ export const generateGameAnalysis = (data) => {
           keyPlays.push({
             period: play.period || 1,
             clock: play.clock || { minutes: 0, seconds: 0 },
-            playText: play.playText || "Play description unavailable",
+            playText: play.playText || play.play_text || "Play description unavailable",
             team: play.offense || play.team || "Unknown",
             epa: playImpact,
             scoringPlay: play.scoring || false,
-            playType: play.playType || "Unknown Play Type",
+            playType: play.playType || play.play_type || "Unknown Play Type",
             yardsGained: play.yardsGained || 0,
             down: play.down || 1,
             distance: play.distance || 10,
@@ -245,11 +295,11 @@ export const generateGameAnalysis = (data) => {
           keyPlays.push({
             period: play.period || 1,
             clock: play.clock || { minutes: 0, seconds: 0 },
-            playText: play.playText || "Play description unavailable",
+            playText: play.playText || play.play_text || "Play description unavailable",
             team: play.offense || play.team || "Unknown",
             epa: playImpact,
             scoringPlay: true,
-            playType: play.playType || "Unknown Play Type",
+            playType: play.playType || play.play_type || "Unknown Play Type",
             yardsGained: play.yardsGained || 0,
             down: play.down || 1,
             distance: play.distance || 10,
@@ -264,11 +314,11 @@ export const generateGameAnalysis = (data) => {
           keyPlays.push({
             period: play.period || 1,
             clock: play.clock || { minutes: 0, seconds: 0 },
-            playText: play.playText || "Play description unavailable",
+            playText: play.playText || play.play_text || "Play description unavailable",
             team: play.offense || play.team || "Unknown",
             epa: playImpact,
             scoringPlay: play.scoring || false,
-            playType: play.playType || "Unknown Play Type",
+            playType: play.playType || play.play_type || "Unknown Play Type",
             yardsGained: play.yardsGained || 0,
             down: play.down || 1,
             distance: play.distance || 10,
@@ -277,17 +327,17 @@ export const generateGameAnalysis = (data) => {
         }
         // Explosive plays
         else if (
-          (play.playType === "Rush" && play.yardsGained >= 20) ||
-          (play.playType === "Pass Reception" && play.yardsGained >= 30)
+          (play.playType === "Rush" || play.play_type === "Rush") && play.yardsGained >= 20 ||
+          ((play.playType === "Pass Reception" || play.play_type === "Pass Reception") && play.yardsGained >= 30)
         ) {
           keyPlays.push({
             period: play.period || 1,
             clock: play.clock || { minutes: 0, seconds: 0 },
-            playText: play.playText || "Play description unavailable",
+            playText: play.playText || play.play_text || "Play description unavailable",
             team: play.offense || play.team || "Unknown",
             epa: playImpact,
             scoringPlay: play.scoring || false,
-            playType: play.playType || "Unknown Play Type",
+            playType: play.playType || play.play_type || "Unknown Play Type",
             yardsGained: play.yardsGained || 0,
             down: play.down || 1,
             distance: play.distance || 10,
@@ -295,15 +345,18 @@ export const generateGameAnalysis = (data) => {
           });
         }
         // Turnovers
-        else if (play.playType?.includes("Interception") || play.playText?.includes("fumble")) {
+        else if (
+          (play.playType?.includes("Interception") || play.play_type?.includes("Interception")) || 
+          (play.playText?.includes("fumble") || play.play_text?.includes("fumble"))
+        ) {
           keyPlays.push({
             period: play.period || 1,
             clock: play.clock || { minutes: 0, seconds: 0 },
-            playText: play.playText || "Play description unavailable",
+            playText: play.playText || play.play_text || "Play description unavailable",
             team: play.offense || play.team || "Unknown",
             epa: playImpact,
             scoringPlay: play.scoring || false,
-            playType: play.playType || "Unknown Play Type",
+            playType: play.playType || play.play_type || "Unknown Play Type",
             yardsGained: play.yardsGained || 0,
             down: play.down || 1,
             distance: play.distance || 10,
