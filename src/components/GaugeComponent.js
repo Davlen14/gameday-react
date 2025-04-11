@@ -60,14 +60,14 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
   // Display loading, error state, or no data message
   if (loading) return (
-    <div className="radar-chart-loading">
-      <div className="loading-spinner"></div>
+    <div className="g-radar-chart-loading">
+      <div className="g-loading-spinner"></div>
       <div>Loading team metrics...</div>
     </div>
   );
   
   if (error) return (
-    <div className="radar-chart-error">
+    <div className="g-radar-chart-error">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
         <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -79,7 +79,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   
   if (!ratings || Object.values(ratings).every(v => v === null)) {
     return (
-      <div className="radar-chart-no-data">
+      <div className="g-radar-chart-no-data">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M9 4h6v6h4l-7 7-7-7h4V4z" fill="currentColor"/>
         </svg>
@@ -94,12 +94,22 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   const maxRadius = size * 0.42; // Slightly reduce triangle size
   const labelOffset = size * 0.52; // Increase label distance
   
-  // Normalize data for radar chart
+  // Normalize data for radar chart - ensure proper ordering
   const metrics = [
-    { id: "overall", label: "Overall", min: 0, max: 32 },
-    { id: "offense", label: "Offense", min: 20, max: 45 },
-    { id: "defense", label: "Defense", min: 5, max: 30, inverted: true }
+    { id: "overall", label: "Overall", min: 0, max: 32, order: 1 },
+    { id: "offense", label: "Offense", min: 20, max: 45, order: 2 },
+    { id: "defense", label: "Defense", min: 5, max: 30, inverted: true, order: 3 } // Defense is inverted because lower is better
   ];
+  
+  // Ensure all three metrics are always shown in correct order
+  const allMetrics = metrics.map(metric => {
+    // Use actual value if available, otherwise use national average
+    const value = ratings[metric.id] !== null ? ratings[metric.id] : NATIONAL_AVERAGES[metric.id];
+    return {
+      ...metric,
+      value
+    };
+  });
   
   // Calculate normalized values between 0-1 for plotting
   const getNormalizedValue = (value, min, max, inverted = false) => {
@@ -109,10 +119,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   };
   
   // Generate points for the team's values and national averages
-  const teamPoints = metrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / metrics.length;
-    const value = ratings[metric.id];
-    if (value === null) return { x: center, y: center, value: null, metric };
+  // Use the metrics sorted by order to ensure consistent positioning
+  const sortedMetrics = [...metrics].sort((a, b) => a.order - b.order);
+  
+  const teamPoints = sortedMetrics.map((metric, i) => {
+    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
+    // Get the value from ratings or fall back to national average to ensure the point is always displayed
+    const value = ratings[metric.id] !== null ? ratings[metric.id] : NATIONAL_AVERAGES[metric.id];
     
     const normalizedValue = getNormalizedValue(value, metric.min, metric.max, metric.inverted);
     const clampedValue = Math.max(0, Math.min(1, normalizedValue));
@@ -125,10 +138,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       angle,
       normalizedValue: clampedValue
     };
-  }).filter(p => p.value !== null);
+  });
   
-  const nationalPoints = metrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / metrics.length;
+  const nationalPoints = sortedMetrics.map((metric, i) => {
+    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
     const value = NATIONAL_AVERAGES[metric.id];
     const normalizedValue = getNormalizedValue(value, metric.min, metric.max, metric.inverted);
     const clampedValue = Math.max(0, Math.min(1, normalizedValue));
@@ -144,8 +157,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   });
   
   // Generate axis lines and labels
-  const axisLines = metrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / metrics.length;
+  const axisLines = sortedMetrics.map((metric, i) => {
+    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
     const x2 = center + maxRadius * Math.sin(angle);
     const y2 = center - maxRadius * Math.cos(angle);
     
@@ -173,8 +186,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
   // Create spider web rings (scales)
   const rings = [0.25, 0.5, 0.75, 1].map(scale => {
-    const points = metrics.map((_, i) => {
-      const angle = (Math.PI * 2 * i) / metrics.length;
+    const points = sortedMetrics.map((_, i) => {
+      const angle = (Math.PI * 2 * i) / sortedMetrics.length;
       return {
         x: center + maxRadius * scale * Math.sin(angle),
         y: center - maxRadius * scale * Math.cos(angle)
@@ -200,10 +213,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   // Determine metric performance level
   const getPerformanceLevel = (metricId, value) => {
     if (metricId === 'defense') {
+      // For defense, lower values are better (fewer points allowed)
       return value <= 15 ? "Above Average" : value >= NATIONAL_AVERAGES.defense ? "Below Average" : "Average";
     } else if (metricId === 'offense') {
+      // For offense, higher values are better (more points scored)
       return value >= 35 ? "Above Average" : value <= NATIONAL_AVERAGES.offense ? "Below Average" : "Average";
     } else {
+      // For overall, higher values are better
       return value >= 25 ? "Above Average" : value <= 20 ? "Below Average" : "Average";
     }
   };
@@ -215,8 +231,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   };
 
   return (
-    <div className="modern-radar-chart">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="radar-svg">
+    <div className="g-modern-radar-chart">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="g-radar-svg">
         {/* Gradient definitions */}
         <defs>
           <linearGradient id="team-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -233,7 +249,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </defs>
       
         {/* Background rings */}
-        <g className="radar-rings">
+        <g className="g-radar-rings">
           {rings.map((ring, i) => (
             <path
               key={`ring-${i}`}
@@ -247,7 +263,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
         
         {/* Axis lines */}
-        <g className="radar-axes">
+        <g className="g-radar-axes">
           {axisLines.map((axis, i) => (
             <line
               key={`axis-${i}`}
@@ -262,7 +278,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
         
         {/* National average area */}
-        <g className="national-avg-area">
+        <g className="g-national-avg-area">
           <path
             d={createAreaPath(nationalPoints)}
             fill="rgba(150, 150, 150, 0.15)"
@@ -273,7 +289,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
         
         {/* Team area */}
-        <g className="team-area" filter="url(#drop-shadow)">
+        <g className="g-team-area" filter="url(#drop-shadow)">
           <path
             d={createAreaPath(teamPoints)}
             fill="url(#team-gradient)"
@@ -283,9 +299,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
         
         {/* Data points with hover effect */}
-        <g className="data-points">
+        <g className="g-data-points">
           {teamPoints.map((point, i) => (
-            <g key={`point-${i}`} className="point-group">
+            <g key={`point-${i}`} className="g-point-group">
               <circle
                 cx={point.x}
                 cy={point.y}
@@ -309,7 +325,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         </g>
         
         {/* Axis labels */}
-        <g className="radar-labels">
+        <g className="g-radar-labels">
           {axisLines.map((axis, i) => (
             <text
               key={`label-${i}`}
@@ -336,11 +352,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       </svg>
       
       {/* Metrics legend */}
-      <div className="metrics-legend">
-        {metrics.map(metric => {
-          const value = ratings[metric.id];
-          if (value === null) return null;
-          
+      <div className="g-metrics-legend">
+        {allMetrics.map(metric => {
+          const value = metric.value;
           const nationalAvg = NATIONAL_AVERAGES[metric.id];
           const performanceLevel = getPerformanceLevel(metric.id, value);
           const performanceColor = getPerformanceColor(metric.id, value);
@@ -348,15 +362,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           return (
             <div 
               key={metric.id} 
-              className={`metric-card ${hoveredMetric === metric.id ? 'active' : ''}`}
+              className={`g-metric-card ${hoveredMetric === metric.id ? 'g-active' : ''}`}
               onMouseEnter={() => setHoveredMetric(metric.id)}
               onMouseLeave={() => setHoveredMetric(null)}
               style={{ borderColor: hoveredMetric === metric.id ? performanceColor : 'transparent' }}
             >
-              <div className="metric-header">
-                <span className="metric-name">{metric.label}</span>
+              <div className="g-metric-header">
+                <span className="g-metric-name">{metric.label}</span>
                 <span 
-                  className="performance-indicator" 
+                  className="g-performance-indicator" 
                   style={{ 
                     backgroundColor: performanceColor,
                     boxShadow: `0 3px 6px ${performanceColor}40`
@@ -367,15 +381,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
                    "Average"}
                 </span>
               </div>
-              <div className="metric-values">
-                <div className="team-value">
-                  <span className="value-label">Team</span>
-                  <span className="value-number" style={{ color: performanceColor }}>{value.toFixed(2)}</span>
+              <div className="g-metric-values">
+                <div className="g-team-value">
+                  <span className="g-value-label">Team</span>
+                  <span className="g-value-number" style={{ color: performanceColor }}>{value.toFixed(2)}</span>
                 </div>
-                <div className="vs-divider">vs</div>
-                <div className="natl-value">
-                  <span className="value-label">National Avg</span>
-                  <span className="value-number">{nationalAvg.toFixed(2)}</span>
+                <div className="g-vs-divider">vs</div>
+                <div className="g-natl-value">
+                  <span className="g-value-label">National Avg</span>
+                  <span className="g-value-number">{nationalAvg.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -384,7 +398,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       </div>
       
       <style jsx>{`
-        .modern-radar-chart {
+        /* Custom radar chart styles with g- prefix to avoid style collisions */
+        .g-modern-radar-chart {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           display: flex;
           flex-direction: column;
@@ -395,64 +410,62 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .radar-svg {
+        .g-radar-svg {
           margin-bottom: 1.5rem;
         }
         
-        .metrics-legend {
+        .g-metrics-legend {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           justify-content: center;
           gap: 1rem;
           margin-bottom: 1.5rem;
           width: 100%;
         }
         
-        .metric-card {
+        .g-metric-card {
           background: white;
           border-radius: 8px;
           padding: 0.75rem 1rem;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           flex: 1;
-          min-width: 220px;
-          max-width: 250px;
+          min-width: 150px;
+          max-width: 200px;
           transition: all 0.2s ease;
           border: 2px solid transparent;
-          height: 170px;
+          height: 140px;
           display: flex;
           flex-direction: column;
         }
         
-        .metric-card:hover, .metric-card.active {
+        .g-metric-card:hover, .g-metric-card.g-active {
           transform: translateY(-3px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         
-        .metric-header {
+        .g-metric-header {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
           align-items: flex-start;
-          margin-bottom: 0.75rem;
-          height: 85px;
+          margin-bottom: 1rem;
+          height: 35px;
           position: relative;
+          padding-top: 25px;
         }
         
-        .metric-name {
+        .g-metric-name {
           font-weight: 600;
           font-size: 15px;
         }
         
-        .performance-indicator {
+        .g-performance-indicator {
           font-size: 11px;
           font-weight: 700;
-          padding: 5px 8px;
-          border-radius: 6px;
+          padding: 4px 8px;
+          border-radius: 4px;
           color: white;
-          writing-mode: vertical-lr;
-          transform: rotate(180deg);
-          height: auto;
-          min-height: 70px;
-          width: 26px;
+          height: 20px;
+          width: auto;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -460,41 +473,43 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           white-space: nowrap;
           letter-spacing: 0.5px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          margin-left: 6px;
+          position: absolute;
+          top: 0;
+          left: 0;
         }
         
-        .metric-values {
+        .g-metric-values {
           display: flex;
           align-items: center;
           justify-content: space-between;
         }
         
-        .team-value, .natl-value {
+        .g-team-value, .g-natl-value {
           display: flex;
           flex-direction: column;
           flex: 1;
         }
         
-        .vs-divider {
+        .g-vs-divider {
           font-size: 13px;
           color: #999;
           margin: 0 0.5rem;
         }
         
-        .value-label {
+        .g-value-label {
           font-size: 12px;
           color: #666;
           margin-bottom: 0.25rem;
         }
         
-        .value-number {
+        .g-value-number {
           font-size: 18px;
           font-weight: 700;
         }
         
 
         
-        .loading-spinner {
+        .g-loading-spinner {
           width: 40px;
           height: 40px;
           border: 4px solid #f3f3f3;
@@ -509,9 +524,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           100% { transform: rotate(360deg); }
         }
         
-        .radar-chart-loading,
-        .radar-chart-error,
-        .radar-chart-no-data {
+        .g-radar-chart-loading,
+        .g-radar-chart-error,
+        .g-radar-chart-no-data {
           display: flex;
           flex-direction: column;
           align-items: center;
