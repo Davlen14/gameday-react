@@ -247,6 +247,8 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       const homeTotalPPA = homeTeamData?.overall?.total || 0;
       const awayTotalPPA = awayTeamData?.overall?.total || 0;
       
+      // These values are stored directly in the teamEfficiency object later
+      
       const quarterAnalysis = quarters.map((quarter, index) => {
         // Get PPA values or default to 0
         const homeQuarterPPA = homeTeamData?.overall?.[quarter] || 0;
@@ -430,6 +432,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       
       // Enhanced team efficiency analysis
       const teamEfficiency = {
+        // Include the total PPA values
+        homeTotalPPA,
+        awayTotalPPA,
         passingComparison: {
           [gameInfo.homeTeam]: passingEfficiency[gameInfo.homeTeam],
           [gameInfo.awayTeam]: passingEfficiency[gameInfo.awayTeam],
@@ -1616,7 +1621,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="homePPA" 
-                        name={gameAnalysis.gameInfo?.homeTeam + ` (${homeTotalPPA.toFixed(3)})`} 
+                        name={gameAnalysis.gameInfo?.homeTeam + ` (${gameAnalysis.teamEfficiency?.homeTotalPPA?.toFixed(3) || '0.000'})`} 
                         stroke="#3b82f6" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#3b82f6' }}
@@ -1625,7 +1630,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                       <Line 
                         type="monotone" 
                         dataKey="awayPPA" 
-                        name={gameAnalysis.gameInfo?.awayTeam + ` (${awayTotalPPA.toFixed(3)})`} 
+                        name={gameAnalysis.gameInfo?.awayTeam + ` (${gameAnalysis.teamEfficiency?.awayTotalPPA?.toFixed(3) || '0.000'})`} 
                         stroke="#ef4444" 
                         strokeWidth={3}
                         dot={{ r: 6, fill: '#ef4444' }}
