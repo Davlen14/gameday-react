@@ -91,7 +91,7 @@ export const generateGameAnalysis = (data) => {
         console.log("Quarters data:", JSON.stringify(data.boxScore.teams.quarters));
       }
       
-      // Initialize quarters with zeros first
+      // Extract quarters with zeros first
       for (let i = 1; i <= 4; i++) {
         scoringByQuarter[i] = {
           [gameInfo.homeTeam]: 0,
@@ -99,49 +99,50 @@ export const generateGameAnalysis = (data) => {
         };
       }
       
-      // Try to get quarter scores from scoreboard data first
-      let usedScoreboard = false;
-      if (data.scoreboard && data.scoreboard.homeLineScores && data.scoreboard.awayLineScores) {
-        console.log("Using scoreboard line scores for quarter data");
+      // ALWAYS use the original API line scores if available
+      let usedOriginalScores = false;
+      if (data.scoreboard && Array.isArray(data.scoreboard.homeLineScores) && Array.isArray(data.scoreboard.awayLineScores)) {
         const homeLineScores = data.scoreboard.homeLineScores;
         const awayLineScores = data.scoreboard.awayLineScores;
         
-        // Check if arrays have actual values
-        if (homeLineScores.length > 0 && awayLineScores.length > 0) {
-          usedScoreboard = true;
-          for (let i = 0; i < Math.min(4, homeLineScores.length); i++) {
+        if (homeLineScores.length > 0 || awayLineScores.length > 0) {
+          usedOriginalScores = true;
+          console.log("USING ORIGINAL API LINE SCORES", { home: homeLineScores, away: awayLineScores });
+          
+          // Always use the API data directly for each quarter
+          for (let i = 0; i < Math.min(4, Math.max(homeLineScores.length, awayLineScores.length)); i++) {
             scoringByQuarter[i + 1] = {
-              [gameInfo.homeTeam]: homeLineScores[i], // Preserve original values, including null
-              [gameInfo.awayTeam]: awayLineScores[i]  // Preserve original values, including null
+              [gameInfo.homeTeam]: homeLineScores[i],  // Keep original value including null
+              [gameInfo.awayTeam]: awayLineScores[i]   // Keep original value including null
             };
-            console.log(`Quarter ${i + 1} scoring from scoreboard - Home: ${scoringByQuarter[i + 1][gameInfo.homeTeam]}, Away: ${scoringByQuarter[i + 1][gameInfo.awayTeam]}`);
           }
-        }
-      } 
-      
-      // If no scoreboard, try using boxScore quarters
-      let usedBoxScore = false;
-      if (!usedScoreboard && data.boxScore?.teams?.quarters && Array.isArray(data.boxScore.teams.quarters)) {
-        console.log("Using box score quarters data");
-        const quartersData = data.boxScore.teams.quarters;
-        
-        if (quartersData.length > 0) {
-          usedBoxScore = true;
-          quartersData.forEach(qData => {
-            if (qData.quarter >= 1 && qData.quarter <= 4) {
-              scoringByQuarter[qData.quarter] = {
-                [gameInfo.homeTeam]: typeof qData.homeScore === 'number' ? qData.homeScore : 0,
-                [gameInfo.awayTeam]: typeof qData.awayScore === 'number' ? qData.awayScore : 0
-              };
-              console.log(`Quarter ${qData.quarter} from box score - Home: ${scoringByQuarter[qData.quarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[qData.quarter][gameInfo.awayTeam]}`);
-            }
-          });
         }
       }
       
-      // Try to reconstruct quarter scores from final score if only we have total points
-      if (!usedScoreboard && !usedBoxScore && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
-        console.log("No quarter-by-quarter data found, attempting to reconstruct from play-by-play");
+      // Only use alternative data sources if we don't have the original scores
+      if (!usedOriginalScores) {
+        let usedBoxScore = false;
+        if (data.boxScore?.teams?.quarters && Array.isArray(data.boxScore.teams.quarters)) {
+          console.log("Using box score quarters data");
+          const quartersData = data.boxScore.teams.quarters;
+          
+          if (quartersData.length > 0) {
+            usedBoxScore = true;
+            quartersData.forEach(qData => {
+              if (qData.quarter >= 1 && qData.quarter <= 4) {
+                scoringByQuarter[qData.quarter] = {
+                  [gameInfo.homeTeam]: typeof qData.homeScore === 'number' ? qData.homeScore : 0,
+                  [gameInfo.awayTeam]: typeof qData.awayScore === 'number' ? qData.awayScore : 0
+                };
+                console.log(`Quarter ${qData.quarter} from box score - Home: ${scoringByQuarter[qData.quarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[qData.quarter][gameInfo.awayTeam]}`);
+              }
+            });
+          }
+        }
+      
+        // Try to reconstruct quarter scores from final score if only we have total points
+        if (!usedBoxScore && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
+          console.log("No quarter-by-quarter data found, attempting to reconstruct from play-by-play");
         
         // First, try to calculate from play-by-play scoring events
         let homeScoresByQuarter = [0, 0, 0, 0];
@@ -224,40 +225,41 @@ export const generateGameAnalysis = (data) => {
         const totalAway = awayScoresByQuarter.reduce((a, b) => a + b, 0);
         
         if (totalHome === 0 && totalAway === 0 && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
-          console.log("No scoring plays detected but we have final score, generating estimated quarters");
-          
-          // A common pattern: most scoring happens in 2nd and 4th quarters
-          const homeDistribution = [0.1, 0.3, 0.2, 0.4];  // 10%, 30%, 20%, 40%
-          const awayDistribution = [0.1, 0.3, 0.2, 0.4];
-          
-          for (let i = 0; i < 4; i++) {
-            const homeQuarterPoints = Math.round(gameInfo.homePoints * homeDistribution[i]);
-            const awayQuarterPoints = Math.round(gameInfo.awayPoints * awayDistribution[i]);
-            
-            scoringByQuarter[i + 1] = {
-              [gameInfo.homeTeam]: homeQuarterPoints,
-              [gameInfo.awayTeam]: awayQuarterPoints
-            };
-          }
-          
-          // Adjust to ensure totals match exactly
-          let homeAdjusted = homeDistribution.map((d, i) => 
-            Math.round(gameInfo.homePoints * d)).reduce((a, b) => a + b, 0);
-          let awayAdjusted = awayDistribution.map((d, i) => 
-            Math.round(gameInfo.awayPoints * d)).reduce((a, b) => a + b, 0);
-          
-          // Fix any rounding errors
-          if (homeAdjusted !== gameInfo.homePoints) {
-            const diff = gameInfo.homePoints - homeAdjusted;
-            scoringByQuarter[4][gameInfo.homeTeam] += diff;
-          }
-          
-          if (awayAdjusted !== gameInfo.awayPoints) {
-            const diff = gameInfo.awayPoints - awayAdjusted;
-            scoringByQuarter[4][gameInfo.awayTeam] += diff;
-          }
+        console.log("No scoring plays detected but we have final score, generating estimated quarters");
+        
+        // A common pattern: most scoring happens in 2nd and 4th quarters
+        const homeDistribution = [0.1, 0.3, 0.2, 0.4];  // 10%, 30%, 20%, 40%
+        const awayDistribution = [0.1, 0.3, 0.2, 0.4];
+        
+        for (let i = 0; i < 4; i++) {
+        const homeQuarterPoints = Math.round(gameInfo.homePoints * homeDistribution[i]);
+        const awayQuarterPoints = Math.round(gameInfo.awayPoints * awayDistribution[i]);
+        
+        scoringByQuarter[i + 1] = {
+        [gameInfo.homeTeam]: homeQuarterPoints,
+        [gameInfo.awayTeam]: awayQuarterPoints
+        };
         }
-      }
+        
+        // Adjust to ensure totals match exactly
+        let homeAdjusted = homeDistribution.map((d, i) => 
+        Math.round(gameInfo.homePoints * d)).reduce((a, b) => a + b, 0);
+        let awayAdjusted = awayDistribution.map((d, i) => 
+        Math.round(gameInfo.awayPoints * d)).reduce((a, b) => a + b, 0);
+        
+        // Fix any rounding errors
+        if (homeAdjusted !== gameInfo.homePoints) {
+        const diff = gameInfo.homePoints - homeAdjusted;
+        scoringByQuarter[4][gameInfo.homeTeam] += diff;
+        }
+        
+        if (awayAdjusted !== gameInfo.awayPoints) {
+        const diff = gameInfo.awayPoints - awayAdjusted;
+        scoringByQuarter[4][gameInfo.awayTeam] += diff;
+        }
+        }
+        }
+      } // end of !usedOriginalScores block
       
       // Verify the total points match final score
       const totalHomeScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + (q[gameInfo.homeTeam] || 0), 0);
@@ -297,6 +299,10 @@ export const generateGameAnalysis = (data) => {
         console.log(`Final Quarter ${i} scoring - Home: ${scoringByQuarter[i][gameInfo.homeTeam]}, Away: ${scoringByQuarter[i][gameInfo.awayTeam]}`);
       }
       
+      // Create a debug flag to verify original scores are preserved
+      const isUsingOriginalScores = !!data.scoreboard?.homeLineScores;
+      console.log("Is using original API scores:", isUsingOriginalScores);
+
       // Extract period-by-period (quarter) PPA performance
       const quarters = ['quarter1', 'quarter2', 'quarter3', 'quarter4'];
       
@@ -313,9 +319,14 @@ export const generateGameAnalysis = (data) => {
         const homeQuarterPPA = homeTeamData?.overall?.[quarter] !== null ? homeTeamData?.overall?.[quarter] || 0 : 0;
         const awayQuarterPPA = awayTeamData?.overall?.[quarter] !== null ? awayTeamData?.overall?.[quarter] || 0 : 0;
         
-        // Get scoring from the calculated values
-        const homeScoring = scoringByQuarter[index + 1]?.[gameInfo.homeTeam] || 0;
-        const awayScoring = scoringByQuarter[index + 1]?.[gameInfo.awayTeam] || 0;
+        // Get scoring from the calculated values - use the exact values from scoringByQuarter
+        const homeScoring = scoringByQuarter[index + 1]?.[gameInfo.homeTeam];
+        const awayScoring = scoringByQuarter[index + 1]?.[gameInfo.awayTeam];
+        
+        // Debug log to verify we're using the correct scores
+        if (isUsingOriginalScores) {
+          console.log(`Quarter ${index + 1} - Using original values - Home: ${homeScoring}, Away: ${awayScoring}`);
+        }
         
         return {
           quarter: index + 1,
