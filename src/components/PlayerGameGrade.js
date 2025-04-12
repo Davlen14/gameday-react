@@ -212,13 +212,38 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         console.log("- Scoreboard:", scoreboardData ? "Yes" : "No");
         console.log("- Game info:", gameInfoData ? "Yes" : "No");
         
+        // Extract line scores from gameInfoData if available
+        let homeLineScores = null;
+        let awayLineScores = null;
+        
+        if (gameInfoData && gameInfoData.data && gameInfoData.data.game && gameInfoData.data.game.length > 0) {
+          const gameData = gameInfoData.data.game[0];
+          if (gameData.homeLineScores && gameData.awayLineScores) {
+            homeLineScores = gameData.homeLineScores;
+            awayLineScores = gameData.awayLineScores;
+            console.log("Found line scores in game data:", {
+              home: homeLineScores,
+              away: awayLineScores
+            });
+          }
+        }
+        
         // Generate game analysis with all available data sources
-        const gameAnalysisData = generateGameAnalysis({
+        let gameAnalysisData = generateGameAnalysis({
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore,
           scoreboard: scoreboardData,
           gameInfo: gameInfoData
         });
+        
+        // Add line scores to gameAnalysisData.gameInfo
+        if (homeLineScores && awayLineScores) {
+          gameAnalysisData.gameInfo = {
+            ...gameAnalysisData.gameInfo,
+            homeLineScores: homeLineScores,
+            awayLineScores: awayLineScores
+          };
+        }
         
         // Process player grades
         console.log("Calculating detailed player grades");
@@ -473,53 +498,103 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                   <h4 className="tppg-stat-card-title">
                     <FaChartLine /> Game Flow
                   </h4>
-                  {gameAnalysis.quarterAnalysis?.map((quarter, i) => {
-                  const homePts = quarter.homeScoring;
-                  const awayPts = quarter.awayScoring;
-                  const homeTeam = gameAnalysis.gameInfo?.homeTeam;
-                  const awayTeam = gameAnalysis.gameInfo?.awayTeam;
-                  
-                  return (
-                  <div key={i} className="tppg-overview-text">
-                  <strong>Q{quarter.quarter}:</strong>{' '}
-                  <span style={{ color: homeColor }}>
-                  {teamData.home.logo && (
-                  <img 
-                  src={teamData.home.logo} 
-                  alt={`${homeTeam} logo`}
-                  className="tppg-inline-logo"
-                  style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                  />
-                  )}
-                  {homeTeam} {homePts !== null && homePts !== undefined ? homePts : '-'}
-                  </span>, {' '}
-                  <span style={{ color: awayColor }}>
-                  {teamData.away.logo && (
-                  <img 
-                  src={teamData.away.logo} 
-                  alt={`${awayTeam} logo`}
-                  className="tppg-inline-logo"
-                  style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                  />
-                  )}
-                  {awayTeam} {awayPts !== null && awayPts !== undefined ? awayPts : '-'}
-                  </span>
-                  {homePts === awayPts && homePts !== null && homePts !== undefined ? " (Even quarter)" : 
-                  homePts > awayPts ? (
-                  <span style={{ color: homeColor }}>
-                  {` (${homeTeam} +${homePts-awayPts})`}
-                  </span>
+                  {gameAnalysis.gameInfo?.homeLineScores && gameAnalysis.gameInfo?.awayLineScores ? (
+                    gameAnalysis.gameInfo.homeLineScores.map((homePts, i) => {
+                      const awayPts = gameAnalysis.gameInfo.awayLineScores[i];
+                      const homeTeam = gameAnalysis.gameInfo?.homeTeam;
+                      const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                      
+                      return (
+                        <div key={i} className="tppg-overview-text">
+                          <strong>Q{i+1}:</strong>{' '}
+                          <span style={{ color: homeColor }}>
+                            {teamData.home.logo && (
+                              <img 
+                                src={teamData.home.logo} 
+                                alt={`${homeTeam} logo`}
+                                className="tppg-inline-logo"
+                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                              />
+                            )}
+                            {homeTeam} {homePts !== null && homePts !== undefined ? homePts : '-'}
+                          </span>, {' '}
+                          <span style={{ color: awayColor }}>
+                            {teamData.away.logo && (
+                              <img 
+                                src={teamData.away.logo} 
+                                alt={`${awayTeam} logo`}
+                                className="tppg-inline-logo"
+                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                              />
+                            )}
+                            {awayTeam} {awayPts !== null && awayPts !== undefined ? awayPts : '-'}
+                          </span>
+                          {homePts === awayPts && homePts !== null && homePts !== undefined ? " (Even quarter)" : 
+                            homePts > awayPts ? (
+                              <span style={{ color: homeColor }}>
+                                {` (${homeTeam} +${homePts-awayPts})`}
+                              </span>
+                            ) : (
+                              awayPts > homePts ? (
+                                <span style={{ color: awayColor }}>
+                                  {` (${awayTeam} +${awayPts-homePts})`}
+                                </span>
+                              ) : null
+                            )
+                          }
+                        </div>
+                      );
+                    })
                   ) : (
-                  awayPts > homePts ? (
-                  <span style={{ color: awayColor }}>
-                      {` (${awayTeam} +${awayPts-homePts})`}
-                      </span>
-                      ) : null
-                      )
-                      }
-                      </div>
-                    );
-                  })}
+                    // Fallback to quarterAnalysis if homeLineScores/awayLineScores are not available
+                    gameAnalysis.quarterAnalysis?.map((quarter, i) => {
+                      const homePts = quarter.homeScoring;
+                      const awayPts = quarter.awayScoring;
+                      const homeTeam = gameAnalysis.gameInfo?.homeTeam;
+                      const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                      
+                      return (
+                        <div key={i} className="tppg-overview-text">
+                          <strong>Q{quarter.quarter}:</strong>{' '}
+                          <span style={{ color: homeColor }}>
+                            {teamData.home.logo && (
+                              <img 
+                                src={teamData.home.logo} 
+                                alt={`${homeTeam} logo`}
+                                className="tppg-inline-logo"
+                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                              />
+                            )}
+                            {homeTeam} {homePts !== null && homePts !== undefined ? homePts : '-'}
+                          </span>, {' '}
+                          <span style={{ color: awayColor }}>
+                            {teamData.away.logo && (
+                              <img 
+                                src={teamData.away.logo} 
+                                alt={`${awayTeam} logo`}
+                                className="tppg-inline-logo"
+                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                              />
+                            )}
+                            {awayTeam} {awayPts !== null && awayPts !== undefined ? awayPts : '-'}
+                          </span>
+                          {homePts === awayPts && homePts !== null && homePts !== undefined ? " (Even quarter)" : 
+                            homePts > awayPts ? (
+                              <span style={{ color: homeColor }}>
+                                {` (${homeTeam} +${homePts-awayPts})`}
+                              </span>
+                            ) : (
+                              awayPts > homePts ? (
+                                <span style={{ color: awayColor }}>
+                                  {` (${awayTeam} +${awayPts-homePts})`}
+                                </span>
+                              ) : null
+                            )
+                          }
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
                 
                 <div className="tppg-stat-card">
