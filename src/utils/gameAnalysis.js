@@ -86,6 +86,11 @@ export const generateGameAnalysis = (data) => {
         console.log("homeLineScores:", data.scoreboard.homeLineScores);
         console.log("awayLineScores:", data.scoreboard.awayLineScores);
       }
+      console.log("GameInfo data:", data.gameInfo ? "Available" : "Not available");
+      if (data.gameInfo?.data?.game?.[0]) {
+        console.log("GameInfo homeLineScores:", data.gameInfo.data.game[0].homeLineScores);
+        console.log("GameInfo awayLineScores:", data.gameInfo.data.game[0].awayLineScores);
+      }
       console.log("BoxScore quarters:", data.boxScore?.teams?.quarters ? "Available" : "Not available");
       if (data.boxScore?.teams?.quarters) {
         console.log("Quarters data:", JSON.stringify(data.boxScore.teams.quarters));
@@ -99,23 +104,34 @@ export const generateGameAnalysis = (data) => {
         };
       }
       
-      // ALWAYS use the original API line scores if available
+      // Check for line scores in multiple places - first prioritize gameInfo data
       let usedOriginalScores = false;
-      if (data.scoreboard && Array.isArray(data.scoreboard.homeLineScores) && Array.isArray(data.scoreboard.awayLineScores)) {
-        const homeLineScores = data.scoreboard.homeLineScores;
-        const awayLineScores = data.scoreboard.awayLineScores;
-        
-        if (homeLineScores.length > 0 || awayLineScores.length > 0) {
-          usedOriginalScores = true;
-          console.log("USING ORIGINAL API LINE SCORES", { home: homeLineScores, away: awayLineScores });
-          
-          // Always use the API data directly for each quarter
-          for (let i = 0; i < Math.min(4, Math.max(homeLineScores.length, awayLineScores.length)); i++) {
-            scoringByQuarter[i + 1] = {
-              [gameInfo.homeTeam]: homeLineScores[i],  // Keep original value including null
-              [gameInfo.awayTeam]: awayLineScores[i]   // Keep original value including null
-            };
-          }
+      let homeLineScores = null;
+      let awayLineScores = null;
+      
+      // First, try to use the line scores from gameInfo (preferred source)
+      if (data.gameInfo?.data?.game?.[0]?.homeLineScores && data.gameInfo?.data?.game?.[0]?.awayLineScores) {
+        homeLineScores = data.gameInfo.data.game[0].homeLineScores;
+        awayLineScores = data.gameInfo.data.game[0].awayLineScores;
+        console.log("USING GAMEINFO API LINE SCORES", { home: homeLineScores, away: awayLineScores });
+        usedOriginalScores = true;
+      }
+      // If not available, fallback to scoreboard data
+      else if (data.scoreboard && Array.isArray(data.scoreboard.homeLineScores) && Array.isArray(data.scoreboard.awayLineScores)) {
+        homeLineScores = data.scoreboard.homeLineScores;
+        awayLineScores = data.scoreboard.awayLineScores;
+        console.log("USING SCOREBOARD API LINE SCORES", { home: homeLineScores, away: awayLineScores });
+        usedOriginalScores = true;
+      }
+      
+      // If we have valid line scores from either source, use them
+      if (usedOriginalScores && homeLineScores && awayLineScores) {
+        // Always use the API data directly for each quarter
+        for (let i = 0; i < Math.min(4, Math.max(homeLineScores.length, awayLineScores.length)); i++) {
+          scoringByQuarter[i + 1] = {
+            [gameInfo.homeTeam]: homeLineScores[i],  // Keep original value including null
+            [gameInfo.awayTeam]: awayLineScores[i]   // Keep original value including null
+          };
         }
       }
       
