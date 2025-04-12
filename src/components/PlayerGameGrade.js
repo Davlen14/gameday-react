@@ -474,50 +474,52 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <FaChartLine /> Game Flow
                   </h4>
                   {gameAnalysis.quarterAnalysis?.map((quarter, i) => {
-                    const homePts = quarter.homeScoring;
-                    const awayPts = quarter.awayScoring;
-                    const homeTeam = gameAnalysis.gameInfo?.homeTeam;
-                    const awayTeam = gameAnalysis.gameInfo?.awayTeam;
-                    
-                    return (
-                      <div key={i} className="tppg-overview-text">
-                        <strong>Q{quarter.quarter}:</strong>{' '}
-                        <span style={{ color: homeColor }}>
-                          {teamData.home.logo && (
-                            <img 
-                              src={teamData.home.logo} 
-                              alt={`${homeTeam} logo`}
-                              className="tppg-inline-logo"
-                              style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                            />
-                          )}
-                          {homeTeam} {homePts}
-                        </span>, {' '}
-                        <span style={{ color: awayColor }}>
-                          {teamData.away.logo && (
-                            <img 
-                              src={teamData.away.logo} 
-                              alt={`${awayTeam} logo`}
-                              className="tppg-inline-logo"
-                              style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                            />
-                          )}
-                          {awayTeam} {awayPts}
-                        </span>
-                        {homePts === awayPts ? " (Even quarter)" : 
-                          homePts > awayPts ? (
-                            <span style={{ color: homeColor }}>
-                              {` (${homeTeam} +${homePts-awayPts})`}
-                            </span>
-                          ) : (
-                            <span style={{ color: awayColor }}>
-                              {` (${awayTeam} +${awayPts-homePts})`}
-                            </span>
-                          )
-                        }
+                  const homePts = quarter.homeScoring;
+                  const awayPts = quarter.awayScoring;
+                  const homeTeam = gameAnalysis.gameInfo?.homeTeam;
+                  const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                  
+                  return (
+                  <div key={i} className="tppg-overview-text">
+                  <strong>Q{quarter.quarter}:</strong>{' '}
+                  <span style={{ color: homeColor }}>
+                  {teamData.home.logo && (
+                  <img 
+                  src={teamData.home.logo} 
+                  alt={`${homeTeam} logo`}
+                  className="tppg-inline-logo"
+                  style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                  />
+                  )}
+                  {homeTeam} {homePts !== null && homePts !== undefined ? homePts : '-'}
+                  </span>, {' '}
+                  <span style={{ color: awayColor }}>
+                  {teamData.away.logo && (
+                  <img 
+                  src={teamData.away.logo} 
+                  alt={`${awayTeam} logo`}
+                  className="tppg-inline-logo"
+                  style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
+                  />
+                  )}
+                  {awayTeam} {awayPts !== null && awayPts !== undefined ? awayPts : '-'}
+                  </span>
+                  {homePts === awayPts && homePts !== null && homePts !== undefined ? " (Even quarter)" : 
+                  homePts > awayPts ? (
+                  <span style={{ color: homeColor }}>
+                  {` (${homeTeam} +${homePts-awayPts})`}
+                  </span>
+                  ) : (
+                  awayPts > homePts ? (
+                  <span style={{ color: awayColor }}>
+                      {` (${awayTeam} +${awayPts-homePts})`}
+                      </span>
+                      ) : null
+                      )
+                      }
                       </div>
                     );
-                  })}                    
+                  })}
                 </div>
                 
                 <div className="tppg-stat-card">
@@ -721,7 +723,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           const logo = name.includes(gameAnalysis.gameInfo?.homeTeam) ? 
                             teamData.home.logo : teamData.away.logo;
                           return [
-                            value,
+                            value !== null && value !== undefined ? value : '-',
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               {logo && (
                                 <img 
@@ -882,7 +884,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           )}
                           {gameAnalysis.gameInfo?.homeTeam}
                         </span>
-                        <span className="tppg-team-points" style={{ color: homeColor }}>{quarter.homeScoring}</span>
+                        <span className="tppg-team-points" style={{ color: homeColor }}>{quarter.homeScoring !== null && quarter.homeScoring !== undefined ? quarter.homeScoring : '-'}</span>
                       </div>
                       <div className="tppg-team-score">
                         <span className="tppg-team-name">
@@ -896,7 +898,7 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           )}
                           {gameAnalysis.gameInfo?.awayTeam}
                         </span>
-                        <span className="tppg-team-points" style={{ color: awayColor }}>{quarter.awayScoring}</span>
+                        <span className="tppg-team-points" style={{ color: awayColor }}>{quarter.awayScoring !== null && quarter.awayScoring !== undefined ? quarter.awayScoring : '-'}</span>
                       </div>
                     </div>
                     <div className="tppg-team-comparison">
