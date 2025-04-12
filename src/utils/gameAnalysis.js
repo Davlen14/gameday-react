@@ -111,8 +111,8 @@ export const generateGameAnalysis = (data) => {
           usedScoreboard = true;
           for (let i = 0; i < Math.min(4, homeLineScores.length); i++) {
             scoringByQuarter[i + 1] = {
-              [gameInfo.homeTeam]: typeof homeLineScores[i] === 'number' ? homeLineScores[i] : 0,
-              [gameInfo.awayTeam]: typeof awayLineScores[i] === 'number' ? awayLineScores[i] : 0
+              [gameInfo.homeTeam]: homeLineScores[i], // Preserve original values, including null
+              [gameInfo.awayTeam]: awayLineScores[i]  // Preserve original values, including null
             };
             console.log(`Quarter ${i + 1} scoring from scoreboard - Home: ${scoringByQuarter[i + 1][gameInfo.homeTeam]}, Away: ${scoringByQuarter[i + 1][gameInfo.awayTeam]}`);
           }
@@ -260,8 +260,8 @@ export const generateGameAnalysis = (data) => {
       }
       
       // Verify the total points match final score
-      const totalHomeScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.homeTeam], 0);
-      const totalAwayScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + q[gameInfo.awayTeam], 0);
+      const totalHomeScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + (q[gameInfo.homeTeam] || 0), 0);
+      const totalAwayScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + (q[gameInfo.awayTeam] || 0), 0);
       
       // If totals don't match final score, adjust the last quarter with non-zero score
       if (totalHomeScore !== gameInfo.homePoints || totalAwayScore !== gameInfo.awayPoints) {
@@ -273,8 +273,11 @@ export const generateGameAnalysis = (data) => {
         // Find the last quarter with a non-zero score
         let lastNonZeroQuarter = 4;
         while (lastNonZeroQuarter > 0 && 
-               scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === 0 && 
-               scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === 0) {
+               (!scoringByQuarter[lastNonZeroQuarter] || 
+                (scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === 0 || 
+                 scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === null) && 
+                (scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === 0 || 
+                 scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === null))) {
           lastNonZeroQuarter--;
         }
         
@@ -282,8 +285,8 @@ export const generateGameAnalysis = (data) => {
         if (lastNonZeroQuarter === 0) lastNonZeroQuarter = 4;
         
         scoringByQuarter[lastNonZeroQuarter] = {
-          [gameInfo.homeTeam]: Math.max(0, (scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] + homeAdjustment)),
-          [gameInfo.awayTeam]: Math.max(0, (scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] + awayAdjustment))
+          [gameInfo.homeTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] || 0) + homeAdjustment)),
+          [gameInfo.awayTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] || 0) + awayAdjustment))
         };
         
         console.log(`Adjusted Q${lastNonZeroQuarter} - Home: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam]}`);
