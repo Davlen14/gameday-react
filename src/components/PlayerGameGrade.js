@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import teamsService from '../services/teamsService';
 import graphqlTeamsService from '../services/graphqlTeamsService';
 import { 
@@ -94,7 +94,6 @@ const getContrastColor = (hexColor) => {
 
 const PlayerGameGrade = ({ gameId: propGameId }) => {
   const { gameId: urlGameId } = useParams();
-  const navigate = useNavigate();
   
   // Use the prop gameId if provided, otherwise use the URL parameter
   const gameId = propGameId || urlGameId;
@@ -378,10 +377,6 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
     awayTextColor: getContrastColor(awayColor)
   };
 
-  const handleBackClick = () => {
-    navigate('/games');
-  };
-
   return (
     <div 
       className="tppg-container"
@@ -398,34 +393,9 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
       }}
     >
       <div className="tppg-analysis">
-        <div className="tppg-header-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <h1 className="tppg-analysis-heading">
-            <FaFootballBall /> Game Analysis
-          </h1>
-          <button 
-            onClick={handleBackClick}
-            className="tppg-back-button"
-            style={{
-              padding: '8px 16px',
-              background: homeColor,
-              color: dynamicStyles.homeTextColor,
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-            </svg>
-            Back to Games
-          </button>
-        </div>
+        <h1 className="tppg-analysis-heading">
+          <FaFootballBall /> Game Analysis
+        </h1>
         
         <div className="tppg-game-score">
           <div className={`tppg-team-container ${gameAnalysis.homeWin ? 'tppg-winner' : ''}`}
