@@ -216,33 +216,81 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
         let homeLineScores = null;
         let awayLineScores = null;
         
+        // First try to get line scores from gameInfoData (this is the most accurate source)
         if (gameInfoData && gameInfoData.data && gameInfoData.data.game && gameInfoData.data.game.length > 0) {
           const gameData = gameInfoData.data.game[0];
           if (gameData.homeLineScores && gameData.awayLineScores) {
             homeLineScores = gameData.homeLineScores;
             awayLineScores = gameData.awayLineScores;
-            console.log("Found line scores in game data:", {
+            console.log("Found line scores in gameInfo data:", {
               home: homeLineScores,
               away: awayLineScores
             });
           }
         }
         
+        // If we couldn't get line scores from gameInfoData, try scoreboardData as a fallback
+        if ((!homeLineScores || !awayLineScores) && scoreboardData && scoreboardData.homeLineScores && scoreboardData.awayLineScores) {
+          homeLineScores = scoreboardData.homeLineScores;
+          awayLineScores = scoreboardData.awayLineScores;
+          console.log("Found line scores in scoreboard data:", {
+            home: homeLineScores,
+            away: awayLineScores
+          });
+        }
+        
         // Generate game analysis with all available data sources
-        let gameAnalysisData = generateGameAnalysis({
+        // First create a properly formatted input object for the game analysis function
+        const gameAnalysisInput = {
           playByPlay: playByPlayData,
           boxScore: advancedBoxScore,
-          scoreboard: scoreboardData,
           gameInfo: gameInfoData
-        });
+        };
         
-        // Add line scores to gameAnalysisData.gameInfo
+        // Add scoreboard data if available
+        if (scoreboardData) {
+          gameAnalysisInput.scoreboard = scoreboardData;
+          
+          // Ensure line scores are included in scoreboard data if available
+          if (homeLineScores && awayLineScores && !scoreboardData.homeLineScores && !scoreboardData.awayLineScores) {
+            console.log("Adding line scores to scoreboard data for game analysis");
+            gameAnalysisInput.scoreboard = {
+              ...scoreboardData,
+              homeLineScores,
+              awayLineScores
+            };
+          }
+        }
+        
+        console.log("Game analysis input data:", gameAnalysisInput);
+        
+        // Generate the game analysis
+        let gameAnalysisData = generateGameAnalysis(gameAnalysisInput);
+        
+        // IMPORTANT: Always add line scores to gameAnalysisData.gameInfo
+        // This ensures the UI always has these values available for display
         if (homeLineScores && awayLineScores) {
+          console.log("DEBUG: Setting line scores in PlayerGameGrade.js:", { homeLineScores, awayLineScores });
           gameAnalysisData.gameInfo = {
             ...gameAnalysisData.gameInfo,
             homeLineScores: homeLineScores,
             awayLineScores: awayLineScores
           };
+        } else {
+          console.log("DEBUG: No line scores available in PlayerGameGrade.js");
+          
+          // Check if we can extract quarter scores from quarterAnalysis as a last resort
+          if (gameAnalysisData.quarterAnalysis && gameAnalysisData.quarterAnalysis.length > 0) {
+            console.log("Creating line scores from quarterAnalysis as fallback");
+            const extractedHomeLineScores = gameAnalysisData.quarterAnalysis.map(q => q.homeScoring);
+            const extractedAwayLineScores = gameAnalysisData.quarterAnalysis.map(q => q.awayScoring);
+            
+            gameAnalysisData.gameInfo = {
+              ...gameAnalysisData.gameInfo,
+              homeLineScores: extractedHomeLineScores,
+              awayLineScores: extractedAwayLineScores
+            };
+          }
         }
         
         // Process player grades
@@ -498,15 +546,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                   <h4 className="tppg-stat-card-title">
                     <FaChartLine /> Game Flow
                   </h4>
-                  {gameAnalysis.gameInfo?.homeLineScores && gameAnalysis.gameInfo?.awayLineScores ? (
-                    gameAnalysis.gameInfo.homeLineScores.map((homePts, i) => {
-                      const awayPts = gameAnalysis.gameInfo.awayLineScores[i];
-                      const homeTeam = gameAnalysis.gameInfo?.homeTeam;
-                      const awayTeam = gameAnalysis.gameInfo?.awayTeam;
-                      
+                  {(() => {
+                    // Helper function to render a quarter score line
+                    const renderQuarterLine = (quarterNum, homePts, awayPts, homeTeam, awayTeam) => {
                       return (
-                        <div key={i} className="tppg-overview-text">
-                          <strong>Q{i+1}:</strong>{' '}
+                        <div key={quarterNum} className="tppg-overview-text">
+                          <strong>Q{quarterNum}:</strong>{' '}
                           <span style={{ color: homeColor }}>
                             {teamData.home.logo && (
                               <img 
@@ -544,57 +589,45 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                           }
                         </div>
                       );
-                    })
-                  ) : (
-                    // Fallback to quarterAnalysis if homeLineScores/awayLineScores are not available
-                    gameAnalysis.quarterAnalysis?.map((quarter, i) => {
-                      const homePts = quarter.homeScoring;
-                      const awayPts = quarter.awayScoring;
-                      const homeTeam = gameAnalysis.gameInfo?.homeTeam;
-                      const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                    };
+                    
+                    const homeTeam = gameAnalysis.gameInfo?.homeTeam;
+                    const awayTeam = gameAnalysis.gameInfo?.awayTeam;
+                    
+                    // Check if we have homeLineScores and awayLineScores directly from the API (preferred source)
+                    if (gameAnalysis.gameInfo?.homeLineScores && gameAnalysis.gameInfo?.awayLineScores && 
+                        Array.isArray(gameAnalysis.gameInfo.homeLineScores) && gameAnalysis.gameInfo.homeLineScores.length > 0 &&
+                        Array.isArray(gameAnalysis.gameInfo.awayLineScores) && gameAnalysis.gameInfo.awayLineScores.length > 0) {
                       
-                      return (
-                        <div key={i} className="tppg-overview-text">
-                          <strong>Q{quarter.quarter}:</strong>{' '}
-                          <span style={{ color: homeColor }}>
-                            {teamData.home.logo && (
-                              <img 
-                                src={teamData.home.logo} 
-                                alt={`${homeTeam} logo`}
-                                className="tppg-inline-logo"
-                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                              />
-                            )}
-                            {homeTeam} {homePts !== null && homePts !== undefined ? homePts : '-'}
-                          </span>, {' '}
-                          <span style={{ color: awayColor }}>
-                            {teamData.away.logo && (
-                              <img 
-                                src={teamData.away.logo} 
-                                alt={`${awayTeam} logo`}
-                                className="tppg-inline-logo"
-                                style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4 }}
-                              />
-                            )}
-                            {awayTeam} {awayPts !== null && awayPts !== undefined ? awayPts : '-'}
-                          </span>
-                          {homePts === awayPts && homePts !== null && homePts !== undefined ? " (Even quarter)" : 
-                            homePts > awayPts ? (
-                              <span style={{ color: homeColor }}>
-                                {` (${homeTeam} +${homePts-awayPts})`}
-                              </span>
-                            ) : (
-                              awayPts > homePts ? (
-                                <span style={{ color: awayColor }}>
-                                  {` (${awayTeam} +${awayPts-homePts})`}
-                                </span>
-                              ) : null
-                            )
-                          }
-                        </div>
-                      );
-                    })
-                  )}
+                      console.log("Rendering quarter scores from homeLineScores/awayLineScores:", {
+                        home: gameAnalysis.gameInfo.homeLineScores,
+                        away: gameAnalysis.gameInfo.awayLineScores
+                      });
+                      
+                      // Use line scores from gameInfo (direct API data)
+                      return gameAnalysis.gameInfo.homeLineScores.map((homePts, i) => {
+                        const awayPts = gameAnalysis.gameInfo.awayLineScores[i];
+                        return renderQuarterLine(i+1, homePts, awayPts, homeTeam, awayTeam);
+                      });
+                    } 
+                    // Fallback to quarterAnalysis (derived data)
+                    else if (gameAnalysis.quarterAnalysis && gameAnalysis.quarterAnalysis.length > 0) {
+                      console.log("Falling back to quarterAnalysis for scores");
+                      return gameAnalysis.quarterAnalysis.map((quarter) => {
+                        return renderQuarterLine(
+                          quarter.quarter, 
+                          quarter.homeScoring, 
+                          quarter.awayScoring, 
+                          homeTeam, 
+                          awayTeam
+                        );
+                      });
+                    }
+                    // No quarter data available
+                    else {
+                      return <div className="tppg-overview-text">Quarter-by-quarter data not available</div>;
+                    }
+                  })()}
                 </div>
                 
                 <div className="tppg-stat-card">
