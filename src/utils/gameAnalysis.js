@@ -160,120 +160,120 @@ export const generateGameAnalysis = (data) => {
         if (!usedBoxScore && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
           console.log("No quarter-by-quarter data found, attempting to reconstruct from play-by-play");
         
-        // First, try to calculate from play-by-play scoring events
-        let homeScoresByQuarter = [0, 0, 0, 0];
-        let awayScoresByQuarter = [0, 0, 0, 0];
-        
-        plays.forEach(play => {
-          const quarter = play.period;
-          if (!quarter || quarter < 1 || quarter > 4) return;
+          // First, try to calculate from play-by-play scoring events
+          let homeScoresByQuarter = [0, 0, 0, 0];
+          let awayScoresByQuarter = [0, 0, 0, 0];
           
-          // Look for scoring plays - expand detection patterns
-          const isScoringPlay = 
-            play.scoring === true || 
-            (play.play_type && (
-              play.play_type.includes('Touchdown') || 
-              play.play_type.includes('Field Goal Good') || 
-              play.play_type.includes('Safety')
-            )) ||
-            (play.playType && (
-              play.playType.includes('Touchdown') || 
-              play.playType.includes('Field Goal') || 
-              play.playType.includes('Safety')
-            ));
-          
-          if (isScoringPlay) {
-            // Determine which team scored, checking multiple properties
-            const playText = play.play_text || play.playText || '';
-            const scoringTeam = play.offense || play.team || '';
-            let points = 0;
+          plays.forEach(play => {
+            const quarter = play.period;
+            if (!quarter || quarter < 1 || quarter > 4) return;
             
-            // Calculate points based on play type
-            if (playText.includes('Touchdown') || play.play_type === 'Rushing Touchdown' || 
-                play.play_type === 'Passing Touchdown' || 
-                (play.playType && play.playType.includes('Touchdown'))) {
-              points = playText.includes('KICK') ? 7 : 6;
-            } else if (playText.includes('Field Goal') || play.play_type === 'Field Goal Good' || 
-                      (play.playType && play.playType.includes('Field Goal'))) {
-              points = 3;
-            } else if (playText.includes('Safety') || 
-                      (play.play_type && play.play_type.includes('Safety')) || 
-                      (play.playType && play.playType.includes('Safety'))) {
-              points = 2;
-            }
+            // Look for scoring plays - expand detection patterns
+            const isScoringPlay = 
+              play.scoring === true || 
+              (play.play_type && (
+                play.play_type.includes('Touchdown') || 
+                play.play_type.includes('Field Goal Good') || 
+                play.play_type.includes('Safety')
+              )) ||
+              (play.playType && (
+                play.playType.includes('Touchdown') || 
+                play.playType.includes('Field Goal') || 
+                play.playType.includes('Safety')
+              ));
             
-            // Add points to the appropriate team
-            if (points > 0) {
-              const quarterIndex = quarter - 1;
-              if (scoringTeam === gameInfo.homeTeam) {
-                homeScoresByQuarter[quarterIndex] += points;
-              } else if (scoringTeam === gameInfo.awayTeam) {
-                awayScoresByQuarter[quarterIndex] += points;
-              } else {
-                // If team names don't match exactly, try to determine from the play text
-                if (playText.includes(gameInfo.homeTeam)) {
+            if (isScoringPlay) {
+              // Determine which team scored, checking multiple properties
+              const playText = play.play_text || play.playText || '';
+              const scoringTeam = play.offense || play.team || '';
+              let points = 0;
+              
+              // Calculate points based on play type
+              if (playText.includes('Touchdown') || play.play_type === 'Rushing Touchdown' || 
+                  play.play_type === 'Passing Touchdown' || 
+                  (play.playType && play.playType.includes('Touchdown'))) {
+                points = playText.includes('KICK') ? 7 : 6;
+              } else if (playText.includes('Field Goal') || play.play_type === 'Field Goal Good' || 
+                        (play.playType && play.playType.includes('Field Goal'))) {
+                points = 3;
+              } else if (playText.includes('Safety') || 
+                        (play.play_type && play.play_type.includes('Safety')) || 
+                        (play.playType && play.playType.includes('Safety'))) {
+                points = 2;
+              }
+              
+              // Add points to the appropriate team
+              if (points > 0) {
+                const quarterIndex = quarter - 1;
+                if (scoringTeam === gameInfo.homeTeam) {
                   homeScoresByQuarter[quarterIndex] += points;
-                } else if (playText.includes(gameInfo.awayTeam)) {
+                } else if (scoringTeam === gameInfo.awayTeam) {
                   awayScoresByQuarter[quarterIndex] += points;
+                } else {
+                  // If team names don't match exactly, try to determine from the play text
+                  if (playText.includes(gameInfo.homeTeam)) {
+                    homeScoresByQuarter[quarterIndex] += points;
+                  } else if (playText.includes(gameInfo.awayTeam)) {
+                    awayScoresByQuarter[quarterIndex] += points;
+                  }
                 }
               }
             }
+          });
+          
+          // Calculate total from our scoring plays
+          const totalHomeFromPlays = homeScoresByQuarter.reduce((a, b) => a + b, 0);
+          const totalAwayFromPlays = awayScoresByQuarter.reduce((a, b) => a + b, 0);
+          
+          // Use play-by-play calculated scores if they seem reasonable
+          if (totalHomeFromPlays > 0 || totalAwayFromPlays > 0) {
+            console.log("Found some scoring plays - using them as basis");
+            for (let i = 1; i <= 4; i++) {
+              scoringByQuarter[i] = {
+                [gameInfo.homeTeam]: homeScoresByQuarter[i-1],
+                [gameInfo.awayTeam]: awayScoresByQuarter[i-1]
+              };
+            }
           }
-        });
-        
-        // Calculate total from our scoring plays
-        const totalHomeFromPlays = homeScoresByQuarter.reduce((a, b) => a + b, 0);
-        const totalAwayFromPlays = awayScoresByQuarter.reduce((a, b) => a + b, 0);
-        
-        // Use play-by-play calculated scores if they seem reasonable
-        if (totalHomeFromPlays > 0 || totalAwayFromPlays > 0) {
-          console.log("Found some scoring plays - using them as basis");
-          for (let i = 1; i <= 4; i++) {
-            scoringByQuarter[i] = {
-              [gameInfo.homeTeam]: homeScoresByQuarter[i-1],
-              [gameInfo.awayTeam]: awayScoresByQuarter[i-1]
-            };
+          
+          // If we still don't have reasonable quarter scores, infer them
+          const totalHome = homeScoresByQuarter.reduce((a, b) => a + b, 0);
+          const totalAway = awayScoresByQuarter.reduce((a, b) => a + b, 0);
+          
+          if (totalHome === 0 && totalAway === 0 && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
+            console.log("No scoring plays detected but we have final score, generating estimated quarters");
+            
+            // A common pattern: most scoring happens in 2nd and 4th quarters
+            const homeDistribution = [0.1, 0.3, 0.2, 0.4];  // 10%, 30%, 20%, 40%
+            const awayDistribution = [0.1, 0.3, 0.2, 0.4];
+            
+            for (let i = 0; i < 4; i++) {
+              const homeQuarterPoints = Math.round(gameInfo.homePoints * homeDistribution[i]);
+              const awayQuarterPoints = Math.round(gameInfo.awayPoints * awayDistribution[i]);
+              
+              scoringByQuarter[i + 1] = {
+                [gameInfo.homeTeam]: homeQuarterPoints,
+                [gameInfo.awayTeam]: awayQuarterPoints
+              };
+            }
+            
+            // Adjust to ensure totals match exactly
+            let homeAdjusted = homeDistribution.map((d, i) => 
+              Math.round(gameInfo.homePoints * d)).reduce((a, b) => a + b, 0);
+            let awayAdjusted = awayDistribution.map((d, i) => 
+              Math.round(gameInfo.awayPoints * d)).reduce((a, b) => a + b, 0);
+            
+            // Fix any rounding errors
+            if (homeAdjusted !== gameInfo.homePoints) {
+              const diff = gameInfo.homePoints - homeAdjusted;
+              scoringByQuarter[4][gameInfo.homeTeam] += diff;
+            }
+            
+            if (awayAdjusted !== gameInfo.awayPoints) {
+              const diff = gameInfo.awayPoints - awayAdjusted;
+              scoringByQuarter[4][gameInfo.awayTeam] += diff;
+            }
           }
-        }
-        
-        // If we still don't have reasonable quarter scores, infer them
-        const totalHome = homeScoresByQuarter.reduce((a, b) => a + b, 0);
-        const totalAway = awayScoresByQuarter.reduce((a, b) => a + b, 0);
-        
-        if (totalHome === 0 && totalAway === 0 && gameInfo.homePoints > 0 && gameInfo.awayPoints > 0) {
-        console.log("No scoring plays detected but we have final score, generating estimated quarters");
-        
-        // A common pattern: most scoring happens in 2nd and 4th quarters
-        const homeDistribution = [0.1, 0.3, 0.2, 0.4];  // 10%, 30%, 20%, 40%
-        const awayDistribution = [0.1, 0.3, 0.2, 0.4];
-        
-        for (let i = 0; i < 4; i++) {
-        const homeQuarterPoints = Math.round(gameInfo.homePoints * homeDistribution[i]);
-        const awayQuarterPoints = Math.round(gameInfo.awayPoints * awayDistribution[i]);
-        
-        scoringByQuarter[i + 1] = {
-        [gameInfo.homeTeam]: homeQuarterPoints,
-        [gameInfo.awayTeam]: awayQuarterPoints
-        };
-        }
-        
-        // Adjust to ensure totals match exactly
-        let homeAdjusted = homeDistribution.map((d, i) => 
-        Math.round(gameInfo.homePoints * d)).reduce((a, b) => a + b, 0);
-        let awayAdjusted = awayDistribution.map((d, i) => 
-        Math.round(gameInfo.awayPoints * d)).reduce((a, b) => a + b, 0);
-        
-        // Fix any rounding errors
-        if (homeAdjusted !== gameInfo.homePoints) {
-        const diff = gameInfo.homePoints - homeAdjusted;
-        scoringByQuarter[4][gameInfo.homeTeam] += diff;
-        }
-        
-        if (awayAdjusted !== gameInfo.awayPoints) {
-        const diff = gameInfo.awayPoints - awayAdjusted;
-        scoringByQuarter[4][gameInfo.awayTeam] += diff;
-        }
-        }
         }
       } // end of !usedOriginalScores block
       
@@ -281,33 +281,39 @@ export const generateGameAnalysis = (data) => {
       const totalHomeScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + (q[gameInfo.homeTeam] || 0), 0);
       const totalAwayScore = Object.values(scoringByQuarter).reduce((sum, q) => sum + (q[gameInfo.awayTeam] || 0), 0);
       
-      // If totals don't match final score, adjust the last quarter with non-zero score
+      // MODIFIED: Check for discrepancies between quarter sum and final score
       if (totalHomeScore !== gameInfo.homePoints || totalAwayScore !== gameInfo.awayPoints) {
-        console.log(`Quarter score totals (${totalHomeScore}-${totalAwayScore}) don't match final score (${gameInfo.homePoints}-${gameInfo.awayPoints}), adjusting...`);
-        
-        const homeAdjustment = gameInfo.homePoints - totalHomeScore;
-        const awayAdjustment = gameInfo.awayPoints - totalAwayScore;
-        
-        // Find the last quarter with a non-zero score
-        let lastNonZeroQuarter = 4;
-        while (lastNonZeroQuarter > 0 && 
-               (!scoringByQuarter[lastNonZeroQuarter] || 
-                (scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === 0 || 
-                 scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === null) && 
-                (scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === 0 || 
-                 scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === null))) {
-          lastNonZeroQuarter--;
+        if (usedOriginalScores) {
+          // If using primary source data, log a warning but DON'T adjust the scores
+          console.log(`Warning: Sum of quarter scores (${totalHomeScore}-${totalAwayScore}) does not match final score (${gameInfo.homePoints}-${gameInfo.awayPoints}). Using raw quarter scores from primary source.`);
+        } else {
+          // Only perform adjustments for reconstructed scores, not original API data
+          console.log(`Reconstructed quarter score totals (${totalHomeScore}-${totalAwayScore}) don't match final score (${gameInfo.homePoints}-${gameInfo.awayPoints}), adjusting...`);
+          
+          const homeAdjustment = gameInfo.homePoints - totalHomeScore;
+          const awayAdjustment = gameInfo.awayPoints - totalAwayScore;
+          
+          // Find the last quarter with a non-zero score
+          let lastNonZeroQuarter = 4;
+          while (lastNonZeroQuarter > 0 && 
+                 (!scoringByQuarter[lastNonZeroQuarter] || 
+                  (scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === 0 || 
+                   scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] === null) && 
+                  (scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === 0 || 
+                   scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] === null))) {
+            lastNonZeroQuarter--;
+          }
+          
+          // If all quarters are zero, just use quarter 4
+          if (lastNonZeroQuarter === 0) lastNonZeroQuarter = 4;
+          
+          scoringByQuarter[lastNonZeroQuarter] = {
+            [gameInfo.homeTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] || 0) + homeAdjustment)),
+            [gameInfo.awayTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] || 0) + awayAdjustment))
+          };
+          
+          console.log(`Adjusted Q${lastNonZeroQuarter} - Home: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam]}`);
         }
-        
-        // If all quarters are zero, just use quarter 4
-        if (lastNonZeroQuarter === 0) lastNonZeroQuarter = 4;
-        
-        scoringByQuarter[lastNonZeroQuarter] = {
-          [gameInfo.homeTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam] || 0) + homeAdjustment)),
-          [gameInfo.awayTeam]: Math.max(0, ((scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam] || 0) + awayAdjustment))
-        };
-        
-        console.log(`Adjusted Q${lastNonZeroQuarter} - Home: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.homeTeam]}, Away: ${scoringByQuarter[lastNonZeroQuarter][gameInfo.awayTeam]}`);
       }
       
       // Log the final quarter scores
