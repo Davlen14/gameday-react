@@ -4,8 +4,8 @@
   /* Color palette */
   --primary-blue: #3b82f6;
   --primary-red: #ef4444;
-  --primary-green: #10b981;
-  --secondary-green: #22c55e;
+  --primary-green: #22c55e;
+  --secondary-green: #4ade80;
   --warning-yellow: #eab308;
   --warning-orange: #f97316;
   --dark-blue: #1e40af;
@@ -924,13 +924,15 @@
 }
 
 .tppg-ppa-elite {
-  background-color: rgba(var(--home-team-color), 0.1);
-  /* Color applied inline for team specificity */
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  /* Color may be overridden inline for team specificity */
 }
 
 .tppg-ppa-excellent {
-  background-color: rgba(var(--home-team-color), 0.08);
-  /* Color applied inline for team specificity */
+  background-color: rgba(74, 222, 128, 0.08);
+  color: #4ade80;
+  /* Color may be overridden inline for team specificity */
 }
 
 .tppg-ppa-good {
@@ -1127,14 +1129,14 @@
 }
 
 .tppg-grade-elite {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--primary-green);
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
   /* May be overridden inline for team specificity */
 }
 
 .tppg-grade-exceptional {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--secondary-green);
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
   /* May be overridden inline for team specificity */
 }
 
@@ -1182,14 +1184,14 @@
 }
 
 .tppg-ppa-high {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--primary-green);
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
   /* May be overridden inline for team specificity */
 }
 
 .tppg-ppa-med {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--secondary-green);
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
   /* May be overridden inline for team specificity */
 }
 

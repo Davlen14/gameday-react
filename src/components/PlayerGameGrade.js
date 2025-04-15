@@ -1278,12 +1278,12 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                   with elite players consistently averaging over 1.0 PPA per play.
                 </p>
                 <div className="tppg-ppa-scale">
-                  <div className="tppg-ppa-scale-item tppg-ppa-elite" style={{ backgroundColor: `${homeColor}10` }}>
-                    <span className="tppg-scale-value" style={{ color: homeColor }}>1.0+</span>
+                  <div className="tppg-ppa-scale-item tppg-ppa-elite" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                    <span className="tppg-scale-value" style={{ color: '#22c55e' }}>1.0+</span>
                     <span className="tppg-scale-label">Elite</span>
                   </div>
-                  <div className="tppg-ppa-scale-item tppg-ppa-excellent" style={{ backgroundColor: `${homeColor}08` }}>
-                    <span className="tppg-scale-value" style={{ color: homeColor }}>0.7-1.0</span>
+                  <div className="tppg-ppa-scale-item tppg-ppa-excellent" style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)' }}>
+                    <span className="tppg-scale-value" style={{ color: '#4ade80' }}>0.7-1.0</span>
                     <span className="tppg-scale-label">Excellent</span>
                   </div>
                   <div className="tppg-ppa-scale-item tppg-ppa-good">
@@ -1294,8 +1294,8 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
                     <span className="tppg-scale-value">0.0-0.3</span>
                     <span className="tppg-scale-label">Average</span>
                   </div>
-                  <div className="tppg-ppa-scale-item tppg-ppa-poor" style={{ backgroundColor: `${awayColor}10` }}>
-                    <span className="tppg-scale-value" style={{ color: awayColor }}>0.0</span>
+                  <div className="tppg-ppa-scale-item tppg-ppa-poor" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                    <span className="tppg-scale-value" style={{ color: '#ef4444' }}>0.0</span>
                     <span className="tppg-scale-label">Negative Impact</span>
                   </div>
                 </div>
@@ -1539,16 +1539,15 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
              let barColor;
              
              if (entry.overallGrade >= 90) {
-               barColor = teamColor;
+               barColor = '#22c55e'; // Bright Green for Elite
              } else if (entry.overallGrade >= 80) {
-               // Lighter shade of team color
-               barColor = isHomeTeam ? homeAltColor : awayAltColor;
+               barColor = '#4ade80'; // Light Green for Exceptional
              } else if (entry.overallGrade >= 70) {
-               barColor = '#eab308';
+               barColor = '#eab308'; // Yellow for Very Good
              } else if (entry.overallGrade >= 60) {
-               barColor = '#f97316';
+               barColor = '#f97316'; // Orange for Average
              } else {
-               barColor = '#ef4444';
+               barColor = '#ef4444'; // Red for Below Average
              }
              
              return (
@@ -1783,11 +1782,11 @@ const PlayerGameGrade = ({ gameId: propGameId }) => {
          <FaTrophy /> Grading Scale
        </h4>
        <ul className="tppg-scale-list">
-         <li><span className="tppg-scale-badge tppg-grade-elite" style={{ backgroundColor: `${homeColor}20`, color: homeColor }}>90-100</span> Elite Performance</li>
-         <li><span className="tppg-scale-badge tppg-grade-exceptional" style={{ backgroundColor: `${homeColor}15`, color: homeColor }}>80-89</span> Exceptional</li>
+         <li><span className="tppg-scale-badge tppg-grade-elite" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>90-100</span> Elite Performance</li>
+         <li><span className="tppg-scale-badge tppg-grade-exceptional" style={{ backgroundColor: 'rgba(74, 222, 128, 0.1)', color: '#4ade80' }}>80-89</span> Exceptional</li>
          <li><span className="tppg-scale-badge tppg-grade-good">70-79</span> Very Good</li>
          <li><span className="tppg-scale-badge tppg-grade-average">60-69</span> Average</li>
-         <li><span className="tppg-scale-badge tppg-grade-poor" style={{ backgroundColor: `${awayColor}15`, color: awayColor }}>60</span> Below Average</li>
+         <li><span className="tppg-scale-badge tppg-grade-poor" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>&lt;60</span> Below Average</li>
        </ul>
      </div>
      <div className="tppg-methodology-card">
