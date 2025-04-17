@@ -21,7 +21,9 @@ import {
   FaExclamationTriangle,
   FaStar,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaStadiumAlt,
+  FaClock
 } from "react-icons/fa";
 import RatingsComponent from "./RatingsComponent";
 import "../styles/TeamDetail.css";
@@ -61,14 +63,14 @@ const ComingSoon = ({ title, color = "#9e9e9e" }) => (
   </div>
 );
 
-// Win indicator with shine effect
+// Modern Win indicator
 const WinIndicator = () => (
   <div className="win-indicator">
     <span className="result-letter win">W</span>
   </div>
 );
 
-// Loss indicator with pulse effect
+// Modern Loss indicator
 const LossIndicator = () => (
   <div className="loss-indicator">
     <span className="result-letter loss">L</span>
@@ -328,8 +330,6 @@ const TeamDetail = () => {
     return (yiq >= 128) ? '#000000' : '#ffffff';
   };
   
-
-  
   // Generate team color metallic effect
   const getTeamMetallicStyle = (hexColor) => {
     if (!hexColor) return "#333333";
@@ -372,6 +372,24 @@ const TeamDetail = () => {
     color: teamColor
   };
 
+  // Helper function to format date for schedule
+  const formatGameDate = (dateString) => {
+    if (!dateString) return "TBD";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
+  };
+
+  // Helper to determine if a game is in the future
+  const isGameInFuture = (dateString) => {
+    if (!dateString) return true;
+    const gameDate = new Date(dateString);
+    return gameDate > new Date();
+  };
+
   // Render the active tab content
   const renderTabContent = () => {
     switch (activeTab) {
@@ -382,196 +400,604 @@ const TeamDetail = () => {
       case 'schedule':
         return (
           <div className="dashboard-card full-width-card">
-            <div className="card-header" style={cardHeaderStyle}>
+            <div className="card-header modern-header" style={{
+              background: 'white',
+              borderBottom: `2px solid ${teamColor}`,
+              color: darkenColor(teamColor, 20),
+              display: 'flex',
+              alignItems: 'center',
+              padding: '16px 20px',
+              borderTopLeftRadius: '10px',
+              borderTopRightRadius: '10px'
+            }}>
               <FaCalendarAlt style={{ marginRight: "12px", color: teamColor }} />
-              Team Schedule
+              <span style={{ fontSize: '18px', fontWeight: '600' }}>Team Schedule</span>
             </div>
-            <div className="card-body">
+            <div className="card-body" style={{ padding: '0' }}>
               {isLoading.schedule ? (
-                <div className="loading-indicator">
+                <div className="loading-indicator" style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  padding: '40px',
+                  flexDirection: 'column' 
+                }}>
                   <LoadingSpinner color={teamColor} />
-                  <p>Loading schedule...</p>
+                  <p style={{ marginTop: '15px', color: '#666' }}>Loading schedule...</p>
                 </div>
               ) : (
-                <div className="schedule-container">
-                  <div className="schedule-table-header">
-                    <div className="header-date">Date</div>
-                    <div className="header-home">Home</div>
-                    <div className="header-score">Score</div>
-                    <div className="header-away">Away</div>
-                    <div className="header-venue">Venue</div>
-                    <div className="header-toggle"></div>
-                  </div>
-                  
-                  {schedule.map((game, index) => {
-                    const isCompleted = game.homePoints !== null && game.homePoints !== undefined && 
-                                        game.awayPoints !== null && game.awayPoints !== undefined;
-                    
-                    let homeWinner = false;
-                    let awayWinner = false;
-                    
-                    if (isCompleted) {
-                      homeWinner = game.homePoints > game.awayPoints;
-                      awayWinner = game.homePoints < game.awayPoints;
-                    }
-                    
-                    const gameDate = game.date ? new Date(game.date).toLocaleDateString(undefined, {
-                      month: 'numeric',
-                      day: 'numeric'
-                    }) : "TBD";
-
-                    const isExpanded = expandedGames[game.id] || false;
-                    const gameData = gameStats[game.id];
-                    
-                    return (
-                      <div key={index} className="schedule-item">
-                        <div className="schedule-row" onClick={() => toggleGameExpanded(game.id)}>
-                          <div className="game-date">
-                            <div className="label-text">Game {index + 1}</div>
-                            <div className="date-value">{gameDate}</div>
-                          </div>
-                          
-                          <div className="team home-team">
-                            <img 
-                              src={game.homeLogo || getTeamLogo(game.homeTeam)} 
-                              alt={game.homeTeam}
-                              className="schedule-team-logo plain"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/photos/default_team.png";
-                              }}
-                            />
-                            <div className="schedule-team-name">{game.homeTeam}</div>
-                            {isCompleted && homeWinner && <WinIndicator />}
-                            {isCompleted && !homeWinner && <LossIndicator />}
-                          </div>
-                          
-                          <div className="game-score">
-                            {isCompleted ? (
-                              <>
-                                <div className="team-score">{game.homePoints}</div>
-                                <div className="score-divider">-</div>
-                                <div className="team-score">{game.awayPoints}</div>
-                              </>
-                            ) : (
-                              <div className="game-time">{game.time || "TBD"}</div>
-                            )}
-                          </div>
-                          
-                          <div className="team away-team">
-                            <img 
-                              src={game.awayLogo || getTeamLogo(game.awayTeam)} 
-                              alt={game.awayTeam}
-                              className="schedule-team-logo plain"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/photos/default_team.png";
-                              }}
-                            />
-                            <div className="schedule-team-name">{game.awayTeam}</div>
-                            {isCompleted && awayWinner && <WinIndicator />}
-                            {isCompleted && !awayWinner && <LossIndicator />}
-                          </div>
-                          
-                          <div className="game-venue">
-                            <div className="label-text">Venue</div>
-                            <div>{game.venue || "TBD"}</div>
-                          </div>
-                          
-                          <div className="game-toggle">
-                            {isExpanded ? <FaChevronUp color={teamColor} /> : <FaChevronDown color="#999" />}
-                          </div>
-                        </div>
+                <div className="modern-schedule-container" style={{ 
+                  padding: '10px'
+                }}>
+                  {schedule.length > 0 ? (
+                    <div className="modern-schedule-list">
+                      {schedule.map((game, index) => {
+                        const isCompleted = game.homePoints !== null && game.homePoints !== undefined && 
+                                          game.awayPoints !== null && game.awayPoints !== undefined;
+                        const isFuture = isGameInFuture(game.date);
+                        const isHomeWinner = isCompleted && game.homePoints > game.awayPoints;
+                        const isAwayWinner = isCompleted && game.homePoints < game.awayPoints;
+                        const isExpanded = expandedGames[game.id] || false;
+                        const gameData = gameStats[game.id];
+                        const formattedDate = formatGameDate(game.date);
                         
-                        {isExpanded && (
-                          <div className="game-details">
-                            <div className="impact-players">
-                              <div className="section-title">
-                                <FaStar style={{ color: teamColor, marginRight: '6px' }} />
-                                <span>Impact Players</span>
+                        // Check if the team we're viewing is home or away
+                        const isHomeTeam = game.homeTeam === team.school;
+                        
+                        // Determine opponent and if team won
+                        const opponent = isHomeTeam ? game.awayTeam : game.homeTeam;
+                        const didTeamWin = isCompleted && ((isHomeTeam && isHomeWinner) || (!isHomeTeam && isAwayWinner));
+                        const opponentLogo = isHomeTeam ? 
+                          (game.awayLogo || getTeamLogo(game.awayTeam)) : 
+                          (game.homeLogo || getTeamLogo(game.homeTeam));
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className="modern-game-card" 
+                            style={{ 
+                              marginBottom: '12px',
+                              borderRadius: '12px',
+                              boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                              border: `1px solid ${isExpanded ? lightenColor(teamColor, 80) : '#f0f0f0'}`,
+                              overflow: 'hidden',
+                              backgroundColor: 'white',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            {/* Game Header */}
+                            <div 
+                              className="modern-game-header" 
+                              onClick={() => toggleGameExpanded(game.id)}
+                              style={{ 
+                                padding: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                borderLeft: isExpanded ? `4px solid ${teamColor}` : '4px solid transparent',
+                                transition: 'all 0.2s ease',
+                                backgroundColor: isExpanded ? lightenColor(teamColor, 97) : 'white'
+                              }}
+                            >
+                              {/* Left Column: Date and Game number */}
+                              <div className="game-meta" style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                width: '120px'
+                              }}>
+                                <div style={{ 
+                                  fontSize: '14px', 
+                                  fontWeight: '600',
+                                  color: teamColor,
+                                  marginBottom: '4px'
+                                }}>
+                                  Game {index + 1}
+                                </div>
+                                <div style={{ 
+                                  fontSize: '13px', 
+                                  color: '#666',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>
+                                  {formattedDate}
+                                </div>
                               </div>
                               
-                              {gameData ? (
-                                <div className="impact-container">
-                                  <div className="impact-team">
-                                    <div className="impact-team-header" style={{ color: teamColor }}>
-                                      <div className="mini-logo">
-                                        <img 
-                                          src={game.homeLogo || getTeamLogo(game.homeTeam)} 
-                                          alt={game.homeTeam}
-                                        />
+                              {/* Middle: Teams and Score */}
+                              <div className="modern-matchup" style={{ 
+                                display: 'flex',
+                                alignItems: 'center',
+                                flex: 1
+                              }}>
+                                {/* Opponent Logo and Name */}
+                                <div style={{ 
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  marginRight: '16px'
+                                }}>
+                                  <div className="team-logo-container" style={{ 
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    backgroundColor: '#f8f8f8',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginRight: '12px',
+                                    flexShrink: 0,
+                                    border: '1px solid #eee'
+                                  }}>
+                                    <img 
+                                      src={opponentLogo} 
+                                      alt={opponent}
+                                      style={{ 
+                                        width: '32px',
+                                        height: '32px',
+                                        objectFit: 'contain'
+                                      }}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "/photos/default_team.png";
+                                      }}
+                                    />
+                                  </div>
+                                  <div style={{ 
+                                    fontWeight: '600',
+                                    fontSize: '15px'
+                                  }}>
+                                    {opponent}
+                                  </div>
+                                </div>
+                                
+                                {/* Game Score or Status */}
+                                <div style={{ 
+                                  marginLeft: 'auto',
+                                  marginRight: isFuture ? '16px' : '0',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>
+                                  {isCompleted ? (
+                                    <div style={{ 
+                                      display: 'flex',
+                                      alignItems: 'center'
+                                    }}>
+                                      <div style={{ 
+                                        fontWeight: '700',
+                                        fontSize: '18px',
+                                        color: didTeamWin ? '#00C853' : '#E53935'
+                                      }}>
+                                        {isHomeTeam ? game.homePoints : game.awayPoints}
                                       </div>
-                                      <span>{game.homeTeam}</span>
+                                      <div style={{ 
+                                        margin: '0 8px',
+                                        color: '#999'
+                                      }}>-</div>
+                                      <div style={{ 
+                                        fontWeight: '600',
+                                        fontSize: '18px',
+                                        color: '#666'
+                                      }}>
+                                        {isHomeTeam ? game.awayPoints : game.homePoints}
+                                      </div>
+                                      
+                                      <div style={{ marginLeft: '12px' }}>
+                                        {didTeamWin ? (
+                                          <div style={{ 
+                                            backgroundColor: '#00C853',
+                                            color: 'white',
+                                            width: '28px',
+                                            height: '28px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: '700',
+                                            fontSize: '14px',
+                                            boxShadow: '0 2px 5px rgba(0, 200, 83, 0.4)'
+                                          }}>W</div>
+                                        ) : (
+                                          <div style={{ 
+                                            backgroundColor: '#E53935',
+                                            color: 'white',
+                                            width: '28px',
+                                            height: '28px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: '700',
+                                            fontSize: '14px',
+                                            boxShadow: '0 2px 5px rgba(229, 57, 53, 0.4)'
+                                          }}>L</div>
+                                        )}
+                                      </div>
                                     </div>
-                                    <div className="impact-players-list">
-                                      {gameData.players?.usage
-                                        ?.filter(p => p.team === game.homeTeam)
-                                        ?.sort((a, b) => b.total - a.total)
-                                        ?.slice(0, 2)
-                                        ?.map((player, i) => {
-                                          const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
-                                          const stat = playerPPA ? 
-                                            `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
-                                            `${Math.round(player.total * 100)}% usage`;
-                                          
-                                          return (
-                                            <div key={i} className="impact-player">
-                                              <div className="player-name">{player.player}</div>
-                                              <div className="player-position">{player.position}</div>
-                                              <div className="player-stat">{stat}</div>
-                                            </div>
-                                          );
-                                        })}
+                                  ) : (
+                                    <div style={{ 
+                                      display: 'flex',
+                                      alignItems: 'center'
+                                    }}>
+                                      <FaClock style={{ 
+                                        color: teamColor,
+                                        marginRight: '8px',
+                                        fontSize: '14px'
+                                      }} />
+                                      <div style={{ 
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        color: '#666'
+                                      }}>
+                                        {game.time || "TBD"}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Location Info */}
+                                {isFuture ? (
+                                  <div style={{ 
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    fontSize: '13px',
+                                    color: '#777',
+                                    minWidth: '100px'
+                                  }}>
+                                    <div style={{ 
+                                      display: 'flex',
+                                      alignItems: 'center'
+                                    }}>
+                                      <FaMapMarkerAlt style={{ 
+                                        marginRight: '6px',
+                                        fontSize: '12px',
+                                        color: teamColor
+                                      }} />
+                                      <span style={{ 
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: '140px'
+                                      }}>
+                                        {isHomeTeam ? 'Home' : 'Away'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : null}
+                              </div>
+                              
+                              {/* Toggle Indicator */}
+                              <div style={{ 
+                                width: '24px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}>
+                                {isExpanded ? 
+                                  <FaChevronUp size={14} color={teamColor} /> : 
+                                  <FaChevronDown size={14} color="#999" />
+                                }
+                              </div>
+                            </div>
+                            
+                            {/* Game Details (Expanded) */}
+                            {isExpanded && (
+                              <div 
+                                className="modern-game-details" 
+                                style={{ 
+                                  padding: '0 20px 20px 20px',
+                                  borderTop: '1px solid #f0f0f0',
+                                  backgroundColor: lightenColor(teamColor, 98),
+                                  animation: 'fadeIn 0.3s ease-in-out'
+                                }}
+                              >
+                                {/* Game Info */}
+                                <div style={{ 
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  padding: '15px 0',
+                                  borderBottom: '1px solid #f0f0f0'
+                                }}>
+                                  {/* Venue */}
+                                  <div style={{ 
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }}>
+                                    <FaMapMarkerAlt style={{ 
+                                      color: teamColor,
+                                      marginRight: '8px',
+                                      fontSize: '14px'
+                                    }} />
+                                    <div>
+                                      <div style={{ 
+                                        fontSize: '12px',
+                                        color: '#777',
+                                        marginBottom: '2px'
+                                      }}>
+                                        Venue
+                                      </div>
+                                      <div style={{ 
+                                        fontSize: '14px',
+                                        fontWeight: '500'
+                                      }}>
+                                        {game.venue || "TBD"}
+                                      </div>
                                     </div>
                                   </div>
                                   
-                                  <div className="impact-team">
-                                    <div className="impact-team-header" style={{ color: teamColor }}>
-                                      <div className="mini-logo">
-                                        <img 
-                                          src={game.awayLogo || getTeamLogo(game.awayTeam)} 
-                                          alt={game.awayTeam}
-                                        />
+                                  {/* Location */}
+                                  <div style={{ 
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }}>
+                                    <FaStadiumAlt style={{ 
+                                      color: teamColor,
+                                      marginRight: '8px',
+                                      fontSize: '14px'
+                                    }} />
+                                    <div>
+                                      <div style={{ 
+                                        fontSize: '12px',
+                                        color: '#777',
+                                        marginBottom: '2px'
+                                      }}>
+                                        Location
                                       </div>
-                                      <span>{game.awayTeam}</span>
-                                    </div>
-                                    <div className="impact-players-list">
-                                      {gameData.players?.usage
-                                        ?.filter(p => p.team === game.awayTeam)
-                                        ?.sort((a, b) => b.total - a.total)
-                                        ?.slice(0, 2)
-                                        ?.map((player, i) => {
-                                          const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
-                                          const stat = playerPPA ? 
-                                            `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
-                                            `${Math.round(player.total * 100)}% usage`;
-                                          
-                                          return (
-                                            <div key={i} className="impact-player">
-                                              <div className="player-name">{player.player}</div>
-                                              <div className="player-position">{player.position}</div>
-                                              <div className="player-stat">{stat}</div>
-                                            </div>
-                                          );
-                                        })}
+                                      <div style={{ 
+                                        fontSize: '14px',
+                                        fontWeight: '500'
+                                      }}>
+                                        {isHomeTeam ? 'Home Game' : 'Away Game'}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              ) : (
-                                <div className="loading-indicator">
-                                  <LoadingSpinner color={teamColor} />
-                                  <p>Loading player stats...</p>
-                                </div>
-                              )}
-                            </div>
+                                
+                                {/* Impact Players Section */}
+                                {isCompleted && (
+                                  <div className="impact-players-section" style={{ 
+                                    marginTop: '15px'
+                                  }}>
+                                    <div style={{ 
+                                      fontSize: '16px',
+                                      fontWeight: '600',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      marginBottom: '12px',
+                                      color: darkenColor(teamColor, 15)
+                                    }}>
+                                      <FaStar style={{ 
+                                        color: teamColor,
+                                        marginRight: '8px',
+                                        fontSize: '14px'
+                                      }} />
+                                      Game Impact Players
+                                    </div>
+                                    
+                                    {gameData ? (
+                                      <div className="players-grid" style={{ 
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                                        gap: '16px'
+                                      }}>
+                                        {/* Home team impact players */}
+                                        {gameData.players?.usage
+                                          ?.filter(p => p.team === game.homeTeam)
+                                          ?.sort((a, b) => b.total - a.total)
+                                          ?.slice(0, 2)
+                                          ?.map((player, i) => {
+                                            const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
+                                            const stat = playerPPA ? 
+                                              `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
+                                              `${Math.round(player.total * 100)}% usage`;
+                                            
+                                            return (
+                                              <div key={i} style={{ 
+                                                backgroundColor: 'white',
+                                                borderRadius: '10px',
+                                                padding: '12px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                                border: '1px solid #f0f0f0'
+                                              }}>
+                                                <div style={{ 
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  marginBottom: '8px'
+                                                }}>
+                                                  <div className="team-badge" style={{ 
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    marginRight: '8px'
+                                                  }}>
+                                                    <img 
+                                                      src={game.homeLogo || getTeamLogo(game.homeTeam)} 
+                                                      alt={game.homeTeam}
+                                                      style={{ 
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'contain'
+                                                      }}
+                                                    />
+                                                  </div>
+                                                  <div style={{ 
+                                                    fontSize: '12px',
+                                                    color: '#777'
+                                                  }}>
+                                                    {game.homeTeam}
+                                                  </div>
+                                                </div>
+                                                
+                                                <div style={{ 
+                                                  fontSize: '16px',
+                                                  fontWeight: '600',
+                                                  marginBottom: '4px'
+                                                }}>
+                                                  {player.player}
+                                                </div>
+                                                
+                                                <div style={{ 
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'center'
+                                                }}>
+                                                  <div style={{ 
+                                                    fontSize: '13px',
+                                                    color: '#777',
+                                                    backgroundColor: '#f5f5f5',
+                                                    padding: '3px 8px',
+                                                    borderRadius: '12px'
+                                                  }}>
+                                                    {player.position}
+                                                  </div>
+                                                  
+                                                  <div style={{ 
+                                                    fontSize: '13px',
+                                                    fontWeight: '500',
+                                                    color: darkenColor(teamColor, 20)
+                                                  }}>
+                                                    {stat}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                          
+                                        {/* Away team impact players */}
+                                        {gameData.players?.usage
+                                          ?.filter(p => p.team === game.awayTeam)
+                                          ?.sort((a, b) => b.total - a.total)
+                                          ?.slice(0, 2)
+                                          ?.map((player, i) => {
+                                            const playerPPA = gameData.players.ppa.find(p => p.player === player.player);
+                                            const stat = playerPPA ? 
+                                              `${Math.round(playerPPA.cumulative.total)} PPA, ${Math.round(player.total * 100)}% usage` : 
+                                              `${Math.round(player.total * 100)}% usage`;
+                                            
+                                            return (
+                                              <div key={i} style={{ 
+                                                backgroundColor: 'white',
+                                                borderRadius: '10px',
+                                                padding: '12px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                                border: '1px solid #f0f0f0'
+                                              }}>
+                                                <div style={{ 
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  marginBottom: '8px'
+                                                }}>
+                                                  <div className="team-badge" style={{ 
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    marginRight: '8px'
+                                                  }}>
+                                                    <img 
+                                                      src={game.awayLogo || getTeamLogo(game.awayTeam)} 
+                                                      alt={game.awayTeam}
+                                                      style={{ 
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'contain'
+                                                      }}
+                                                    />
+                                                  </div>
+                                                  <div style={{ 
+                                                    fontSize: '12px',
+                                                    color: '#777'
+                                                  }}>
+                                                    {game.awayTeam}
+                                                  </div>
+                                                </div>
+                                                
+                                                <div style={{ 
+                                                  fontSize: '16px',
+                                                  fontWeight: '600',
+                                                  marginBottom: '4px'
+                                                }}>
+                                                  {player.player}
+                                                </div>
+                                                
+                                                <div style={{ 
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'center'
+                                                }}>
+                                                  <div style={{ 
+                                                    fontSize: '13px',
+                                                    color: '#777',
+                                                    backgroundColor: '#f5f5f5',
+                                                    padding: '3px 8px',
+                                                    borderRadius: '12px'
+                                                  }}>
+                                                    {player.position}
+                                                  </div>
+                                                  
+                                                  <div style={{ 
+                                                    fontSize: '13px',
+                                                    fontWeight: '500',
+                                                    color: darkenColor(teamColor, 20)
+                                                  }}>
+                                                    {stat}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                      </div>
+                                    ) : (
+                                      <div style={{ 
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '20px'
+                                      }}>
+                                        <LoadingSpinner color={teamColor} />
+                                        <span style={{ marginLeft: '15px' }}>Loading player stats...</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '40px 20px',
+                      backgroundColor: '#fafafa',
+                      borderRadius: '8px',
+                      margin: '10px'
+                    }}>
+                      <FaCalendarAlt style={{ 
+                        fontSize: '32px', 
+                        color: '#ccc',
+                        marginBottom: '15px'
+                      }} />
+                      <div style={{ 
+                        fontSize: '16px',
+                        color: '#666',
+                        marginBottom: '5px',
+                        fontWeight: '500'
+                      }}>
+                        No schedule information available
                       </div>
-                    );
-                  })}
-                  {schedule.length === 0 && !isLoading.schedule && (
-                    <div className="no-data-message">
-                      No schedule information available
+                      <div style={{ 
+                        fontSize: '14px',
+                        color: '#999'
+                      }}>
+                        Check back later for schedule updates
+                      </div>
                     </div>
                   )}
                 </div>
@@ -779,8 +1205,12 @@ const TeamDetail = () => {
           border-radius: 4px;
           border: 1px solid rgba(0,0,0,0.1);
         }
-        
 
+        /* Animation for expanding game details */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         
         /* Responsive adjustments */
         @media (max-width: 1024px) {
@@ -791,6 +1221,15 @@ const TeamDetail = () => {
           .team-sidebar {
             width: 100%;
             margin-top: 20px;
+          }
+          
+          .modern-matchup {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .modern-game-header {
+            flex-wrap: wrap;
           }
         }
         

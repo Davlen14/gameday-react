@@ -5,6 +5,7 @@ import L from "leaflet";
 import teamsService from "../services/teamsService";
 import newsService from "../services/newsService";
 import { FaTrophy, FaUserAlt, FaStar, FaNewspaper } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom"; // Add this import
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -169,6 +170,9 @@ const StarRating = ({ rating }) => {
 };
 
 const SEC = () => {
+    // Add the navigate hook
+    const navigate = useNavigate();
+    
     const [teams, setTeams] = useState([]);
     const [recruits, setRecruits] = useState([]);
     const [standings, setStandings] = useState([]);
@@ -177,6 +181,11 @@ const SEC = () => {
     const [error, setError] = useState(null);
     const [mapCenter, setMapCenter] = useState([33.5, -88.0]); // Approximate center of SEC states
     const [mapZoom, setMapZoom] = useState(6);
+
+    // Add navigation function to go to team detail page
+    const goToTeamDetail = (teamId) => {
+        navigate(`/teams/${teamId}`);
+    };
 
     // SEC colors based on official logo
     const secColors = {
@@ -294,6 +303,7 @@ const SEC = () => {
         padding: "10px 0",
         borderBottom: "1px solid #eee",
         alignItems: "center",
+        cursor: "pointer", // Add cursor pointer to show it's clickable
     };
 
     const recruitIconStyle = {
@@ -393,6 +403,7 @@ const SEC = () => {
                 box-shadow: 0 3px 12px rgba(0,0,0,0.3);
                 overflow: hidden;
                 border: 3px solid #fff;
+                cursor: pointer;
             ">
                 <img src="${logoUrl}" alt="Team Logo" style="width: 35px; height: 35px; object-fit: contain;" />
             </div>`,
@@ -482,7 +493,7 @@ const SEC = () => {
                         .sort((a, b) => b.rating - a.rating)
                         .slice(0, 10); // Get top 10
                     
-                    // Add team logo URLs to each recruit
+                    // Add team logo URLs and team IDs to each recruit
                     const recruitsWithLogos = secRecruits.map(recruit => {
                         const team = secTeams.find(t => 
                             t.school === recruit.committedTo || 
@@ -490,7 +501,8 @@ const SEC = () => {
                         );
                         return {
                             ...recruit,
-                            teamLogo: team?.logos?.[0] || null
+                            teamLogo: team?.logos?.[0] || null,
+                            teamId: team?.id || null // Add teamId for navigation
                         };
                     });
                     
@@ -621,17 +633,23 @@ const SEC = () => {
     }, [dataVersion]); // Re-run when dataVersion changes
 
     const handleTeamClick = (teamId) => {
+        // First fly to the team on the map
         const team = teams.find(t => t.id === teamId);
         if (team) {
             setMapCenter([team.location.latitude, team.location.longitude]);
             setMapZoom(17); // Good zoom level for stadiums
         }
+        
+        // Then navigate to the team detail page after a short delay to show the map animation
+        setTimeout(() => {
+            goToTeamDetail(teamId);
+        }, 1500); // Wait 1.5 seconds, matching the map animation duration
     };
 
     if (loading) {
         return (
             <div style={loadingStyle}>
-                <div style={{ marginBottom: "20px" }}>Loading SEC data...</div>
+                <div style={{ marginBottom: "20px", color: secColors.primary }}>Loading SEC data...</div>
                 <div>🏈</div>
             </div>
         );
@@ -691,6 +709,12 @@ const SEC = () => {
         const total = wins + losses + ties;
         if (total === 0) return 0;
         return (wins / total * 100).toFixed(1);
+    };
+
+    // Find the team object from teamData array based on team name
+    const findTeamIdByName = (teamName) => {
+        const team = teams.find(t => t.school === teamName);
+        return team ? team.id : null;
     };
     
     return (
@@ -802,10 +826,17 @@ const SEC = () => {
                                 </thead>
                                 <tbody>
                                     {standings.map((team, index) => (
-                                        <tr key={index} style={{ 
-                                            backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
-                                            borderBottom: "1px solid #eee"
-                                        }}>
+                                        <tr 
+                                            key={index} 
+                                            style={{ 
+                                                backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+                                                borderBottom: "1px solid #eee",
+                                                cursor: "pointer", // Show clickable cursor
+                                            }}
+                                            onClick={() => goToTeamDetail(team.id)}
+                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#f0f0f0"} 
+                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? "#f9f9f9" : "white"}
+                                        >
                                             <td style={{ 
                                                 padding: "8px", 
                                                 display: "flex", 
@@ -885,14 +916,21 @@ const SEC = () => {
                                         key={team.id}
                                         position={[team.location.latitude, team.location.longitude]}
                                         icon={customMarkerIcon(team.logos?.[0] || "/photos/default_team.png")}
+                                        eventHandlers={{
+                                            click: () => goToTeamDetail(team.id)
+                                        }}
                                     >
                                         <Popup>
-                                            <div style={{
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                alignItems: "center",
-                                                padding: "10px"
-                                            }}>
+                                            <div 
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    padding: "10px",
+                                                    cursor: "pointer"
+                                                }}
+                                                onClick={() => goToTeamDetail(team.id)}
+                                            >
                                                 <img
                                                     src={team.logos?.[0] || "/photos/default_team.png"}
                                                     alt={team.school}
@@ -909,6 +947,20 @@ const SEC = () => {
                                                         {team.location.name}
                                                     </p>
                                                 )}
+                                                <button 
+                                                    style={{
+                                                        marginTop: "10px",
+                                                        padding: "5px 10px",
+                                                        backgroundColor: secColors.secondary,
+                                                        color: "white",
+                                                        border: "none",
+                                                        borderRadius: "4px",
+                                                        cursor: "pointer",
+                                                        fontSize: "0.8rem"
+                                                    }}
+                                                >
+                                                    View Team Details
+                                                </button>
                                             </div>
                                         </Popup>
                                     </Marker>
@@ -927,7 +979,11 @@ const SEC = () => {
                         {recruits.length > 0 ? (
                             <div>
                                 {recruits.map((recruit, index) => (
-                                    <div key={index} style={recruitRowStyle}>
+                                    <div 
+                                        key={index} 
+                                        style={recruitRowStyle}
+                                        onClick={() => recruit.teamId && goToTeamDetail(recruit.teamId)}
+                                    >
                                         <div style={recruitIconStyle}>
                                             <FaUserAlt size={20} color="#666" />
                                         </div>
