@@ -141,19 +141,23 @@ const TeamPlayerModal = ({
     return player.position || "";
   };
   
-  // Get player's jersey number - handles different data formats
+  // Get player's jersey number - MODIFIED to prioritize jersey field first to match roster component
   const getPlayerJerseyNumber = () => {
     if (!player) return "";
     
-    if (player.number !== undefined) {
-      return player.number;
-    }
-    else if (player.jersey !== undefined) {
+    // First check jersey since this is what we use in the roster component
+    if (player.jersey !== undefined && player.jersey !== null) {
       return player.jersey;
     }
-    else if (player.jerseyNumber !== undefined) {
+    // Then check other possible fields
+    else if (player.number !== undefined && player.number !== null) {
+      return player.number;
+    }
+    else if (player.jerseyNumber !== undefined && player.jerseyNumber !== null) {
       return player.jerseyNumber;
     }
+    // Log if no jersey number is found
+    console.log("No jersey number found for player:", player);
     return "";
   };
   
