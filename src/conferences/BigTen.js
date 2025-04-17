@@ -585,7 +585,7 @@ const BigTen = () => {
                             )
                         )
                         .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 20); // Show 20 recruits
+                        .slice(0, 30); // Show 20 recruits
                     
                     // Add team logo URLs to each recruit
                     const recruitsWithLogos = bigTenRecruits.map(recruit => {
