@@ -13,6 +13,12 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     record: false,
     talent: false
   });
+  // Added state for coach's career record at the school
+  const [coachCareerRecord, setCoachCareerRecord] = useState({
+    wins: 0,
+    losses: 0,
+    ties: 0
+  });
 
   // Fetch coach data, record data, and talent data
   useEffect(() => {
@@ -28,7 +34,27 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             season.losses !== undefined
           )
         );
-        setCoachData(teamCoach);
+
+        if (teamCoach) {
+          setCoachData(teamCoach);
+          
+          // Calculate career record at this school
+          const schoolSeasons = teamCoach.seasons.filter(season => 
+            season.school === team.school && 
+            season.wins !== undefined && 
+            season.losses !== undefined
+          );
+          
+          // Aggregate all seasons at this school
+          const careerRecord = schoolSeasons.reduce((acc, season) => {
+            acc.wins += season.wins || 0;
+            acc.losses += season.losses || 0;
+            acc.ties += season.ties || 0;
+            return acc;
+          }, { wins: 0, losses: 0, ties: 0 });
+          
+          setCoachCareerRecord(careerRecord);
+        }
       } catch (err) {
         console.error("Error fetching coach data:", err.message);
       } finally {
@@ -52,9 +78,19 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     const fetchTalentData = async () => {
       try {
         setLoading(prev => ({ ...prev, talent: true }));
-        const data = await teamsService.getTalentRankings(year);
-        const teamTalent = data.find(talent => talent.team === team.school);
-        setTalentData(teamTalent);
+        
+        // Add safety check for getTalentRankings function
+        if (typeof teamsService.getTalentRankings === 'function') {
+          const data = await teamsService.getTalentRankings(year);
+          const teamTalent = data.find(talent => talent.team === team.school);
+          setTalentData(teamTalent);
+        } else {
+          console.warn('getTalentRankings function not available in teamsService');
+          // Try alternative method - if there's talent info in the team object
+          if (team && team.talent) {
+            setTalentData({ team: team.school, talent: team.talent });
+          }
+        }
       } catch (err) {
         console.error("Error fetching talent data:", err.message);
       } finally {
@@ -156,6 +192,40 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
     return schoolName.charAt(0);
   };
 
+  // Find coach's hire year
+  const getCoachHireYear = () => {
+    if (!coachData || !coachData.hireDate) return null;
+    return new Date(coachData.hireDate).getFullYear();
+  };
+
+  // Get coach tenure text
+  const getCoachTenureText = () => {
+    const hireYear = getCoachHireYear();
+    if (!hireYear) return "";
+    
+    return `Since ${hireYear}`;
+  };
+
+  // Find the latest season for the coach
+  const getLatestSeason = () => {
+    if (!coachData || !coachData.seasons || coachData.seasons.length === 0) return null;
+    
+    return [...coachData.seasons]
+      .filter(season => season.school === team.school)
+      .sort((a, b) => b.year - a.year)[0];
+  };
+
+  // Get preseason and postseason ranks
+  const getSeasonRanks = () => {
+    const latestSeason = getLatestSeason();
+    if (!latestSeason) return { preseason: null, postseason: null };
+    
+    return {
+      preseason: latestSeason.preseasonRank,
+      postseason: latestSeason.postseasonRank
+    };
+  };
+
   // Style for card headers
   const cardHeaderStyle = {
     background: '#ffffff',
@@ -169,6 +239,9 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
 
   // Get team conference
   const teamConference = team.conference || "Independent";
+
+  // Get ranks for display
+  const ranks = getSeasonRanks();
 
   return (
     <>
@@ -290,34 +363,33 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   <td>
                     <strong>
                       {coachData.firstName} {coachData.lastName}
-                      {coachData.hireDate && (
+                      {getCoachHireYear() && (
                         <span className="coach-tenure">
-                          Since {new Date(coachData.hireDate).getFullYear()}
+                          {getCoachTenureText()}
                         </span>
                       )}
                     </strong>
-                    {coachData.seasons && coachData.seasons.length > 0 && (
-                      <div className="coach-record">
-                        <span className="record-detail">
-                          Record: {coachData.seasons[0].wins}-{coachData.seasons[0].losses}
+                    <div className="coach-record">
+                      <span className="record-detail">
+                        Career at {team.school}: {coachCareerRecord.wins}-{coachCareerRecord.losses}
+                        {coachCareerRecord.ties > 0 ? `-${coachCareerRecord.ties}` : ''}
+                      </span>
+                      {(ranks.preseason || ranks.postseason) && (
+                        <span className="rank-detail">
+                          {ranks.preseason && (
+                            <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                              Preseason: #{ranks.preseason}
+                            </span>
+                          )}
+                          {ranks.preseason && ranks.postseason && ' • '}
+                          {ranks.postseason && (
+                            <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                              Final: #{ranks.postseason}
+                            </span>
+                          )}
                         </span>
-                        {(coachData.seasons[0].preseasonRank || coachData.seasons[0].postseasonRank) && (
-                          <span className="rank-detail">
-                            {coachData.seasons[0].preseasonRank && (
-                              <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
-                                Preseason: #{coachData.seasons[0].preseasonRank}
-                              </span>
-                            )}
-                            {coachData.seasons[0].preseasonRank && coachData.seasons[0].postseasonRank && ' • '}
-                            {coachData.seasons[0].postseasonRank && (
-                              <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
-                                Final: #{coachData.seasons[0].postseasonRank}
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </td>
                 </tr>
               )}
@@ -339,7 +411,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   </td>
                 </tr>
               )}
-              {talentData && (
+              {(talentData || team.talent) && (
                 <tr>
                   <td>
                     <div className="flex-align-center">
@@ -349,7 +421,9 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                   </td>
                   <td>
                     <strong>
-                      {talentData.talent ? talentData.talent.toFixed(2) : 'N/A'}
+                      {talentData ? 
+                        (talentData.talent ? talentData.talent.toFixed(2) : 'N/A') : 
+                        (team.talent ? team.talent.toFixed(2) : 'N/A')}
                     </strong>
                   </td>
                 </tr>

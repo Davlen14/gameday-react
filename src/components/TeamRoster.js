@@ -101,38 +101,28 @@ const darkenColor = (color, percent) => {
 
 // Function to safely get jersey number - with numeric default
 const getJerseyNumber = (player) => {
-  // Added debug logging to trace jersey number assignment
-  // console.log(`Getting jersey for ${player.firstName} ${player.lastName} (ID: ${player.id})`);
-  
   // Check each possible field, treating 0 as valid
   if (player.jersey !== undefined && player.jersey !== null) {
-    // console.log(`Using jersey field: ${player.jersey}`);
     return player.jersey.toString();
   }
   if (player.number !== undefined && player.number !== null) {
-    // console.log(`Using number field: ${player.number}`);
     return player.number.toString();
   }
   if (player.jerseyNumber !== undefined && player.jerseyNumber !== null) {
-    // console.log(`Using jerseyNumber field: ${player.jerseyNumber}`);
     return player.jerseyNumber.toString();
   }
   
   // Generate a consistent "random" number based on player ID
   if (player.id) {
-    // Extract digits from ID
     const idDigits = player.id.toString().replace(/\D/g, '');
     if (idDigits.length > 0) {
-      // Use last two digits of ID modulo 99 + 1 to get a number between 1-99
       const jerseyNumber = (parseInt(idDigits.slice(-2), 10) % 99) + 1;
-      // console.log(`Generated from ID: ${jerseyNumber} (ID: ${player.id})`);
       return jerseyNumber.toString();
     }
   }
   
   // Fallback to truly random number if no ID is available
   const randomNumber = Math.floor(Math.random() * 98 + 1);
-  // console.log(`Using random fallback: ${randomNumber}`);
   return randomNumber.toString();
 };
 
@@ -157,10 +147,8 @@ const getDefaultPosition = (playerId) => {
   if (!playerId) return "ATH";
   
   const positions = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "S", "K", "P"];
-  // Extract digits from ID
   const idDigits = playerId.toString().replace(/\D/g, '');
   if (idDigits.length > 0) {
-    // Use last digits of ID to select a position
     const posIndex = parseInt(idDigits.slice(-1), 10) % positions.length;
     return positions[posIndex];
   }
@@ -186,100 +174,72 @@ const getDefaultWeight = (position) => {
 };
 
 const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
-  // Initialize roster as an empty array
   const [roster, setRoster] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null); // Add error state
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPosition, setFilterPosition] = useState("");
-
-  // State for handling modal display and selected player
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   useEffect(() => {
     const fetchRoster = async () => {
       setIsLoading(true);
-      setError(null); // Reset error state on new fetch
+      setError(null);
       try {
         const data = await teamsService.getTeamRoster(teamName, year);
-        
-        // Enhanced logging to debug issues
-        console.log(`Fetched ${data?.length || 0} players for ${teamName}`);
-        
-        // Log the first few players to help debug field names
+
+        // Debug: Log first few players and their jersey fields
         if (data && data.length > 0) {
           console.log("First 3 players with jersey numbers:");
           data.slice(0, 3).forEach(player => {
             console.log(`${player.firstName} ${player.lastName}: jersey=${player.jersey}, id=${player.id}`);
           });
         }
-        
+
         // Process the data to ensure all fields have values
         const processedData = data.map(player => {
-          // Determine position (either from data or generate a default)
           const position = player.position || getDefaultPosition(player.id);
-          
-          // Generate default weight based on position
           const defaultWeight = getDefaultWeight(position);
-          
-          // Pre-compute the jersey display value for debugging
           const jerseyDisplay = getJerseyNumber(player);
-          
-          const processedPlayer = {
+
+          // Debug: Log jersey assignment for all players
+          // Remove or comment this out in production if you wish
+          console.log("Processing player:", {
+            name: `${player.firstName} ${player.lastName}`,
+            originalJersey: player.jersey,
+            computedJersey: jerseyDisplay,
+            id: player.id
+          });
+
+          return {
             ...player,
-            // Create a fullName if it doesn't exist
-            fullName: player.fullName || 
-                      `${player.firstName || ''} ${player.lastName || ''}`.trim() || 
-                      `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
-            
-            // Set position with default
+            fullName: player.fullName ||
+              `${player.firstName || ''} ${player.lastName || ''}`.trim() ||
+              `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
             position: position,
-            
-            // Properly format the jersey number (handle 0 as valid)
             jerseyDisplay: jerseyDisplay,
-            
-            // Format hometown with default
-            formattedHometown: player.homeCity && player.homeState 
-              ? `${player.homeCity}, ${player.homeState}` 
+            formattedHometown: player.homeCity && player.homeState
+              ? `${player.homeCity}, ${player.homeState}`
               : player.homeCity || player.homeState || "Columbus, OH",
-            
-            // Format weight with position-appropriate default
             weightDisplay: player.weight ? `${player.weight} lbs` : `${defaultWeight} lbs`,
-            
-            // Format height with default
             heightDisplay: formatHeight(player.height),
-            
-            // Format year/class with default
             yearDisplay: getYearText(player.year)
           };
-          
-          // Debug log jersey assignment for sample players
-          if (player.id && player.id === data[0]?.id) {
-            console.log("Sample player processing:", {
-              name: processedPlayer.fullName,
-              originalJersey: player.jersey,
-              computedJersey: jerseyDisplay,
-              id: player.id
-            });
-          }
-          
-          return processedPlayer;
         });
-        
+
         // Sort players by jersey number (numerical sort, not string)
         const sortedRoster = [...processedData].sort((a, b) => {
           const jerseyA = parseInt(a.jerseyDisplay, 10) || 999;
           const jerseyB = parseInt(b.jerseyDisplay, 10) || 999;
           return jerseyA - jerseyB;
         });
-        
-        console.log(`Processed ${sortedRoster.length} players for display`);
+
         setRoster(sortedRoster);
       } catch (err) {
         console.error("Error fetching roster:", err.message);
-        setError("Failed to load roster information."); // Set error message
-        setRoster([]); // Ensure roster is empty on error
+        setError("Failed to load roster information.");
+        setRoster([]);
       } finally {
         setIsLoading(false);
       }
@@ -288,24 +248,20 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
     fetchRoster();
   }, [teamName, year]);
 
-  // Get all unique positions for filtering
   const uniquePositions = [...new Set(roster.map(player => player.position))].filter(Boolean);
 
-  // Filter players based on search and position
   const filteredPlayers = roster.filter(player => {
     const nameMatch = player.fullName.toLowerCase().includes(searchTerm.toLowerCase());
     const positionMatch = filterPosition ? player.position === filterPosition : true;
     return nameMatch && positionMatch;
   });
 
-  // Style for card headers
   const cardHeaderStyle = {
     background: lightenColor(teamColor, 90),
     borderBottom: `2px solid ${teamColor}`,
     color: darkenColor(teamColor, 20)
   };
 
-  // Handler to open the modal with the selected player info
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
     setIsModalOpen(true);
@@ -447,7 +403,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
 
       {/* Component-specific styles */}
       <style>{`
-        /* Dashboard Card */
         .dashboard-card {
           background: white;
           border-radius: 20px;
@@ -457,11 +412,9 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           animation: fadeIn 0.6s ease-out;
           width: 100%;
         }
-        
         .dashboard-card:hover {
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
-        
         .card-header {
           padding: 1.2rem 1.5rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -471,7 +424,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           display: flex;
           align-items: center;
         }
-        
         .card-header::before {
           content: '';
           display: inline-block;
@@ -481,24 +433,19 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           margin-right: 12px;
           border-radius: 4px;
         }
-        
         .card-body {
           padding: 1.5rem;
         }
-
-        /* Filters */
         .roster-filters {
           display: flex;
           gap: 15px;
           margin-bottom: 20px;
           flex-wrap: wrap;
         }
-        
         .search-box {
           flex: 1;
           min-width: 200px;
         }
-        
         .search-input {
           width: 100%;
           padding: 10px 15px;
@@ -507,17 +454,14 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           font-size: 16px;
           transition: all 0.2s;
         }
-        
         .search-input:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
-        
         .position-filter {
           width: 200px;
         }
-        
         .position-select {
           width: 100%;
           padding: 10px 15px;
@@ -527,28 +471,22 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           background-color: white;
           cursor: pointer;
         }
-        
         .position-select:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
-        
         .players-count {
           margin-bottom: 15px;
           font-size: 14px;
           color: #666;
         }
-
-        /* Player Cards Container */
         .player-cards-container {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
           gap: 20px;
           margin-top: 20px;
         }
-        
-        /* Player Card */
         .player-card {
           background: white;
           border-radius: 12px;
@@ -560,12 +498,10 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           flex-direction: column;
           height: 100%;
         }
-        
         .player-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
-        
         .player-card-header {
           background-color: ${teamColor};
           color: white;
@@ -575,7 +511,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           justify-content: space-between;
           align-items: center;
         }
-        
         .player-jersey-number {
           font-size: 28px;
           font-weight: bold;
@@ -587,7 +522,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           justify-content: center;
           border-radius: 50%;
         }
-        
         .player-position-badge {
           background: rgba(255,255,255,0.2);
           padding: 5px 12px;
@@ -595,7 +529,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           font-weight: 600;
           font-size: 14px;
         }
-        
         .player-card-body {
           padding: 20px;
           flex: 1;
@@ -603,7 +536,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           flex-direction: column;
           gap: 15px;
         }
-        
         .player-name {
           font-size: 18px;
           font-weight: 600;
@@ -612,39 +544,33 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-bottom: 1px solid #f0f0f0;
           padding-bottom: 10px;
         }
-        
         .player-info-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 15px;
           margin-bottom: 5px;
         }
-        
         .info-item {
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
-        
         .info-icon {
           color: ${teamColor};
           font-size: 14px;
           margin-bottom: 2px;
         }
-        
         .info-label {
           font-size: 12px;
           color: #777;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
-        
         .info-value {
           font-size: 15px;
           font-weight: 500;
           color: #333;
         }
-        
         .player-location {
           display: flex;
           align-items: center;
@@ -653,25 +579,21 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #555;
           margin-top: 5px;
         }
-        
         .location-icon {
           color: ${teamColor};
         }
-        
         .player-coordinates {
           font-size: 12px;
           color: #999;
           margin-top: -10px;
           margin-left: 20px;
         }
-        
         .player-fips {
           font-size: 12px;
           color: #999;
           margin-top: -10px;
           margin-left: 20px;
         }
-        
         .player-id-section {
           margin-top: 10px;
           border-top: 1px solid #f0f0f0;
@@ -679,19 +601,15 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           font-size: 12px;
           color: #777;
         }
-        
         .player-id, .recruit-ids {
           display: flex;
           align-items: center;
           gap: 5px;
           margin-top: 3px;
         }
-        
         .id-icon {
           color: #aaa;
         }
-
-        /* Empty state */
         .no-players-message {
           text-align: center;
           padding: 40px;
@@ -701,8 +619,6 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           background: #f9f9f9;
           border-radius: 10px;
         }
-
-        /* Loading indicator */
         .loading-indicator {
           display: flex;
           flex-direction: column;
@@ -712,14 +628,11 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           gap: 1rem;
           color: #666;
         }
-        
         .loading-spinner {
           display: flex;
           justify-content: center;
           align-items: center;
         }
-        
-        /* Error message */
         .error-message {
           display: flex;
           align-items: center;
@@ -728,26 +641,20 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #ff4d4d;
           font-weight: 500;
         }
-        
-        /* Animation */
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-
-        /* Responsive adjustments */
         @media (max-width: 768px) {
           .player-cards-container {
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           }
-          
           .player-info-grid {
             grid-template-columns: 1fr;
           }
         }
       `}</style>
 
-      {/* Integrate the TeamPlayerModal component */}
       <TeamPlayerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
