@@ -169,6 +169,30 @@ const StarRating = ({ rating }) => {
 };
 
 const BigTen = () => {
+    // Animation keyframes for the trophy shine effect
+    const keyframesStyle = `
+    @keyframes trophy-shine {
+        0% { filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.7)); }
+        50% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.9)); }
+        100% { filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.7)); }
+    }
+    @keyframes trophy-rotate {
+        0% { transform: perspective(100px) rotateY(-5deg); }
+        50% { transform: perspective(100px) rotateY(5deg); }
+        100% { transform: perspective(100px) rotateY(-5deg); }
+    }`;
+
+    useEffect(() => {
+        // Add the animation keyframes to the document
+        const styleElement = document.createElement('style');
+        styleElement.textContent = keyframesStyle;
+        document.head.appendChild(styleElement);
+        
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
+
     const [teams, setTeams] = useState([]);
     const [recruits, setRecruits] = useState([]);
     const [standings, setStandings] = useState([]);
@@ -400,10 +424,33 @@ const BigTen = () => {
         fontSize: "18px"
     };
 
+    // Enhanced 3D national trophy style
     const nationalTrophyStyle = {
-        color: "#FFD700", // Gold color
+        color: "#FFD700", // Base gold color
         marginLeft: "8px",
-        fontSize: "18px"
+        fontSize: "24px", // Increased size for better visibility
+        display: "inline-block", // Needed for transforms
+        position: "relative", // For pseudo-elements
+        fontWeight: "bold", // Make it bolder
+        animation: "trophy-rotate 6s infinite ease-in-out", // Subtle rotation animation
+        filter: "drop-shadow(0 0 3px rgba(255, 215, 0, 0.8))", // Gold glow
+        textShadow: `
+            0 0 4px rgba(255, 215, 0, 0.9), 
+            0 1px 1px rgba(150, 120, 0, 0.8),
+            0 -1px 1px rgba(255, 240, 150, 0.8)`,  // Multiple shadows for 3D depth
+        background: `linear-gradient(
+            135deg, 
+            #FFD700 10%, 
+            #FFC800 25%, 
+            #FFEF00 50%, 
+            #FFC800 75%, 
+            #FFD700 90%)`, // Metallic gradient 
+        WebkitBackgroundClip: "text", // Apply gradient to text only
+        WebkitTextFillColor: "transparent", // Make text transparent to show gradient
+        transform: "perspective(100px) rotateY(-5deg)", // Initial 3D effect
+        cursor: "pointer", // Show it's interactive
+        transition: "all 0.3s ease", // Smooth transitions
+        padding: "0 3px" // A bit of padding
     };
 
     // Custom marker icon
@@ -507,7 +554,7 @@ const BigTen = () => {
                             }
                             return 0;
                         });
-                        setNews(sortedArticles); // Show all news articles instead of limiting to 10
+                        setNews(sortedArticles); // Show all news articles
                     } else {
                         console.error("News API returned empty or invalid data:", newsData);
                         setNews([]);
@@ -530,7 +577,7 @@ const BigTen = () => {
                             )
                         )
                         .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 20); // Increased from 10 to 20 recruits
+                        .slice(0, 20); // Show 20 recruits
                     
                     // Add team logo URLs to each recruit
                     const recruitsWithLogos = bigTenRecruits.map(recruit => {
@@ -846,7 +893,7 @@ const BigTen = () => {
                         )}
                     </div>
 
-                    {/* News Section - Removed maxHeight and overflowY */}
+                    {/* News Section - No scrolling */}
                     <div style={sectionStyle}>
                         <h2 style={newsTitleStyle}>LATEST NEWS</h2>
                         {news && news.length > 0 ? (
@@ -965,7 +1012,7 @@ const BigTen = () => {
                                                         {team.school}
                                                         {/* Conference champion trophy */}
                                                         {index === 0 && <FaTrophy style={conferenceTrophyStyle} title="Big Ten Champion" />}
-                                                        {/* National champion trophy */}
+                                                        {/* Enhanced 3D National champion trophy */}
                                                         {team.school === "Ohio State" && <FaTrophy style={nationalTrophyStyle} title="National Champion" />}
                                                     </div>
                                                 </div>
