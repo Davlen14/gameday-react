@@ -22,7 +22,7 @@ import {
   FaStar,
   FaChevronDown,
   FaChevronUp,
-  FaStadiumAlt,
+  FaBuilding,    // Replaced FaStadiumAlt with FaBuilding
   FaClock
 } from "react-icons/fa";
 import RatingsComponent from "./RatingsComponent";
@@ -731,7 +731,7 @@ const TeamDetail = () => {
                                     display: 'flex',
                                     alignItems: 'center'
                                   }}>
-                                    <FaStadiumAlt style={{ 
+                                    <FaBuilding style={{ 
                                       color: teamColor,
                                       marginRight: '8px',
                                       fontSize: '14px'
