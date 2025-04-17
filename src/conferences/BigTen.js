@@ -272,17 +272,19 @@ const BigTen = () => {
         flexDirection: "column",
     };
 
+    // Modernized section style with stronger shadows and subtle border
     const sectionStyle = {
         width: "100%",
         backgroundColor: "#fff",
-        borderRadius: "8px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-        padding: "15px",
-        marginBottom: "20px",
+        borderRadius: "10px",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12)",
+        padding: "18px",
+        marginBottom: "25px",
+        border: "1px solid rgba(0, 0, 0, 0.05)",
     };
 
     const sectionTitleStyle = {
-        fontSize: "1.4rem",
+        fontSize: "1.5rem",
         fontWeight: "700",
         textAlign: "left",
         marginBottom: "15px",
@@ -291,19 +293,22 @@ const BigTen = () => {
         borderBottom: `2px solid ${bigTenColors.secondary}`,
     };
 
+    // Taller map container
     const mapContainerStyle = {
         width: "100%",
-        height: "500px",
+        height: "700px", // Increased height from 500px to 700px
         borderRadius: "8px",
         overflow: "hidden",
         position: "relative",
+        boxShadow: "0 2px 12px rgba(0, 0, 0, 0.15)",
+        border: "1px solid rgba(0, 0, 0, 0.08)",
     };
 
     const crystalBallTitleStyle = {
         fontSize: "1.6rem",
         fontWeight: "bold",
         textAlign: "left",
-        marginBottom: "15px",
+        marginBottom: "18px",
         padding: "0 0 10px 0",
         color: bigTenColors.primary,
         textTransform: "uppercase",
@@ -320,7 +325,7 @@ const BigTen = () => {
 
     const talentRowStyle = {
         display: "flex",
-        padding: "8px 0",
+        padding: "10px 0",
         borderBottom: "1px solid #eee",
         alignItems: "center",
     };
@@ -336,30 +341,32 @@ const BigTen = () => {
 
     const recruitRowStyle = {
         display: "flex",
-        padding: "10px 0",
+        padding: "12px 0",
         borderBottom: "1px solid #eee",
         alignItems: "center",
     };
 
     const recruitIconStyle = {
-        width: "40px",
-        height: "40px",
+        width: "42px",
+        height: "42px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#f0f0f0",
         borderRadius: "50%",
-        marginRight: "10px",
+        marginRight: "12px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     };
 
     const newsCardStyle = {
-        padding: "12px",
-        marginBottom: "15px",
+        padding: "14px",
+        marginBottom: "18px",
         backgroundColor: "#fff",
-        borderRadius: "8px",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        borderRadius: "10px",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
         transition: "transform 0.2s ease, box-shadow 0.2s ease",
         cursor: "pointer",
+        border: "1px solid rgba(0, 0, 0, 0.05)",
     };
 
     const newsImageStyle = {
@@ -367,7 +374,7 @@ const BigTen = () => {
         height: "140px",
         objectFit: "cover",
         borderRadius: "6px",
-        marginBottom: "10px",
+        marginBottom: "12px",
     };
 
     const newsTitleTextStyle = {
@@ -453,20 +460,21 @@ const BigTen = () => {
         padding: "0 3px" // A bit of padding
     };
 
-    // Custom marker icon
+    // Custom marker icon with more modern style
     const customMarkerIcon = (logoUrl) => {
         return L.divIcon({
             html: `<div style="
-                background: rgba(255, 255, 255, 0.9);
+                background: rgba(255, 255, 255, 0.95);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 width: 45px;
                 height: 45px;
-                box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 0 0 2px rgba(255,255,255,0.8);
                 overflow: hidden;
-                border: 3px solid #fff;
+                border: 2px solid #fff;
+                transition: all 0.3s ease;
             ">
                 <img src="${logoUrl}" alt="Team Logo" style="width: 35px; height: 35px; object-fit: contain;" />
             </div>`,
@@ -808,14 +816,14 @@ const BigTen = () => {
             <div style={mainContentContainerStyle}>
                 {/* Left Sidebar - Team Talent and News */}
                 <div style={leftSidebarStyle}>
-                    {/* Team Talent Section */}
+                    {/* Team Talent Section - No scrolling */}
                     <div style={sectionStyle}>
                         <h2 style={talentTitleStyle}>
                             <FaChartBar style={{ marginRight: "10px" }} />
                             TEAM TALENT
                         </h2>
                         {teamTalent.length > 0 ? (
-                            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            <div>
                                 {teamTalent.map((team, index) => (
                                     <div key={index} style={talentRowStyle}>
                                         <div style={{ 
@@ -1047,7 +1055,7 @@ const BigTen = () => {
                         </div>
                     </div>
 
-                    {/* Map Section - Now below standings */}
+                    {/* Map Section - Now taller with a modernized look */}
                     <div style={sectionStyle}>
                         <h2 style={sectionTitleStyle}>Conference Map</h2>
                         <div style={mapContainerStyle}>
@@ -1066,7 +1074,7 @@ const BigTen = () => {
                             >
                                 <TileLayer
                                     url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                                    attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                                    attribution="" // Removed attribution text
                                 />
                                 {teams.map((team) => (
                                     <Marker
