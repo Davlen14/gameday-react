@@ -507,7 +507,7 @@ const BigTen = () => {
                             }
                             return 0;
                         });
-                        setNews(sortedArticles.slice(0, 10)); // Get top 10 news articles
+                        setNews(sortedArticles); // Show all news articles instead of limiting to 10
                     } else {
                         console.error("News API returned empty or invalid data:", newsData);
                         setNews([]);
@@ -530,7 +530,7 @@ const BigTen = () => {
                             )
                         )
                         .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 10); // Get top 10
+                        .slice(0, 20); // Increased from 10 to 20 recruits
                     
                     // Add team logo URLs to each recruit
                     const recruitsWithLogos = bigTenRecruits.map(recruit => {
@@ -846,11 +846,11 @@ const BigTen = () => {
                         )}
                     </div>
 
-                    {/* News Section */}
+                    {/* News Section - Removed maxHeight and overflowY */}
                     <div style={sectionStyle}>
                         <h2 style={newsTitleStyle}>LATEST NEWS</h2>
                         {news && news.length > 0 ? (
-                            <div style={{ maxHeight: '650px', overflowY: 'auto' }}>
+                            <div>
                                 {news.map((article, index) => (
                                     <div key={index} style={newsCardStyle} onClick={() => window.open(article.url, "_blank")}>
                                         {article.image && (
