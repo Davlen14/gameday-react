@@ -5,6 +5,7 @@ import L from "leaflet";
 import teamsService from "../services/teamsService";
 import newsService from "../services/newsService";
 import { FaTrophy, FaUserAlt, FaStar, FaNewspaper, FaChartBar } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom"; // Add this import
 
 // Fix for marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -169,6 +170,9 @@ const StarRating = ({ rating }) => {
 };
 
 const MidAmerican = () => {
+    // Add the navigate hook
+    const navigate = useNavigate();
+    
     // Animation keyframes for the trophy shine effect
     const keyframesStyle = `
     @keyframes trophy-shine {
@@ -209,6 +213,11 @@ const MidAmerican = () => {
       secondary: "#00AA7E", // Mint/seafoam green (instead of sky blue)
       accent: "#ffffff",   // White
       background: "#f5f5f5"
+    };
+
+    // Add navigation function to go to team detail page
+    const goToTeamDetail = (teamId) => {
+        navigate(`/teams/${teamId}`);
     };
 
     // Modern styled containers and components
@@ -328,6 +337,7 @@ const MidAmerican = () => {
         padding: "10px 0",
         borderBottom: "1px solid #eee",
         alignItems: "center",
+        cursor: "pointer", // Add cursor pointer to show it's clickable
     };
 
     const talentBarContainerStyle = {
@@ -344,6 +354,7 @@ const MidAmerican = () => {
         padding: "12px 0",
         borderBottom: "1px solid #eee",
         alignItems: "center",
+        cursor: "pointer", // Add cursor pointer to show it's clickable
     };
 
     const recruitIconStyle = {
@@ -446,6 +457,7 @@ const MidAmerican = () => {
                 overflow: hidden;
                 border: 2px solid #fff;
                 transition: all 0.3s ease;
+                cursor: pointer;
             ">
                 <img src="${logoUrl}" alt="Team Logo" style="width: 35px; height: 35px; object-fit: contain;" />
             </div>`,
@@ -558,7 +570,7 @@ const MidAmerican = () => {
                         .sort((a, b) => b.rating - a.rating)
                         .slice(0, 30); // Show 20 recruits
                     
-                    // Add team logo URLs to each recruit
+                    // Add team logo URLs and team IDs to each recruit
                     const recruitsWithLogos = macRecruits.map(recruit => {
                         const team = macTeams.find(t => 
                             t.school === recruit.committedTo || 
@@ -566,7 +578,8 @@ const MidAmerican = () => {
                         );
                         return {
                             ...recruit,
-                            teamLogo: team?.logos?.[0] || null
+                            teamLogo: team?.logos?.[0] || null,
+                            teamId: team?.id || null // Add teamId for navigation
                         };
                     });
                     
@@ -697,11 +710,17 @@ const MidAmerican = () => {
     }, [dataVersion]); // Re-run when dataVersion changes
 
     const handleTeamClick = (teamId) => {
+        // First fly to the team on the map
         const team = teams.find(t => t.id === teamId);
         if (team) {
             setMapCenter([team.location.latitude, team.location.longitude]);
             setMapZoom(17); // Good zoom level for stadiums
         }
+        
+        // Then navigate to the team detail page after a short delay to show the map animation
+        setTimeout(() => {
+            goToTeamDetail(teamId);
+        }, 1500); // Wait 1.5 seconds, matching the map animation duration
     };
 
     if (loading) {
@@ -772,6 +791,12 @@ const MidAmerican = () => {
     // Find max talent score for normalization
     const maxTalent = teamTalent.length > 0 ? teamTalent[0].talent : 1000;
     
+    // Find the team object from teamTalent array based on team name
+    const findTeamIdByName = (teamName) => {
+        const team = teams.find(t => t.school === teamName);
+        return team ? team.id : null;
+    };
+    
     return (
         <div style={pageStyle}>
             {/* Header with Mid-American logo and subtitle */}
@@ -795,58 +820,70 @@ const MidAmerican = () => {
                         </h2>
                         {teamTalent.length > 0 ? (
                             <div>
-                                {teamTalent.map((team, index) => (
-                                    <div key={index} style={talentRowStyle}>
-                                        <div style={{ 
-                                            width: "24px", 
-                                            textAlign: "center", 
-                                            fontWeight: "bold",
-                                            fontSize: "0.9rem",
-                                            color: index < 3 ? macColors.secondary : "#666"
-                                        }}>
-                                            {index + 1}
+                                {teamTalent.map((team, index) => {
+                                    const teamId = findTeamIdByName(team.team);
+                                    
+                                    return (
+                                        <div 
+                                            key={index} 
+                                            style={{
+                                                ...talentRowStyle,
+                                                transition: "background-color 0.2s ease",
+                                                ":hover": { backgroundColor: "#f5f5f5" } // Simple hover state
+                                            }}
+                                            onClick={() => teamId && goToTeamDetail(teamId)}
+                                        >
+                                            <div style={{ 
+                                                width: "24px", 
+                                                textAlign: "center", 
+                                                fontWeight: "bold",
+                                                fontSize: "0.9rem",
+                                                color: index < 3 ? macColors.secondary : "#666"
+                                            }}>
+                                                {index + 1}
+                                            </div>
+                                            <div style={{ 
+                                                display: "flex",
+                                                alignItems: "center",
+                                                width: "120px"
+                                            }}>
+                                                {/* Try to find the matching team logo */}
+                                                {teams.find(t => t.school === team.team)?.logos?.[0] && (
+                                                    <img
+                                                        src={teams.find(t => t.school === team.team)?.logos?.[0] || "/photos/default_team.png"}
+                                                        alt={team.team}
+                                                        style={{
+                                                            width: "20px",
+                                                            height: "20px",
+                                                            marginRight: "8px",
+                                                            objectFit: "contain"
+                                                        }}
+                                                    />
+                                                )}
+                                                <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                                                    {team.team}
+                                                </span>
+                                            </div>
+                                            <div style={talentBarContainerStyle}>
+                                                <div style={{
+                                                    height: "100%",
+                                                    width: `${(team.talent / maxTalent) * 100}%`,
+                                                    backgroundColor: index < 3 ? macColors.secondary : "#aaa",
+                                                    borderRadius: "4px"
+                                                }} />
+                                            </div>
+                                            <div style={{ 
+                                                width: "60px", 
+                                                textAlign: "right",
+                                                fontSize: "0.85rem",
+                                                fontWeight: "500",
+                                                color: index < 3 ? macColors.secondary : "#555"
+                                            }}>
+                                                {team.talent.toFixed(1)}
+                                            </div>
                                         </div>
-                                        <div style={{ 
-                                            display: "flex",
-                                            alignItems: "center",
-                                            width: "120px"
-                                        }}>
-                                            {/* Try to find the matching team logo */}
-                                            {teams.find(t => t.school === team.team)?.logos?.[0] && (
-                                                <img
-                                                    src={teams.find(t => t.school === team.team)?.logos?.[0] || "/photos/default_team.png"}
-                                                    alt={team.team}
-                                                    style={{
-                                                        width: "20px",
-                                                        height: "20px",
-                                                        marginRight: "8px",
-                                                        objectFit: "contain"
-                                                    }}
-                                                />
-                                            )}
-                                            <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
-                                                {team.team}
-                                            </span>
-                                        </div>
-                                        <div style={talentBarContainerStyle}>
-                                            <div style={{
-                                                height: "100%",
-                                                width: `${(team.talent / maxTalent) * 100}%`,
-                                                backgroundColor: index < 3 ? macColors.secondary : "#aaa",
-                                                borderRadius: "4px"
-                                            }} />
-                                        </div>
-                                        <div style={{ 
-                                            width: "60px", 
-                                            textAlign: "right",
-                                            fontSize: "0.85rem",
-                                            fontWeight: "500",
-                                            color: index < 3 ? macColors.secondary : "#555"
-                                        }}>
-                                            {team.talent.toFixed(1)}
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 <div style={{ 
                                     marginTop: "10px",
                                     fontSize: "0.8rem",
@@ -967,10 +1004,17 @@ const MidAmerican = () => {
                                 </thead>
                                 <tbody>
                                     {standings.map((team, index) => (
-                                        <tr key={index} style={{ 
-                                            backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
-                                            borderBottom: "1px solid #eee"
-                                        }}>
+                                        <tr 
+                                            key={index} 
+                                            style={{ 
+                                                backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+                                                borderBottom: "1px solid #eee",
+                                                cursor: "pointer", // Show clickable cursor
+                                            }}
+                                            onClick={() => goToTeamDetail(team.id)}
+                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#f0f0f0"} 
+                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? "#f9f9f9" : "white"}
+                                        >
                                             <td style={{ 
                                                 padding: "8px", 
                                                 display: "flex", 
@@ -1050,14 +1094,21 @@ const MidAmerican = () => {
                                         key={team.id}
                                         position={[team.location.latitude, team.location.longitude]}
                                         icon={customMarkerIcon(team.logos?.[0] || "/photos/default_team.png")}
+                                        eventHandlers={{
+                                            click: () => goToTeamDetail(team.id)
+                                        }}
                                     >
                                         <Popup>
-                                            <div style={{
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                alignItems: "center",
-                                                padding: "10px"
-                                            }}>
+                                            <div 
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    padding: "10px",
+                                                    cursor: "pointer"
+                                                }}
+                                                onClick={() => goToTeamDetail(team.id)}
+                                            >
                                                 <img
                                                     src={team.logos?.[0] || "/photos/default_team.png"}
                                                     alt={team.school}
@@ -1074,6 +1125,20 @@ const MidAmerican = () => {
                                                         {team.location.name}
                                                     </p>
                                                 )}
+                                                <button 
+                                                    style={{
+                                                        marginTop: "10px",
+                                                        padding: "5px 10px",
+                                                        backgroundColor: macColors.secondary,
+                                                        color: "white",
+                                                        border: "none",
+                                                        borderRadius: "4px",
+                                                        cursor: "pointer",
+                                                        fontSize: "0.8rem"
+                                                    }}
+                                                >
+                                                    View Team Details
+                                                </button>
                                             </div>
                                         </Popup>
                                     </Marker>
@@ -1092,7 +1157,11 @@ const MidAmerican = () => {
                         {recruits.length > 0 ? (
                             <div>
                                 {recruits.map((recruit, index) => (
-                                    <div key={index} style={recruitRowStyle}>
+                                    <div 
+                                        key={index} 
+                                        style={recruitRowStyle}
+                                        onClick={() => recruit.teamId && goToTeamDetail(recruit.teamId)}
+                                    >
                                         <div style={recruitIconStyle}>
                                             <FaUserAlt size={20} color="#666" />
                                         </div>
