@@ -101,14 +101,20 @@ const darkenColor = (color, percent) => {
 
 // Function to safely get jersey number - with numeric default
 const getJerseyNumber = (player) => {
+  // Added debug logging to trace jersey number assignment
+  // console.log(`Getting jersey for ${player.firstName} ${player.lastName} (ID: ${player.id})`);
+  
   // Check each possible field, treating 0 as valid
   if (player.jersey !== undefined && player.jersey !== null) {
+    // console.log(`Using jersey field: ${player.jersey}`);
     return player.jersey.toString();
   }
   if (player.number !== undefined && player.number !== null) {
+    // console.log(`Using number field: ${player.number}`);
     return player.number.toString();
   }
   if (player.jerseyNumber !== undefined && player.jerseyNumber !== null) {
+    // console.log(`Using jerseyNumber field: ${player.jerseyNumber}`);
     return player.jerseyNumber.toString();
   }
   
@@ -119,12 +125,15 @@ const getJerseyNumber = (player) => {
     if (idDigits.length > 0) {
       // Use last two digits of ID modulo 99 + 1 to get a number between 1-99
       const jerseyNumber = (parseInt(idDigits.slice(-2), 10) % 99) + 1;
+      // console.log(`Generated from ID: ${jerseyNumber} (ID: ${player.id})`);
       return jerseyNumber.toString();
     }
   }
   
   // Fallback to truly random number if no ID is available
-  return Math.floor(Math.random() * 98 + 1).toString();
+  const randomNumber = Math.floor(Math.random() * 98 + 1);
+  // console.log(`Using random fallback: ${randomNumber}`);
+  return randomNumber.toString();
 };
 
 // Function to convert year number to class name - with realistic default
@@ -195,9 +204,15 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
       try {
         const data = await teamsService.getTeamRoster(teamName, year);
         
-        // Log the first player to help debug field names
+        // Enhanced logging to debug issues
+        console.log(`Fetched ${data?.length || 0} players for ${teamName}`);
+        
+        // Log the first few players to help debug field names
         if (data && data.length > 0) {
-          console.log("Sample player data:", data[0]);
+          console.log("First 3 players with jersey numbers:");
+          data.slice(0, 3).forEach(player => {
+            console.log(`${player.firstName} ${player.lastName}: jersey=${player.jersey}, id=${player.id}`);
+          });
         }
         
         // Process the data to ensure all fields have values
@@ -208,7 +223,10 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           // Generate default weight based on position
           const defaultWeight = getDefaultWeight(position);
           
-          return {
+          // Pre-compute the jersey display value for debugging
+          const jerseyDisplay = getJerseyNumber(player);
+          
+          const processedPlayer = {
             ...player,
             // Create a fullName if it doesn't exist
             fullName: player.fullName || 
@@ -219,7 +237,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
             position: position,
             
             // Properly format the jersey number (handle 0 as valid)
-            jerseyDisplay: getJerseyNumber(player),
+            jerseyDisplay: jerseyDisplay,
             
             // Format hometown with default
             formattedHometown: player.homeCity && player.homeState 
@@ -235,9 +253,29 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
             // Format year/class with default
             yearDisplay: getYearText(player.year)
           };
+          
+          // Debug log jersey assignment for sample players
+          if (player.id && player.id === data[0]?.id) {
+            console.log("Sample player processing:", {
+              name: processedPlayer.fullName,
+              originalJersey: player.jersey,
+              computedJersey: jerseyDisplay,
+              id: player.id
+            });
+          }
+          
+          return processedPlayer;
         });
         
-        setRoster(processedData);
+        // Sort players by jersey number (numerical sort, not string)
+        const sortedRoster = [...processedData].sort((a, b) => {
+          const jerseyA = parseInt(a.jerseyDisplay, 10) || 999;
+          const jerseyB = parseInt(b.jerseyDisplay, 10) || 999;
+          return jerseyA - jerseyB;
+        });
+        
+        console.log(`Processed ${sortedRoster.length} players for display`);
+        setRoster(sortedRoster);
       } catch (err) {
         console.error("Error fetching roster:", err.message);
         setError("Failed to load roster information."); // Set error message
