@@ -150,7 +150,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       label: "Defense",
       value: ratings.defense,
       nationalAvg: NATIONAL_AVERAGES.defense,
-      min: 5,
+      min: 1,
       max: 40,
       isInverted: true, // Defense is inverted (lower is better)
       color: "#10B981", // Green
@@ -306,12 +306,12 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     // Generate color gradient stops based on performance levels
     const getGradientStops = () => {
       if (isInverted) {
-        // Defense: green to yellow to red (left to right)
+        // Defense: red to yellow to green (left to right)
         return (
           <>
-            <stop offset="0%" stopColor="#04aa6d" />
+            <stop offset="0%" stopColor="#ff4d4d" />
             <stop offset="50%" stopColor="#ffc700" />
-            <stop offset="100%" stopColor="#ff4d4d" />
+            <stop offset="100%" stopColor="#04aa6d" />
           </>
         );
       } else {
@@ -375,16 +375,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             </defs>
             
             {/* Background arc */}
-            <path
-              d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
-              fill="none"
-              stroke="#e0e0e0"
-              strokeWidth={strokeWidth + 5}
-              strokeLinecap="round"
-              className="sp-gauge-track"
-            />
-            
-            {/* Colored gradient arc - fill entire arc with gradient */}
             <path
               d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
               fill="none"
