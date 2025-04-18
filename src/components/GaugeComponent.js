@@ -121,7 +121,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     return { level, color };
   };
 
-  // Calculate gauge settings for each metric
+  // Calculate gauge settings for each metric - correct min/max for each scale
   const gaugeMetrics = [
     {
       id: "overall",
@@ -165,29 +165,28 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const [tooltip, setTooltip] = useState({ visible: false, value: 0, x: 0, y: 0 });
     
     // Gauge dimensions
-    const size = 240; // Increased size for better visibility
+    const size = 240; // Size for visibility
     const strokeWidth = 10;
-    const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
+    const radius = (size / 2) - (strokeWidth * 3); // Space around gauge
     
-    // Calculate needle position - map value to angle
+    // Calculate normalized value (0-1 range)
     const valueRange = max - min;
     const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     
-    // For standard metrics (overall, offense): higher values are better (right side)
-    // For inverted metrics (defense): lower values are better (left side)
-    const needleAngle = isInverted 
-      ? 180 - (normalizedValue * 180) // Defense: right = min, left = max
-      : normalizedValue * 180;        // Offense/Overall: left = min, right = max
+    // Convert to angle - NOTE: 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
+    const needleAngle = isInverted
+      ? (1 - normalizedValue) * 180  // For defense (lower is better): map 0 (min) to LEFT (0°), 1 (max) to RIGHT (180°)
+      : normalizedValue * 180;       // For offense/overall (higher is better): map 0 (min) to LEFT (0°), 1 (max) to RIGHT (180°)
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
-      // Convert from 0-180 to 0-1 normalized scale
+      // Convert angle (0-180°) to normalized position (0-1)
       const normalizedPos = angle / 180;
       
-      // Calculate value based on whether metric is inverted
+      // Convert normalized position to value 
       return isInverted
-        ? max - (normalizedPos * valueRange) // Defense (inverted)
-        : min + (normalizedPos * valueRange); // Offense/Overall
+        ? max - (normalizedPos * valueRange) // For defense (0° = min, 180° = max)
+        : min + (normalizedPos * valueRange); // For offense/overall (0° = min, 180° = max)
     };
     
     // Handle mouse move on the gauge arc
@@ -205,11 +204,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       const mouseX = event.clientX - svgRect.left;
       const mouseY = event.clientY - svgRect.top;
       
-      // Calculate angle between center and mouse position
-      // atan2 returns angle in radians, convert to degrees
+      // Calculate angle between center and mouse position (atan2 gives angle in radians)
       let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
       
-      // Adjust angle to be in 0-180 range for the semi-circle gauge
+      // Adjust angle to be in 0-180 range
+      // For a semi-circle with 0° at LEFT and 180° at RIGHT:
+      // - When mouse is in top half: angle will be negative, add 360°
+      // - When mouse is in bottom half: angle will be positive
       if (angle < 0) angle += 360;
       if (angle > 180) angle = 180 - (angle - 180);
       
@@ -242,30 +243,29 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       setTooltip({ ...tooltip, visible: false });
     };
     
-    // Functions to generate tick marks - ensure they match the exact scale values
+    // Generate tick marks for this gauge
     const generateTicks = () => {
       const ticks = [];
       const numTicks = 5; // Number of tick marks
       
       for (let i = 0; i <= numTicks; i++) {
-        // Calculate the value for this tick based on min/max range specific to this gauge
-        const tickValue = isInverted
-          ? max - (i * valueRange / numTicks) // Defense (inverted)
-          : min + (i * valueRange / numTicks); // Offense/Overall
+        // Calculate the tick position as normalized value (0-1)
+        const tickPercent = i / numTicks;
         
-        // Calculate the angle for this tick (0-180 degrees)
-        const tickAngle = isInverted
-          ? 180 - (i * 180 / numTicks) // Defense (inverted)
-          : i * 180 / numTicks;         // Offense/Overall
+        // Calculate the value at this tick
+        const tickValue = min + (tickPercent * valueRange);
         
-        // Convert angle to radians for positioning
+        // Calculate the angle for this tick (0-180°)
+        const tickAngle = tickPercent * 180;
+        
+        // Convert angle to radians for SVG positioning
         const tickRadian = (tickAngle * Math.PI) / 180;
         
-        // Calculate tick mark positions
+        // Calculate positions for tick mark
         const innerRadius = radius - 10;
         const outerRadius = radius + 10;
         
-        // Use correct trigonometry for a semi-circle from left to right
+        // Using cosine/sine for x/y coordinates (0° = left side, 180° = right side)
         const x1 = size/2 + Math.cos(tickRadian) * innerRadius;
         const y1 = size/2 - Math.sin(tickRadian) * innerRadius;
         const x2 = size/2 + Math.cos(tickRadian) * outerRadius;
@@ -296,7 +296,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       return ticks;
     };
     
-    // Generate color gradient stops - ensure defense has green on left, red on right
+    // Generate color gradient stops
     const getGradientStops = () => {
       if (isInverted) {
         // Defense: green (left/low) to yellow to red (right/high)
