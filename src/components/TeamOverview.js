@@ -3,6 +3,21 @@ import { FaChartLine, FaInfoCircle, FaFutbol, FaTrophy, FaUserTie, FaClipboardLi
 import GaugeComponent from "./GaugeComponent";
 import teamsService from "../services/teamsService";
 
+// Conference logo mapping for FBS
+const conferenceLogos = {
+  ACC: "/photos/ACC.png",
+  "American Athletic": "/photos/American Athletic.png",
+  "Big 12": "/photos/Big 12.png",
+  "Big Ten": "/photos/Big Ten.png",
+  "Conference USA": "/photos/Conference USA.png",
+  "FBS Independents": "/photos/FBS Independents.png",
+  "Mid-American": "/photos/Mid-American.png",
+  "Mountain West": "/photos/Mountain West.png",
+  "Pac-12": "/photos/Pac-12.png",
+  SEC: "/photos/SEC.png",
+  Independent: "/photos/FBS Independents.png"
+};
+
 const TeamOverview = ({ team, teamColor, year = 2024 }) => {
   // State for coach and record data
   const [coachData, setCoachData] = useState(null);
@@ -240,6 +255,9 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
   // Get team conference
   const teamConference = team.conference || "Independent";
 
+  // Get conference logo if available
+  const conferenceLogoSrc = conferenceLogos[teamConference] || conferenceLogos["Independent"];
+
   // Get ranks for display
   const ranks = getSeasonRanks();
 
@@ -319,7 +337,20 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               </tr>
               <tr>
                 <td>Conference:</td>
-                <td><strong>{teamConference}</strong></td>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <img
+                      src={conferenceLogoSrc}
+                      alt={teamConference}
+                      style={{ height: "1em", width: "auto", verticalAlign: "middle" }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/photos/default_conference.png";
+                      }}
+                    />
+                    <strong style={{ fontSize: "1em", verticalAlign: "middle" }}>{teamConference}</strong>
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td>Division:</td>
