@@ -173,20 +173,20 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const valueRange = max - min;
     const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     
-    // Convert to angle - NOTE: 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
+    // Convert to angle - 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
     const needleAngle = isInverted
-      ? (1 - normalizedValue) * 180  // For defense (lower is better): map 0 (min) to LEFT (0°), 1 (max) to RIGHT (180°)
-      : normalizedValue * 180;       // For offense/overall (higher is better): map 0 (min) to LEFT (0°), 1 (max) to RIGHT (180°)
+      ? (1 - normalizedValue) * 180  // For defense (lower is better): high value = low angle
+      : normalizedValue * 180;       // For offense/overall (higher is better): high value = high angle
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert angle (0-180°) to normalized position (0-1)
       const normalizedPos = angle / 180;
       
-      // Convert normalized position to value 
+      // Convert normalized position to value
       return isInverted
-        ? max - (normalizedPos * valueRange) // For defense (0° = min, 180° = max)
-        : min + (normalizedPos * valueRange); // For offense/overall (0° = min, 180° = max)
+        ? max - (normalizedPos * valueRange) // For defense (inverted)
+        : min + (normalizedPos * valueRange); // For offense/overall
     };
     
     // Handle mouse move on the gauge arc
@@ -204,13 +204,11 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       const mouseX = event.clientX - svgRect.left;
       const mouseY = event.clientY - svgRect.top;
       
-      // Calculate angle between center and mouse position (atan2 gives angle in radians)
+      // Calculate angle between center and mouse position
+      // atan2 returns angle in radians, convert to degrees
       let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
       
-      // Adjust angle to be in 0-180 range
-      // For a semi-circle with 0° at LEFT and 180° at RIGHT:
-      // - When mouse is in top half: angle will be negative, add 360°
-      // - When mouse is in bottom half: angle will be positive
+      // Adjust angle to be in 0-180 range for the semi-circle gauge
       if (angle < 0) angle += 360;
       if (angle > 180) angle = 180 - (angle - 180);
       
@@ -243,7 +241,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       setTooltip({ ...tooltip, visible: false });
     };
     
-    // Generate tick marks for this gauge
+    // Generate tick marks for this gauge - FIXED to display in the correct order
     const generateTicks = () => {
       const ticks = [];
       const numTicks = 5; // Number of tick marks
@@ -252,11 +250,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         // Calculate the tick position as normalized value (0-1)
         const tickPercent = i / numTicks;
         
-        // Calculate the value at this tick
-        const tickValue = min + (tickPercent * valueRange);
-        
         // Calculate the angle for this tick (0-180°)
         const tickAngle = tickPercent * 180;
+        
+        // CRITICAL FIX: Calculate the value based on the gauge type 
+        // For defense: lower values (good) on left, higher values (bad) on right
+        // For offense/overall: lower values (bad) on left, higher values (good) on right
+        const tickValue = isInverted
+          ? min + (1 - tickPercent) * valueRange  // Defense: min (1) on left, max (40) on right
+          : min + tickPercent * valueRange;       // Offense/Overall: min on left, max on right
         
         // Convert angle to radians for SVG positioning
         const tickRadian = (tickAngle * Math.PI) / 180;
@@ -296,7 +298,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       return ticks;
     };
     
-    // Generate color gradient stops
+    // Generate color gradient stops - defense has green on left, red on right
     const getGradientStops = () => {
       if (isInverted) {
         // Defense: green (left/low) to yellow to red (right/high)
