@@ -169,17 +169,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
     
-    // FIXED: Calculate the angle for the needle - ensure it points to the correct value
-    // Map the value to a 0-180 degree angle (0° = left side, 180° = right side)
+    // Calculate needle position - map value to angle
     const valueRange = max - min;
     const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     
-    // For standard metrics, higher is better, so right = good
-    // For inverted metrics (defense), lower is better, so left = good
-    // The gauge is a semi-circle from left (0°) to right (180°)
+    // For standard metrics (overall, offense): higher values are better (right side)
+    // For inverted metrics (defense): lower values are better (left side)
     const needleAngle = isInverted 
-      ? 180 - (normalizedValue * 180) // Defense: flip the scale (0 = right, max = left)
-      : normalizedValue * 180;        // Offense/Overall: normal scale (0 = left, max = right)
+      ? 180 - (normalizedValue * 180) // Defense: right = min, left = max
+      : normalizedValue * 180;        // Offense/Overall: left = min, right = max
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
@@ -244,13 +242,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       setTooltip({ ...tooltip, visible: false });
     };
     
-    // Functions to generate tick marks
+    // Functions to generate tick marks - ensure they match the exact scale values
     const generateTicks = () => {
       const ticks = [];
       const numTicks = 5; // Number of tick marks
       
       for (let i = 0; i <= numTicks; i++) {
-        // Calculate the value for this tick
+        // Calculate the value for this tick based on min/max range specific to this gauge
         const tickValue = isInverted
           ? max - (i * valueRange / numTicks) // Defense (inverted)
           : min + (i * valueRange / numTicks); // Offense/Overall
@@ -267,9 +265,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         const innerRadius = radius - 10;
         const outerRadius = radius + 10;
         
-        // FIXED: Use correct trigonometry
-        // x = centerX + radius * cos(angle)
-        // y = centerY + radius * sin(angle)
+        // Use correct trigonometry for a semi-circle from left to right
         const x1 = size/2 + Math.cos(tickRadian) * innerRadius;
         const y1 = size/2 - Math.sin(tickRadian) * innerRadius;
         const x2 = size/2 + Math.cos(tickRadian) * outerRadius;
@@ -300,10 +296,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       return ticks;
     };
     
-    // Generate color gradient stops based on performance levels
+    // Generate color gradient stops - ensure defense has green on left, red on right
     const getGradientStops = () => {
       if (isInverted) {
-        // Defense: green to yellow to red (left to right)
+        // Defense: green (left/low) to yellow to red (right/high)
         return (
           <>
             <stop offset="0%" stopColor="#04aa6d" />
@@ -312,7 +308,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           </>
         );
       } else {
-        // Offense/Overall: red to yellow to green (left to right)
+        // Offense/Overall: red (left/low) to yellow to green (right/high)
         return (
           <>
             <stop offset="0%" stopColor="#ff4d4d" />
@@ -417,10 +413,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               </g>
             ))}
             
-            {/* FIXED: Needle position and rotation */}
+            {/* Needle and value display */}
             {animationComplete && (
               <>
-                {/* Line needle */}
+                {/* Needle */}
                 <line
                   x1={size/2}
                   y1={size/2}
@@ -464,7 +460,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               </>
             )}
             
-            {/* Value display */}
+            {/* Main value display */}
             <text
               x={size/2}
               y={size/2 + radius/2}
