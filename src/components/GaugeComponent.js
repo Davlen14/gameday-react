@@ -163,7 +163,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const { id, label, value, min, max, isInverted, color, level } = metric;
     
     // Gauge dimensions
-    const size = 280; // Wider gauge
+    const size = 220; // Adjusted for side-by-side
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 2);
     const circumference = 2.05 * Math.PI * radius; // 2.05 for slightly more than semi-circle
@@ -253,6 +253,11 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const diffFromNational = isInverted 
       ? (metric.nationalAvg - value).toFixed(1) 
       : (value - metric.nationalAvg).toFixed(1);
+    
+    // Fix for defense metric - make sure lower values are considered "better"
+    const diffText = isInverted 
+      ? (diffFromNational > 0 ? "Better" : "Worse")
+      : (diffFromNational > 0 ? "Better" : "Worse");
     
     return (
       <div className={`sp-gauge-container ${hoveredMetric === id ? 'sp-hover' : ''}`} 
@@ -365,7 +370,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             <span className="sp-comparison-value">{metric.nationalAvg.toFixed(1)}</span>
           </div>
           <div className="sp-comparison-diff" style={{ color: metric.color }}>
-            {diffFromNational} {diffFromNational > 0 ? "Better" : "Worse"}
+            {diffFromNational} {diffText}
           </div>
         </div>
       </div>
@@ -426,10 +431,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         
         .sp-gauges-container {
           display: flex;
-          flex-direction: column;
-          justify-content: center;
+          flex-direction: row; /* Changed from column to row */
+          justify-content: space-between; /* Spread gauges evenly */
           width: 100%;
-          gap: 2rem;
+          gap: 1rem; /* Reduced gap for side by side */
         }
         
         .sp-gauge-container {
@@ -441,7 +446,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           transition: all 0.3s ease;
-          width: 100%;
+          flex: 1; /* Make each gauge take equal width */
           position: relative;
           overflow: hidden;
         }
@@ -640,6 +645,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         
         /* Responsive styles */
         @media (max-width: 768px) {
+          .sp-gauges-container {
+            flex-direction: column; /* Stack on mobile */
+          }
+          
           .sp-gauge-container {
             padding: 1rem;
           }
