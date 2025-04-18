@@ -169,27 +169,24 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
     
-    // Calculate the percentage filled
-    let normalizedValue = (value - min) / (max - min);
-    normalizedValue = Math.max(0, Math.min(1, normalizedValue)); // Clamp between 0-1
+    // Calculate needle position - FIX: directly map value to angle
+    // Calculate angle in the 0-180 degree range where 0 is min value and 180 is max value
+    const valuePercent = Math.max(0, Math.min(1, (value - min) / (max - min)));
     
-    // For defense, invert the fill (lower values = higher fill)
-    const needleNormalizedValue = isInverted 
-      ? (max - value) / (max - min)  // Revised calculation for inverted metrics
-      : normalizedValue;
+    // FIX: For inverted metrics like defense, we flip the angle calculation
+    const needleAngle = isInverted ? 
+      (1 - valuePercent) * 180 : // For defense - lower is better, higher on gauge
+      valuePercent * 180;        // For offense/overall - higher is better, higher on gauge
     
-    // Calculate angle for needle (180° is the start of arc, 0° is the end)
-    const needleAngle = 180 - (needleNormalizedValue * 180);
-
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert from 0-180 to 0-1 normalized scale
-      const normalizedPos = 1 - (angle / 180);
+      const normalizedPos = angle / 180;
+      
       // Convert to value range
       let calculatedValue;
       
       if (isInverted) {
-        // For inverted (defense) scale, reverse the calculation
         calculatedValue = max - normalizedPos * (max - min);
       } else {
         calculatedValue = min + normalizedPos * (max - min);
@@ -261,33 +258,36 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       const numTicks = 5; // Number of tick marks
       
       for (let i = 0; i <= numTicks; i++) {
-        const tickValue = isInverted 
-          ? max - ((max - min) * (i / numTicks)) // Reverse order for defense
-          : min + ((max - min) * (i / numTicks));
-          
         const tickPercent = i / numTicks;
-        const tickAngle = 180 - (tickPercent * 180);
+        const tickValue = isInverted 
+          ? max - (tickPercent * (max - min)) // Reverse order for defense
+          : min + (tickPercent * (max - min));
+          
+        // FIX: consistent tick angle calculation
+        const tickAngle = isInverted
+          ? (1 - tickPercent) * 180 // Defense ticks
+          : tickPercent * 180;      // Offense/Overall ticks
         
         // Calculate position on the gauge arc
-        const radian = (tickAngle * Math.PI) / 180;
+        const radian = tickAngle * Math.PI / 180;
         const outerRadius = radius + strokeWidth/2 + 5;
         const innerRadius = radius - strokeWidth/2 - 5;
         
-        // Line positioning
-        const x1 = size/2 + Math.cos(radian) * innerRadius;
-        const y1 = size/2 + Math.sin(radian) * innerRadius;
-        const x2 = size/2 + Math.cos(radian) * outerRadius;
-        const y2 = size/2 + Math.sin(radian) * outerRadius;
+        // Line positioning (angle is from bottom to top, but we need it from left to right)
+        const x1 = size/2 - Math.cos(radian) * innerRadius;
+        const y1 = size/2 - Math.sin(radian) * innerRadius;
+        const x2 = size/2 - Math.cos(radian) * outerRadius;
+        const y2 = size/2 - Math.sin(radian) * outerRadius;
         
         // Text positioning - pushed further out to ensure visibility
         const textRadius = outerRadius + 15;
-        const textX = size/2 + Math.cos(radian) * textRadius;
-        const textY = size/2 + Math.sin(radian) * textRadius;
+        const textX = size/2 - Math.cos(radian) * textRadius;
+        const textY = size/2 - Math.sin(radian) * textRadius;
         
         // Anchor direction based on position
         let anchor;
-        if (i === 0) anchor = "start";
-        else if (i === numTicks) anchor = "end";
+        if (tickPercent <= 0.1) anchor = "start";
+        else if (tickPercent >= 0.9) anchor = "end";
         else anchor = "middle";
         
         // Create tick object
@@ -432,8 +432,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               />
             )}
             
-            {/* Gauge needle with glow effect */}
-            <g transform={`rotate(${needleAngle}, ${size/2}, ${size/2})`} 
+            {/* FIX: Gauge needle positioning */}
+            <g transform={`rotate(${180-needleAngle}, ${size/2}, ${size/2})`} 
                style={{ transition: "transform 1s ease-in-out" }}
                filter="url(#gauge-shadow)">
               <line
