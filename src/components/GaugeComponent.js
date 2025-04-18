@@ -169,30 +169,27 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
     
-    // Calculate needle position - FIX: directly map value to angle
-    // Calculate angle in the 0-180 degree range where 0 is min value and 180 is max value
-    const valuePercent = Math.max(0, Math.min(1, (value - min) / (max - min)));
+    // FIXED: Calculate the angle for the needle - ensure it points to the correct value
+    // Map the value to a 0-180 degree angle (0° = left side, 180° = right side)
+    const valueRange = max - min;
+    const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     
-    // FIX: For inverted metrics like defense, we flip the angle calculation
-    const needleAngle = isInverted ? 
-      (1 - valuePercent) * 180 : // For defense - lower is better, higher on gauge
-      valuePercent * 180;        // For offense/overall - higher is better, higher on gauge
+    // For standard metrics, higher is better, so right = good
+    // For inverted metrics (defense), lower is better, so left = good
+    // The gauge is a semi-circle from left (0°) to right (180°)
+    const needleAngle = isInverted 
+      ? 180 - (normalizedValue * 180) // Defense: flip the scale (0 = right, max = left)
+      : normalizedValue * 180;        // Offense/Overall: normal scale (0 = left, max = right)
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert from 0-180 to 0-1 normalized scale
       const normalizedPos = angle / 180;
       
-      // Convert to value range
-      let calculatedValue;
-      
-      if (isInverted) {
-        calculatedValue = max - normalizedPos * (max - min);
-      } else {
-        calculatedValue = min + normalizedPos * (max - min);
-      }
-      
-      return calculatedValue;
+      // Calculate value based on whether metric is inverted
+      return isInverted
+        ? max - (normalizedPos * valueRange) // Defense (inverted)
+        : min + (normalizedPos * valueRange); // Offense/Overall
     };
     
     // Handle mouse move on the gauge arc
@@ -215,13 +212,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
       
       // Adjust angle to be in 0-180 range for the semi-circle gauge
-      // When mouse is on top half of gauge (negative angles in atan2), add 360 to get positive angle
       if (angle < 0) angle += 360;
-      
-      // Filter to semicircle area (bottom half of circle: 0-180 degrees)
-      if (angle > 180 && angle < 360) {
-        angle = 360 - angle; // Makes 180-360 range map to 180-0
-      }
+      if (angle > 180) angle = 180 - (angle - 180);
       
       // Only show tooltip when mouse is near the arc
       const distanceFromCenter = Math.sqrt(
@@ -258,39 +250,42 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       const numTicks = 5; // Number of tick marks
       
       for (let i = 0; i <= numTicks; i++) {
-        const tickPercent = i / numTicks;
-        const tickValue = isInverted 
-          ? max - (tickPercent * (max - min)) // Reverse order for defense
-          : min + (tickPercent * (max - min));
-          
-        // FIX: consistent tick angle calculation
+        // Calculate the value for this tick
+        const tickValue = isInverted
+          ? max - (i * valueRange / numTicks) // Defense (inverted)
+          : min + (i * valueRange / numTicks); // Offense/Overall
+        
+        // Calculate the angle for this tick (0-180 degrees)
         const tickAngle = isInverted
-          ? (1 - tickPercent) * 180 // Defense ticks
-          : tickPercent * 180;      // Offense/Overall ticks
+          ? 180 - (i * 180 / numTicks) // Defense (inverted)
+          : i * 180 / numTicks;         // Offense/Overall
         
-        // Calculate position on the gauge arc
-        const radian = tickAngle * Math.PI / 180;
-        const outerRadius = radius + strokeWidth/2 + 5;
-        const innerRadius = radius - strokeWidth/2 - 5;
+        // Convert angle to radians for positioning
+        const tickRadian = (tickAngle * Math.PI) / 180;
         
-        // Line positioning (angle is from bottom to top, but we need it from left to right)
-        const x1 = size/2 - Math.cos(radian) * innerRadius;
-        const y1 = size/2 - Math.sin(radian) * innerRadius;
-        const x2 = size/2 - Math.cos(radian) * outerRadius;
-        const y2 = size/2 - Math.sin(radian) * outerRadius;
+        // Calculate tick mark positions
+        const innerRadius = radius - 10;
+        const outerRadius = radius + 10;
         
-        // Text positioning - pushed further out to ensure visibility
+        // FIXED: Use correct trigonometry
+        // x = centerX + radius * cos(angle)
+        // y = centerY + radius * sin(angle)
+        const x1 = size/2 + Math.cos(tickRadian) * innerRadius;
+        const y1 = size/2 - Math.sin(tickRadian) * innerRadius;
+        const x2 = size/2 + Math.cos(tickRadian) * outerRadius;
+        const y2 = size/2 - Math.sin(tickRadian) * outerRadius;
+        
+        // Position for the tick label
         const textRadius = outerRadius + 15;
-        const textX = size/2 - Math.cos(radian) * textRadius;
-        const textY = size/2 - Math.sin(radian) * textRadius;
+        const textX = size/2 + Math.cos(tickRadian) * textRadius;
+        const textY = size/2 - Math.sin(tickRadian) * textRadius;
         
-        // Anchor direction based on position
+        // Determine text anchor based on position
         let anchor;
-        if (tickPercent <= 0.1) anchor = "start";
-        else if (tickPercent >= 0.9) anchor = "end";
+        if (tickAngle < 45) anchor = "start";
+        else if (tickAngle > 135) anchor = "end";
         else anchor = "middle";
         
-        // Create tick object
         ticks.push({
           line: {x1, y1, x2, y2},
           text: {
@@ -308,12 +303,12 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     // Generate color gradient stops based on performance levels
     const getGradientStops = () => {
       if (isInverted) {
-        // Defense: red to yellow to green (left to right)
+        // Defense: green to yellow to red (left to right)
         return (
           <>
-            <stop offset="0%" stopColor="#ff4d4d" />
+            <stop offset="0%" stopColor="#04aa6d" />
             <stop offset="50%" stopColor="#ffc700" />
-            <stop offset="100%" stopColor="#04aa6d" />
+            <stop offset="100%" stopColor="#ff4d4d" />
           </>
         );
       } else {
@@ -376,7 +371,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               </filter>
             </defs>
             
-            {/* Background arc */}
+            {/* Background arc - semicircle from left to right */}
             <path
               d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
               fill="none"
@@ -386,7 +381,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               className="sp-gauge-track"
             />
             
-            {/* Colored gradient arc - fill entire arc with gradient */}
+            {/* Colored gradient arc */}
             <path
               d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
               fill="none"
@@ -422,38 +417,52 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               </g>
             ))}
             
-            {/* Indicator mask to show value */}
+            {/* FIXED: Needle position and rotation */}
             {animationComplete && (
-              <path
-                d={`M ${size/2} ${size/2} L ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + Math.cos((180-needleAngle) * Math.PI/180) * radius} ${size/2 + Math.sin((180-needleAngle) * Math.PI/180) * radius} Z`}
-                fill="#fff"
-                fillOpacity="0.85"
-                className="sp-gauge-mask"
-              />
+              <>
+                {/* Line needle */}
+                <line
+                  x1={size/2}
+                  y1={size/2}
+                  x2={size/2 + Math.cos(needleAngle * Math.PI / 180) * radius}
+                  y2={size/2 - Math.sin(needleAngle * Math.PI / 180) * radius}
+                  stroke={color}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  filter="url(#gauge-shadow)"
+                />
+                
+                {/* Center point */}
+                <circle
+                  cx={size/2}
+                  cy={size/2}
+                  r="8"
+                  fill={color}
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+                
+                {/* Value bubble near the needle */}
+                <circle
+                  cx={size/2 + Math.cos(needleAngle * Math.PI / 180) * (radius - 25)}
+                  cy={size/2 - Math.sin(needleAngle * Math.PI / 180) * (radius - 25)}
+                  r="18"
+                  fill="#333"
+                  filter="url(#gauge-shadow)"
+                />
+                <text
+                  x={size/2 + Math.cos(needleAngle * Math.PI / 180) * (radius - 25)}
+                  y={size/2 - Math.sin(needleAngle * Math.PI / 180) * (radius - 25)}
+                  textAnchor="middle"
+                  fill="#fff"
+                  fontSize="12"
+                  fontWeight="bold"
+                  dominantBaseline="middle"
+                >
+                  {value.toFixed(1)}
+                </text>
+              </>
             )}
-            
-            {/* FIX: Gauge needle positioning */}
-            <g transform={`rotate(${180-needleAngle}, ${size/2}, ${size/2})`} 
-               style={{ transition: "transform 1s ease-in-out" }}
-               filter="url(#gauge-shadow)">
-              <line
-                x1={size/2}
-                y1={size/2}
-                x2={size/2}
-                y2={size/2 - radius - 10}
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <circle
-                cx={size/2}
-                cy={size/2}
-                r="8"
-                fill={color}
-                stroke="#fff"
-                strokeWidth="2"
-              />
-            </g>
             
             {/* Value display */}
             <text
