@@ -8,26 +8,6 @@ const NATIONAL_AVERAGES = {
   defense: 26.61  // Defense national average
 };
 
-// Performance thresholds (adjusted for each metric)
-const THRESHOLDS = {
-  overall: {
-    poor: 10, 
-    average: 20, 
-    good: 30
-  },
-  offense: {
-    poor: 20, 
-    average: 30, 
-    good: 40
-  },
-  defense: {
-    // Defense is inverted - lower is better
-    good: 15, 
-    average: 20, 
-    poor: 30
-  }
-};
-
 /**
  * Modern Gauge Component - Displays team metrics with sleek, visual gauges
  */
@@ -113,31 +93,25 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
   // Determine performance level and color for a metric
   const getPerformanceDetails = (metricId, value) => {
-    const thresholds = THRESHOLDS[metricId];
+    const nationalAvg = NATIONAL_AVERAGES[metricId];
     const isDefense = metricId === 'defense';
     
     let level, color;
     
     if (isDefense) {
       // For defense, lower is better
-      if (value <= thresholds.good) {
+      if (value <= nationalAvg) {
         level = "Above Average";
         color = "#04aa6d"; // Green
-      } else if (value <= thresholds.average) {
-        level = "Average";
-        color = "#ffc700"; // Yellow
       } else {
         level = "Below Average";
         color = "#ff4d4d"; // Red
       }
     } else {
       // For offense and overall, higher is better
-      if (value >= thresholds.good) {
+      if (value >= nationalAvg) {
         level = "Above Average";
         color = "#04aa6d"; // Green
-      } else if (value >= thresholds.average) {
-        level = "Average";
-        color = "#ffc700"; // Yellow
       } else {
         level = "Below Average";
         color = "#ff4d4d"; // Red
@@ -189,7 +163,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const { id, label, value, min, max, isInverted, color, level } = metric;
     
     // Gauge dimensions
-    const size = 200;
+    const size = 280; // Wider gauge
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 2);
     const circumference = 2.05 * Math.PI * radius; // 2.05 for slightly more than semi-circle
@@ -275,14 +249,21 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     // Generate tick marks
     const ticks = generateTicks();
     
+    // Calculate the difference from national average
+    const diffFromNational = isInverted 
+      ? (metric.nationalAvg - value).toFixed(1) 
+      : (value - metric.nationalAvg).toFixed(1);
+    
     return (
       <div className={`sp-gauge-container ${hoveredMetric === id ? 'sp-hover' : ''}`} 
            onMouseEnter={() => setHoveredMetric(id)}
            onMouseLeave={() => setHoveredMetric(null)}>
         <div className="sp-gauge-header">
-          <h3>{label}</h3>
-          <div className="sp-performance-badge" style={{ backgroundColor: metric.color }}>
-            {level}
+          <h3 className="sp-metric-title">{label}</h3>
+          <div className="sp-status-wrapper">
+            <div className="sp-performance-badge" style={{ backgroundColor: metric.color }}>
+              {level}
+            </div>
           </div>
         </div>
         
@@ -384,14 +365,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             <span className="sp-comparison-value">{metric.nationalAvg.toFixed(1)}</span>
           </div>
           <div className="sp-comparison-diff" style={{ color: metric.color }}>
-            {isInverted 
-              ? (metric.nationalAvg - value).toFixed(1) 
-              : (value - metric.nationalAvg).toFixed(1)
-            }
-            {isInverted 
-              ? (value < metric.nationalAvg ? " Better" : " Worse") 
-              : (value > metric.nationalAvg ? " Better" : " Worse")
-            }
+            {diffFromNational} {diffFromNational > 0 ? "Better" : "Worse"}
           </div>
         </div>
       </div>
@@ -439,19 +413,22 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       </div>
       
       <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+        
         .sp-metrics-dashboard {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           width: 100%;
           display: flex;
           flex-direction: column;
           gap: 2rem;
-          padding: 1rem;
+          padding: 0;
         }
         
         .sp-gauges-container {
           display: flex;
-          flex-wrap: wrap;
+          flex-direction: column;
           justify-content: center;
+          width: 100%;
           gap: 2rem;
         }
         
@@ -464,7 +441,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           transition: all 0.3s ease;
-          width: 220px;
+          width: 100%;
           position: relative;
           overflow: hidden;
         }
@@ -498,24 +475,35 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           margin-bottom: 1rem;
         }
         
-        .sp-gauge-header h3 {
+        .sp-metric-title {
           margin: 0;
-          font-size: 1.1rem;
+          font-family: 'Orbitron', sans-serif;
+          font-size: 1.2rem;
           font-weight: 600;
           color: #333;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        .sp-status-wrapper {
+          height: 28px; /* Fixed height to prevent stacking */
+          display: flex;
+          align-items: center;
         }
         
         .sp-performance-badge {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           color: white;
-          padding: 4px 8px;
+          padding: 4px 10px;
           border-radius: 4px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          white-space: nowrap;
         }
         
         .sp-gauge-svg {
           margin-bottom: 1rem;
+          width: 100%;
         }
         
         .sp-gauge-comparison {
@@ -556,17 +544,20 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           border-radius: 16px;
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-          max-width: 800px;
+          width: 100%;
           margin: 0 auto;
         }
         
         .sp-explanation-title {
-          font-size: 1.1rem;
+          font-family: 'Orbitron', sans-serif;
+          font-size: 1.2rem;
           font-weight: 600;
           color: #333;
           margin-bottom: 1rem;
           padding-bottom: 0.5rem;
           border-bottom: 1px solid #f0f0f0;
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
         
         .sp-explanation-content {
@@ -578,6 +569,12 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         
         .sp-explanation-content p {
           margin: 0.5rem 0;
+        }
+        
+        .sp-explanation-content strong {
+          font-family: 'Orbitron', sans-serif;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
         }
         
         .sp-good-text {
@@ -643,14 +640,12 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         
         /* Responsive styles */
         @media (max-width: 768px) {
-          .sp-gauges-container {
-            flex-direction: column;
-            align-items: center;
+          .sp-gauge-container {
+            padding: 1rem;
           }
           
-          .sp-gauge-container {
-            width: 100%;
-            max-width: 300px;
+          .sp-gauge-svg {
+            height: 130px;
           }
         }
       `}</style>
