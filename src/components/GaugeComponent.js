@@ -166,9 +166,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const size = 240; // Increased size for better visibility
     const strokeWidth = 10;
     const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
-    const circumference = 2 * Math.PI * radius; // Full circle
-    const arcAngle = Math.PI; // Semi-circle (180 degrees)
-    const arcCircumference = radius * arcAngle;
     
     // Calculate the percentage filled
     let normalizedValue = (value - min) / (max - min);
@@ -176,11 +173,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // For defense, invert the fill (lower values = higher fill)
     const needleNormalizedValue = isInverted ? 1 - normalizedValue : normalizedValue;
-    
-    // Animated stroke amount (semi-circle)
-    const strokeDashoffset = !animationComplete 
-      ? arcCircumference 
-      : arcCircumference * (1 - needleNormalizedValue);
     
     // Calculate angle for needle (180° is the start of arc, 0° is the end)
     const needleAngle = 180 - (needleNormalizedValue * 180);
@@ -294,7 +286,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             </filter>
           </defs>
           
-          {/* Gauge background */}
+          {/* Background arc */}
           <path
             d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
             fill="none"
@@ -303,16 +295,13 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             strokeLinecap="round"
           />
           
-          {/* Gauge fill with gradient */}
+          {/* Colored gradient arc - fill entire arc with gradient */}
           <path
             d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
             fill="none"
             stroke={`url(#gauge-gradient-${id})`}
             strokeWidth={strokeWidth}
-            strokeDasharray={arcCircumference}
-            strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
             filter="url(#gauge-shadow)"
           />
           
@@ -340,6 +329,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               </text>
             </g>
           ))}
+          
+          {/* Indicator mask to show value */}
+          {animationComplete && (
+            <path
+              d={`M ${size/2} ${size/2} L ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + Math.cos((180-needleAngle) * Math.PI/180) * radius} ${size/2 + Math.sin((180-needleAngle) * Math.PI/180) * radius} Z`}
+              fill="#fff"
+              fillOpacity="0.85"
+            />
+          )}
           
           {/* Gauge needle with glow effect */}
           <g transform={`rotate(${needleAngle}, ${size/2}, ${size/2})`} 
