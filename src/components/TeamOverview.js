@@ -252,38 +252,12 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
           SP+ Ratings
         </div>
         <div className="card-body">
-          {/* Using the modernized GaugeComponent */}
+          {/* Using the GaugeComponent */}
           <GaugeComponent
             teamName={team.school}
             year={year}
             teamColor={teamColor}
           />
-
-          {/* Ratings explanation with team color gradient */}
-          <div className="ratings-explanation-container">
-            <div className="ratings-explanation">
-              <h3 style={{ color: teamColor || '#333333' }}>How SP+ Ratings Work</h3>
-              <p>
-                The SP+ ratings combine multiple aspects of team performance into a single composite metric.
-                <br />
-                <strong>Overall:</strong> Combines offense, defense, and special teams.
-                <br />
-                <strong>Offense:</strong> Measures scoring efficiency and ball movement. Higher values indicate better offense.
-                <br />
-                <strong>Defense:</strong> Measures defensive efficiency. Lower values indicate a stronger defense.
-              </p>
-              <p>
-                <strong>Color zones indicate performance relative to national average:</strong><br />
-                <span style={{ color: "#ff4d4d" }}><strong>Below Average</strong></span> |
-                <span style={{ color: "#ffc700" }}><strong>Average</strong></span> |
-                <span style={{ color: "#04aa6d" }}><strong>Above Average</strong></span>
-              </p>
-              <p>
-                <strong>National Averages (2024):</strong><br />
-                Overall: 0.55 | Offense: 27.14 | Defense: 26.61
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -299,9 +273,8 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               <tr>
                 <td>Team Spirit:</td>
                 <td>
-                  {/* MODIFIED: Removed sticks, enhanced styles below */}
                   <div className="team-spirit-items">
-                    {/* Team Logo Block (Stick removed) */}
+                    {/* Team Logo Block */}
                     <div className="spirit-item logo-block">
                       <div className="logo-container" style={{ backgroundColor: team.alt_color || '#ffffff' }}>
                         <img
@@ -316,7 +289,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                       </div>
                     </div>
 
-                    {/* Modern Foam Finger (Stick removed, styles enhanced) */}
+                    {/* Modern Foam Finger */}
                     <div className="spirit-item modern-finger">
                       <div className="finger-container" style={{
                            background: `linear-gradient(145deg, ${lightenColor(teamColor || '#cccccc', 10)}, ${darkenColor(teamColor || '#999999', 10)})`,
@@ -327,7 +300,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                       </div>
                     </div>
 
-                    {/* Team Pennant (Stick removed, styles enhanced) */}
+                    {/* Team Pennant */}
                     <div className="spirit-item modern-pennant">
                       <div className="pennant-container" style={{
                            background: `linear-gradient(to right, ${teamColor || '#cccccc'}, ${darkenColor(teamColor || '#999999', 15)})`,
@@ -458,7 +431,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
           </table>
 
           <style jsx>{`
-            .dashboard-card { /* Basic card styling example */
+            .dashboard-card {
               background-color: #fff;
               border-radius: 8px;
               box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -503,44 +476,6 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             strong {
               font-weight: 600;
               color: #333;
-            }
-            .ratings-explanation-container {
-              position: relative;
-              margin-top: 1.5rem;
-              width: 100%;
-            }
-            .ratings-explanation-container::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: 0;
-              right: 0;
-              height: 4px;
-              background: linear-gradient(to right, ${teamColor || '#ccc'}, ${lightenColor(teamColor || '#ccc', 30)}, ${teamColor || '#ccc'});
-              border-radius: 2px 2px 0 0;
-            }
-            .ratings-explanation {
-              background-color: #f9f9f9;
-              border-radius: 8px;
-              padding: 1rem;
-              font-size: 14px;
-              line-height: 1.5;
-              color: #555;
-              width: 100%;
-              border: 1px solid #eee;
-            }
-            .ratings-explanation h3 {
-              margin-top: 0;
-              margin-bottom: 0.75rem;
-              color: ${teamColor || '#333333'};
-              font-weight: 600;
-            }
-            .ratings-explanation p {
-              margin-bottom: 0.5rem;
-            }
-            .ratings-explanation strong {
-              font-weight: 600;
-              color: #444;
             }
             .team-spirit-items {
               display: flex;
