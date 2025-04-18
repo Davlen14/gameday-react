@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
 // National Averages based on provided data
@@ -161,6 +161,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   // Create a modern circular gauge for each metric
   const CircularGauge = ({ metric }) => {
     const { id, label, value, min, max, isInverted, color, level } = metric;
+    const svgRef = useRef(null);
+    const [tooltip, setTooltip] = useState({ visible: false, value: 0, x: 0, y: 0 });
     
     // Gauge dimensions
     const size = 240; // Increased size for better visibility
@@ -176,6 +178,80 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // Calculate angle for needle (180° is the start of arc, 0° is the end)
     const needleAngle = 180 - (needleNormalizedValue * 180);
+
+    // Function to calculate the value at a specific angle
+    const getValueFromAngle = (angle) => {
+      // Convert from 0-180 to 0-1 normalized scale
+      const normalizedPos = 1 - (angle / 180);
+      // Convert to value range
+      let calculatedValue;
+      
+      if (isInverted) {
+        // For inverted (defense) scale, reverse the calculation
+        calculatedValue = max - normalizedPos * (max - min);
+      } else {
+        calculatedValue = min + normalizedPos * (max - min);
+      }
+      
+      return calculatedValue;
+    };
+    
+    // Handle mouse move on the gauge arc
+    const handleMouseMove = (event) => {
+      if (!svgRef.current) return;
+      
+      // Get SVG bounding rect
+      const svgRect = svgRef.current.getBoundingClientRect();
+      
+      // Calculate center of the arc
+      const centerX = svgRect.width / 2;
+      const centerY = svgRect.height / 2;
+      
+      // Get mouse position relative to SVG
+      const mouseX = event.clientX - svgRect.left;
+      const mouseY = event.clientY - svgRect.top;
+      
+      // Calculate angle between center and mouse position
+      // atan2 returns angle in radians, convert to degrees
+      let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+      
+      // Adjust angle to be in 0-180 range for the semi-circle gauge
+      // When mouse is on top half of gauge (negative angles in atan2), add 360 to get positive angle
+      if (angle < 0) angle += 360;
+      
+      // Filter to semicircle area (bottom half of circle: 0-180 degrees)
+      if (angle > 180 && angle < 360) {
+        angle = 360 - angle; // Makes 180-360 range map to 180-0
+      }
+      
+      // Only show tooltip when mouse is near the arc
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2)
+      );
+      
+      const isNearArc = Math.abs(distanceFromCenter - radius) < 20;
+      
+      if (isNearArc && angle >= 0 && angle <= 180) {
+        // Calculate the value at this angle
+        const tooltipValue = getValueFromAngle(angle);
+        
+        // Update tooltip state
+        setTooltip({
+          visible: true,
+          value: tooltipValue,
+          x: mouseX,
+          y: mouseY
+        });
+      } else {
+        // Hide tooltip when not near arc
+        setTooltip({ ...tooltip, visible: false });
+      }
+    };
+    
+    // Handle mouse leave
+    const handleMouseLeave = () => {
+      setTooltip({ ...tooltip, visible: false });
+    };
     
     // Functions to generate tick marks
     const generateTicks = () => {
@@ -266,7 +342,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     return (
       <div className={`sp-gauge-container ${hoveredMetric === id ? 'sp-hover' : ''}`} 
            onMouseEnter={() => setHoveredMetric(id)}
-           onMouseLeave={() => setHoveredMetric(null)}>
+           onMouseLeave={() => {
+             setHoveredMetric(null);
+             handleMouseLeave();
+           }}>
         <div className="sp-gauge-header">
           <h3 className="sp-metric-title">{label}</h3>
           <div className="sp-status-wrapper">
@@ -276,104 +355,131 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           </div>
         </div>
         
-        <svg width={size} height={size/1.5} viewBox={`0 0 ${size} ${size}`} className="sp-gauge-svg">
-          <defs>
-            <linearGradient id={`gauge-gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              {getGradientStops()}
-            </linearGradient>
-            <filter id="gauge-shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(0,0,0,0.3)" />
-            </filter>
-          </defs>
-          
-          {/* Background arc */}
-          <path
-            d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
-            fill="none"
-            stroke="#e0e0e0"
-            strokeWidth={strokeWidth + 5}
-            strokeLinecap="round"
-          />
-          
-          {/* Colored gradient arc - fill entire arc with gradient */}
-          <path
-            d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
-            fill="none"
-            stroke={`url(#gauge-gradient-${id})`}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            filter="url(#gauge-shadow)"
-          />
-          
-          {/* Tick marks and labels */}
-          {ticks.map((tick, i) => (
-            <g key={`tick-${i}`}>
-              <line
-                x1={tick.line.x1}
-                y1={tick.line.y1}
-                x2={tick.line.x2}
-                y2={tick.line.y2}
-                stroke="#888"
-                strokeWidth="1.5"
-              />
-              <text
-                x={tick.text.x}
-                y={tick.text.y}
-                textAnchor={tick.text.anchor}
-                fill="#555"
-                fontSize="12"
-                fontWeight="500"
-                dominantBaseline="middle"
-              >
-                {tick.text.value}
-              </text>
-            </g>
-          ))}
-          
-          {/* Indicator mask to show value */}
-          {animationComplete && (
-            <path
-              d={`M ${size/2} ${size/2} L ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + Math.cos((180-needleAngle) * Math.PI/180) * radius} ${size/2 + Math.sin((180-needleAngle) * Math.PI/180) * radius} Z`}
-              fill="#fff"
-              fillOpacity="0.85"
-            />
-          )}
-          
-          {/* Gauge needle with glow effect */}
-          <g transform={`rotate(${needleAngle}, ${size/2}, ${size/2})`} 
-             style={{ transition: "transform 1s ease-in-out" }}
-             filter="url(#gauge-shadow)">
-            <line
-              x1={size/2}
-              y1={size/2}
-              x2={size/2}
-              y2={size/2 - radius - 10}
-              stroke={color}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <circle
-              cx={size/2}
-              cy={size/2}
-              r="8"
-              fill={color}
-              stroke="#fff"
-              strokeWidth="2"
-            />
-          </g>
-          
-          {/* Value display */}
-          <text
-            x={size/2}
-            y={size/2 + radius/2}
-            textAnchor="middle"
-            fill="#333"
-            fontSize="24"
-            fontWeight="700"
+        <div className="sp-gauge-svg-container">
+          <svg 
+            ref={svgRef}
+            width={size} 
+            height={size/1.5} 
+            viewBox={`0 0 ${size} ${size}`} 
+            className="sp-gauge-svg"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
-            {value.toFixed(1)}
-          </text>
-        </svg>
+            <defs>
+              <linearGradient id={`gauge-gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                {getGradientStops()}
+              </linearGradient>
+              <filter id="gauge-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(0,0,0,0.3)" />
+              </filter>
+            </defs>
+            
+            {/* Background arc */}
+            <path
+              d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
+              fill="none"
+              stroke="#e0e0e0"
+              strokeWidth={strokeWidth + 5}
+              strokeLinecap="round"
+              className="sp-gauge-track"
+            />
+            
+            {/* Colored gradient arc - fill entire arc with gradient */}
+            <path
+              d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
+              fill="none"
+              stroke={`url(#gauge-gradient-${id})`}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              filter="url(#gauge-shadow)"
+              className="sp-gauge-fill"
+            />
+            
+            {/* Tick marks and labels */}
+            {ticks.map((tick, i) => (
+              <g key={`tick-${i}`}>
+                <line
+                  x1={tick.line.x1}
+                  y1={tick.line.y1}
+                  x2={tick.line.x2}
+                  y2={tick.line.y2}
+                  stroke="#888"
+                  strokeWidth="1.5"
+                />
+                <text
+                  x={tick.text.x}
+                  y={tick.text.y}
+                  textAnchor={tick.text.anchor}
+                  fill="#555"
+                  fontSize="12"
+                  fontWeight="500"
+                  dominantBaseline="middle"
+                >
+                  {tick.text.value}
+                </text>
+              </g>
+            ))}
+            
+            {/* Indicator mask to show value */}
+            {animationComplete && (
+              <path
+                d={`M ${size/2} ${size/2} L ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + Math.cos((180-needleAngle) * Math.PI/180) * radius} ${size/2 + Math.sin((180-needleAngle) * Math.PI/180) * radius} Z`}
+                fill="#fff"
+                fillOpacity="0.85"
+                className="sp-gauge-mask"
+              />
+            )}
+            
+            {/* Gauge needle with glow effect */}
+            <g transform={`rotate(${needleAngle}, ${size/2}, ${size/2})`} 
+               style={{ transition: "transform 1s ease-in-out" }}
+               filter="url(#gauge-shadow)">
+              <line
+                x1={size/2}
+                y1={size/2}
+                x2={size/2}
+                y2={size/2 - radius - 10}
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle
+                cx={size/2}
+                cy={size/2}
+                r="8"
+                fill={color}
+                stroke="#fff"
+                strokeWidth="2"
+              />
+            </g>
+            
+            {/* Value display */}
+            <text
+              x={size/2}
+              y={size/2 + radius/2}
+              textAnchor="middle"
+              fill="#333"
+              fontSize="24"
+              fontWeight="700"
+            >
+              {value.toFixed(1)}
+            </text>
+          </svg>
+          
+          {/* Tooltip */}
+          {tooltip.visible && (
+            <div 
+              className="sp-gauge-tooltip" 
+              style={{
+                left: tooltip.x,
+                top: tooltip.y - 40 // Offset above cursor
+              }}
+            >
+              <div className="sp-tooltip-value">{tooltip.value.toFixed(1)}</div>
+              <div className="sp-tooltip-arrow"></div>
+            </div>
+          )}
+        </div>
         
         <div className="sp-gauge-comparison">
           <div className="sp-comparison-item">
@@ -517,9 +623,49 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           white-space: nowrap;
         }
         
+        .sp-gauge-svg-container {
+          position: relative;
+          width: 100%;
+        }
+        
         .sp-gauge-svg {
           margin-bottom: 1rem;
           width: 100%;
+          cursor: crosshair;
+        }
+        
+        .sp-gauge-track,
+        .sp-gauge-fill,
+        .sp-gauge-mask {
+          cursor: crosshair;
+        }
+        
+        .sp-gauge-tooltip {
+          position: absolute;
+          background-color: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 600;
+          pointer-events: none;
+          z-index: 10;
+          transform: translateX(-50%);
+          white-space: nowrap;
+          text-align: center;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sp-tooltip-arrow {
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid rgba(0, 0, 0, 0.8);
         }
         
         .sp-gauge-comparison {
