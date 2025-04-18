@@ -254,15 +254,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         const tickAngle = tickPercent * 180;
         
         // CRITICAL FIX: Calculate the value based on the gauge type
-        // Keep defense as is, but flip offense and overall numbers
-        let tickValue;
-        if (isInverted) {
-          // Defense: min (1) on left (green), max (40) on right (red)
-          tickValue = min + (1 - tickPercent) * valueRange;
-        } else {
-          // Offense/Overall: FLIP THE SCALE - max on left, min on right
-          tickValue = min + (tickPercent * valueRange);
-        }
+        // For all gauges, min values should be on left, max values on right
+        // This matches both the visual gradient and the logical progression
+        const tickValue = min + (tickPercent * valueRange);
         
         // Convert angle to radians for SVG positioning
         const tickRadian = (tickAngle * Math.PI) / 180;
