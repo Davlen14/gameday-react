@@ -163,25 +163,27 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const { id, label, value, min, max, isInverted, color, level } = metric;
     
     // Gauge dimensions
-    const size = 220; // Adjusted for side-by-side
+    const size = 240; // Increased size for better visibility
     const strokeWidth = 10;
-    const radius = (size / 2) - (strokeWidth * 2);
-    const circumference = 2.05 * Math.PI * radius; // 2.05 for slightly more than semi-circle
+    const radius = (size / 2) - (strokeWidth * 3); // More space around gauge
+    const circumference = 2 * Math.PI * radius; // Full circle
+    const arcAngle = Math.PI; // Semi-circle (180 degrees)
+    const arcCircumference = radius * arcAngle;
     
     // Calculate the percentage filled
     let normalizedValue = (value - min) / (max - min);
     normalizedValue = Math.max(0, Math.min(1, normalizedValue)); // Clamp between 0-1
     
     // For defense, invert the fill (lower values = higher fill)
-    if (isInverted) normalizedValue = 1 - normalizedValue;
+    const needleNormalizedValue = isInverted ? 1 - normalizedValue : normalizedValue;
     
-    // Animated stroke amount
+    // Animated stroke amount (semi-circle)
     const strokeDashoffset = !animationComplete 
-      ? circumference 
-      : circumference * (1 - normalizedValue);
+      ? arcCircumference 
+      : arcCircumference * (1 - needleNormalizedValue);
     
-    // Calculate angle for needle (180° is the bottom, needle points up)
-    const needleAngle = 180 - (normalizedValue * 180);
+    // Calculate angle for needle (180° is the start of arc, 0° is the end)
+    const needleAngle = 180 - (needleNormalizedValue * 180);
     
     // Functions to generate tick marks
     const generateTicks = () => {
@@ -189,23 +191,34 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       const numTicks = 5; // Number of tick marks
       
       for (let i = 0; i <= numTicks; i++) {
-        const tickValue = min + ((max - min) * (i / numTicks));
+        const tickValue = isInverted 
+          ? max - ((max - min) * (i / numTicks)) // Reverse order for defense
+          : min + ((max - min) * (i / numTicks));
+          
         const tickPercent = i / numTicks;
         const tickAngle = 180 - (tickPercent * 180);
+        
         // Calculate position on the gauge arc
         const radian = (tickAngle * Math.PI) / 180;
-        const outerRadius = radius + strokeWidth/2;
-        const innerRadius = radius - strokeWidth/2;
+        const outerRadius = radius + strokeWidth/2 + 5;
+        const innerRadius = radius - strokeWidth/2 - 5;
         
+        // Line positioning
         const x1 = size/2 + Math.cos(radian) * innerRadius;
         const y1 = size/2 + Math.sin(radian) * innerRadius;
-        const x2 = size/2 + Math.cos(radian) * (outerRadius + 10);
-        const y2 = size/2 + Math.sin(radian) * (outerRadius + 10);
+        const x2 = size/2 + Math.cos(radian) * outerRadius;
+        const y2 = size/2 + Math.sin(radian) * outerRadius;
         
-        // Text positioning
-        const textRadius = outerRadius + 20;
+        // Text positioning - pushed further out to ensure visibility
+        const textRadius = outerRadius + 15;
         const textX = size/2 + Math.cos(radian) * textRadius;
         const textY = size/2 + Math.sin(radian) * textRadius;
+        
+        // Anchor direction based on position
+        let anchor;
+        if (i === 0) anchor = "start";
+        else if (i === numTicks) anchor = "end";
+        else anchor = "middle";
         
         // Create tick object
         ticks.push({
@@ -214,8 +227,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             x: textX,
             y: textY,
             value: Math.round(tickValue),
-            // Adjust text anchor based on position
-            anchor: i === 0 ? "start" : i === numTicks ? "end" : "middle"
+            anchor
           }
         });
       }
@@ -272,7 +284,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           </div>
         </div>
         
-        <svg width={size} height={size/1.75} viewBox={`0 0 ${size} ${size}`} className="sp-gauge-svg">
+        <svg width={size} height={size/1.5} viewBox={`0 0 ${size} ${size}`} className="sp-gauge-svg">
           <defs>
             <linearGradient id={`gauge-gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
               {getGradientStops()}
@@ -297,7 +309,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             fill="none"
             stroke={`url(#gauge-gradient-${id})`}
             strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
+            strokeDasharray={arcCircumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
@@ -320,8 +332,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
                 y={tick.text.y}
                 textAnchor={tick.text.anchor}
                 fill="#555"
-                fontSize="11"
+                fontSize="12"
                 fontWeight="500"
+                dominantBaseline="middle"
               >
                 {tick.text.value}
               </text>
@@ -336,7 +349,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
               x1={size/2}
               y1={size/2}
               x2={size/2}
-              y2={size/2 - radius - 15}
+              y2={size/2 - radius - 10}
               stroke={color}
               strokeWidth="2"
               strokeLinecap="round"
@@ -431,10 +444,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         
         .sp-gauges-container {
           display: flex;
-          flex-direction: row; /* Changed from column to row */
-          justify-content: space-between; /* Spread gauges evenly */
+          flex-direction: row;
+          justify-content: space-between;
           width: 100%;
-          gap: 1rem; /* Reduced gap for side by side */
+          gap: 1rem;
         }
         
         .sp-gauge-container {
@@ -446,7 +459,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           transition: all 0.3s ease;
-          flex: 1; /* Make each gauge take equal width */
+          flex: 1;
           position: relative;
           overflow: hidden;
         }
@@ -491,7 +504,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         }
         
         .sp-status-wrapper {
-          height: 28px; /* Fixed height to prevent stacking */
+          height: 28px;
           display: flex;
           align-items: center;
         }
