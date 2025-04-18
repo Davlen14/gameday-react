@@ -174,7 +174,9 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     normalizedValue = Math.max(0, Math.min(1, normalizedValue)); // Clamp between 0-1
     
     // For defense, invert the fill (lower values = higher fill)
-    const needleNormalizedValue = isInverted ? 1 - normalizedValue : normalizedValue;
+    const needleNormalizedValue = isInverted 
+      ? (max - value) / (max - min)  // Revised calculation for inverted metrics
+      : normalizedValue;
     
     // Calculate angle for needle (180° is the start of arc, 0° is the end)
     const needleAngle = 180 - (needleNormalizedValue * 180);
@@ -375,6 +377,16 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
             </defs>
             
             {/* Background arc */}
+            <path
+              d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
+              fill="none"
+              stroke="#e0e0e0"
+              strokeWidth={strokeWidth + 5}
+              strokeLinecap="round"
+              className="sp-gauge-track"
+            />
+            
+            {/* Colored gradient arc - fill entire arc with gradient */}
             <path
               d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
               fill="none"
