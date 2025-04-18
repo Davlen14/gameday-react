@@ -8,20 +8,35 @@ const NATIONAL_AVERAGES = {
   defense: 26.61  // Defense national average
 };
 
+// Performance thresholds (adjusted for each metric)
+const THRESHOLDS = {
+  overall: {
+    poor: 10, 
+    average: 20, 
+    good: 30
+  },
+  offense: {
+    poor: 20, 
+    average: 30, 
+    good: 40
+  },
+  defense: {
+    // Defense is inverted - lower is better
+    good: 15, 
+    average: 20, 
+    poor: 30
+  }
+};
+
 /**
- * GaugeComponent - A sleek, interactive radar chart for displaying team metrics vs. national averages
- *
- * @param {Object} props
- * @param {string} props.teamName - The name of the team
- * @param {number} props.year - The year for fetching ratings
- * @param {string} props.teamColor - The primary color of the team
- * @returns {JSX.Element} A modern radar chart component
+ * Modern Gauge Component - Displays team metrics with sleek, visual gauges
  */
 const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
   const [ratings, setRatings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hoveredMetric, setHoveredMetric] = useState(null);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -47,6 +62,12 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
           defense: ratingData.spDefense ?? null
         });
         setError(null);
+        
+        // Trigger animation after a short delay
+        setTimeout(() => {
+          setAnimationComplete(true);
+        }, 300);
+        
       } catch (err) {
         console.error("Error fetching SP+ ratings:", err);
         setError(err.message);
@@ -56,18 +77,20 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     };
 
     fetchRatings();
+    // Reset animation state on team/year change
+    setAnimationComplete(false);
   }, [teamName, year]);
 
   // Display loading, error state, or no data message
   if (loading) return (
-    <div className="ggc-radar-chart-loading">
-      <div className="ggc-loading-spinner"></div>
+    <div className="sp-loading-container">
+      <div className="sp-loading-spinner"></div>
       <div>Loading team metrics...</div>
     </div>
   );
 
   if (error) return (
-    <div className="ggc-radar-chart-error">
+    <div className="sp-error-container">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
         <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -79,7 +102,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
   if (!ratings || Object.values(ratings).every(v => v === null)) {
     return (
-      <div className="ggc-radar-chart-no-data">
+      <div className="sp-no-data-container">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M9 4h6v6h4l-7 7-7-7h4V4z" fill="currentColor"/>
         </svg>
@@ -88,448 +111,547 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     );
   }
 
-  // Chart dimensions
-  const size = 320;
-  const center = size / 2;
-  const maxRadius = size * 0.42; // Slightly reduce triangle size
-  const labelOffset = size * 0.52; // Increase label distance
+  // Determine performance level and color for a metric
+  const getPerformanceDetails = (metricId, value) => {
+    const thresholds = THRESHOLDS[metricId];
+    const isDefense = metricId === 'defense';
+    
+    let level, color;
+    
+    if (isDefense) {
+      // For defense, lower is better
+      if (value <= thresholds.good) {
+        level = "Above Average";
+        color = "#04aa6d"; // Green
+      } else if (value <= thresholds.average) {
+        level = "Average";
+        color = "#ffc700"; // Yellow
+      } else {
+        level = "Below Average";
+        color = "#ff4d4d"; // Red
+      }
+    } else {
+      // For offense and overall, higher is better
+      if (value >= thresholds.good) {
+        level = "Above Average";
+        color = "#04aa6d"; // Green
+      } else if (value >= thresholds.average) {
+        level = "Average";
+        color = "#ffc700"; // Yellow
+      } else {
+        level = "Below Average";
+        color = "#ff4d4d"; // Red
+      }
+    }
+    
+    return { level, color };
+  };
 
-  // Normalize data for radar chart - ensure proper ordering
-  const metrics = [
-    { id: "overall", label: "Overall", min: 0, max: 32, order: 1 },
-    { id: "offense", label: "Offense", min: 20, max: 45, order: 2 },
-    { id: "defense", label: "Defense", min: 5, max: 30, inverted: true, order: 3 } // Defense is inverted because lower is better
+  // Calculate gauge settings for each metric
+  const gaugeMetrics = [
+    {
+      id: "overall",
+      label: "Overall",
+      value: ratings.overall,
+      nationalAvg: NATIONAL_AVERAGES.overall,
+      min: -30, // Allow for negative values
+      max: 40,
+      isInverted: false,
+      color: "#3B82F6", // Blue
+      ...getPerformanceDetails("overall", ratings.overall)
+    },
+    {
+      id: "offense",
+      label: "Offense",
+      value: ratings.offense,
+      nationalAvg: NATIONAL_AVERAGES.offense,
+      min: 10,
+      max: 50,
+      isInverted: false,
+      color: "#F59E0B", // Orange
+      ...getPerformanceDetails("offense", ratings.offense)
+    },
+    {
+      id: "defense",
+      label: "Defense",
+      value: ratings.defense,
+      nationalAvg: NATIONAL_AVERAGES.defense,
+      min: 5,
+      max: 40,
+      isInverted: true, // Defense is inverted (lower is better)
+      color: "#10B981", // Green
+      ...getPerformanceDetails("defense", ratings.defense)
+    }
   ];
 
-  // Ensure all three metrics are always shown in correct order
-  const allMetrics = metrics.map(metric => {
-    // Use actual value if available, otherwise use national average
-    const value = ratings[metric.id] !== null ? ratings[metric.id] : NATIONAL_AVERAGES[metric.id];
-    return {
-      ...metric,
-      value
+  // Create a modern circular gauge for each metric
+  const CircularGauge = ({ metric }) => {
+    const { id, label, value, min, max, isInverted, color, level } = metric;
+    
+    // Gauge dimensions
+    const size = 200;
+    const strokeWidth = 10;
+    const radius = (size / 2) - (strokeWidth * 2);
+    const circumference = 2.05 * Math.PI * radius; // 2.05 for slightly more than semi-circle
+    
+    // Calculate the percentage filled
+    let normalizedValue = (value - min) / (max - min);
+    normalizedValue = Math.max(0, Math.min(1, normalizedValue)); // Clamp between 0-1
+    
+    // For defense, invert the fill (lower values = higher fill)
+    if (isInverted) normalizedValue = 1 - normalizedValue;
+    
+    // Animated stroke amount
+    const strokeDashoffset = !animationComplete 
+      ? circumference 
+      : circumference * (1 - normalizedValue);
+    
+    // Calculate angle for needle (180° is the bottom, needle points up)
+    const needleAngle = 180 - (normalizedValue * 180);
+    
+    // Functions to generate tick marks
+    const generateTicks = () => {
+      const ticks = [];
+      const numTicks = 5; // Number of tick marks
+      
+      for (let i = 0; i <= numTicks; i++) {
+        const tickValue = min + ((max - min) * (i / numTicks));
+        const tickPercent = i / numTicks;
+        const tickAngle = 180 - (tickPercent * 180);
+        // Calculate position on the gauge arc
+        const radian = (tickAngle * Math.PI) / 180;
+        const outerRadius = radius + strokeWidth/2;
+        const innerRadius = radius - strokeWidth/2;
+        
+        const x1 = size/2 + Math.cos(radian) * innerRadius;
+        const y1 = size/2 + Math.sin(radian) * innerRadius;
+        const x2 = size/2 + Math.cos(radian) * (outerRadius + 10);
+        const y2 = size/2 + Math.sin(radian) * (outerRadius + 10);
+        
+        // Text positioning
+        const textRadius = outerRadius + 20;
+        const textX = size/2 + Math.cos(radian) * textRadius;
+        const textY = size/2 + Math.sin(radian) * textRadius;
+        
+        // Create tick object
+        ticks.push({
+          line: {x1, y1, x2, y2},
+          text: {
+            x: textX,
+            y: textY,
+            value: Math.round(tickValue),
+            // Adjust text anchor based on position
+            anchor: i === 0 ? "start" : i === numTicks ? "end" : "middle"
+          }
+        });
+      }
+      
+      return ticks;
     };
-  });
-
-  // Calculate normalized values between 0-1 for plotting
-  const getNormalizedValue = (value, min, max, inverted = false) => {
-    if (value === null) return 0;
-    const normalized = (value - min) / (max - min);
-    return inverted ? 1 - normalized : normalized;
-  };
-
-  // Generate points for the team's values and national averages
-  // Use the metrics sorted by order to ensure consistent positioning
-  const sortedMetrics = [...metrics].sort((a, b) => a.order - b.order);
-
-  const teamPoints = sortedMetrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
-    // Get the value from ratings or fall back to national average to ensure the point is always displayed
-    const value = ratings[metric.id] !== null ? ratings[metric.id] : NATIONAL_AVERAGES[metric.id];
-
-    const normalizedValue = getNormalizedValue(value, metric.min, metric.max, metric.inverted);
-    const clampedValue = Math.max(0, Math.min(1, normalizedValue));
-
-    return {
-      x: center + maxRadius * clampedValue * Math.sin(angle),
-      y: center - maxRadius * clampedValue * Math.cos(angle),
-      value,
-      metric,
-      angle,
-      normalizedValue: clampedValue
+    
+    // Generate color gradient stops based on performance levels
+    const getGradientStops = () => {
+      if (isInverted) {
+        // Defense: green to yellow to red (left to right)
+        return (
+          <>
+            <stop offset="0%" stopColor="#04aa6d" />
+            <stop offset="50%" stopColor="#ffc700" />
+            <stop offset="100%" stopColor="#ff4d4d" />
+          </>
+        );
+      } else {
+        // Offense/Overall: red to yellow to green (left to right)
+        return (
+          <>
+            <stop offset="0%" stopColor="#ff4d4d" />
+            <stop offset="50%" stopColor="#ffc700" />
+            <stop offset="100%" stopColor="#04aa6d" />
+          </>
+        );
+      }
     };
-  });
-
-  const nationalPoints = sortedMetrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
-    const value = NATIONAL_AVERAGES[metric.id];
-    const normalizedValue = getNormalizedValue(value, metric.min, metric.max, metric.inverted);
-    const clampedValue = Math.max(0, Math.min(1, normalizedValue));
-
-    return {
-      x: center + maxRadius * clampedValue * Math.sin(angle),
-      y: center - maxRadius * clampedValue * Math.cos(angle),
-      value,
-      metric,
-      angle,
-      normalizedValue: clampedValue
-    };
-  });
-
-  // Generate axis lines and labels
-  const axisLines = sortedMetrics.map((metric, i) => {
-    const angle = (Math.PI * 2 * i) / sortedMetrics.length;
-    const x2 = center + maxRadius * Math.sin(angle);
-    const y2 = center - maxRadius * Math.cos(angle);
-
-    // Calculate label position with increased offset for better visibility
-    const labelX = center + labelOffset * Math.sin(angle);
-    const labelY = center - labelOffset * Math.cos(angle);
-
-    // Adjust label alignment based on position
-    let textAnchor = "middle";
-    let dy = "0.35em";
-
-    if (angle < 0.1 || Math.abs(angle - Math.PI) < 0.1) {
-      textAnchor = "middle";
-    } else if (angle < Math.PI) {
-      textAnchor = "start";
-    } else {
-      textAnchor = "end";
-    }
-
-    return {
-      line: { x1: center, y1: center, x2, y2 },
-      label: { x: labelX, y: labelY, textAnchor, dy, text: metric.label }
-    };
-  });
-
-  // Create spider web rings (scales)
-  const rings = [0.25, 0.5, 0.75, 1].map(scale => {
-    const points = sortedMetrics.map((_, i) => {
-      const angle = (Math.PI * 2 * i) / sortedMetrics.length;
-      return {
-        x: center + maxRadius * scale * Math.sin(angle),
-        y: center - maxRadius * scale * Math.cos(angle)
-      };
-    });
-
-    return {
-      path: points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z',
-      scale
-    };
-  });
-
-  // Create path strings for the radar areas
-  const createAreaPath = (points) => {
-    if (!points.length) return '';
-    return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z';
-  };
-
-  const teamColor10 = `${teamColor}1A`; // 10% opacity
-  const teamColor40 = `${teamColor}66`; // 40% opacity
-  const teamColor80 = `${teamColor}CC`; // 80% opacity
-
-  // Determine metric performance level
-  const getPerformanceLevel = (metricId, value) => {
-    if (metricId === 'defense') {
-      // For defense, lower values are better (fewer points allowed)
-      return value <= 15 ? "Above Average" : value >= NATIONAL_AVERAGES.defense ? "Below Average" : "Average";
-    } else if (metricId === 'offense') {
-      // For offense, higher values are better (more points scored)
-      return value >= 35 ? "Above Average" : value <= NATIONAL_AVERAGES.offense ? "Below Average" : "Average";
-    } else {
-      // For overall, higher values are better
-      return value >= 25 ? "Above Average" : value <= 20 ? "Below Average" : "Average";
-    }
-  };
-
-  // Determine metric performance color
-  const getPerformanceColor = (metricId, value) => {
-    const level = getPerformanceLevel(metricId, value);
-    return level === "Above Average" ? "#04aa6d" : level === "Below Average" ? "#ff4d4d" : "#ffc700";
+    
+    // Generate tick marks
+    const ticks = generateTicks();
+    
+    return (
+      <div className={`sp-gauge-container ${hoveredMetric === id ? 'sp-hover' : ''}`} 
+           onMouseEnter={() => setHoveredMetric(id)}
+           onMouseLeave={() => setHoveredMetric(null)}>
+        <div className="sp-gauge-header">
+          <h3>{label}</h3>
+          <div className="sp-performance-badge" style={{ backgroundColor: metric.color }}>
+            {level}
+          </div>
+        </div>
+        
+        <svg width={size} height={size/1.75} viewBox={`0 0 ${size} ${size}`} className="sp-gauge-svg">
+          <defs>
+            <linearGradient id={`gauge-gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+              {getGradientStops()}
+            </linearGradient>
+            <filter id="gauge-shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(0,0,0,0.3)" />
+            </filter>
+          </defs>
+          
+          {/* Gauge background */}
+          <path
+            d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
+            fill="none"
+            stroke="#e0e0e0"
+            strokeWidth={strokeWidth + 5}
+            strokeLinecap="round"
+          />
+          
+          {/* Gauge fill with gradient */}
+          <path
+            d={`M ${size/2 - radius} ${size/2} A ${radius} ${radius} 0 0 1 ${size/2 + radius} ${size/2}`}
+            fill="none"
+            stroke={`url(#gauge-gradient-${id})`}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
+            filter="url(#gauge-shadow)"
+          />
+          
+          {/* Tick marks and labels */}
+          {ticks.map((tick, i) => (
+            <g key={`tick-${i}`}>
+              <line
+                x1={tick.line.x1}
+                y1={tick.line.y1}
+                x2={tick.line.x2}
+                y2={tick.line.y2}
+                stroke="#888"
+                strokeWidth="1.5"
+              />
+              <text
+                x={tick.text.x}
+                y={tick.text.y}
+                textAnchor={tick.text.anchor}
+                fill="#555"
+                fontSize="11"
+                fontWeight="500"
+              >
+                {tick.text.value}
+              </text>
+            </g>
+          ))}
+          
+          {/* Gauge needle with glow effect */}
+          <g transform={`rotate(${needleAngle}, ${size/2}, ${size/2})`} 
+             style={{ transition: "transform 1s ease-in-out" }}
+             filter="url(#gauge-shadow)">
+            <line
+              x1={size/2}
+              y1={size/2}
+              x2={size/2}
+              y2={size/2 - radius - 15}
+              stroke={color}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <circle
+              cx={size/2}
+              cy={size/2}
+              r="8"
+              fill={color}
+              stroke="#fff"
+              strokeWidth="2"
+            />
+          </g>
+          
+          {/* Value display */}
+          <text
+            x={size/2}
+            y={size/2 + radius/2}
+            textAnchor="middle"
+            fill="#333"
+            fontSize="24"
+            fontWeight="700"
+          >
+            {value.toFixed(1)}
+          </text>
+        </svg>
+        
+        <div className="sp-gauge-comparison">
+          <div className="sp-comparison-item">
+            <span className="sp-comparison-label">National Avg</span>
+            <span className="sp-comparison-value">{metric.nationalAvg.toFixed(1)}</span>
+          </div>
+          <div className="sp-comparison-diff" style={{ color: metric.color }}>
+            {isInverted 
+              ? (metric.nationalAvg - value).toFixed(1) 
+              : (value - metric.nationalAvg).toFixed(1)
+            }
+            {isInverted 
+              ? (value < metric.nationalAvg ? " Better" : " Worse") 
+              : (value > metric.nationalAvg ? " Better" : " Worse")
+            }
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="ggc-modern-radar-chart">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="ggc-radar-svg">
-        {/* Gradient definitions */}
-        <defs>
-          <linearGradient id="team-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={teamColor40} />
-            <stop offset="100%" stopColor={teamColor80} />
-          </linearGradient>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-          <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(0,0,0,0.3)" />
-          </filter>
-        </defs>
-
-        {/* Background rings */}
-        <g className="ggc-radar-rings">
-          {rings.map((ring, i) => (
-            <path
-              key={`ring-${i}`}
-              d={ring.path}
-              stroke="#e0e0e0"
-              strokeWidth="1"
-              fill="none"
-              strokeDasharray={i === rings.length - 1 ? "none" : "2,2"}
-            />
-          ))}
-        </g>
-
-        {/* Axis lines */}
-        <g className="ggc-radar-axes">
-          {axisLines.map((axis, i) => (
-            <line
-              key={`axis-${i}`}
-              x1={axis.line.x1}
-              y1={axis.line.y1}
-              x2={axis.line.x2}
-              y2={axis.line.y2}
-              stroke="#e0e0e0"
-              strokeWidth="1.5"
-            />
-          ))}
-        </g>
-
-        {/* National average area */}
-        <g className="ggc-national-avg-area">
-          <path
-            d={createAreaPath(nationalPoints)}
-            fill="rgba(150, 150, 150, 0.15)"
-            stroke="#aaaaaa"
-            strokeWidth="1.5"
-            strokeDasharray="3,3"
-          />
-        </g>
-
-        {/* Team area */}
-        <g className="ggc-team-area" filter="url(#drop-shadow)">
-          <path
-            d={createAreaPath(teamPoints)}
-            fill="url(#team-gradient)"
-            stroke={teamColor}
-            strokeWidth="2"
-          />
-        </g>
-
-        {/* Data points with hover effect */}
-        <g className="ggc-data-points">
-          {teamPoints.map((point, i) => (
-            <g key={`point-${i}`} className="ggc-point-group">
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r="6"
-                fill="#fff"
-                stroke={getPerformanceColor(point.metric.id, point.value)}
-                strokeWidth="2"
-                filter={hoveredMetric === point.metric.id ? "url(#glow)" : "none"}
-                onMouseEnter={() => setHoveredMetric(point.metric.id)}
-                onMouseLeave={() => setHoveredMetric(null)}
-                style={{ cursor: 'pointer' }}
-              />
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r="3"
-                fill={getPerformanceColor(point.metric.id, point.value)}
-              />
-            </g>
-          ))}
-        </g>
-
-        {/* Axis labels */}
-        <g className="ggc-radar-labels">
-          {axisLines.map((axis, i) => (
-            <text
-              key={`label-${i}`}
-              x={axis.label.x}
-              y={axis.label.y}
-              textAnchor={axis.label.textAnchor}
-              dy={axis.label.dy}
-              fontSize="14"
-              fontWeight="600"
-              fill="#555555"
-              style={{
-                filter: 'drop-shadow(0px 0px 2px white)',
-                paintOrder: 'stroke fill',
-                stroke: 'white',
-                strokeWidth: '2px',
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-              }}
-            >
-              {axis.label.text}
-            </text>
-          ))}
-        </g>
-      </svg>
-
-      {/* Metrics legend */}
-      <div className="ggc-metrics-legend">
-        {allMetrics.map(metric => {
-          const value = metric.value;
-          const nationalAvg = NATIONAL_AVERAGES[metric.id];
-          const performanceLevel = getPerformanceLevel(metric.id, value);
-          const performanceColor = getPerformanceColor(metric.id, value);
-
-          return (
-            <div
-              key={metric.id}
-              className={`ggc-metric-card ${hoveredMetric === metric.id ? 'ggc-active' : ''}`}
-              onMouseEnter={() => setHoveredMetric(metric.id)}
-              onMouseLeave={() => setHoveredMetric(null)}
-              style={{ borderColor: hoveredMetric === metric.id ? performanceColor : 'transparent' }}
-            >
-              <div className="ggc-metric-header">
-                <span className="ggc-metric-name">{metric.label}</span>
-                <span
-                  className="ggc-performance-indicator"
-                  style={{
-                    backgroundColor: performanceColor,
-                    boxShadow: `0 3px 6px ${performanceColor}40`
-                  }}
-                >
-                  {performanceLevel === "Below Average" ? "Below Avg" :
-                   performanceLevel === "Above Average" ? "Above Avg" :
-                   "Average"}
-                </span>
-              </div>
-              <div className="ggc-metric-values">
-                <div className="ggc-team-value">
-                  <span className="ggc-value-label">Team</span>
-                  <span className="ggc-value-number" style={{ color: performanceColor }}>{value.toFixed(2)}</span>
-                </div>
-                <div className="ggc-vs-divider">vs</div>
-                <div className="ggc-natl-value">
-                  <span className="ggc-value-label">Nat Avg</span>
-                  <span className="ggc-value-number">{nationalAvg.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+    <div className="sp-metrics-dashboard">
+      <div className="sp-gauges-container">
+        {gaugeMetrics.map(metric => (
+          <CircularGauge key={metric.id} metric={metric} />
+        ))}
       </div>
-
+      
+      <div className="sp-explanation">
+        <div className="sp-explanation-title">How SP+ Ratings Work</div>
+        <div className="sp-explanation-content">
+          <p>
+            <strong>Overall:</strong> Combines offense, defense, and special teams.
+            <strong className="sp-good-text">Higher is better</strong>.
+          </p>
+          <p>
+            <strong>Offense:</strong> Measures scoring efficiency and ball movement.
+            <strong className="sp-good-text">Higher is better</strong>.
+          </p>
+          <p>
+            <strong>Defense:</strong> Measures defensive efficiency.
+            <strong className="sp-good-text">Lower is better</strong>.
+          </p>
+        </div>
+        <div className="sp-color-legend">
+          <div className="sp-legend-item">
+            <span className="sp-legend-color" style={{backgroundColor: "#ff4d4d"}}></span>
+            <span>Below Average</span>
+          </div>
+          <div className="sp-legend-item">
+            <span className="sp-legend-color" style={{backgroundColor: "#ffc700"}}></span>
+            <span>Average</span>
+          </div>
+          <div className="sp-legend-item">
+            <span className="sp-legend-color" style={{backgroundColor: "#04aa6d"}}></span>
+            <span>Above Average</span>
+          </div>
+        </div>
+      </div>
+      
       <style jsx>{`
-        /* Custom radar chart styles with ggc- prefix to avoid style collisions */
-        .ggc-modern-radar-chart {
+        .sp-metrics-dashboard {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          padding: 1rem;
+        }
+        
+        .sp-gauges-container {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 2rem;
+        }
+        
+        .sp-gauge-container {
           display: flex;
           flex-direction: column;
           align-items: center;
           background: white;
-          border-radius: 12px;
+          border-radius: 16px;
           padding: 1.5rem;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transition: all 0.3s ease;
+          width: 220px;
+          position: relative;
+          overflow: hidden;
         }
-
-        .ggc-radar-svg {
-          margin-bottom: 1.5rem;
-        }
-
-        .ggc-metrics-legend {
-          display: flex;
-          flex-wrap: nowrap;
-          justify-content: center;
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+        
+        .sp-gauge-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
+          height: 5px;
+          background: linear-gradient(90deg, rgba(255,77,77,1) 0%, rgba(255,199,0,1) 50%, rgba(4,170,109,1) 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
-
-        .ggc-metric-card {
-          background: white;
-          border-radius: 8px;
-          padding: 0.75rem 1rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          flex: 1;
-          min-width: 150px;
-          max-width: 200px;
-          transition: all 0.2s ease;
-          border: 2px solid transparent;
-          height: 140px;
+        
+        .sp-gauge-container.sp-hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sp-gauge-container.sp-hover::before {
+          opacity: 1;
+        }
+        
+        .sp-gauge-header {
           display: flex;
-          flex-direction: column;
-        }
-
-        .ggc-metric-card:hover, .ggc-metric-card.ggc-active {
-          transform: translateY(-3px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-
-        .ggc-metric-header {
-          display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
+          width: 100%;
           margin-bottom: 1rem;
-          height: 35px;
         }
-
-        .ggc-metric-name {
+        
+        .sp-gauge-header h3 {
+          margin: 0;
+          font-size: 1.1rem;
           font-weight: 600;
-          font-size: 15px;
-          flex-grow: 1;
+          color: #333;
         }
-
-        .ggc-performance-indicator {
+        
+        .sp-performance-badge {
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 600;
+          color: white;
           padding: 4px 8px;
           border-radius: 4px;
-          color: white;
-          height: 20px;
-          width: auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          white-space: nowrap;
-          letter-spacing: 0.5px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          margin-left: 10px;
         }
-
-        .ggc-metric-values {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+        
+        .sp-gauge-svg {
+          margin-bottom: 1rem;
         }
-
-        .ggc-team-value, .ggc-natl-value {
+        
+        .sp-gauge-comparison {
           display: flex;
           flex-direction: column;
-          flex: 1;
+          align-items: center;
+          gap: 0.5rem;
+          width: 100%;
+          padding-top: 0.5rem;
+          border-top: 1px solid #f0f0f0;
         }
-
-        .ggc-vs-divider {
-          font-size: 13px;
-          color: #999;
-          margin: 0 0.5rem;
+        
+        .sp-comparison-item {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
         }
-
-        .ggc-value-label {
+        
+        .sp-comparison-label {
           font-size: 12px;
+          color: #777;
+        }
+        
+        .sp-comparison-value {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .sp-comparison-diff {
+          font-size: 13px;
+          font-weight: 600;
+        }
+        
+        /* Explanation styles */
+        .sp-explanation {
+          background: white;
+          border-radius: 16px;
+          padding: 1.5rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .sp-explanation-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .sp-explanation-content {
+          font-size: 14px;
+          color: #555;
+          line-height: 1.5;
+          margin-bottom: 1rem;
+        }
+        
+        .sp-explanation-content p {
+          margin: 0.5rem 0;
+        }
+        
+        .sp-good-text {
+          margin-left: 6px;
+          font-weight: 600;
+          color: #04aa6d;
+        }
+        
+        .sp-color-legend {
+          display: flex;
+          justify-content: center;
+          gap: 1.5rem;
+          padding-top: 1rem;
+          border-top: 1px solid #f0f0f0;
+        }
+        
+        .sp-legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 13px;
+          color: #555;
+        }
+        
+        .sp-legend-color {
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+        }
+        
+        /* Loading and error states */
+        .sp-loading-container,
+        .sp-error-container,
+        .sp-no-data-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 3rem;
+          gap: 1rem;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           color: #666;
-          margin-bottom: 0.25rem;
+          text-align: center;
+          height: 240px;
+          width: 100%;
         }
-
-        .ggc-value-number {
-          font-size: 18px;
-          font-weight: 700;
-        }
-
-        .ggc-loading-spinner {
+        
+        .sp-loading-spinner {
           width: 40px;
           height: 40px;
           border: 4px solid #f3f3f3;
           border-top: 4px solid ${teamColor};
           border-radius: 50%;
           animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
         }
-
+        
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-
-        .ggc-radar-chart-loading,
-        .ggc-radar-chart-error,
-        .ggc-radar-chart-no-data {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          color: #666;
-          text-align: center;
-          height: 320px;
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+          .sp-gauges-container {
+            flex-direction: column;
+            align-items: center;
+          }
+          
+          .sp-gauge-container {
+            width: 100%;
+            max-width: 300px;
+          }
         }
       `}</style>
     </div>
