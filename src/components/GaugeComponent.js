@@ -174,19 +174,28 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     
     // Convert to angle - 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
-    const needleAngle = isInverted
-      ? (1 - normalizedValue) * 180  // For defense (lower is better): high value = low angle
-      : normalizedValue * 180;       // For offense/overall (higher is better): high value = high angle
+    let needleAngle;
+    if (isInverted) {
+      // For defense (lower is better): higher normalized value = lower angle
+      needleAngle = (1 - normalizedValue) * 180;
+    } else {
+      // For offense/overall (higher is better): higher normalized value = higher angle
+      needleAngle = normalizedValue * 180;
+    }
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert angle (0-180°) to normalized position (0-1)
       const normalizedPos = angle / 180;
       
-      // Convert normalized position to value
-      return isInverted
-        ? max - (normalizedPos * valueRange) // For defense (inverted)
-        : min + (normalizedPos * valueRange); // For offense/overall
+      // Convert normalized position to value based on gauge type
+      if (isInverted) {
+        // For defense (inverted scale)
+        return max - (normalizedPos * valueRange);
+      } else {
+        // For offense/overall (normal scale)
+        return min + (normalizedPos * valueRange);
+      }
     };
     
     // Handle mouse move on the gauge arc
@@ -241,7 +250,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       setTooltip({ ...tooltip, visible: false });
     };
     
-    // Generate tick marks for this gauge - FIXED to display in the correct order
+    // Generate tick marks for this gauge
     const generateTicks = () => {
       const ticks = [];
       const numTicks = 5; // Number of tick marks
@@ -253,10 +262,15 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         // Calculate the angle for this tick (0-180°)
         const tickAngle = tickPercent * 180;
         
-        // CRITICAL FIX: Calculate the value based on the gauge type
-        // For all gauges, min values should be on left, max values on right
-        // This matches both the visual gradient and the logical progression
-        const tickValue = min + (tickPercent * valueRange);
+        // Calculate the value for this tick based on the gauge type
+        let tickValue;
+        if (isInverted) {
+          // For defense: higher tick angle = lower value
+          tickValue = max - (tickPercent * valueRange);
+        } else {
+          // For offense/overall: higher tick angle = higher value
+          tickValue = min + (tickPercent * valueRange);
+        }
         
         // Convert angle to radians for SVG positioning
         const tickRadian = (tickAngle * Math.PI) / 180;
@@ -296,7 +310,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       return ticks;
     };
     
-    // Generate color gradient stops - defense has green on left, red on right
+    // Generate color gradient stops based on gauge type
     const getGradientStops = () => {
       if (isInverted) {
         // Defense: green (left/low) to yellow to red (right/high)
