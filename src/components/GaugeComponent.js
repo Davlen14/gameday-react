@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import graphqlTeamsService from "../services/graphqlTeamsService";
 
-// National Averages based on provided data
+// National Averages based on provided data - fixed to match what's shown on screenshot
 const NATIONAL_AVERAGES = {
-  overall: 0.55,  // Overall national average
-  offense: 27.14, // Offense national average
-  defense: 26.61  // Defense national average
+  overall: 0.6,   // Overall national average
+  offense: 27.1,  // Offense national average
+  defense: 26.6   // Defense national average
 };
 
 /**
@@ -171,28 +171,29 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // Calculate normalized value (0-1 range)
     const valueRange = max - min;
-    // FIX: For offense/overall, normalizedValue should be (value - min) / valueRange
-    // For defense (inverted), normalizedValue should be (max - value) / valueRange
     let normalizedValue;
+    
     if (isInverted) {
-      normalizedValue = Math.max(0, Math.min(1, (max - value) / valueRange));
+      // For defense (lower is better): higher normalized value means lower angle
+      normalizedValue = 1 - Math.max(0, Math.min(1, (value - min) / valueRange));
     } else {
+      // For offense/overall (higher is better): higher normalized value means higher angle
       normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
     }
     
     // Convert to angle - 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
-    // For all metrics, higher normalized value = higher angle (left to right)
     const needleAngle = normalizedValue * 180;
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert angle (0-180°) to normalized position (0-1)
       const normalizedPos = angle / 180;
+      
       if (isInverted) {
-        // For defense (inverted scale)
+        // For defense (inverted scale - lower is better)
         return max - (normalizedPos * valueRange);
       } else {
-        // For offense/overall (normal scale)
+        // For offense/overall (normal scale - higher is better)
         return min + (normalizedPos * valueRange);
       }
     };
