@@ -286,180 +286,177 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
           About {team.school || 'Team'} {team.mascot || ''}
         </div>
         <div className="card-body">
-          <table className="info-table">
-            <tbody>
-              <tr>
-                <td>Team Spirit:</td>
-                <td>
-                  <div className="team-spirit-items">
-                    {/* Team Logo Block */}
-                    <div className="spirit-item logo-block">
-                      <div className="logo-container" style={{ backgroundColor: team.alt_color || '#ffffff' }}>
-                        <img
-                          src={team.logos ? team.logos[0] : '/photos/default_team.png'}
-                          alt={team.mascot ? `${team.mascot} Logo` : 'Team Logo'}
-                          className="team-logo-stick"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/photos/default_team.png";
-                          }}
-                        />
-                      </div>
-                    </div>
+          <div className="team-spirit-container">
+            <div className="team-spirit-items">
+              {/* Team Logo Block */}
+              <div className="spirit-item logo-block">
+                <div className="logo-container" style={{ backgroundColor: team.alt_color || '#ffffff' }}>
+                  <img
+                    src={team.logos ? team.logos[0] : '/photos/default_team.png'}
+                    alt={team.mascot ? `${team.mascot} Logo` : 'Team Logo'}
+                    className="team-logo-stick"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/photos/default_team.png";
+                    }}
+                  />
+                </div>
+              </div>
 
-                    {/* Modern Foam Finger */}
-                    <div className="spirit-item modern-finger">
-                      <div className="finger-container" style={{
-                           background: `linear-gradient(145deg, ${lightenColor(teamColor || '#cccccc', 10)}, ${darkenColor(teamColor || '#999999', 10)})`,
-                           }}>
-                        <div className="finger-text" style={{ color: contrastColor }}>
-                          #1
-                        </div>
-                      </div>
-                    </div>
+              {/* Modern Foam Finger */}
+              <div className="spirit-item modern-finger">
+                <div className="finger-container" style={{
+                     background: `linear-gradient(145deg, ${lightenColor(teamColor || '#cccccc', 10)}, ${darkenColor(teamColor || '#999999', 10)})`,
+                     }}>
+                  <div className="finger-text" style={{ color: contrastColor }}>
+                    #1
+                  </div>
+                </div>
+              </div>
 
-                    {/* Team Pennant */}
-                    <div className="spirit-item modern-pennant">
-                      <div className="pennant-container" style={{
-                           background: `linear-gradient(to right, ${teamColor || '#cccccc'}, ${darkenColor(teamColor || '#999999', 15)})`,
-                           }}>
-                        <span style={{ color: contrastColor }}>
-                          {team.mascot || 'Team'}
-                        </span>
-                      </div>
-                    </div>
+              {/* Team Pennant */}
+              <div className="spirit-item modern-pennant">
+                <div className="pennant-container" style={{
+                     background: `linear-gradient(to right, ${teamColor || '#cccccc'}, ${darkenColor(teamColor || '#999999', 15)})`,
+                     }}>
+                  <span style={{ color: contrastColor }}>
+                    {team.mascot || 'Team'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="info-section">
+            <div className="info-row">
+              <div className="info-label">Location:</div>
+              <div className="info-value"><strong>{team.location?.city || 'N/A'}, {team.location?.state || 'N/A'}</strong></div>
+            </div>
+            
+            <div className="info-row">
+              <div className="info-label">Conference:</div>
+              <div className="info-value">
+                <div className="conf-container">
+                  <img
+                    src={conferenceLogoSrc}
+                    alt={teamConference}
+                    className="conf-logo"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/photos/default_conference.png";
+                    }}
+                  />
+                  <strong>{teamConference}</strong>
+                </div>
+              </div>
+            </div>
+            
+            <div className="info-row">
+              <div className="info-label">Division:</div>
+              <div className="info-value"><strong>Division I ({team.classification || 'FBS/FCS'})</strong></div>
+            </div>
+            
+            {coachData && (
+              <div className="info-row">
+                <div className="info-label">
+                  <div className="flex-align-center">
+                    <FaUserTie size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
+                    Coach:
                   </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Location:</td>
-                <td><strong>{team.location?.city || 'N/A'}, {team.location?.state || 'N/A'}</strong></td>
-              </tr>
-              <tr>
-                <td>Conference:</td>
-                <td>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img
-                      src={conferenceLogoSrc}
-                      alt={teamConference}
-                      style={{ height: "1em", width: "auto", verticalAlign: "middle" }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/photos/default_conference.png";
-                      }}
-                    />
-                    <strong style={{ fontSize: "1em", verticalAlign: "middle" }}>{teamConference}</strong>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Division:</td>
-                <td><strong>Division I ({team.classification || 'FBS/FCS'})</strong></td>
-              </tr>
-              {coachData && (
-                <tr>
-                  <td>
-                    <div className="flex-align-center">
-                      <FaUserTie size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
-                      Coach:
-                    </div>
-                  </td>
-                  <td>
-                    <strong>
-                      {coachData.firstName} {coachData.lastName}
-                      {getCoachHireYear() && (
-                        <span className="coach-tenure">
-                          {getCoachTenureText()}
-                        </span>
-                      )}
-                    </strong>
-                    <div className="coach-record">
-                      <span className="record-detail">
-                        Career at {team.school}: {coachCareerRecord.wins}-{coachCareerRecord.losses}
-                        {coachCareerRecord.ties > 0 ? `-${coachCareerRecord.ties}` : ''}
+                </div>
+                <div className="info-value">
+                  <strong>
+                    {coachData.firstName} {coachData.lastName}
+                    {getCoachHireYear() && (
+                      <span className="coach-tenure">
+                        {getCoachTenureText()}
                       </span>
-                      {(ranks.preseason || ranks.postseason) && (
-                        <span className="rank-detail">
-                          {ranks.preseason && (
-                            <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
-                              Preseason: #{ranks.preseason}
-                            </span>
-                          )}
-                          {ranks.preseason && ranks.postseason && ' • '}
-                          {ranks.postseason && (
-                            <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
-                              Final: #{ranks.postseason}
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {recordData && (
-                <tr>
-                  <td>
-                    <div className="flex-align-center">
-                      <FaClipboardList size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
-                      Record ({year}):
-                    </div>
-                  </td>
-                  <td>
-                    <strong className="record-display">
-                      {recordData.total.wins}-{recordData.total.losses}
-                      <span className="record-detail">
-                        (Conf: {recordData.conferenceGames.wins}-{recordData.conferenceGames.losses})
-                      </span>
-                    </strong>
-                  </td>
-                </tr>
-              )}
-              {(talentData || team.talent) && (
-                <tr>
-                  <td>
-                    <div className="flex-align-center">
-                      <FaTrophy size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
-                      Talent Rating:
-                    </div>
-                  </td>
-                  <td>
-                    <strong>
-                      {talentData ? 
-                        (talentData.talent ? talentData.talent.toFixed(2) : 'N/A') : 
-                        (team.talent ? team.talent.toFixed(2) : 'N/A')}
-                    </strong>
-                  </td>
-                </tr>
-              )}
-              <tr>
-                <td>Team Colors:</td>
-                <td>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '50%',
-                      background: teamColor || '#cccccc',
-                      border: '1px solid rgba(0,0,0,0.1)'
-                    }}></div>
-                    <strong>{teamColor || 'N/A'}</strong>
-                    {team.alt_color && (
-                       <div style={{
-                         width: '20px',
-                         height: '20px',
-                         borderRadius: '50%',
-                         background: team.alt_color,
-                         border: '1px solid rgba(0,0,0,0.1)',
-                         marginLeft: '10px'
-                       }}></div>
                     )}
-                     {team.alt_color && (<strong>{team.alt_color}</strong>)}
+                  </strong>
+                  <div className="coach-record">
+                    <span className="record-detail">
+                      Career at {team.school}: {coachCareerRecord.wins}-{coachCareerRecord.losses}
+                      {coachCareerRecord.ties > 0 ? `-${coachCareerRecord.ties}` : ''}
+                    </span>
+                    {(ranks.preseason || ranks.postseason) && (
+                      <div className="rank-detail">
+                        {ranks.preseason && (
+                          <span className="preseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                            Preseason: #{ranks.preseason}
+                          </span>
+                        )}
+                        {ranks.postseason && (
+                          <span className="postseason-rank" style={{ backgroundColor: lightenColor(teamColor || '#dddddd', 95), border: `1px solid ${lightenColor(teamColor || '#cccccc', 85)}` }}>
+                            Final: #{ranks.postseason}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            )}
+            
+            {recordData && (
+              <div className="info-row">
+                <div className="info-label">
+                  <div className="flex-align-center">
+                    <FaClipboardList size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
+                    Record ({year}):
+                  </div>
+                </div>
+                <div className="info-value">
+                  <strong className="record-display">
+                    {recordData.total.wins}-{recordData.total.losses}
+                    <span className="record-detail">
+                      (Conf: {recordData.conferenceGames.wins}-{recordData.conferenceGames.losses})
+                    </span>
+                  </strong>
+                </div>
+              </div>
+            )}
+            
+            {(talentData || team.talent) && (
+              <div className="info-row">
+                <div className="info-label">
+                  <div className="flex-align-center">
+                    <FaTrophy size={14} style={{ marginRight: "6px", color: teamColor || '#cccccc' }} />
+                    Talent Rating:
+                  </div>
+                </div>
+                <div className="info-value">
+                  <strong>
+                    {talentData ? 
+                      (talentData.talent ? talentData.talent.toFixed(2) : 'N/A') : 
+                      (team.talent ? team.talent.toFixed(2) : 'N/A')}
+                  </strong>
+                </div>
+              </div>
+            )}
+            
+            <div className="info-row">
+              <div className="info-label">Team Colors:</div>
+              <div className="info-value">
+                <div className="colors-container">
+                  <div className="color-dot" style={{
+                    background: teamColor || '#cccccc',
+                    border: '1px solid rgba(0,0,0,0.1)'
+                  }}></div>
+                  <strong className="color-text">{teamColor || 'N/A'}</strong>
+                  
+                  {team.alt_color && (
+                    <>
+                      <div className="color-dot alt-color" style={{
+                        background: team.alt_color,
+                        border: '1px solid rgba(0,0,0,0.1)'
+                      }}></div>
+                      <strong className="color-text">{team.alt_color}</strong>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <style jsx>{`
             /* Base styles */
@@ -488,49 +485,19 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               padding: 16px;
             }
             
-            .info-table {
-              width: 100%;
-              border-collapse: separate;
-              border-spacing: 0;
-              margin-top: 10px;
-            }
-            
-            .info-table tr:hover {
-              background-color: ${teamColor ? teamColor + '0D' : '#f0f0f0'};
-            }
-            
-            .info-table td {
-              padding: 10px 12px;
+            /* Team spirit section */
+            .team-spirit-container {
+              margin-bottom: 20px;
+              padding-bottom: 15px;
               border-bottom: 1px solid #f0f0f0;
-              vertical-align: middle;
-              font-size: 0.95rem;
-            }
-            
-            .info-table tr:last-child td {
-              border-bottom: none;
-            }
-            
-            .info-table td:first-child {
-              width: 150px;
-              color: #555;
-              font-weight: 500;
-              vertical-align: top;
-              padding-top: 15px;
-            }
-            
-            strong {
-              font-weight: 600;
-              color: #333;
             }
             
             .team-spirit-items {
               display: flex;
-              justify-content: flex-start;
+              justify-content: center;
               align-items: center;
-              gap: 35px;
-              padding: 15px 0 15px;
-              margin-top: 5px;
-              min-height: 80px;
+              gap: 25px;
+              padding: 15px 0;
               flex-wrap: wrap;
             }
             
@@ -542,7 +509,6 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               animation: subtle-float 4s ease-in-out infinite alternate;
               touch-action: manipulation;
               -webkit-tap-highlight-color: transparent;
-              margin: 5px 0;
             }
             
             .spirit-item:hover {
@@ -661,6 +627,46 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               -moz-osx-font-smoothing: grayscale;
             }
             
+            /* Info section (replacing table) */
+            .info-section {
+              display: flex;
+              flex-direction: column;
+              width: 100%;
+            }
+            
+            .info-row {
+              display: flex;
+              flex-wrap: wrap;
+              padding: 12px 8px;
+              border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .info-row:last-child {
+              border-bottom: none;
+            }
+            
+            .info-row:hover {
+              background-color: ${teamColor ? teamColor + '0D' : '#f5f5f5'};
+            }
+            
+            .info-label {
+              min-width: 140px;
+              color: #555;
+              font-weight: 500;
+              flex: 0 0 140px;
+              margin-right: 10px;
+            }
+            
+            .info-value {
+              flex: 1;
+              min-width: 0;
+            }
+            
+            strong {
+              font-weight: 600;
+              color: #333;
+            }
+            
             .flex-align-center {
               display: flex;
               align-items: center;
@@ -668,11 +674,12 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
             }
             
             .coach-tenure {
-              font-size: 0.8rem;
+              font-size: 0.85rem;
               opacity: 0.8;
               margin-left: 8px;
               font-weight: normal;
               color: #666;
+              display: inline-block;
             }
             
             .coach-record {
@@ -702,16 +709,55 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               gap: 10px;
               font-size: 0.8rem;
               color: #555;
-              margin-top: 4px;
+              margin-top: 8px;
             }
             
             .preseason-rank, .postseason-rank {
-              border-radius: 3px;
-              padding: 2px 6px;
+              border-radius: 4px;
+              padding: 3px 8px;
               font-size: 0.75rem;
               font-weight: 500;
               color: #333;
               white-space: nowrap;
+              display: inline-block;
+            }
+            
+            /* Conference logo styling */
+            .conf-container {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            
+            .conf-logo {
+              height: 18px;
+              width: auto;
+              object-fit: contain;
+            }
+            
+            /* Team colors display */
+            .colors-container {
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px;
+            }
+            
+            .color-dot {
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              flex-shrink: 0;
+            }
+            
+            .color-text {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            
+            .alt-color {
+              margin-left: 5px;
             }
             
             /* Mobile Responsive Styles */
@@ -722,50 +768,31 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               }
               
               .card-body {
-                padding: 12px;
+                padding: 12px 10px;
               }
               
-              .info-table {
-                display: block;
-                width: 100%;
-              }
-              
-              .info-table tbody {
-                display: block;
-                width: 100%;
-              }
-              
-              .info-table tr {
-                display: flex;
+              .info-row {
                 flex-direction: column;
-                width: 100%;
-                padding: 10px 0;
-                border-bottom: 1px solid #f0f0f0;
+                padding: 10px 5px;
               }
               
-              .info-table tr:last-child {
-                border-bottom: none;
-              }
-              
-              .info-table td {
-                display: block;
+              .info-label {
                 width: 100%;
-                padding: 8px 0;
-                border-bottom: none;
-              }
-              
-              .info-table td:first-child {
-                width: 100%;
-                padding-bottom: 0;
+                margin-bottom: 6px;
                 color: #333;
                 font-weight: 600;
-                font-size: 0.9rem;
+                flex: none;
+              }
+              
+              .info-value {
+                width: 100%;
+                padding-left: 4px;
               }
               
               .team-spirit-items {
-                justify-content: center;
-                padding: 10px 0;
-                gap: 25px;
+                justify-content: space-around;
+                padding: 15px 5px;
+                gap: 15px;
               }
               
               .modern-pennant {
@@ -779,18 +806,10 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 padding-right: 20px;
               }
               
-              .modern-finger {
-                width: 50px;
-                height: 65px;
-              }
-              
-              .finger-text {
-                font-size: 20px;
-              }
-              
-              .logo-block {
-                width: 55px;
-                height: 55px;
+              .coach-tenure {
+                display: block;
+                margin-left: 0;
+                margin-top: 2px;
               }
               
               .record-detail {
@@ -798,65 +817,84 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
                 margin-left: 0;
                 margin-top: 4px;
               }
-              
-              .coach-tenure {
-                display: block;
-                margin-left: 0;
-                margin-top: 2px;
-              }
-              
-              .rank-detail {
-                margin-top: 8px;
-              }
             }
             
             /* Small Mobile Screens */
-            @media (max-width: 480px) {
-              .card-header {
-                font-size: 0.95rem;
-                padding: 10px;
+@media (max-width: 480px) {
+                .card-header {
+                  font-size: 0.95rem;
+                  padding: 10px;
+                }
+                
+                .card-body {
+                  padding: 10px 8px;
+                }
+                
+                .team-spirit-items {
+                  gap: 12px;
+                }
+                
+                .spirit-item {
+                  margin-bottom: 8px;
+                }
+                
+                .spirit-item:hover {
+                  transform: translateY(-3px) scale(1.03);
+                }
+                
+                .rank-detail {
+                  flex-direction: column;
+                  gap: 5px;
+                  align-items: flex-start;
+                }
+                
+                .logo-block {
+                  width: 55px;
+                  height: 55px;
+                }
+                
+                .modern-finger {
+                  width: 50px;
+                  height: 65px;
+                }
+                
+                .finger-text {
+                  font-size: 20px;
+                }
+                
+                .modern-pennant {
+                  width: 100px;
+                  height: 45px;
+                }
+                
+                .modern-pennant span {
+                  font-size: 13px;
+                  padding-left: 10px;
+                }
+                
+                .colors-container {
+                  flex-wrap: wrap;
+                  gap: 5px;
+                }
+                
+                .color-text {
+                  font-size: 0.9rem;
+                  width: calc(100% - 30px);
+                }
+                
+                .alt-color {
+                  margin-left: 0;
+                  margin-top: 5px;
+                }
               }
               
-              .card-body {
-                padding: 10px;
+              /* Safe area insets for notched phones */
+              @supports (padding: max(0px)) {
+                .dashboard-card {
+                  padding-left: max(0px, env(safe-area-inset-left));
+                  padding-right: max(0px, env(safe-area-inset-right));
+                }
               }
-              
-              .team-spirit-items {
-                gap: 15px;
-              }
-              
-              .spirit-item {
-                margin-bottom: 10px;
-              }
-              
-              .spirit-item:hover {
-                transform: translateY(-3px) scale(1.03);
-              }
-              
-              .rank-detail {
-                flex-direction: column;
-                gap: 5px;
-                align-items: flex-start;
-              }
-              
-              .info-table td {
-                font-size: 0.9rem;
-              }
-              
-              /* Adjust touch targets for mobile */
-              .spirit-item {
-                min-width: 44px;
-                min-height: 44px;
-              }
-            }
-            
-            /* Safe area insets for notched phones */
-            @supports (padding: max(0px)) {
-              .dashboard-card {
-                padding-left: max(16px, env(safe-area-inset-left));
-                padding-right: max(16px, env(safe-area-inset-right));
-              }
-            }
           `}</style>
         </div>
       </div>
