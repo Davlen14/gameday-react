@@ -3,9 +3,9 @@ import graphqlTeamsService from "../services/graphqlTeamsService";
 
 // National Averages based on provided data
 const NATIONAL_AVERAGES = {
-  overall: 0.55,  // Overall national average
-  offense: 27.14, // Offense national average
-  defense: 26.61  // Defense national average
+  overall: 0.6,   // Overall national average
+  offense: 27.1,  // Offense national average
+  defense: 26.6   // Defense national average
 };
 
 /**
