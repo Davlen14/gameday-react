@@ -435,7 +435,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               <tr>
                 <td>Team Colors:</td>
                 <td>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div style={{
                       width: '20px',
                       height: '20px',
@@ -462,13 +462,20 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
           </table>
 
           <style jsx>{`
+            /* Base styles */
+            *, *::before, *::after {
+              box-sizing: border-box;
+            }
+            
             .dashboard-card {
               background-color: #fff;
               border-radius: 8px;
               box-shadow: 0 2px 10px rgba(0,0,0,0.05);
               margin-bottom: 20px;
-              overflow: hidden; /* Ensure header border radius works */
+              overflow: hidden;
+              width: 100%;
             }
+            
             .card-header {
               padding: 12px 16px;
               font-weight: 600;
@@ -476,27 +483,33 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               display: flex;
               align-items: center;
             }
+            
             .card-body {
               padding: 16px;
             }
+            
             .info-table {
               width: 100%;
               border-collapse: separate;
               border-spacing: 0;
               margin-top: 10px;
             }
+            
             .info-table tr:hover {
               background-color: ${teamColor ? teamColor + '0D' : '#f0f0f0'};
             }
+            
             .info-table td {
               padding: 10px 12px;
               border-bottom: 1px solid #f0f0f0;
               vertical-align: middle;
               font-size: 0.95rem;
             }
+            
             .info-table tr:last-child td {
               border-bottom: none;
             }
+            
             .info-table td:first-child {
               width: 150px;
               color: #555;
@@ -504,10 +517,12 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               vertical-align: top;
               padding-top: 15px;
             }
+            
             strong {
               font-weight: 600;
               color: #333;
             }
+            
             .team-spirit-items {
               display: flex;
               justify-content: flex-start;
@@ -518,22 +533,29 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               min-height: 80px;
               flex-wrap: wrap;
             }
+            
             .spirit-item {
               position: relative;
               cursor: pointer;
               transition: transform 0.3s ease-out, filter 0.3s ease-out;
               filter: drop-shadow(3px 5px 5px rgba(0,0,0,0.2));
               animation: subtle-float 4s ease-in-out infinite alternate;
+              touch-action: manipulation;
+              -webkit-tap-highlight-color: transparent;
+              margin: 5px 0;
             }
+            
             .spirit-item:hover {
               transform: translateY(-6px) scale(1.05);
               filter: drop-shadow(4px 7px 8px rgba(0,0,0,0.3));
               animation-play-state: paused;
             }
+            
             @keyframes subtle-float {
               from { transform: translateY(0px); }
               to { transform: translateY(-5px); }
             }
+            
             .logo-block {
               width: 65px;
               height: 65px;
@@ -541,6 +563,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               justify-content: center;
               align-items: center;
             }
+            
             .logo-container {
               width: 100%;
               height: 100%;
@@ -554,11 +577,13 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               overflow: hidden;
               border: 1px solid rgba(0,0,0,0.05);
             }
+            
             .team-logo-stick {
               max-width: 90%;
               max-height: 90%;
               object-fit: contain;
             }
+            
             .modern-finger {
               width: 60px;
               height: 75px;
@@ -566,6 +591,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               justify-content: center;
               align-items: center;
             }
+            
             .finger-container {
               width: 100%;
               height: 100%;
@@ -578,6 +604,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               border: 1px solid rgba(0,0,0,0.1);
               overflow: hidden;
             }
+            
             .finger-text {
               font-weight: 700;
               font-size: 24px;
@@ -586,6 +613,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
             }
+            
             .modern-pennant {
               width: 130px;
               height: 60px;
@@ -593,6 +621,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               justify-content: center;
               align-items: center;
             }
+            
             .pennant-container {
               width: 100%;
               height: 100%;
@@ -605,6 +634,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               border: 1px solid rgba(0,0,0,0.05);
               overflow: hidden;
             }
+            
             .pennant-container::before {
               content: '';
               position: absolute;
@@ -616,6 +646,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               border-radius: 3px;
               box-shadow: inset 1px 0px 2px rgba(0,0,0,0.1);
             }
+            
             .modern-pennant span {
               font-size: 16px;
               font-weight: 600;
@@ -629,11 +660,13 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
             }
+            
             .flex-align-center {
               display: flex;
               align-items: center;
               gap: 6px;
             }
+            
             .coach-tenure {
               font-size: 0.8rem;
               opacity: 0.8;
@@ -641,6 +674,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: normal;
               color: #666;
             }
+            
             .coach-record {
               margin-top: 5px;
               display: flex;
@@ -648,6 +682,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               gap: 4px;
               font-size: 0.9rem;
             }
+            
             .record-detail {
               font-size: 0.85rem;
               opacity: 0.8;
@@ -656,9 +691,11 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               margin-left: 8px;
               color: #666;
             }
+            
             .record-display {
               font-weight: 600;
             }
+            
             .rank-detail {
               display: flex;
               flex-wrap: wrap;
@@ -667,6 +704,7 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               color: #555;
               margin-top: 4px;
             }
+            
             .preseason-rank, .postseason-rank {
               border-radius: 3px;
               padding: 2px 6px;
@@ -674,6 +712,150 @@ const TeamOverview = ({ team, teamColor, year = 2024 }) => {
               font-weight: 500;
               color: #333;
               white-space: nowrap;
+            }
+            
+            /* Mobile Responsive Styles */
+            @media (max-width: 768px) {
+              .card-header {
+                font-size: 1rem;
+                padding: 12px;
+              }
+              
+              .card-body {
+                padding: 12px;
+              }
+              
+              .info-table {
+                display: block;
+                width: 100%;
+              }
+              
+              .info-table tbody {
+                display: block;
+                width: 100%;
+              }
+              
+              .info-table tr {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                padding: 10px 0;
+                border-bottom: 1px solid #f0f0f0;
+              }
+              
+              .info-table tr:last-child {
+                border-bottom: none;
+              }
+              
+              .info-table td {
+                display: block;
+                width: 100%;
+                padding: 8px 0;
+                border-bottom: none;
+              }
+              
+              .info-table td:first-child {
+                width: 100%;
+                padding-bottom: 0;
+                color: #333;
+                font-weight: 600;
+                font-size: 0.9rem;
+              }
+              
+              .team-spirit-items {
+                justify-content: center;
+                padding: 10px 0;
+                gap: 25px;
+              }
+              
+              .modern-pennant {
+                width: 110px;
+                height: 50px;
+              }
+              
+              .modern-pennant span {
+                font-size: 14px;
+                padding-left: 12px;
+                padding-right: 20px;
+              }
+              
+              .modern-finger {
+                width: 50px;
+                height: 65px;
+              }
+              
+              .finger-text {
+                font-size: 20px;
+              }
+              
+              .logo-block {
+                width: 55px;
+                height: 55px;
+              }
+              
+              .record-detail {
+                display: block;
+                margin-left: 0;
+                margin-top: 4px;
+              }
+              
+              .coach-tenure {
+                display: block;
+                margin-left: 0;
+                margin-top: 2px;
+              }
+              
+              .rank-detail {
+                margin-top: 8px;
+              }
+            }
+            
+            /* Small Mobile Screens */
+            @media (max-width: 480px) {
+              .card-header {
+                font-size: 0.95rem;
+                padding: 10px;
+              }
+              
+              .card-body {
+                padding: 10px;
+              }
+              
+              .team-spirit-items {
+                gap: 15px;
+              }
+              
+              .spirit-item {
+                margin-bottom: 10px;
+              }
+              
+              .spirit-item:hover {
+                transform: translateY(-3px) scale(1.03);
+              }
+              
+              .rank-detail {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+              }
+              
+              .info-table td {
+                font-size: 0.9rem;
+              }
+              
+              /* Adjust touch targets for mobile */
+              .spirit-item {
+                min-width: 44px;
+                min-height: 44px;
+              }
+            }
+            
+            /* Safe area insets for notched phones */
+            @supports (padding: max(0px)) {
+              .dashboard-card {
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+              }
             }
           `}</style>
         </div>
