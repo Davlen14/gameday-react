@@ -3,9 +3,9 @@ import graphqlTeamsService from "../services/graphqlTeamsService";
 
 // National Averages based on provided data
 const NATIONAL_AVERAGES = {
-  overall: 0.6,   // Overall national average
-  offense: 27.1,  // Offense national average
-  defense: 26.6   // Defense national average
+  overall: 0.55,  // Overall national average
+  offense: 27.14, // Offense national average
+  defense: 26.61  // Defense national average
 };
 
 /**
@@ -171,24 +171,23 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // Calculate normalized value (0-1 range)
     const valueRange = max - min;
-    const normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
+    // FIX: For offense/overall, normalizedValue should be (value - min) / valueRange
+    // For defense (inverted), normalizedValue should be (max - value) / valueRange
+    let normalizedValue;
+    if (isInverted) {
+      normalizedValue = Math.max(0, Math.min(1, (max - value) / valueRange));
+    } else {
+      normalizedValue = Math.max(0, Math.min(1, (value - min) / valueRange));
+    }
     
     // Convert to angle - 0 degrees is at LEFT side of gauge, 180 degrees is at RIGHT side
-    let needleAngle;
-    if (isInverted) {
-      // For defense (lower is better): higher normalized value = lower angle
-      needleAngle = (1 - normalizedValue) * 180;
-    } else {
-      // For offense/overall (higher is better): higher normalized value = higher angle
-      needleAngle = normalizedValue * 180;
-    }
+    // For all metrics, higher normalized value = higher angle (left to right)
+    const needleAngle = normalizedValue * 180;
     
     // Function to calculate the value at a specific angle
     const getValueFromAngle = (angle) => {
       // Convert angle (0-180°) to normalized position (0-1)
       const normalizedPos = angle / 180;
-      
-      // Convert normalized position to value based on gauge type
       if (isInverted) {
         // For defense (inverted scale)
         return max - (normalizedPos * valueRange);
