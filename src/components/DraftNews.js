@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserGraduate, FaSearch, FaFilter, FaSpinner, FaInfoCircle, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaTrophy, FaRulerVertical, FaWeightHanging, FaUniversity, FaListOl } from 'react-icons/fa';
+import { FaUserGraduate, FaSearch, FaFilter, FaSpinner, FaInfoCircle, FaChevronDown, FaChevronUp, FaMapMarkerAlt, FaTrophy, FaRulerVertical, FaWeightHanging, FaUniversity, FaListOl, FaLongArrowAltRight } from 'react-icons/fa';
 import teamsService from '../services/teamsService';
 
 const DraftNews = () => {
@@ -667,91 +667,97 @@ const DraftNews = () => {
     return matchesPosition && matchesRound && matchesSearch;
   });
 
-  // Get draft grade color using custom color scheme
+  // Get draft grade color using updated color scheme
   const getDraftGradeColor = (grade) => {
-    if (!grade) return "#4b4b6a"; // Secondary text color
-    if (grade >= 90) return "#d4001c"; // Primary accent
-    if (grade >= 85) return "#ff3b5f"; // Secondary accent
-    if (grade >= 80) return "#ff7a92"; // Lighter accent
-    if (grade >= 75) return "#4b4b6a"; // Secondary text
-    return "#1a1a2e"; // Primary text
+    if (!grade) return "#4b4b6a"; 
+    if (grade >= 90) return "#22c55e"; // Green for 90+
+    if (grade >= 70) return "#f59e0b"; // Yellow for 70-89
+    return "#ef4444"; // Red for 69 and below
   };
 
   // Get pick color class based on overall pick number
   const getPickNumberColorClass = (overall) => {
-    if (overall <= 5) return "pick-number-top5";
-    if (overall <= 10) return "pick-number-top10";
-    if (overall <= 20) return "pick-number-top20";
-    if (overall <= 32) return "pick-number-first";
-    return "pick-number-later";
+    if (overall <= 5) return "dn-pick-number-top5";
+    if (overall <= 10) return "dn-pick-number-top10";
+    if (overall <= 20) return "dn-pick-number-top20";
+    if (overall <= 32) return "dn-pick-number-first";
+    return "dn-pick-number-later";
+  };
+
+  // Get grade text based on grade value
+  const getGradeText = (grade) => {
+    if (!grade) return "N/A";
+    if (grade >= 90) return "Excellent";
+    if (grade >= 80) return "Great";
+    if (grade >= 70) return "Good";
+    if (grade >= 60) return "Average";
+    return "Below Average";
   };
 
   return (
-    <div className="draft-news-container">
+    <div className="dn-draft-news-container">
       {/* CSS Styles */}
       <style>
         {`
-          .draft-news-container {
-            max-width: 1200px;
+          .dn-draft-news-container {
+            width: 98%;
             margin: 2rem auto;
             padding: 0 1rem;
             font-family: 'Inter', 'Roboto', sans-serif;
-            color: var(--text-primary);
-            background-color: var(--bg-primary);
+            color: #1a1a2e;
+            background-color: #f8fafc;
           }
           
-          :root {
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --text-primary: #1a1a2e;
-            --text-secondary: #4b4b6a;
-            --accent-primary: #d4001c;
-            --accent-secondary: #ff3b5f;
-          }
-          
-          .draft-news-header {
+          .dn-draft-news-header {
             text-align: center;
             margin-bottom: 2.5rem;
             position: relative;
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-            padding: 2.5rem 1rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            color: white;
+            padding: 2rem 0;
           }
           
-          .draft-news-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
+          .dn-draft-news-title {
+            font-size: 3rem;
             font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            background: linear-gradient(135deg, #d4001c 0%, #ff3b5f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(212, 0, 28, 0.1);
+            margin-bottom: 1rem;
           }
           
-          .draft-news-header p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
+          .dn-draft-news-subtitle {
+            color: #d4001c;
+            font-size: 1.2rem;
             max-width: 700px;
             margin: 0 auto;
             line-height: 1.5;
           }
           
-          .draft-controls {
+          .dn-draft-controls {
             display: grid;
             grid-template-columns: 1fr auto auto;
             gap: 1rem;
             margin-bottom: 2rem;
-            background-color: var(--bg-secondary);
+            background-color: white;
             padding: 1.25rem;
             border-radius: 0.75rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
           }
           
-          .search-input {
+          .dn-draft-controls.sticky {
+            padding: 0.75rem 1.25rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+          }
+          
+          .dn-search-input {
             padding: 0.75rem 1rem;
             border: 2px solid rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
@@ -761,234 +767,362 @@ const DraftNews = () => {
             background-color: white;
             display: flex;
             align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
           }
           
-          .search-input input {
+          .dn-search-input:focus-within {
+            border-color: #d4001c;
+            box-shadow: 0 0 0 3px rgba(212, 0, 28, 0.1);
+          }
+          
+          .dn-search-input input {
             border: none;
             background: transparent;
             flex: 1;
             font-size: 1rem;
             margin-left: 0.5rem;
-            color: var(--text-primary);
+            color: #1a1a2e;
           }
           
-          .search-input input:focus {
+          .dn-search-input input:focus {
             outline: none;
           }
           
-          .filter-select {
+          .dn-filter-select {
             padding: 0.75rem 1rem;
             border: 2px solid rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
             font-size: 1rem;
             background-color: white;
-            color: var(--text-primary);
+            color: #1a1a2e;
             cursor: pointer;
             min-width: 120px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
           }
           
-          .filter-select select {
+          .dn-filter-select:focus-within {
+            border-color: #d4001c;
+            box-shadow: 0 0 0 3px rgba(212, 0, 28, 0.1);
+          }
+          
+          .dn-filter-select select {
             border: none;
             background: transparent;
             font-size: 1rem;
-            color: var(--text-primary);
+            color: #1a1a2e;
             cursor: pointer;
             appearance: none;
             width: 100%;
           }
           
-          .filter-select select:focus {
+          .dn-filter-select select:focus {
             outline: none;
           }
           
-          .draft-picks-list {
+          .dn-draft-picks-list {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 1.25rem;
             margin-bottom: 2rem;
           }
           
-          .draft-pick-card {
-            background-color: var(--bg-secondary);
+          .dn-draft-pick-card {
+            background-color: white;
             border-radius: 0.75rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
           }
           
-          .draft-pick-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+          .dn-draft-pick-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-left-color: #d4001c;
           }
           
-          .draft-pick-header {
+          .dn-draft-pick-header {
             display: grid;
             grid-template-columns: auto 1fr auto;
-            gap: 1rem;
+            gap: 1.5rem;
             align-items: center;
-            padding: 1.25rem;
+            padding: 1.5rem;
             cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
           }
           
-          .pick-number {
-            width: 2.5rem;
-            height: 2.5rem;
+          .dn-pick-number {
+            width: 3.5rem;
+            height: 3.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
-            border-radius: 50%;
+            font-size: 1.5rem;
             color: white;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
           }
           
-          .pick-number-top5 {
+          .dn-pick-number::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.9;
+            z-index: 1;
+          }
+          
+          .dn-pick-number span {
+            position: relative;
+            z-index: 2;
+          }
+          
+          .dn-pick-number-top5::before {
             background: linear-gradient(135deg, #d4001c 0%, #ff3b5f 100%);
           }
           
-          .pick-number-top10 {
+          .dn-pick-number-top10::before {
             background: linear-gradient(135deg, #ff3b5f 0%, #ff7a92 100%);
           }
           
-          .pick-number-top20 {
+          .dn-pick-number-top20::before {
             background: linear-gradient(135deg, #ff7a92 0%, #ffb3c0 100%);
           }
           
-          .pick-number-first {
+          .dn-pick-number-first::before {
             background: linear-gradient(135deg, #4b4b6a 0%, #7878a3 100%);
           }
           
-          .pick-number-later {
+          .dn-pick-number-later::before {
             background: linear-gradient(135deg, #7878a3 0%, #a1a1c4 100%);
           }
           
-          .player-info {
+          .dn-player-info {
             display: flex;
             flex-direction: column;
+            gap: 0.5rem;
           }
           
-          .player-name {
+          .dn-player-name {
             font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 0.25rem;
-            color: var(--text-primary);
-          }
-          
-          .player-details {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-          }
-          
-          .player-detail {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-          }
-          
-          .team-logos {
+            font-size: 1.4rem;
+            color: #1a1a2e;
             display: flex;
             align-items: center;
             gap: 0.5rem;
           }
           
-          .team-logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
+          .dn-player-position {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            background-color: #f1f5f9;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b4b6a;
+          }
+          
+          .dn-player-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+            color: #4b4b6a;
+          }
+          
+          .dn-player-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+          }
+          
+          .dn-team-logos {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+          }
+          
+          .dn-team-logo-container {
+            position: relative;
+          }
+          
+          .dn-team-logo {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 0.5rem;
             object-fit: contain;
             background-color: white;
-            padding: 0.25rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 0.35rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
           }
           
-          .expand-icon {
-            color: var(--text-secondary);
+          .dn-draft-arrow {
+            position: absolute;
+            top: 50%;
+            left: calc(100% - 0.5rem);
+            transform: translateY(-50%);
+            color: #d4001c;
+            font-size: 1.5rem;
+            z-index: 10;
+          }
+          
+          .dn-expand-icon {
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4b4b6a;
             font-size: 1.25rem;
+            background-color: #f1f5f9;
+            border-radius: 50%;
+            transition: all 0.2s ease;
           }
           
-          .player-expanded-details {
-            background-color: #f2f4f8;
-            padding: 1.5rem;
+          .dn-expand-icon:hover {
+            background-color: #e2e8f0;
+            color: #1a1a2e;
+          }
+          
+          .dn-player-expanded-details {
+            background-color: #f8fafc;
+            padding: 1.75rem 1.5rem;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.75rem;
+            animation: slideDown 0.3s ease forwards;
           }
           
-          .player-stat-group {
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .dn-player-stat-group {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
+            transition: all 0.3s ease;
           }
           
-          .player-stat-group h4 {
+          .dn-player-stat-group:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+          }
+          
+          .dn-player-stat-group h4 {
             font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
+            color: #4b4b6a;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
           }
           
-          .player-stat {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
-          }
-          
-          .player-stat svg {
-            color: var(--accent-secondary);
-          }
-          
-          .draft-grades {
+          .dn-player-stat {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-top: 0.75rem;
+            font-size: 1rem;
           }
           
-          .draft-grade {
+          .dn-player-stat svg {
+            color: #d4001c;
+            width: 1.25rem;
+            height: 1.25rem;
+          }
+          
+          .dn-draft-grade-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            margin-top: 1rem;
           }
           
-          .grade-label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-          }
-          
-          .grade-value {
-            font-weight: 700;
-            font-size: 1.1rem;
-          }
-          
-          .loading-error-container {
+          .dn-draft-grade {
+            width: 5.5rem;
+            height: 5.5rem;
+            border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 3rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: white;
+            overflow: hidden;
+          }
+          
+          .dn-draft-grade::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.15;
+            z-index: 1;
+          }
+          
+          .dn-draft-grade-value {
+            font-weight: 800;
+            font-size: 1.75rem;
+            z-index: 2;
+          }
+          
+          .dn-draft-grade-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+          }
+          
+          .dn-loading-error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
             text-align: center;
-            background-color: var(--bg-secondary);
+            background-color: white;
             border-radius: 0.75rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
           }
           
-          .loading-spinner {
-            font-size: 2rem;
-            color: var(--accent-primary);
-            animation: spin 1s linear infinite;
+          .dn-loading-spinner {
+            font-size: 2.5rem;
+            color: #d4001c;
+            animation: spin 1.2s linear infinite;
             margin-bottom: 1.5rem;
           }
           
@@ -1001,45 +1135,62 @@ const DraftNews = () => {
             }
           }
           
-          .error-icon {
-            font-size: 2.5rem;
-            color: var(--accent-primary);
+          .dn-error-icon {
+            font-size: 3rem;
+            color: #d4001c;
             margin-bottom: 1.5rem;
           }
           
           @media (max-width: 768px) {
-            .draft-controls {
+            .dn-draft-controls {
               grid-template-columns: 1fr;
             }
             
-            .draft-pick-header {
-              grid-template-columns: auto 1fr auto;
+            .dn-draft-pick-header {
+              gap: 1rem;
             }
             
-            .player-expanded-details {
+            .dn-player-expanded-details {
               grid-template-columns: 1fr;
+            }
+            
+            .dn-pick-number {
+              width: 3rem;
+              height: 3rem;
+              font-size: 1.25rem;
+            }
+            
+            .dn-team-logo {
+              width: 3rem;
+              height: 3rem;
+            }
+            
+            .dn-draft-news-title {
+              font-size: 2.25rem;
             }
           }
         `}
       </style>
 
-      <div className="draft-news-header">
-        <h1>
-          <FaUserGraduate /> {year} NFL Mock Draft
+      <div className="dn-draft-news-header">
+        <h1 className="dn-draft-news-title">
+          {year} Mock Draft by GAMEDAY+
         </h1>
-        <p>Track the latest mock draft picks, player profiles, and predictions for the upcoming NFL Draft.</p>
+        <p className="dn-draft-news-subtitle">
+          Track the latest mock draft picks, player profiles, and predictions for the upcoming NFL Draft.
+        </p>
       </div>
 
       {isLoading ? (
-        <div className="loading-error-container">
-          <div className="loading-spinner">
+        <div className="dn-loading-error-container">
+          <div className="dn-loading-spinner">
             <FaSpinner />
           </div>
           <h3>Loading draft data...</h3>
         </div>
       ) : error ? (
-        <div className="loading-error-container">
-          <div className="error-icon">
+        <div className="dn-loading-error-container">
+          <div className="dn-error-icon">
             <FaInfoCircle />
           </div>
           <h3>Error loading draft data</h3>
@@ -1047,8 +1198,8 @@ const DraftNews = () => {
         </div>
       ) : (
         <>
-          <div className="draft-controls">
-            <div className="search-input">
+          <div className="dn-draft-controls">
+            <div className="dn-search-input">
               <FaSearch color="#4b4b6a" />
               <input
                 type="text"
@@ -1058,7 +1209,7 @@ const DraftNews = () => {
               />
             </div>
             
-            <div className="filter-select">
+            <div className="dn-filter-select">
               <FaFilter color="#4b4b6a" />
               <select
                 value={positionFilter}
@@ -1072,7 +1223,7 @@ const DraftNews = () => {
               </select>
             </div>
             
-            <div className="filter-select">
+            <div className="dn-filter-select">
               <FaListOl color="#4b4b6a" />
               <select
                 value={roundFilter}
@@ -1087,96 +1238,144 @@ const DraftNews = () => {
             </div>
           </div>
 
-          <div className="draft-picks-list">
+          <div className="dn-draft-picks-list">
             {filteredPicks.length === 0 ? (
-              <div className="loading-error-container">
+              <div className="dn-loading-error-container">
                 <h3>No draft picks match your search criteria</h3>
                 <p>Try adjusting your filters or search term</p>
               </div>
             ) : (
               filteredPicks.map((pick) => (
-                <div key={pick.overall} className="draft-pick-card">
+                <div key={pick.overall} className="dn-draft-pick-card">
                   <div 
-                    className="draft-pick-header"
+                    className="dn-draft-pick-header"
                     onClick={() => togglePlayerDetails(pick.overall)}
                   >
-                    <div className={`pick-number ${getPickNumberColorClass(pick.overall)}`}>
-                      {pick.overall}
+                    <div className={`dn-pick-number ${getPickNumberColorClass(pick.overall)}`}>
+                      <span>{pick.overall}</span>
                     </div>
                     
-                    <div className="player-info">
-                      <div className="player-name">{pick.name}</div>
-                      <div className="player-details">
-                        <div className="player-detail">
-                          <FaUserGraduate size={14} />
-                          {pick.position}
-                        </div>
-                        <div className="player-detail">
-                          <FaUniversity size={14} />
+                    <div className="dn-player-info">
+                      <div className="dn-player-name">
+                        {pick.name}
+                        <span className="dn-player-position">{pick.position}</span>
+                      </div>
+                      <div className="dn-player-details">
+                        <div className="dn-player-detail">
+                          <FaUniversity size={16} />
                           {pick.collegeTeam}
+                        </div>
+                        <div className="dn-player-detail">
+                          <FaMapMarkerAlt size={16} />
+                          {pick.hometownInfo.city}, {pick.hometownInfo.state}
                         </div>
                       </div>
                     </div>
                     
-                    <div className="team-logos">
+                    <div className="dn-team-logos">
+                      <div className="dn-team-logo-container">
+                        <img 
+                          src={getCollegeLogo(pick.collegeTeam)} 
+                          alt={`${pick.collegeTeam} logo`} 
+                          className="dn-team-logo"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/photos/default_team.png";
+                          }} 
+                        />
+                        <div className="dn-draft-arrow">
+                          <FaLongArrowAltRight />
+                        </div>
+                      </div>
                       <img 
-                        src={getCollegeLogo(pick.collegeTeam)} 
-                        alt={`${pick.collegeTeam} logo`} 
-                        className="team-logo" 
-                      />
-                      <img 
-                        src={getNflTeamLogo(pick.nflTeam.split(' ').pop())} 
+                        src={getNflTeamLogo(pick.nflTeam)} 
                         alt={`${pick.nflTeam} logo`} 
-                        className="team-logo" 
+                        className="dn-team-logo"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/photos/nfl/default.png";
+                        }}
                       />
-                      <div className="expand-icon">
+                      <div className="dn-expand-icon">
                         {selectedPlayer === pick.overall ? <FaChevronUp /> : <FaChevronDown />}
                       </div>
                     </div>
                   </div>
                   
                   {selectedPlayer === pick.overall && (
-                    <div className="player-expanded-details">
-                      <div className="player-stat-group">
+                    <div className="dn-player-expanded-details">
+                      <div className="dn-player-stat-group">
                         <h4>Draft Information</h4>
-                        <div className="player-stat">
-                          <FaListOl size={16} />
+                        <div className="dn-player-stat">
+                          <FaListOl />
                           <span>Round {pick.round}, Pick {pick.pick} (#{pick.overall} Overall)</span>
                         </div>
-                        <div className="player-stat">
-                          <FaTrophy size={16} />
-                          <span>Pre-Draft Ranking: #{pick.preDraftRanking} Overall, #{pick.preDraftPositionRanking} {pick.position}</span>
+                        <div className="dn-player-stat">
+                          <FaTrophy />
+                          <span>Pre-Draft Ranking: #{pick.preDraftRanking} Overall</span>
                         </div>
-                        <div className="draft-grades">
-                          <div className="draft-grade">
-                            <div className="grade-label">Grade</div>
-                            <div className="grade-value" style={{ color: getDraftGradeColor(pick.preDraftGrade) }}>
+                        <div className="dn-player-stat">
+                          <FaUserGraduate />
+                          <span>#{pick.preDraftPositionRanking} {pick.position}</span>
+                        </div>
+                        <div className="dn-draft-grade-container">
+                          <div 
+                            className="dn-draft-grade" 
+                            style={{ 
+                              color: getDraftGradeColor(pick.preDraftGrade),
+                              borderColor: getDraftGradeColor(pick.preDraftGrade)
+                            }}
+                          >
+                            <div 
+                              className="dn-draft-grade-value" 
+                              style={{ color: getDraftGradeColor(pick.preDraftGrade) }}
+                            >
                               {pick.preDraftGrade}
                             </div>
+                            <div 
+                              className="dn-draft-grade-text"
+                              style={{ color: getDraftGradeColor(pick.preDraftGrade) }}
+                            >
+                              {getGradeText(pick.preDraftGrade)}
+                            </div>
+                            <div 
+                              style={{ 
+                                background: getDraftGradeColor(pick.preDraftGrade),
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: '0.25rem'
+                              }}
+                            />
                           </div>
                         </div>
                       </div>
                       
-                      <div className="player-stat-group">
+                      <div className="dn-player-stat-group">
                         <h4>Physical Profile</h4>
-                        <div className="player-stat">
-                          <FaRulerVertical size={16} />
+                        <div className="dn-player-stat">
+                          <FaRulerVertical />
                           <span>Height: {formatHeight(pick.height)}</span>
                         </div>
-                        <div className="player-stat">
-                          <FaWeightHanging size={16} />
+                        <div className="dn-player-stat">
+                          <FaWeightHanging />
                           <span>Weight: {pick.weight} lbs</span>
                         </div>
                       </div>
                       
-                      <div className="player-stat-group">
+                      <div className="dn-player-stat-group">
                         <h4>Background</h4>
-                        <div className="player-stat">
-                          <FaUniversity size={16} />
-                          <span>College: {pick.collegeTeam} ({pick.collegeConference})</span>
+                        <div className="dn-player-stat">
+                          <FaUniversity />
+                          <span>College: {pick.collegeTeam}</span>
                         </div>
-                        <div className="player-stat">
-                          <FaMapMarkerAlt size={16} />
+                        <div className="dn-player-stat">
+                          <FaListOl />
+                          <span>Conference: {pick.collegeConference}</span>
+                        </div>
+                        <div className="dn-player-stat">
+                          <FaMapMarkerAlt />
                           <span>Hometown: {pick.hometownInfo.city}, {pick.hometownInfo.state}</span>
                         </div>
                       </div>
