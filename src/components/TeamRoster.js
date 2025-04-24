@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaExclamationTriangle, FaMapMarkerAlt, FaIdCard, FaHashtag, FaRulerVertical, FaWeight, FaGraduationCap, FaRunning, FaArrowRight, FaSearch, FaFilter, FaCalendarAlt, FaStar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import teamsService from "../services/teamsService";
+import { getAllRecruits, getTeams } from "../services/teamsService"; // Import specific functions
 import TeamPlayerModal from "./TeamPlayerModal";
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
-  <div className="loading-spinner">
+  <div className="tr-loading-spinner">
     <svg width="50" height="50" viewBox="0 0 50 50">
       <circle
         cx="25"
@@ -285,68 +286,62 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
     }
   };
   
-  // Function to fetch incoming players (transfers and recruits)
+  // FIXED: Function to fetch incoming players (transfers and recruits)
   const fetchIncomingPlayers = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Get team roster data - we assume teamsService has a method for incoming players
-      // This might combine transfers and recruits
-      const data = await teamsService.getIncomingPlayers(teamName, year);
+      // Fetch both transfers and recruits in parallel
+      const [transferData, recruitData, teamsData] = await Promise.all([
+        teamsService.getPlayerPortal(year), // Get transfers from portal
+        getAllRecruits(year),               // Get recruits
+        getTeams()                           // Get teams for logos and info
+      ]);
       
-      console.log(`Fetched ${data?.length || 0} incoming players for ${teamName}`);
-      
-      // Process the data to ensure all fields have values
-      const processedData = data.map(player => {
-        // Determine position (either from data or generate a default)
-        const position = player.position || getDefaultPosition(player.id);
-        
-        // Generate default weight based on position
-        const defaultWeight = getDefaultWeight(position);
-        
-        // Create the processed player object
-        const processedPlayer = {
+      // Process transfers - filter to only show ones committed to this team
+      const relevantTransfers = transferData
+        .filter(player => player.destination?.toLowerCase() === teamName.toLowerCase())
+        .map(player => ({
           ...player,
-          // Create a fullName if it doesn't exist
-          fullName: player.fullName || 
-                    `${player.firstName || ''} ${player.lastName || ''}`.trim() || 
-                    `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
-          
-          position: position,
-          
-          // Format hometown with default
+          fullName: `${player.firstName || ''} ${player.lastName || ''}`.trim(),
+          position: player.position || getDefaultPosition(player.id),
+          weightDisplay: player.weight ? `${player.weight} lbs` : `${getDefaultWeight(player.position)} lbs`,
+          heightDisplay: formatHeight(player.height),
+          yearDisplay: getYearText(player.year),
+          stars: player.stars || 3,
+          originSchool: player.origin,
+          playerType: "transfer",
           formattedHometown: player.homeCity && player.homeState 
             ? `${player.homeCity}, ${player.homeState}` 
             : player.homeCity || player.homeState || "Columbus, OH",
-          
-          // Format weight with position-appropriate default
-          weightDisplay: player.weight ? `${player.weight} lbs` : `${defaultWeight} lbs`,
-          
-          // Format height with default
-          heightDisplay: formatHeight(player.height),
-          
-          // Format year/class with default
-          yearDisplay: getYearText(player.year),
-          
-          // Add stars rating if available, or default
-          stars: player.stars || 3,
-          
-          // Add origin school if it's a transfer
-          originSchool: player.origin || player.previousSchool,
-          
-          // Add transfer or recruit type
-          playerType: player.origin ? "transfer" : "recruit"
-        };
-        
-        return processedPlayer;
-      });
+          commitDate: player.transferDate
+        }));
       
-      // Sort incoming players by star rating (highest first)
-      const sortedIncoming = [...processedData].sort((a, b) => {
+      // Process recruits - filter to only show ones committed to this team
+      const relevantRecruits = recruitData
+        .filter(player => player.committedTo?.toLowerCase() === teamName.toLowerCase())
+        .map(player => ({
+          ...player,
+          fullName: player.name || `Recruit ${player.id || Math.floor(Math.random() * 10000)}`,
+          position: player.position || getDefaultPosition(player.id),
+          weightDisplay: player.weight ? `${player.weight} lbs` : `${getDefaultWeight(player.position)} lbs`,
+          heightDisplay: formatHeight(player.height),
+          yearDisplay: "Freshman", // Recruits will be incoming freshmen
+          stars: player.stars || 3,
+          playerType: "recruit",
+          formattedHometown: player.hometown || "Unknown",
+          commitDate: player.commitmentDate
+        }));
+      
+      // Combine both types of incoming players
+      const combinedIncoming = [...relevantTransfers, ...relevantRecruits];
+      
+      // Sort by star rating (highest first)
+      const sortedIncoming = combinedIncoming.sort((a, b) => {
         return (b.stars || 0) - (a.stars || 0);
       });
       
-      console.log(`Processed ${sortedIncoming.length} incoming players for display`);
+      console.log(`Processed ${sortedIncoming.length} incoming players (${relevantTransfers.length} transfers, ${relevantRecruits.length} recruits)`);
       setIncomingPlayers(sortedIncoming);
     } catch (err) {
       console.error("Error fetching incoming players:", err.message);
@@ -398,7 +393,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
 
   // Star rendering
   const renderStars = (count) => (
-    <div className="star-rating">
+    <div className="tr-star-rating">
       {[...Array(5)].map((_, i) => (
         <motion.span
           key={i}
@@ -407,30 +402,30 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           animate="visible"
           transition={{ delay: i * 0.1, duration: 0.2 }}
         >
-          <FaStar className={i < count ? "star filled" : "star empty"} />
+          <FaStar className={i < count ? "tr-star tr-filled" : "tr-star tr-empty"} />
         </motion.span>
       ))}
     </div>
   );
 
   return (
-    <div className="dashboard-card full-width-card">
-      <div className="card-header" style={cardHeaderStyle}>
+    <div className="tr-dashboard-card tr-full-width-card">
+      <div className="tr-card-header" style={cardHeaderStyle}>
         <FaUser style={{ marginRight: "12px", color: teamColor }} />
         Team Roster
       </div>
-      <div className="card-body">
+      <div className="tr-card-body">
         {/* Tab Navigation */}
-        <div className="roster-tabs">
+        <div className="tr-roster-tabs">
           <button 
-            className={`tab-button ${activeTab === "current" ? "active" : ""}`}
+            className={`tr-tab-button ${activeTab === "current" ? "tr-active" : ""}`}
             onClick={() => setActiveTab("current")}
             style={{borderColor: activeTab === "current" ? teamColor : 'transparent'}}
           >
             Current Roster
           </button>
           <button 
-            className={`tab-button ${activeTab === "incoming" ? "active" : ""}`}
+            className={`tr-tab-button ${activeTab === "incoming" ? "tr-active" : ""}`}
             onClick={() => setActiveTab("incoming")}
             style={{borderColor: activeTab === "incoming" ? teamColor : 'transparent'}}
           >
@@ -439,42 +434,42 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         </div>
 
         {isLoading ? (
-          <div className="loading-indicator">
+          <div className="tr-loading-indicator">
             <LoadingSpinner color={teamColor} />
             <p>Loading {activeTab === "current" ? "roster" : "incoming players"}...</p>
           </div>
         ) : error ? (
-          <div className="error-message">
+          <div className="tr-error-message">
             <FaExclamationTriangle color="red" style={{ marginRight: "8px" }} />
             {error}
           </div>
         ) : (
           <>
-            <div className="roster-filters">
-              <div className="search-container">
-                <FaSearch className="search-icon" />
+            <div className="tr-roster-filters">
+              <div className="tr-search-container">
+                <FaSearch className="tr-search-icon" />
                 <input 
                   type="text" 
                   placeholder="Search players..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
+                  className="tr-search-input"
                 />
                 {searchTerm && (
                   <button 
-                    className="clear-search"
+                    className="tr-clear-search"
                     onClick={() => setSearchTerm("")}
                   >
                     ×
                   </button>
                 )}
               </div>
-              <div className="filter-group">
+              <div className="tr-filter-group">
                 <label>Position</label>
                 <select 
                   value={filterPosition} 
                   onChange={(e) => setFilterPosition(e.target.value)}
-                  className="filter-select"
+                  className="tr-filter-select"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map(pos => (
@@ -484,13 +479,13 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
               </div>
             </div>
             
-            <div className="players-count">
+            <div className="tr-players-count">
               <span>Showing {activeTab === "current" ? filteredCurrentPlayers.length : filteredIncomingPlayers.length} of {activeTab === "current" ? roster.length : incomingPlayers.length} players</span>
             </div>
             
             {activeTab === "current" ? (
               <motion.div 
-                className="player-cards-container"
+                className="tr-player-cards-container"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -499,54 +494,54 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   filteredCurrentPlayers.map((player, index) => (
                     <motion.div 
                       key={player.id || index} 
-                      className="player-card"
+                      className="tr-player-card"
                       variants={itemVariants}
                       onClick={() => handlePlayerClick(player)}
                     >
-                      <div className="player-card-header" style={{backgroundColor: teamColor}}>
-                        <div className="player-jersey-number">{player.jersey}</div>
-                        <div className="player-position-badge">{player.position}</div>
+                      <div className="tr-player-card-header" style={{backgroundColor: teamColor}}>
+                        <div className="tr-player-jersey-number">{player.jersey}</div>
+                        <div className="tr-player-position-badge">{player.position}</div>
                       </div>
-                      <div className="player-card-body">
-                        <h3 className="player-name">{player.fullName}</h3>
+                      <div className="tr-player-card-body">
+                        <h3 className="tr-player-name">{player.fullName}</h3>
                         
-                        <div className="player-info-grid">
-                          <div className="info-item">
-                            <FaRulerVertical className="info-icon" />
-                            <span className="info-label">Height</span>
-                            <span className="info-value">{player.heightDisplay}</span>
+                        <div className="tr-player-info-grid">
+                          <div className="tr-info-item">
+                            <FaRulerVertical className="tr-info-icon" />
+                            <span className="tr-info-label">Height</span>
+                            <span className="tr-info-value">{player.heightDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaWeight className="info-icon" />
-                            <span className="info-label">Weight</span>
-                            <span className="info-value">{player.weightDisplay}</span>
+                          <div className="tr-info-item">
+                            <FaWeight className="tr-info-icon" />
+                            <span className="tr-info-label">Weight</span>
+                            <span className="tr-info-value">{player.weightDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaGraduationCap className="info-icon" />
-                            <span className="info-label">Year</span>
-                            <span className="info-value">{player.yearDisplay}</span>
+                          <div className="tr-info-item">
+                            <FaGraduationCap className="tr-info-icon" />
+                            <span className="tr-info-label">Year</span>
+                            <span className="tr-info-value">{player.yearDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaMapMarkerAlt className="info-icon" />
-                            <span className="info-label">Hometown</span>
-                            <span className="info-value">{player.formattedHometown}</span>
+                          <div className="tr-info-item">
+                            <FaMapMarkerAlt className="tr-info-icon" />
+                            <span className="tr-info-label">Hometown</span>
+                            <span className="tr-info-value">{player.formattedHometown}</span>
                           </div>
                         </div>
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="no-players-message">
+                  <div className="tr-no-players-message">
                     No players found. Please try a different search or filter.
                   </div>
                 )}
               </motion.div>
             ) : (
               <motion.div 
-                className="player-cards-container"
+                className="tr-player-cards-container"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -555,27 +550,27 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   filteredIncomingPlayers.map((player, index) => (
                     <motion.div 
                       key={player.id || index} 
-                      className="transfer-card"
+                      className="tr-transfer-card"
                       variants={itemVariants}
                       onClick={() => handlePlayerClick(player)}
-                      layoutId={`${player.firstName}-${player.lastName}-${index}`}
+                      layoutId={`${player.firstName || player.name}-${player.lastName || ""}-${index}`}
                     >
-                      <div className="transfer-card-header">
-                        <div className="player-identity">
-                          <div className="player-avatar">
-                            <FaUser className="avatar-icon" />
+                      <div className="tr-transfer-card-header">
+                        <div className="tr-player-identity">
+                          <div className="tr-player-avatar">
+                            <FaUser className="tr-avatar-icon" />
                           </div>
                           <div>
                             <h3>{player.fullName}</h3>
-                            <div className="position-badge">
+                            <div className="tr-position-badge">
                               {player.position || "ATH"}
                             </div>
                           </div>
                         </div>
-                        <div className="player-rating">
+                        <div className="tr-player-rating">
                           {renderStars(player.stars)}
                           {player.rating && (
-                            <div className="rating-value">
+                            <div className="tr-rating-value">
                               {parseFloat(player.rating).toFixed(2)}
                             </div>
                           )}
@@ -583,76 +578,76 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                       </div>
                       
                       {player.playerType === "transfer" && player.originSchool && (
-                        <div className="transfer-journey">
-                          <div className="school origin">
+                        <div className="tr-transfer-journey">
+                          <div className="tr-school tr-origin">
                             <img 
                               src={`/team-logos/${player.originSchool.replace(/\s+/g, '-').toLowerCase()}.png`} 
                               alt={player.originSchool || "Origin"} 
-                              className="school-logo"
+                              className="tr-school-logo"
                               onError={(e) => {e.target.src = "/photos/football.avif"}}
                             />
-                            <span className="school-name">
+                            <span className="tr-school-name">
                               {player.originSchool || "Unknown"}
                             </span>
                           </div>
                           
-                          <div className="journey-arrow">
-                            <FaArrowRight className="arrow-icon" />
+                          <div className="tr-journey-arrow">
+                            <FaArrowRight className="tr-arrow-icon" />
                           </div>
                           
-                          <div className="school destination">
+                          <div className="tr-school tr-destination">
                             <img 
                               src={teamLogo || `/team-logos/${teamName.replace(/\s+/g, '-').toLowerCase()}.png`} 
                               alt={teamName} 
-                              className="school-logo"
+                              className="tr-school-logo"
                               onError={(e) => {e.target.src = "/photos/football.avif"}}
                             />
-                            <span className="school-name">
+                            <span className="tr-school-name">
                               {teamName}
                             </span>
                           </div>
                         </div>
                       )}
                       
-                      <div className="player-info-section">
-                        <div className="player-info-grid">
-                          <div className="info-item">
-                            <FaRulerVertical className="info-icon" />
-                            <span className="info-label">Height</span>
-                            <span className="info-value">{player.heightDisplay}</span>
+                      <div className="tr-player-info-section">
+                        <div className="tr-player-info-grid">
+                          <div className="tr-info-item">
+                            <FaRulerVertical className="tr-info-icon" />
+                            <span className="tr-info-label">Height</span>
+                            <span className="tr-info-value">{player.heightDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaWeight className="info-icon" />
-                            <span className="info-label">Weight</span>
-                            <span className="info-value">{player.weightDisplay}</span>
+                          <div className="tr-info-item">
+                            <FaWeight className="tr-info-icon" />
+                            <span className="tr-info-label">Weight</span>
+                            <span className="tr-info-value">{player.weightDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaGraduationCap className="info-icon" />
-                            <span className="info-label">Eligibility</span>
-                            <span className="info-value">{player.yearDisplay}</span>
+                          <div className="tr-info-item">
+                            <FaGraduationCap className="tr-info-icon" />
+                            <span className="tr-info-label">Eligibility</span>
+                            <span className="tr-info-value">{player.yearDisplay}</span>
                           </div>
                           
-                          <div className="info-item">
-                            <FaMapMarkerAlt className="info-icon" />
-                            <span className="info-label">Hometown</span>
-                            <span className="info-value">{player.formattedHometown}</span>
+                          <div className="tr-info-item">
+                            <FaMapMarkerAlt className="tr-info-icon" />
+                            <span className="tr-info-label">Hometown</span>
+                            <span className="tr-info-value">{player.formattedHometown}</span>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="transfer-meta">
-                        <div className="meta-item">
-                          <FaCalendarAlt className="meta-icon" />
+                      <div className="tr-transfer-meta">
+                        <div className="tr-meta-item">
+                          <FaCalendarAlt className="tr-meta-icon" />
                           <span>{player.commitDate ? new Date(player.commitDate).toLocaleDateString('en-US', { 
                             year: 'numeric', 
                             month: 'short', 
                             day: 'numeric' 
                           }) : "Uncommitted"}</span>
                         </div>
-                        <div className="meta-item">
-                          <span className={`player-type-badge ${player.playerType}`}>
+                        <div className="tr-meta-item">
+                          <span className={`tr-player-type-badge tr-${player.playerType}`}>
                             {player.playerType === "transfer" ? "Transfer" : "Recruit"}
                           </span>
                         </div>
@@ -660,7 +655,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="no-players-message">
+                  <div className="tr-no-players-message">
                     No incoming players found. Please try a different search or filter.
                   </div>
                 )}
@@ -673,22 +668,22 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
       {/* CSS styling */}
       <style>{`
         /* Dashboard Card */
-        .dashboard-card {
+        .tr-dashboard-card {
           background: white;
           border-radius: 20px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
           overflow: hidden;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
-          animation: fadeIn 0.6s ease-out;
+          animation: tr-fadeIn 0.6s ease-out;
           width: 100%;
           margin-bottom: 30px;
         }
         
-        .dashboard-card:hover {
+        .tr-dashboard-card:hover {
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
         
-        .card-header {
+        .tr-card-header {
           padding: 1.2rem 1.5rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.08);
           font-weight: 600;
@@ -698,7 +693,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           align-items: center;
         }
         
-        .card-header::before {
+        .tr-card-header::before {
           content: '';
           display: inline-block;
           width: 8px;
@@ -708,18 +703,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 4px;
         }
         
-        .card-body {
+        .tr-card-body {
           padding: 1.5rem;
         }
 
         /* Tab Navigation */
-        .roster-tabs {
+        .tr-roster-tabs {
           display: flex;
           border-bottom: 1px solid #e0e0e0;
           margin-bottom: 25px;
         }
         
-        .tab-button {
+        .tr-tab-button {
           padding: 12px 24px;
           background: transparent;
           border: none;
@@ -732,18 +727,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           margin-right: 10px;
         }
         
-        .tab-button.active {
+        .tr-tab-button.tr-active {
           color: ${teamColor};
           border-color: ${teamColor};
         }
         
-        .tab-button:hover:not(.active) {
+        .tr-tab-button:hover:not(.tr-active) {
           color: ${lightenColor(teamColor, 20)};
           border-color: ${lightenColor(teamColor, 70)};
         }
 
         /* Filters */
-        .roster-filters {
+        .tr-roster-filters {
           display: flex;
           gap: 15px;
           margin-bottom: 20px;
@@ -751,13 +746,13 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           align-items: flex-end;
         }
         
-        .search-container {
+        .tr-search-container {
           flex: 1;
           min-width: 200px;
           position: relative;
         }
         
-        .search-icon {
+        .tr-search-icon {
           position: absolute;
           left: 15px;
           top: 50%;
@@ -765,7 +760,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #757575;
         }
         
-        .search-input {
+        .tr-search-input {
           width: 100%;
           padding: 12px 40px;
           border-radius: 30px;
@@ -774,13 +769,13 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           transition: all 0.2s;
         }
         
-        .search-input:focus {
+        .tr-search-input:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
         
-        .clear-search {
+        .tr-clear-search {
           position: absolute;
           right: 15px;
           top: 50%;
@@ -792,19 +787,19 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           cursor: pointer;
         }
         
-        .filter-group {
+        .tr-filter-group {
           display: flex;
           flex-direction: column;
           min-width: 180px;
         }
         
-        .filter-group label {
+        .tr-filter-group label {
           font-size: 0.8rem;
           margin-bottom: 5px;
           color: #757575;
         }
         
-        .filter-select {
+        .tr-filter-select {
           padding: 10px 15px;
           border-radius: 8px;
           border: 1px solid #e0e0e0;
@@ -813,20 +808,20 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           cursor: pointer;
         }
         
-        .filter-select:focus {
+        .tr-filter-select:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
         
-        .players-count {
+        .tr-players-count {
           margin-bottom: 15px;
           font-size: 14px;
           color: #666;
         }
 
         /* Player Cards Container */
-        .player-cards-container {
+        .tr-player-cards-container {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
           gap: 20px;
@@ -834,7 +829,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         /* Regular Player Card */
-        .player-card {
+        .tr-player-card {
           background: white;
           border-radius: 12px;
           overflow: hidden;
@@ -846,12 +841,12 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           height: 100%;
         }
         
-        .player-card:hover {
+        .tr-player-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
         
-        .player-card-header {
+        .tr-player-card-header {
           background-color: ${teamColor};
           color: white;
           padding: 16px;
@@ -861,7 +856,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           align-items: center;
         }
         
-        .player-jersey-number {
+        .tr-player-jersey-number {
           font-size: 28px;
           font-weight: bold;
           background: rgba(255,255,255,0.2);
@@ -873,7 +868,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 50%;
         }
         
-        .player-position-badge {
+        .tr-player-position-badge {
           background: rgba(255,255,255,0.2);
           padding: 5px 12px;
           border-radius: 20px;
@@ -881,7 +876,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           font-size: 14px;
         }
         
-        .player-card-body {
+        .tr-player-card-body {
           padding: 20px;
           flex: 1;
           display: flex;
@@ -889,7 +884,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           gap: 15px;
         }
         
-        .player-name {
+        .tr-player-name {
           font-size: 18px;
           font-weight: 600;
           margin: 0 0 5px 0;
@@ -898,40 +893,40 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           padding-bottom: 10px;
         }
         
-        .player-info-grid {
+        .tr-player-info-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 15px;
           margin-bottom: 5px;
         }
         
-        .info-item {
+        .tr-info-item {
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
         
-        .info-icon {
+        .tr-info-icon {
           color: ${teamColor};
           font-size: 14px;
           margin-bottom: 2px;
         }
         
-        .info-label {
+        .tr-info-label {
           font-size: 12px;
           color: #777;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
         
-        .info-value {
+        .tr-info-value {
           font-size: 15px;
           font-weight: 500;
           color: #333;
         }
         
         /* Transfer Card Styling (for incoming players) */
-        .transfer-card {
+        .tr-transfer-card {
           background-color: white;
           border: 1px solid #e0e0e0;
           padding: 15px;
@@ -943,26 +938,26 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
-        .transfer-card:hover {
+        .tr-transfer-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
           border-color: ${teamColor};
         }
         
-        .transfer-card-header {
+        .tr-transfer-card-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 15px;
         }
         
-        .player-identity {
+        .tr-player-identity {
           display: flex;
           align-items: center;
           gap: 12px;
         }
         
-        .player-avatar {
+        .tr-player-avatar {
           width: 48px;
           height: 48px;
           border-radius: 50%;
@@ -972,18 +967,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           justify-content: center;
         }
         
-        .avatar-icon {
+        .tr-avatar-icon {
           font-size: 24px;
           color: #757575;
         }
         
-        .player-identity h3 {
+        .tr-player-identity h3 {
           margin: 0;
           font-size: 1.1rem;
           font-weight: 600;
         }
         
-        .position-badge {
+        .tr-position-badge {
           display: inline-block;
           padding: 3px 8px;
           background-color: #f5f5f5;
@@ -992,37 +987,37 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           margin-top: 5px;
         }
         
-        .player-rating {
+        .tr-player-rating {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
         }
         
-        .star-rating {
+        .tr-star-rating {
           display: flex;
           gap: 2px;
         }
         
-        .star {
+        .tr-star {
           font-size: 1rem;
         }
         
-        .star.filled {
+        .tr-star.tr-filled {
           color: #ffc72c;
         }
         
-        .star.empty {
+        .tr-star.tr-empty {
           color: #e0e0e0;
         }
         
-        .rating-value {
+        .tr-rating-value {
           font-size: 0.8rem;
           margin-top: 2px;
           color: #757575;
         }
         
         /* Transfer Journey */
-        .transfer-journey {
+        .tr-transfer-journey {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -1032,21 +1027,21 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           border-radius: 8px;
         }
         
-        .school {
+        .tr-school {
           display: flex;
           flex-direction: column;
           align-items: center;
           flex: 1;
         }
         
-        .school-logo {
+        .tr-school-logo {
           width: 50px;
           height: 50px;
           object-fit: contain;
           margin-bottom: 5px;
         }
         
-        .school-name {
+        .tr-school-name {
           font-size: 0.9rem;
           text-align: center;
           max-width: 100px;
@@ -1055,25 +1050,25 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           white-space: nowrap;
         }
         
-        .journey-arrow {
+        .tr-journey-arrow {
           display: flex;
           align-items: center;
           justify-content: center;
           flex-basis: 50px;
         }
         
-        .arrow-icon {
+        .tr-arrow-icon {
           font-size: 1.5rem;
           color: ${teamColor};
         }
         
         /* Player Info Section */
-        .player-info-section {
+        .tr-player-info-section {
           margin-bottom: 15px;
         }
         
         /* Transfer Meta */
-        .transfer-meta {
+        .tr-transfer-meta {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -1083,36 +1078,36 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           padding-top: 10px;
         }
         
-        .meta-item {
+        .tr-meta-item {
           display: flex;
           align-items: center;
           gap: 5px;
           color: #757575;
         }
         
-        .meta-icon {
+        .tr-meta-icon {
           font-size: 0.9rem;
         }
         
-        .player-type-badge {
+        .tr-player-type-badge {
           padding: 3px 8px;
           border-radius: 12px;
           font-size: 0.75rem;
           font-weight: 600;
         }
         
-        .player-type-badge.transfer {
+        .tr-player-type-badge.tr-transfer {
           background-color: rgba(244, 67, 54, 0.2);
           color: #c62828;
         }
         
-        .player-type-badge.recruit {
+        .tr-player-type-badge.tr-recruit {
           background-color: rgba(76, 175, 80, 0.2);
           color: #2e7d32;
         }
 
         /* Empty state */
-        .no-players-message {
+        .tr-no-players-message {
           text-align: center;
           padding: 40px;
           color: #777;
@@ -1123,7 +1118,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
 
         /* Loading indicator */
-        .loading-indicator {
+        .tr-loading-indicator {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1133,14 +1128,14 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #666;
         }
         
-        .loading-spinner {
+        .tr-loading-spinner {
           display: flex;
           justify-content: center;
           align-items: center;
         }
         
         /* Error message */
-        .error-message {
+        .tr-error-message {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1150,51 +1145,51 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         /* Animation */
-        @keyframes fadeIn {
+        @keyframes tr-fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-          .player-cards-container {
+          .tr-player-cards-container {
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           }
           
-          .player-info-grid {
+          .tr-player-info-grid {
             grid-template-columns: 1fr;
           }
           
-          .roster-filters {
+          .tr-roster-filters {
             flex-direction: column;
           }
           
-          .search-container, .filter-group {
+          .tr-search-container, .tr-filter-group {
             width: 100%;
           }
           
-          .transfer-card-header {
+          .tr-transfer-card-header {
             flex-direction: column;
             align-items: flex-start;
           }
           
-          .player-rating {
+          .tr-player-rating {
             align-items: flex-start;
             margin-top: 10px;
           }
         }
         
         @media (max-width: 480px) {
-          .transfer-journey {
+          .tr-transfer-journey {
             flex-direction: column;
             gap: 15px;
           }
           
-          .journey-arrow {
+          .tr-journey-arrow {
             transform: rotate(90deg);
           }
           
-          .tab-button {
+          .tr-tab-button {
             padding: 10px 15px;
             font-size: 14px;
           }
