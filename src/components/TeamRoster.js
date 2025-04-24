@@ -670,16 +670,18 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         /* Dashboard Card */
         .team-roster-dashboard-card {
           background: white !important;
-          border-radius: 20px !important;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+          border-radius: 0 !important; /* Removed border radius */
+          box-shadow: none !important; /* Removed shadow */
           overflow: hidden !important;
           transition: transform 0.3s ease, box-shadow 0.3s ease !important;
           animation: team-roster-fadeIn 0.6s ease-out !important;
           width: 100% !important;
-          margin-bottom: 30px !important;
+          margin: 0 !important; /* Reset all margins */
+          padding: 0 !important; /* Reset all padding */
           position: relative !important;
           z-index: 1 !important;
           font-family: inherit !important;
+          box-sizing: border-box !important;
         }
         
         .team-roster-dashboard-card:hover {
@@ -707,9 +709,10 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         }
         
         .team-roster-card-body {
-          padding: 1.5rem !important;
+          padding: 1.5rem 0 !important; /* Remove horizontal padding */
           position: relative !important;
           z-index: 2 !important;
+          width: 100% !important;
         }
 
         /* Tab Navigation */
