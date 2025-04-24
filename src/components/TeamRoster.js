@@ -7,7 +7,7 @@ import TeamPlayerModal from "./TeamPlayerModal";
 
 // Loading animation component
 const LoadingSpinner = ({ color = "#9e9e9e" }) => (
-  <div className="tr-loading-spinner">
+  <div className="team-roster-loading-spinner">
     <svg width="50" height="50" viewBox="0 0 50 50">
       <circle
         cx="25"
@@ -101,7 +101,7 @@ const darkenColor = (color, percent) => {
   }
 };
 
-// FIXED: Function to get jersey number - now directly uses jersey field with no transformations
+// Function to get jersey number - now directly uses jersey field with no transformations
 const getJerseyNumber = (player) => {
   // Direct access to jersey field - this ensures we use the exact jersey from the data
   if (player.jersey !== undefined && player.jersey !== null) {
@@ -286,7 +286,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
     }
   };
   
-  // FIXED: Function to fetch incoming players (transfers and recruits)
+  // Function to fetch incoming players (transfers and recruits)
   const fetchIncomingPlayers = async () => {
     setIsLoading(true);
     setError(null);
@@ -393,7 +393,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
 
   // Star rendering
   const renderStars = (count) => (
-    <div className="tr-star-rating">
+    <div className="team-roster-star-rating">
       {[...Array(5)].map((_, i) => (
         <motion.span
           key={i}
@@ -402,30 +402,30 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           animate="visible"
           transition={{ delay: i * 0.1, duration: 0.2 }}
         >
-          <FaStar className={i < count ? "tr-star tr-filled" : "tr-star tr-empty"} />
+          <FaStar className={i < count ? "team-roster-star team-roster-star-filled" : "team-roster-star team-roster-star-empty"} />
         </motion.span>
       ))}
     </div>
   );
 
   return (
-    <div className="tr-dashboard-card tr-full-width-card">
-      <div className="tr-card-header" style={cardHeaderStyle}>
+    <div className="team-roster-dashboard-card team-roster-full-width-card">
+      <div className="team-roster-card-header" style={cardHeaderStyle}>
         <FaUser style={{ marginRight: "12px", color: teamColor }} />
         Team Roster
       </div>
-      <div className="tr-card-body">
+      <div className="team-roster-card-body">
         {/* Tab Navigation */}
-        <div className="tr-roster-tabs">
+        <div className="team-roster-roster-tabs">
           <button 
-            className={`tr-tab-button ${activeTab === "current" ? "tr-active" : ""}`}
+            className={`team-roster-tab-button ${activeTab === "current" ? "team-roster-active" : ""}`}
             onClick={() => setActiveTab("current")}
             style={{borderColor: activeTab === "current" ? teamColor : 'transparent'}}
           >
             Current Roster
           </button>
           <button 
-            className={`tr-tab-button ${activeTab === "incoming" ? "tr-active" : ""}`}
+            className={`team-roster-tab-button ${activeTab === "incoming" ? "team-roster-active" : ""}`}
             onClick={() => setActiveTab("incoming")}
             style={{borderColor: activeTab === "incoming" ? teamColor : 'transparent'}}
           >
@@ -434,42 +434,42 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         </div>
 
         {isLoading ? (
-          <div className="tr-loading-indicator">
+          <div className="team-roster-loading-indicator">
             <LoadingSpinner color={teamColor} />
             <p>Loading {activeTab === "current" ? "roster" : "incoming players"}...</p>
           </div>
         ) : error ? (
-          <div className="tr-error-message">
+          <div className="team-roster-error-message">
             <FaExclamationTriangle color="red" style={{ marginRight: "8px" }} />
             {error}
           </div>
         ) : (
           <>
-            <div className="tr-roster-filters">
-              <div className="tr-search-container">
-                <FaSearch className="tr-search-icon" />
+            <div className="team-roster-filters">
+              <div className="team-roster-search-container">
+                <FaSearch className="team-roster-search-icon" />
                 <input 
                   type="text" 
                   placeholder="Search players..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="tr-search-input"
+                  className="team-roster-search-input"
                 />
                 {searchTerm && (
                   <button 
-                    className="tr-clear-search"
+                    className="team-roster-clear-search"
                     onClick={() => setSearchTerm("")}
                   >
                     ×
                   </button>
                 )}
               </div>
-              <div className="tr-filter-group">
+              <div className="team-roster-filter-group">
                 <label>Position</label>
                 <select 
                   value={filterPosition} 
                   onChange={(e) => setFilterPosition(e.target.value)}
-                  className="tr-filter-select"
+                  className="team-roster-filter-select"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map(pos => (
@@ -479,13 +479,13 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
               </div>
             </div>
             
-            <div className="tr-players-count">
+            <div className="team-roster-players-count">
               <span>Showing {activeTab === "current" ? filteredCurrentPlayers.length : filteredIncomingPlayers.length} of {activeTab === "current" ? roster.length : incomingPlayers.length} players</span>
             </div>
             
             {activeTab === "current" ? (
               <motion.div 
-                className="tr-player-cards-container"
+                className="team-roster-player-cards-container"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -494,54 +494,54 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   filteredCurrentPlayers.map((player, index) => (
                     <motion.div 
                       key={player.id || index} 
-                      className="tr-player-card"
+                      className="team-roster-player-card"
                       variants={itemVariants}
                       onClick={() => handlePlayerClick(player)}
                     >
-                      <div className="tr-player-card-header" style={{backgroundColor: teamColor}}>
-                        <div className="tr-player-jersey-number">{player.jersey}</div>
-                        <div className="tr-player-position-badge">{player.position}</div>
+                      <div className="team-roster-player-card-header" style={{backgroundColor: teamColor}}>
+                        <div className="team-roster-player-jersey-number">{player.jersey}</div>
+                        <div className="team-roster-player-position-badge">{player.position}</div>
                       </div>
-                      <div className="tr-player-card-body">
-                        <h3 className="tr-player-name">{player.fullName}</h3>
+                      <div className="team-roster-player-card-body">
+                        <h3 className="team-roster-player-name">{player.fullName}</h3>
                         
-                        <div className="tr-player-info-grid">
-                          <div className="tr-info-item">
-                            <FaRulerVertical className="tr-info-icon" />
-                            <span className="tr-info-label">Height</span>
-                            <span className="tr-info-value">{player.heightDisplay}</span>
+                        <div className="team-roster-player-info-grid">
+                          <div className="team-roster-info-item">
+                            <FaRulerVertical className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Height</span>
+                            <span className="team-roster-info-value">{player.heightDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaWeight className="tr-info-icon" />
-                            <span className="tr-info-label">Weight</span>
-                            <span className="tr-info-value">{player.weightDisplay}</span>
+                          <div className="team-roster-info-item">
+                            <FaWeight className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Weight</span>
+                            <span className="team-roster-info-value">{player.weightDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaGraduationCap className="tr-info-icon" />
-                            <span className="tr-info-label">Year</span>
-                            <span className="tr-info-value">{player.yearDisplay}</span>
+                          <div className="team-roster-info-item">
+                            <FaGraduationCap className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Year</span>
+                            <span className="team-roster-info-value">{player.yearDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaMapMarkerAlt className="tr-info-icon" />
-                            <span className="tr-info-label">Hometown</span>
-                            <span className="tr-info-value">{player.formattedHometown}</span>
+                          <div className="team-roster-info-item">
+                            <FaMapMarkerAlt className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Hometown</span>
+                            <span className="team-roster-info-value">{player.formattedHometown}</span>
                           </div>
                         </div>
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="tr-no-players-message">
+                  <div className="team-roster-no-players-message">
                     No players found. Please try a different search or filter.
                   </div>
                 )}
               </motion.div>
             ) : (
               <motion.div 
-                className="tr-player-cards-container"
+                className="team-roster-player-cards-container"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -550,27 +550,27 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   filteredIncomingPlayers.map((player, index) => (
                     <motion.div 
                       key={player.id || index} 
-                      className="tr-transfer-card"
+                      className="team-roster-transfer-card"
                       variants={itemVariants}
                       onClick={() => handlePlayerClick(player)}
                       layoutId={`${player.firstName || player.name}-${player.lastName || ""}-${index}`}
                     >
-                      <div className="tr-transfer-card-header">
-                        <div className="tr-player-identity">
-                          <div className="tr-player-avatar">
-                            <FaUser className="tr-avatar-icon" />
+                      <div className="team-roster-transfer-card-header">
+                        <div className="team-roster-player-identity">
+                          <div className="team-roster-player-avatar">
+                            <FaUser className="team-roster-avatar-icon" />
                           </div>
                           <div>
                             <h3>{player.fullName}</h3>
-                            <div className="tr-position-badge">
+                            <div className="team-roster-position-badge">
                               {player.position || "ATH"}
                             </div>
                           </div>
                         </div>
-                        <div className="tr-player-rating">
+                        <div className="team-roster-player-rating">
                           {renderStars(player.stars)}
                           {player.rating && (
-                            <div className="tr-rating-value">
+                            <div className="team-roster-rating-value">
                               {parseFloat(player.rating).toFixed(2)}
                             </div>
                           )}
@@ -578,76 +578,76 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                       </div>
                       
                       {player.playerType === "transfer" && player.originSchool && (
-                        <div className="tr-transfer-journey">
-                          <div className="tr-school tr-origin">
+                        <div className="team-roster-transfer-journey">
+                          <div className="team-roster-school team-roster-origin">
                             <img 
                               src={`/team-logos/${player.originSchool.replace(/\s+/g, '-').toLowerCase()}.png`} 
                               alt={player.originSchool || "Origin"} 
-                              className="tr-school-logo"
+                              className="team-roster-school-logo"
                               onError={(e) => {e.target.src = "/photos/football.avif"}}
                             />
-                            <span className="tr-school-name">
+                            <span className="team-roster-school-name">
                               {player.originSchool || "Unknown"}
                             </span>
                           </div>
                           
-                          <div className="tr-journey-arrow">
-                            <FaArrowRight className="tr-arrow-icon" />
+                          <div className="team-roster-journey-arrow">
+                            <FaArrowRight className="team-roster-arrow-icon" />
                           </div>
                           
-                          <div className="tr-school tr-destination">
+                          <div className="team-roster-school team-roster-destination">
                             <img 
                               src={teamLogo || `/team-logos/${teamName.replace(/\s+/g, '-').toLowerCase()}.png`} 
                               alt={teamName} 
-                              className="tr-school-logo"
+                              className="team-roster-school-logo"
                               onError={(e) => {e.target.src = "/photos/football.avif"}}
                             />
-                            <span className="tr-school-name">
+                            <span className="team-roster-school-name">
                               {teamName}
                             </span>
                           </div>
                         </div>
                       )}
                       
-                      <div className="tr-player-info-section">
-                        <div className="tr-player-info-grid">
-                          <div className="tr-info-item">
-                            <FaRulerVertical className="tr-info-icon" />
-                            <span className="tr-info-label">Height</span>
-                            <span className="tr-info-value">{player.heightDisplay}</span>
+                      <div className="team-roster-player-info-section">
+                        <div className="team-roster-player-info-grid">
+                          <div className="team-roster-info-item">
+                            <FaRulerVertical className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Height</span>
+                            <span className="team-roster-info-value">{player.heightDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaWeight className="tr-info-icon" />
-                            <span className="tr-info-label">Weight</span>
-                            <span className="tr-info-value">{player.weightDisplay}</span>
+                          <div className="team-roster-info-item">
+                            <FaWeight className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Weight</span>
+                            <span className="team-roster-info-value">{player.weightDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaGraduationCap className="tr-info-icon" />
-                            <span className="tr-info-label">Eligibility</span>
-                            <span className="tr-info-value">{player.yearDisplay}</span>
+                          <div className="team-roster-info-item">
+                            <FaGraduationCap className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Eligibility</span>
+                            <span className="team-roster-info-value">{player.yearDisplay}</span>
                           </div>
                           
-                          <div className="tr-info-item">
-                            <FaMapMarkerAlt className="tr-info-icon" />
-                            <span className="tr-info-label">Hometown</span>
-                            <span className="tr-info-value">{player.formattedHometown}</span>
+                          <div className="team-roster-info-item">
+                            <FaMapMarkerAlt className="team-roster-info-icon" />
+                            <span className="team-roster-info-label">Hometown</span>
+                            <span className="team-roster-info-value">{player.formattedHometown}</span>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="tr-transfer-meta">
-                        <div className="tr-meta-item">
-                          <FaCalendarAlt className="tr-meta-icon" />
+                      <div className="team-roster-transfer-meta">
+                        <div className="team-roster-meta-item">
+                          <FaCalendarAlt className="team-roster-meta-icon" />
                           <span>{player.commitDate ? new Date(player.commitDate).toLocaleDateString('en-US', { 
                             year: 'numeric', 
                             month: 'short', 
                             day: 'numeric' 
                           }) : "Uncommitted"}</span>
                         </div>
-                        <div className="tr-meta-item">
-                          <span className={`tr-player-type-badge tr-${player.playerType}`}>
+                        <div className="team-roster-meta-item">
+                          <span className={`team-roster-player-type-badge team-roster-${player.playerType}`}>
                             {player.playerType === "transfer" ? "Transfer" : "Recruit"}
                           </span>
                         </div>
@@ -655,7 +655,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="tr-no-players-message">
+                  <div className="team-roster-no-players-message">
                     No incoming players found. Please try a different search or filter.
                   </div>
                 )}
@@ -665,533 +665,541 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         )}
       </div>
 
-      {/* CSS styling */}
+      {/* CSS styling with highly specific selectors */}
       <style>{`
         /* Dashboard Card */
-        .tr-dashboard-card {
-          background: white;
-          border-radius: 20px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-          overflow: hidden;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          animation: tr-fadeIn 0.6s ease-out;
-          width: 100%;
-          margin-bottom: 30px;
+        .team-roster-dashboard-card {
+          background: white !important;
+          border-radius: 20px !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+          overflow: hidden !important;
+          transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+          animation: team-roster-fadeIn 0.6s ease-out !important;
+          width: 100% !important;
+          margin-bottom: 30px !important;
+          position: relative !important;
+          z-index: 1 !important;
+          font-family: inherit !important;
         }
         
-        .tr-dashboard-card:hover {
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        .team-roster-dashboard-card:hover {
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
         }
         
-        .tr-card-header {
-          padding: 1.2rem 1.5rem;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-          font-weight: 600;
-          font-size: 1.2rem;
-          color: rgb(108, 108, 108);
-          display: flex;
-          align-items: center;
+        .team-roster-card-header {
+          padding: 1.2rem 1.5rem !important;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+          font-weight: 600 !important;
+          font-size: 1.2rem !important;
+          color: rgb(108, 108, 108) !important;
+          display: flex !important;
+          align-items: center !important;
         }
         
-        .tr-card-header::before {
-          content: '';
-          display: inline-block;
-          width: 8px;
-          height: 24px;
-          background: var(--team-color, ${teamColor});
-          margin-right: 12px;
-          border-radius: 4px;
+        .team-roster-card-header::before {
+          content: '' !important;
+          display: inline-block !important;
+          width: 8px !important;
+          height: 24px !important;
+          background: var(--team-color, ${teamColor}) !important;
+          margin-right: 12px !important;
+          border-radius: 4px !important;
         }
         
-        .tr-card-body {
-          padding: 1.5rem;
+        .team-roster-card-body {
+          padding: 1.5rem !important;
+          position: relative !important;
+          z-index: 2 !important;
         }
 
         /* Tab Navigation */
-        .tr-roster-tabs {
-          display: flex;
-          border-bottom: 1px solid #e0e0e0;
-          margin-bottom: 25px;
+        .team-roster-roster-tabs {
+          display: flex !important;
+          border-bottom: 1px solid #e0e0e0 !important;
+          margin-bottom: 25px !important;
         }
         
-        .tr-tab-button {
-          padding: 12px 24px;
-          background: transparent;
-          border: none;
-          border-bottom: 3px solid transparent;
-          font-size: 16px;
-          font-weight: 600;
-          color: #666;
-          cursor: pointer;
-          transition: all 0.3s;
-          margin-right: 10px;
+        .team-roster-tab-button {
+          padding: 12px 24px !important;
+          background: transparent !important;
+          border: none !important;
+          border-bottom: 3px solid transparent !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          color: #666 !important;
+          cursor: pointer !important;
+          transition: all 0.3s !important;
+          margin-right: 10px !important;
         }
         
-        .tr-tab-button.tr-active {
-          color: ${teamColor};
-          border-color: ${teamColor};
+        .team-roster-tab-button.team-roster-active {
+          color: ${teamColor} !important;
+          border-color: ${teamColor} !important;
         }
         
-        .tr-tab-button:hover:not(.tr-active) {
-          color: ${lightenColor(teamColor, 20)};
-          border-color: ${lightenColor(teamColor, 70)};
+        .team-roster-tab-button:hover:not(.team-roster-active) {
+          color: ${lightenColor(teamColor, 20)} !important;
+          border-color: ${lightenColor(teamColor, 70)} !important;
         }
 
         /* Filters */
-        .tr-roster-filters {
-          display: flex;
-          gap: 15px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-          align-items: flex-end;
+        .team-roster-filters {
+          display: flex !important;
+          gap: 15px !important;
+          margin-bottom: 20px !important;
+          flex-wrap: wrap !important;
+          align-items: flex-end !important;
         }
         
-        .tr-search-container {
-          flex: 1;
-          min-width: 200px;
-          position: relative;
+        .team-roster-search-container {
+          flex: 1 !important;
+          min-width: 200px !important;
+          position: relative !important;
         }
         
-        .tr-search-icon {
-          position: absolute;
-          left: 15px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #757575;
+        .team-roster-search-icon {
+          position: absolute !important;
+          left: 15px !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          color: #757575 !important;
         }
         
-        .tr-search-input {
-          width: 100%;
-          padding: 12px 40px;
-          border-radius: 30px;
-          border: 1px solid #e0e0e0;
-          font-size: 16px;
-          transition: all 0.2s;
+        .team-roster-search-input {
+          width: 100% !important;
+          padding: 12px 40px !important;
+          border-radius: 30px !important;
+          border: 1px solid #e0e0e0 !important;
+          font-size: 16px !important;
+          transition: all 0.2s !important;
         }
         
-        .tr-search-input:focus {
-          outline: none;
-          border-color: ${teamColor};
-          box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
+        .team-roster-search-input:focus {
+          outline: none !important;
+          border-color: ${teamColor} !important;
+          box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)} !important;
         }
         
-        .tr-clear-search {
-          position: absolute;
-          right: 15px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          color: #757575;
-          font-size: 1.2rem;
-          cursor: pointer;
+        .team-roster-clear-search {
+          position: absolute !important;
+          right: 15px !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          background: none !important;
+          border: none !important;
+          color: #757575 !important;
+          font-size: 1.2rem !important;
+          cursor: pointer !important;
         }
         
-        .tr-filter-group {
-          display: flex;
-          flex-direction: column;
-          min-width: 180px;
+        .team-roster-filter-group {
+          display: flex !important;
+          flex-direction: column !important;
+          min-width: 180px !important;
         }
         
-        .tr-filter-group label {
-          font-size: 0.8rem;
-          margin-bottom: 5px;
-          color: #757575;
+        .team-roster-filter-group label {
+          font-size: 0.8rem !important;
+          margin-bottom: 5px !important;
+          color: #757575 !important;
         }
         
-        .tr-filter-select {
-          padding: 10px 15px;
-          border-radius: 8px;
-          border: 1px solid #e0e0e0;
-          font-size: 16px;
-          background-color: white;
-          cursor: pointer;
+        .team-roster-filter-select {
+          padding: 10px 15px !important;
+          border-radius: 8px !important;
+          border: 1px solid #e0e0e0 !important;
+          font-size: 16px !important;
+          background-color: white !important;
+          cursor: pointer !important;
         }
         
-        .tr-filter-select:focus {
-          outline: none;
-          border-color: ${teamColor};
-          box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
+        .team-roster-filter-select:focus {
+          outline: none !important;
+          border-color: ${teamColor} !important;
+          box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)} !important;
         }
         
-        .tr-players-count {
-          margin-bottom: 15px;
-          font-size: 14px;
-          color: #666;
+        .team-roster-players-count {
+          margin-bottom: 15px !important;
+          font-size: 14px !important;
+          color: #666 !important;
         }
 
         /* Player Cards Container */
-        .tr-player-cards-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 20px;
-          margin-top: 20px;
+        .team-roster-player-cards-container {
+          display: grid !important;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+          gap: 20px !important;
+          margin-top: 20px !important;
         }
         
         /* Regular Player Card */
-        .tr-player-card {
-          background: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-          transition: all 0.3s ease;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          height: 100%;
+        .team-roster-player-card {
+          background: white !important;
+          border-radius: 12px !important;
+          overflow: hidden !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+          transition: all 0.3s ease !important;
+          cursor: pointer !important;
+          display: flex !important;
+          flex-direction: column !important;
+          height: 100% !important;
+          position: relative !important;
+          z-index: 2 !important;
         }
         
-        .tr-player-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        .team-roster-player-card:hover {
+          transform: translateY(-5px) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
         }
         
-        .tr-player-card-header {
-          background-color: ${teamColor};
-          color: white;
-          padding: 16px;
-          position: relative;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+        .team-roster-player-card-header {
+          background-color: ${teamColor} !important;
+          color: white !important;
+          padding: 16px !important;
+          position: relative !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
         }
         
-        .tr-player-jersey-number {
-          font-size: 28px;
-          font-weight: bold;
-          background: rgba(255,255,255,0.2);
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
+        .team-roster-player-jersey-number {
+          font-size: 28px !important;
+          font-weight: bold !important;
+          background: rgba(255,255,255,0.2) !important;
+          width: 50px !important;
+          height: 50px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border-radius: 50% !important;
         }
         
-        .tr-player-position-badge {
-          background: rgba(255,255,255,0.2);
-          padding: 5px 12px;
-          border-radius: 20px;
-          font-weight: 600;
-          font-size: 14px;
+        .team-roster-player-position-badge {
+          background: rgba(255,255,255,0.2) !important;
+          padding: 5px 12px !important;
+          border-radius: 20px !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
         }
         
-        .tr-player-card-body {
-          padding: 20px;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
+        .team-roster-player-card-body {
+          padding: 20px !important;
+          flex: 1 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 15px !important;
         }
         
-        .tr-player-name {
-          font-size: 18px;
-          font-weight: 600;
-          margin: 0 0 5px 0;
-          color: #333;
-          border-bottom: 1px solid #f0f0f0;
-          padding-bottom: 10px;
+        .team-roster-player-name {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          margin: 0 0 5px 0 !important;
+          color: #333 !important;
+          border-bottom: 1px solid #f0f0f0 !important;
+          padding-bottom: 10px !important;
         }
         
-        .tr-player-info-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 15px;
-          margin-bottom: 5px;
+        .team-roster-player-info-grid {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 15px !important;
+          margin-bottom: 5px !important;
         }
         
-        .tr-info-item {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
+        .team-roster-info-item {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 2px !important;
         }
         
-        .tr-info-icon {
-          color: ${teamColor};
-          font-size: 14px;
-          margin-bottom: 2px;
+        .team-roster-info-icon {
+          color: ${teamColor} !important;
+          font-size: 14px !important;
+          margin-bottom: 2px !important;
         }
         
-        .tr-info-label {
-          font-size: 12px;
-          color: #777;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+        .team-roster-info-label {
+          font-size: 12px !important;
+          color: #777 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
         }
         
-        .tr-info-value {
-          font-size: 15px;
-          font-weight: 500;
-          color: #333;
+        .team-roster-info-value {
+          font-size: 15px !important;
+          font-weight: 500 !important;
+          color: #333 !important;
         }
         
         /* Transfer Card Styling (for incoming players) */
-        .tr-transfer-card {
-          background-color: white;
-          border: 1px solid #e0e0e0;
-          padding: 15px;
-          transition: all 0.3s;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        .team-roster-transfer-card {
+          background-color: white !important;
+          border: 1px solid #e0e0e0 !important;
+          padding: 15px !important;
+          transition: all 0.3s !important;
+          cursor: pointer !important;
+          position: relative !important;
+          overflow: hidden !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+          z-index: 2 !important;
         }
         
-        .tr-transfer-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-          border-color: ${teamColor};
+        .team-roster-transfer-card:hover {
+          transform: translateY(-5px) !important;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+          border-color: ${teamColor} !important;
         }
         
-        .tr-transfer-card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 15px;
+        .team-roster-transfer-card-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          margin-bottom: 15px !important;
         }
         
-        .tr-player-identity {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+        .team-roster-player-identity {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
         }
         
-        .tr-player-avatar {
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          background-color: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .team-roster-player-avatar {
+          width: 48px !important;
+          height: 48px !important;
+          border-radius: 50% !important;
+          background-color: #f0f0f0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         
-        .tr-avatar-icon {
-          font-size: 24px;
-          color: #757575;
+        .team-roster-avatar-icon {
+          font-size: 24px !important;
+          color: #757575 !important;
         }
         
-        .tr-player-identity h3 {
-          margin: 0;
-          font-size: 1.1rem;
-          font-weight: 600;
+        .team-roster-player-identity h3 {
+          margin: 0 !important;
+          font-size: 1.1rem !important;
+          font-weight: 600 !important;
         }
         
-        .tr-position-badge {
-          display: inline-block;
-          padding: 3px 8px;
-          background-color: #f5f5f5;
-          border-radius: 12px;
-          font-size: 0.8rem;
-          margin-top: 5px;
+        .team-roster-position-badge {
+          display: inline-block !important;
+          padding: 3px 8px !important;
+          background-color: #f5f5f5 !important;
+          border-radius: 12px !important;
+          font-size: 0.8rem !important;
+          margin-top: 5px !important;
         }
         
-        .tr-player-rating {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
+        .team-roster-player-rating {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-end !important;
         }
         
-        .tr-star-rating {
-          display: flex;
-          gap: 2px;
+        .team-roster-star-rating {
+          display: flex !important;
+          gap: 2px !important;
         }
         
-        .tr-star {
-          font-size: 1rem;
+        .team-roster-star {
+          font-size: 1rem !important;
         }
         
-        .tr-star.tr-filled {
-          color: #ffc72c;
+        .team-roster-star-filled {
+          color: #ffc72c !important;
         }
         
-        .tr-star.tr-empty {
-          color: #e0e0e0;
+        .team-roster-star-empty {
+          color: #e0e0e0 !important;
         }
         
-        .tr-rating-value {
-          font-size: 0.8rem;
-          margin-top: 2px;
-          color: #757575;
+        .team-roster-rating-value {
+          font-size: 0.8rem !important;
+          margin-top: 2px !important;
+          color: #757575 !important;
         }
         
         /* Transfer Journey */
-        .tr-transfer-journey {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 15px;
-          padding: 10px;
-          background-color: #f5f5f5;
-          border-radius: 8px;
+        .team-roster-transfer-journey {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          margin-bottom: 15px !important;
+          padding: 10px !important;
+          background-color: #f5f5f5 !important;
+          border-radius: 8px !important;
         }
         
-        .tr-school {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          flex: 1;
+        .team-roster-school {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          flex: 1 !important;
         }
         
-        .tr-school-logo {
-          width: 50px;
-          height: 50px;
-          object-fit: contain;
-          margin-bottom: 5px;
+        .team-roster-school-logo {
+          width: 50px !important;
+          height: 50px !important;
+          object-fit: contain !important;
+          margin-bottom: 5px !important;
         }
         
-        .tr-school-name {
-          font-size: 0.9rem;
-          text-align: center;
-          max-width: 100px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        .team-roster-school-name {
+          font-size: 0.9rem !important;
+          text-align: center !important;
+          max-width: 100px !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
         }
         
-        .tr-journey-arrow {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-basis: 50px;
+        .team-roster-journey-arrow {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          flex-basis: 50px !important;
         }
         
-        .tr-arrow-icon {
-          font-size: 1.5rem;
-          color: ${teamColor};
+        .team-roster-arrow-icon {
+          font-size: 1.5rem !important;
+          color: ${teamColor} !important;
         }
         
         /* Player Info Section */
-        .tr-player-info-section {
-          margin-bottom: 15px;
+        .team-roster-player-info-section {
+          margin-bottom: 15px !important;
         }
         
         /* Transfer Meta */
-        .tr-transfer-meta {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          font-size: 0.85rem;
-          margin-top: 10px;
-          border-top: 1px solid #f0f0f0;
-          padding-top: 10px;
+        .team-roster-transfer-meta {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          font-size: 0.85rem !important;
+          margin-top: 10px !important;
+          border-top: 1px solid #f0f0f0 !important;
+          padding-top: 10px !important;
         }
         
-        .tr-meta-item {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          color: #757575;
+        .team-roster-meta-item {
+          display: flex !important;
+          align-items: center !important;
+          gap: 5px !important;
+          color: #757575 !important;
         }
         
-        .tr-meta-icon {
-          font-size: 0.9rem;
+        .team-roster-meta-icon {
+          font-size: 0.9rem !important;
         }
         
-        .tr-player-type-badge {
-          padding: 3px 8px;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 600;
+        .team-roster-player-type-badge {
+          padding: 3px 8px !important;
+          border-radius: 12px !important;
+          font-size: 0.75rem !important;
+          font-weight: 600 !important;
         }
         
-        .tr-player-type-badge.tr-transfer {
-          background-color: rgba(244, 67, 54, 0.2);
-          color: #c62828;
+        .team-roster-player-type-badge.team-roster-transfer {
+          background-color: rgba(244, 67, 54, 0.2) !important;
+          color: #c62828 !important;
         }
         
-        .tr-player-type-badge.tr-recruit {
-          background-color: rgba(76, 175, 80, 0.2);
-          color: #2e7d32;
+        .team-roster-player-type-badge.team-roster-recruit {
+          background-color: rgba(76, 175, 80, 0.2) !important;
+          color: #2e7d32 !important;
         }
 
         /* Empty state */
-        .tr-no-players-message {
-          text-align: center;
-          padding: 40px;
-          color: #777;
-          font-size: 16px;
-          grid-column: 1 / -1;
-          background: #f9f9f9;
-          border-radius: 10px;
+        .team-roster-no-players-message {
+          text-align: center !important;
+          padding: 40px !important;
+          color: #777 !important;
+          font-size: 16px !important;
+          grid-column: 1 / -1 !important;
+          background: #f9f9f9 !important;
+          border-radius: 10px !important;
         }
 
         /* Loading indicator */
-        .tr-loading-indicator {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          gap: 1rem;
-          color: #666;
+        .team-roster-loading-indicator {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 2rem !important;
+          gap: 1rem !important;
+          color: #666 !important;
         }
         
-        .tr-loading-spinner {
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .team-roster-loading-spinner {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
         }
         
         /* Error message */
-        .tr-error-message {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          color: #ff4d4d;
-          font-weight: 500;
+        .team-roster-error-message {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 2rem !important;
+          color: #ff4d4d !important;
+          font-weight: 500 !important;
         }
         
         /* Animation */
-        @keyframes tr-fadeIn {
+        @keyframes team-roster-fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-          .tr-player-cards-container {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          .team-roster-player-cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
           }
           
-          .tr-player-info-grid {
-            grid-template-columns: 1fr;
+          .team-roster-player-info-grid {
+            grid-template-columns: 1fr !important;
           }
           
-          .tr-roster-filters {
-            flex-direction: column;
+          .team-roster-filters {
+            flex-direction: column !important;
           }
           
-          .tr-search-container, .tr-filter-group {
-            width: 100%;
+          .team-roster-search-container, .team-roster-filter-group {
+            width: 100% !important;
           }
           
-          .tr-transfer-card-header {
-            flex-direction: column;
-            align-items: flex-start;
+          .team-roster-transfer-card-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
           }
           
-          .tr-player-rating {
-            align-items: flex-start;
-            margin-top: 10px;
+          .team-roster-player-rating {
+            align-items: flex-start !important;
+            margin-top: 10px !important;
           }
         }
         
         @media (max-width: 480px) {
-          .tr-transfer-journey {
-            flex-direction: column;
-            gap: 15px;
+          .team-roster-transfer-journey {
+            flex-direction: column !important;
+            gap: 15px !important;
           }
           
-          .tr-journey-arrow {
-            transform: rotate(90deg);
+          .team-roster-journey-arrow {
+            transform: rotate(90deg) !important;
           }
           
-          .tr-tab-button {
-            padding: 10px 15px;
-            font-size: 14px;
+          .team-roster-tab-button {
+            padding: 10px 15px !important;
+            font-size: 14px !important;
           }
         }
       `}</style>
