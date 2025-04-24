@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaExclamationTriangle, FaMapMarkerAlt, FaIdCard, FaHashtag, FaRulerVertical, FaWeight, FaGraduationCap, FaRunning } from "react-icons/fa";
+import { FaUser, FaExclamationTriangle, FaMapMarkerAlt, FaIdCard, FaHashtag, FaRulerVertical, FaWeight, FaGraduationCap, FaRunning, FaArrowRight, FaSearch, FaFilter, FaCalendarAlt, FaStar } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import teamsService from "../services/teamsService";
 import TeamPlayerModal from "./TeamPlayerModal";
 
@@ -179,112 +180,204 @@ const getDefaultWeight = (position) => {
   }
 };
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { duration: 0.5 }
+  }
+};
+
 const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
   // Initialize roster as an empty array
   const [roster, setRoster] = useState([]);
+  const [incomingPlayers, setIncomingPlayers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null); // Add error state
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPosition, setFilterPosition] = useState("");
+  const [activeTab, setActiveTab] = useState("current"); // "current" or "incoming"
 
   // State for handling modal display and selected player
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  
+  // Function to fetch current roster
+  const fetchRoster = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Get team roster data
+      const data = await teamsService.getTeamRoster(teamName, year);
+      
+      console.log(`Fetched ${data?.length || 0} players for ${teamName}`);
+      
+      // Process the data to ensure all fields have values
+      const processedData = data.map(player => {
+        // Determine position (either from data or generate a default)
+        const position = player.position || getDefaultPosition(player.id);
+        
+        // Generate default weight based on position
+        const defaultWeight = getDefaultWeight(position);
+        
+        // Get the jersey display from the raw jersey number
+        const jerseyDisplay = getJerseyNumber(player);
+        
+        // Create the processed player object
+        const processedPlayer = {
+          ...player,
+          // Create a fullName if it doesn't exist
+          fullName: player.fullName || 
+                    `${player.firstName || ''} ${player.lastName || ''}`.trim() || 
+                    `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
+          
+          position: position,
+          
+          // Store the jersey display value
+          jerseyDisplay: jerseyDisplay,
+          
+          // Format hometown with default
+          formattedHometown: player.homeCity && player.homeState 
+            ? `${player.homeCity}, ${player.homeState}` 
+            : player.homeCity || player.homeState || "Columbus, OH",
+          
+          // Format weight with position-appropriate default
+          weightDisplay: player.weight ? `${player.weight} lbs` : `${defaultWeight} lbs`,
+          
+          // Format height with default
+          heightDisplay: formatHeight(player.height),
+          
+          // Format year/class with default
+          yearDisplay: getYearText(player.year)
+        };
+        
+        return processedPlayer;
+      });
+      
+      // Sort players by jersey number numerically
+      const sortedRoster = [...processedData].sort((a, b) => {
+        // Convert to numbers for sorting, but handle null/undefined
+        const jerseyA = a.jersey !== undefined && a.jersey !== null ? parseInt(a.jersey, 10) : 999;
+        const jerseyB = b.jersey !== undefined && b.jersey !== null ? parseInt(b.jersey, 10) : 999;
+        return jerseyA - jerseyB;
+      });
+      
+      console.log(`Processed ${sortedRoster.length} players for display`);
+      setRoster(sortedRoster);
+    } catch (err) {
+      console.error("Error fetching roster:", err.message);
+      setError("Failed to load roster information.");
+      setRoster([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Function to fetch incoming players (transfers and recruits)
+  const fetchIncomingPlayers = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Get team roster data - we assume teamsService has a method for incoming players
+      // This might combine transfers and recruits
+      const data = await teamsService.getIncomingPlayers(teamName, year);
+      
+      console.log(`Fetched ${data?.length || 0} incoming players for ${teamName}`);
+      
+      // Process the data to ensure all fields have values
+      const processedData = data.map(player => {
+        // Determine position (either from data or generate a default)
+        const position = player.position || getDefaultPosition(player.id);
+        
+        // Generate default weight based on position
+        const defaultWeight = getDefaultWeight(position);
+        
+        // Create the processed player object
+        const processedPlayer = {
+          ...player,
+          // Create a fullName if it doesn't exist
+          fullName: player.fullName || 
+                    `${player.firstName || ''} ${player.lastName || ''}`.trim() || 
+                    `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
+          
+          position: position,
+          
+          // Format hometown with default
+          formattedHometown: player.homeCity && player.homeState 
+            ? `${player.homeCity}, ${player.homeState}` 
+            : player.homeCity || player.homeState || "Columbus, OH",
+          
+          // Format weight with position-appropriate default
+          weightDisplay: player.weight ? `${player.weight} lbs` : `${defaultWeight} lbs`,
+          
+          // Format height with default
+          heightDisplay: formatHeight(player.height),
+          
+          // Format year/class with default
+          yearDisplay: getYearText(player.year),
+          
+          // Add stars rating if available, or default
+          stars: player.stars || 3,
+          
+          // Add origin school if it's a transfer
+          originSchool: player.origin || player.previousSchool,
+          
+          // Add transfer or recruit type
+          playerType: player.origin ? "transfer" : "recruit"
+        };
+        
+        return processedPlayer;
+      });
+      
+      // Sort incoming players by star rating (highest first)
+      const sortedIncoming = [...processedData].sort((a, b) => {
+        return (b.stars || 0) - (a.stars || 0);
+      });
+      
+      console.log(`Processed ${sortedIncoming.length} incoming players for display`);
+      setIncomingPlayers(sortedIncoming);
+    } catch (err) {
+      console.error("Error fetching incoming players:", err.message);
+      setError("Failed to load incoming players information.");
+      setIncomingPlayers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRoster = async () => {
-      setIsLoading(true);
-      setError(null); // Reset error state on new fetch
-      try {
-        // Get team roster data
-        const data = await teamsService.getTeamRoster(teamName, year);
-        
-        console.log(`Fetched ${data?.length || 0} players for ${teamName}`);
-        
-        // More detailed logging to debug
-        if (data && data.length > 0) {
-          const samplePlayers = data.slice(0, 5);
-          console.log("Sample player data with jersey numbers:");
-          samplePlayers.forEach(player => {
-            console.log(`${player.firstName} ${player.lastName}: jersey=${player.jersey}, id=${player.id}`);
-          });
-        }
-        
-        // Process the data to ensure all fields have values
-        const processedData = data.map(player => {
-          // Determine position (either from data or generate a default)
-          const position = player.position || getDefaultPosition(player.id);
-          
-          // Generate default weight based on position
-          const defaultWeight = getDefaultWeight(position);
-          
-          // Get the jersey display from the raw jersey number
-          const jerseyDisplay = getJerseyNumber(player);
-          
-          // Create the processed player object
-          const processedPlayer = {
-            ...player,
-            // Create a fullName if it doesn't exist
-            fullName: player.fullName || 
-                      `${player.firstName || ''} ${player.lastName || ''}`.trim() || 
-                      `Player ${player.id ? player.id.toString().slice(-5) : Math.floor(Math.random() * 10000)}`,
-            
-            position: position,
-            
-            // Store the jersey display value
-            jerseyDisplay: jerseyDisplay,
-            
-            // Format hometown with default
-            formattedHometown: player.homeCity && player.homeState 
-              ? `${player.homeCity}, ${player.homeState}` 
-              : player.homeCity || player.homeState || "Columbus, OH",
-            
-            // Format weight with position-appropriate default
-            weightDisplay: player.weight ? `${player.weight} lbs` : `${defaultWeight} lbs`,
-            
-            // Format height with default
-            heightDisplay: formatHeight(player.height),
-            
-            // Format year/class with default
-            yearDisplay: getYearText(player.year)
-          };
-          
-          return processedPlayer;
-        });
-        
-        // For debugging - log all jersey numbers before sorting
-        console.log("All jersey numbers before sorting:");
-        processedData.forEach(player => {
-          console.log(`${player.firstName} ${player.lastName}: original=${player.jersey}, display=${player.jerseyDisplay}`);
-        });
-        
-        // Sort players by jersey number numerically
-        const sortedRoster = [...processedData].sort((a, b) => {
-          // Convert to numbers for sorting, but handle null/undefined
-          const jerseyA = a.jersey !== undefined && a.jersey !== null ? parseInt(a.jersey, 10) : 999;
-          const jerseyB = b.jersey !== undefined && b.jersey !== null ? parseInt(b.jersey, 10) : 999;
-          return jerseyA - jerseyB;
-        });
-        
-        console.log(`Processed ${sortedRoster.length} players for display`);
-        setRoster(sortedRoster);
-      } catch (err) {
-        console.error("Error fetching roster:", err.message);
-        setError("Failed to load roster information."); // Set error message
-        setRoster([]); // Ensure roster is empty on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (activeTab === "current") {
+      fetchRoster();
+    } else {
+      fetchIncomingPlayers();
+    }
+  }, [teamName, year, activeTab]);
 
-    fetchRoster();
-  }, [teamName, year]);
-
-  // Get all unique positions for filtering
-  const uniquePositions = [...new Set(roster.map(player => player.position))].filter(Boolean);
+  // Get all unique positions for filtering from both current and incoming players
+  const currentPositions = [...new Set(roster.map(player => player.position))].filter(Boolean);
+  const incomingPositions = [...new Set(incomingPlayers.map(player => player.position))].filter(Boolean);
+  const uniquePositions = [...new Set([...currentPositions, ...incomingPositions])].sort();
 
   // Filter players based on search and position
-  const filteredPlayers = roster.filter(player => {
+  const filteredCurrentPlayers = roster.filter(player => {
+    const nameMatch = player.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+    const positionMatch = filterPosition ? player.position === filterPosition : true;
+    return nameMatch && positionMatch;
+  });
+
+  const filteredIncomingPlayers = incomingPlayers.filter(player => {
     const nameMatch = player.fullName.toLowerCase().includes(searchTerm.toLowerCase());
     const positionMatch = filterPosition ? player.position === filterPosition : true;
     return nameMatch && positionMatch;
@@ -303,6 +396,23 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
     setIsModalOpen(true);
   };
 
+  // Star rendering
+  const renderStars = (count) => (
+    <div className="star-rating">
+      {[...Array(5)].map((_, i) => (
+        <motion.span
+          key={i}
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: i * 0.1, duration: 0.2 }}
+        >
+          <FaStar className={i < count ? "star filled" : "star empty"} />
+        </motion.span>
+      ))}
+    </div>
+  );
+
   return (
     <div className="dashboard-card full-width-card">
       <div className="card-header" style={cardHeaderStyle}>
@@ -310,10 +420,28 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         Team Roster
       </div>
       <div className="card-body">
+        {/* Tab Navigation */}
+        <div className="roster-tabs">
+          <button 
+            className={`tab-button ${activeTab === "current" ? "active" : ""}`}
+            onClick={() => setActiveTab("current")}
+            style={{borderColor: activeTab === "current" ? teamColor : 'transparent'}}
+          >
+            Current Roster
+          </button>
+          <button 
+            className={`tab-button ${activeTab === "incoming" ? "active" : ""}`}
+            onClick={() => setActiveTab("incoming")}
+            style={{borderColor: activeTab === "incoming" ? teamColor : 'transparent'}}
+          >
+            Incoming Players
+          </button>
+        </div>
+
         {isLoading ? (
           <div className="loading-indicator">
             <LoadingSpinner color={teamColor} />
-            <p>Loading roster...</p>
+            <p>Loading {activeTab === "current" ? "roster" : "incoming players"}...</p>
           </div>
         ) : error ? (
           <div className="error-message">
@@ -323,7 +451,8 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
         ) : (
           <>
             <div className="roster-filters">
-              <div className="search-box">
+              <div className="search-container">
+                <FaSearch className="search-icon" />
                 <input 
                   type="text" 
                   placeholder="Search players..." 
@@ -331,12 +460,21 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-input"
                 />
+                {searchTerm && (
+                  <button 
+                    className="clear-search"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
-              <div className="position-filter">
+              <div className="filter-group">
+                <label>Position</label>
                 <select 
                   value={filterPosition} 
                   onChange={(e) => setFilterPosition(e.target.value)}
-                  className="position-select"
+                  className="filter-select"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map(pos => (
@@ -347,98 +485,192 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
             </div>
             
             <div className="players-count">
-              <span>Showing {filteredPlayers.length} of {roster.length} players</span>
+              <span>Showing {activeTab === "current" ? filteredCurrentPlayers.length : filteredIncomingPlayers.length} of {activeTab === "current" ? roster.length : incomingPlayers.length} players</span>
             </div>
             
-            <div className="player-cards-container">
-              {filteredPlayers.length > 0 ? (
-                filteredPlayers.map((player, index) => (
-                  <div 
-                    key={player.id || index} 
-                    className="player-card"
-                    onClick={() => handlePlayerClick(player)}
-                  >
-                    <div className="player-card-header" style={{backgroundColor: teamColor}}>
-                      {/* FIXED: Display the jersey number directly from the jersey field */}
-                      <div className="player-jersey-number">{player.jersey}</div>
-                      <div className="player-position-badge">{player.position}</div>
-                    </div>
-                    <div className="player-card-body">
-                      <h3 className="player-name">{player.fullName}</h3>
-                      
-                      <div className="player-info-grid">
-                        <div className="info-item">
-                          <FaRulerVertical className="info-icon" />
-                          <span className="info-label">Height</span>
-                          <span className="info-value">{player.heightDisplay}</span>
-                        </div>
-                        
-                        <div className="info-item">
-                          <FaWeight className="info-icon" />
-                          <span className="info-label">Weight</span>
-                          <span className="info-value">{player.weightDisplay}</span>
-                        </div>
-                        
-                        <div className="info-item">
-                          <FaGraduationCap className="info-icon" />
-                          <span className="info-label">Year</span>
-                          <span className="info-value">{player.yearDisplay}</span>
-                        </div>
-                        
-                        <div className="info-item">
-                          <FaRunning className="info-icon" />
-                          <span className="info-label">Team</span>
-                          <span className="info-value">{player.team || teamName}</span>
-                        </div>
+            {activeTab === "current" ? (
+              <motion.div 
+                className="player-cards-container"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {filteredCurrentPlayers.length > 0 ? (
+                  filteredCurrentPlayers.map((player, index) => (
+                    <motion.div 
+                      key={player.id || index} 
+                      className="player-card"
+                      variants={itemVariants}
+                      onClick={() => handlePlayerClick(player)}
+                    >
+                      <div className="player-card-header" style={{backgroundColor: teamColor}}>
+                        <div className="player-jersey-number">{player.jersey}</div>
+                        <div className="player-position-badge">{player.position}</div>
                       </div>
-
-                      <div className="player-location">
-                        <FaMapMarkerAlt className="location-icon" />
-                        <span>{player.formattedHometown}</span>
-                        {player.homeCountry && player.homeCountry !== "USA" && (
-                          <span>, {player.homeCountry}</span>
-                        )}
-                      </div>
-                      
-                      {(player.homeLatitude || player.homeLongitude) && (
-                        <div className="player-coordinates">
-                          Lat: {player.homeLatitude}, Long: {player.homeLongitude}
-                        </div>
-                      )}
-                      
-                      {player.homeCountyFIPS && (
-                        <div className="player-fips">
-                          County FIPS: {player.homeCountyFIPS}
-                        </div>
-                      )}
-                      
-                      <div className="player-id-section">
-                        <div className="player-id">
-                          <FaIdCard className="id-icon" />
-                          <span>ID: {player.id || "Unknown"}</span>
-                        </div>
+                      <div className="player-card-body">
+                        <h3 className="player-name">{player.fullName}</h3>
                         
-                        {player.recruitIds && player.recruitIds.length > 0 && (
-                          <div className="recruit-ids">
-                            <FaHashtag className="id-icon" />
-                            <span>Recruit IDs: {player.recruitIds.join(", ")}</span>
+                        <div className="player-info-grid">
+                          <div className="info-item">
+                            <FaRulerVertical className="info-icon" />
+                            <span className="info-label">Height</span>
+                            <span className="info-value">{player.heightDisplay}</span>
                           </div>
-                        )}
+                          
+                          <div className="info-item">
+                            <FaWeight className="info-icon" />
+                            <span className="info-label">Weight</span>
+                            <span className="info-value">{player.weightDisplay}</span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <FaGraduationCap className="info-icon" />
+                            <span className="info-label">Year</span>
+                            <span className="info-value">{player.yearDisplay}</span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <FaMapMarkerAlt className="info-icon" />
+                            <span className="info-label">Hometown</span>
+                            <span className="info-value">{player.formattedHometown}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="no-players-message">
+                    No players found. Please try a different search or filter.
                   </div>
-                ))
-              ) : (
-                <div className="no-players-message">
-                  No players found. Please try a different search or filter.
-                </div>
-              )}
-            </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div 
+                className="player-cards-container"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {filteredIncomingPlayers.length > 0 ? (
+                  filteredIncomingPlayers.map((player, index) => (
+                    <motion.div 
+                      key={player.id || index} 
+                      className="transfer-card"
+                      variants={itemVariants}
+                      onClick={() => handlePlayerClick(player)}
+                      layoutId={`${player.firstName}-${player.lastName}-${index}`}
+                    >
+                      <div className="transfer-card-header">
+                        <div className="player-identity">
+                          <div className="player-avatar">
+                            <FaUser className="avatar-icon" />
+                          </div>
+                          <div>
+                            <h3>{player.fullName}</h3>
+                            <div className="position-badge">
+                              {player.position || "ATH"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="player-rating">
+                          {renderStars(player.stars)}
+                          {player.rating && (
+                            <div className="rating-value">
+                              {parseFloat(player.rating).toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {player.playerType === "transfer" && player.originSchool && (
+                        <div className="transfer-journey">
+                          <div className="school origin">
+                            <img 
+                              src={`/team-logos/${player.originSchool.replace(/\s+/g, '-').toLowerCase()}.png`} 
+                              alt={player.originSchool || "Origin"} 
+                              className="school-logo"
+                              onError={(e) => {e.target.src = "/photos/football.avif"}}
+                            />
+                            <span className="school-name">
+                              {player.originSchool || "Unknown"}
+                            </span>
+                          </div>
+                          
+                          <div className="journey-arrow">
+                            <FaArrowRight className="arrow-icon" />
+                          </div>
+                          
+                          <div className="school destination">
+                            <img 
+                              src={teamLogo || `/team-logos/${teamName.replace(/\s+/g, '-').toLowerCase()}.png`} 
+                              alt={teamName} 
+                              className="school-logo"
+                              onError={(e) => {e.target.src = "/photos/football.avif"}}
+                            />
+                            <span className="school-name">
+                              {teamName}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="player-info-section">
+                        <div className="player-info-grid">
+                          <div className="info-item">
+                            <FaRulerVertical className="info-icon" />
+                            <span className="info-label">Height</span>
+                            <span className="info-value">{player.heightDisplay}</span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <FaWeight className="info-icon" />
+                            <span className="info-label">Weight</span>
+                            <span className="info-value">{player.weightDisplay}</span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <FaGraduationCap className="info-icon" />
+                            <span className="info-label">Eligibility</span>
+                            <span className="info-value">{player.yearDisplay}</span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <FaMapMarkerAlt className="info-icon" />
+                            <span className="info-label">Hometown</span>
+                            <span className="info-value">{player.formattedHometown}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="transfer-meta">
+                        <div className="meta-item">
+                          <FaCalendarAlt className="meta-icon" />
+                          <span>{player.commitDate ? new Date(player.commitDate).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          }) : "Uncommitted"}</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className={`player-type-badge ${player.playerType}`}>
+                            {player.playerType === "transfer" ? "Transfer" : "Recruit"}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="no-players-message">
+                    No incoming players found. Please try a different search or filter.
+                  </div>
+                )}
+              </motion.div>
+            )}
           </>
         )}
       </div>
 
-      {/* Component-specific styles */}
+      {/* CSS styling */}
       <style>{`
         /* Dashboard Card */
         .dashboard-card {
@@ -449,6 +681,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           animation: fadeIn 0.6s ease-out;
           width: 100%;
+          margin-bottom: 30px;
         }
         
         .dashboard-card:hover {
@@ -479,23 +712,63 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           padding: 1.5rem;
         }
 
+        /* Tab Navigation */
+        .roster-tabs {
+          display: flex;
+          border-bottom: 1px solid #e0e0e0;
+          margin-bottom: 25px;
+        }
+        
+        .tab-button {
+          padding: 12px 24px;
+          background: transparent;
+          border: none;
+          border-bottom: 3px solid transparent;
+          font-size: 16px;
+          font-weight: 600;
+          color: #666;
+          cursor: pointer;
+          transition: all 0.3s;
+          margin-right: 10px;
+        }
+        
+        .tab-button.active {
+          color: ${teamColor};
+          border-color: ${teamColor};
+        }
+        
+        .tab-button:hover:not(.active) {
+          color: ${lightenColor(teamColor, 20)};
+          border-color: ${lightenColor(teamColor, 70)};
+        }
+
         /* Filters */
         .roster-filters {
           display: flex;
           gap: 15px;
           margin-bottom: 20px;
           flex-wrap: wrap;
+          align-items: flex-end;
         }
         
-        .search-box {
+        .search-container {
           flex: 1;
           min-width: 200px;
+          position: relative;
+        }
+        
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #757575;
         }
         
         .search-input {
           width: 100%;
-          padding: 10px 15px;
-          border-radius: 8px;
+          padding: 12px 40px;
+          border-radius: 30px;
           border: 1px solid #e0e0e0;
           font-size: 16px;
           transition: all 0.2s;
@@ -507,12 +780,31 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
         }
         
-        .position-filter {
-          width: 200px;
+        .clear-search {
+          position: absolute;
+          right: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: #757575;
+          font-size: 1.2rem;
+          cursor: pointer;
         }
         
-        .position-select {
-          width: 100%;
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          min-width: 180px;
+        }
+        
+        .filter-group label {
+          font-size: 0.8rem;
+          margin-bottom: 5px;
+          color: #757575;
+        }
+        
+        .filter-select {
           padding: 10px 15px;
           border-radius: 8px;
           border: 1px solid #e0e0e0;
@@ -521,7 +813,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           cursor: pointer;
         }
         
-        .position-select:focus {
+        .filter-select:focus {
           outline: none;
           border-color: ${teamColor};
           box-shadow: 0 0 0 2px ${lightenColor(teamColor, 70)};
@@ -541,7 +833,7 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           margin-top: 20px;
         }
         
-        /* Player Card */
+        /* Regular Player Card */
         .player-card {
           background: white;
           border-radius: 12px;
@@ -638,50 +930,185 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           color: #333;
         }
         
-        .player-location {
+        /* Transfer Card Styling (for incoming players) */
+        .transfer-card {
+          background-color: white;
+          border: 1px solid #e0e0e0;
+          padding: 15px;
+          transition: all 0.3s;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .transfer-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+          border-color: ${teamColor};
+        }
+        
+        .transfer-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+        
+        .player-identity {
           display: flex;
           align-items: center;
-          gap: 5px;
-          font-size: 14px;
-          color: #555;
+          gap: 12px;
+        }
+        
+        .player-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background-color: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .avatar-icon {
+          font-size: 24px;
+          color: #757575;
+        }
+        
+        .player-identity h3 {
+          margin: 0;
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+        
+        .position-badge {
+          display: inline-block;
+          padding: 3px 8px;
+          background-color: #f5f5f5;
+          border-radius: 12px;
+          font-size: 0.8rem;
           margin-top: 5px;
         }
         
-        .location-icon {
+        .player-rating {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        
+        .star-rating {
+          display: flex;
+          gap: 2px;
+        }
+        
+        .star {
+          font-size: 1rem;
+        }
+        
+        .star.filled {
+          color: #ffc72c;
+        }
+        
+        .star.empty {
+          color: #e0e0e0;
+        }
+        
+        .rating-value {
+          font-size: 0.8rem;
+          margin-top: 2px;
+          color: #757575;
+        }
+        
+        /* Transfer Journey */
+        .transfer-journey {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 15px;
+          padding: 10px;
+          background-color: #f5f5f5;
+          border-radius: 8px;
+        }
+        
+        .school {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex: 1;
+        }
+        
+        .school-logo {
+          width: 50px;
+          height: 50px;
+          object-fit: contain;
+          margin-bottom: 5px;
+        }
+        
+        .school-name {
+          font-size: 0.9rem;
+          text-align: center;
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .journey-arrow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-basis: 50px;
+        }
+        
+        .arrow-icon {
+          font-size: 1.5rem;
           color: ${teamColor};
         }
         
-        .player-coordinates {
-          font-size: 12px;
-          color: #999;
-          margin-top: -10px;
-          margin-left: 20px;
+        /* Player Info Section */
+        .player-info-section {
+          margin-bottom: 15px;
         }
         
-        .player-fips {
-          font-size: 12px;
-          color: #999;
-          margin-top: -10px;
-          margin-left: 20px;
-        }
-        
-        .player-id-section {
+        /* Transfer Meta */
+        .transfer-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 0.85rem;
           margin-top: 10px;
           border-top: 1px solid #f0f0f0;
           padding-top: 10px;
-          font-size: 12px;
-          color: #777;
         }
         
-        .player-id, .recruit-ids {
+        .meta-item {
           display: flex;
           align-items: center;
           gap: 5px;
-          margin-top: 3px;
+          color: #757575;
         }
         
-        .id-icon {
-          color: #aaa;
+        .meta-icon {
+          font-size: 0.9rem;
+        }
+        
+        .player-type-badge {
+          padding: 3px 8px;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        
+        .player-type-badge.transfer {
+          background-color: rgba(244, 67, 54, 0.2);
+          color: #c62828;
+        }
+        
+        .player-type-badge.recruit {
+          background-color: rgba(76, 175, 80, 0.2);
+          color: #2e7d32;
         }
 
         /* Empty state */
@@ -736,6 +1163,40 @@ const TeamRoster = ({ teamName, teamColor, year = 2024, teamLogo }) => {
           
           .player-info-grid {
             grid-template-columns: 1fr;
+          }
+          
+          .roster-filters {
+            flex-direction: column;
+          }
+          
+          .search-container, .filter-group {
+            width: 100%;
+          }
+          
+          .transfer-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .player-rating {
+            align-items: flex-start;
+            margin-top: 10px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .transfer-journey {
+            flex-direction: column;
+            gap: 15px;
+          }
+          
+          .journey-arrow {
+            transform: rotate(90deg);
+          }
+          
+          .tab-button {
+            padding: 10px 15px;
+            font-size: 14px;
           }
         }
       `}</style>
