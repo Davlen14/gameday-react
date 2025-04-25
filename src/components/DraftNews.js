@@ -9,7 +9,7 @@ const DraftNews = () => {
   const [nflTeams, setNflTeams] = useState([]);
   const [positionFilter, setPositionFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [expandedPlayers, setExpandedPlayers] = useState([]);
   const [year] = useState(2025);
   const [positions, setPositions] = useState(['All', 'QB', 'WR', 'CB', 'WR/CB', 'EDGE', 'T', 'RB', 'TE', 'LB', 'DI', 'S', 'G', 'IOL']);
   const [roundFilter, setRoundFilter] = useState('All');
@@ -649,9 +649,13 @@ const DraftNews = () => {
     return `${feet}'${inches}"`;
   };
   
-  // Toggle player details
+  // Toggle player details - modified to allow multiple dropdowns open at once
   const togglePlayerDetails = (pickId) => {
-    setSelectedPlayer(selectedPlayer === pickId ? null : pickId);
+    if (expandedPlayers.includes(pickId)) {
+      setExpandedPlayers(expandedPlayers.filter(id => id !== pickId));
+    } else {
+      setExpandedPlayers([...expandedPlayers, pickId]);
+    }
   };
   
   // Filter draft picks by position, round, and search term
@@ -695,97 +699,77 @@ const DraftNews = () => {
     return "Below Average";
   };
 
-  // Get abbreviated NFL team name
-  const getTeamAbbreviation = (teamName) => {
-    const teamMap = {
-      "Arizona Cardinals": "ARI",
-      "Atlanta Falcons": "ATL",
-      "Baltimore Ravens": "BAL",
-      "Buffalo Bills": "BUF",
-      "Carolina Panthers": "CAR",
-      "Chicago Bears": "CHI",
-      "Cincinnati Bengals": "CIN",
-      "Cleveland Browns": "CLE",
-      "Dallas Cowboys": "DAL",
-      "Denver Broncos": "DEN",
-      "Detroit Lions": "DET",
-      "Green Bay Packers": "GB",
-      "Houston Texans": "HOU",
-      "Indianapolis Colts": "IND",
-      "Jacksonville Jaguars": "JAX",
-      "Kansas City Chiefs": "KC",
-      "Las Vegas Raiders": "LV",
-      "Los Angeles Chargers": "LAC",
-      "Los Angeles Rams": "LA",
-      "Miami Dolphins": "MIA",
-      "Minnesota Vikings": "MIN",
-      "New England Patriots": "NE",
-      "New Orleans Saints": "NO",
-      "New York Giants": "NYG",
-      "New York Jets": "NYJ",
-      "Philadelphia Eagles": "PHI",
-      "Pittsburgh Steelers": "PIT",
-      "San Francisco 49ers": "SF",
-      "Seattle Seahawks": "SEA",
-      "Tampa Bay Buccaneers": "TB",
-      "Tennessee Titans": "TEN",
-      "Washington Commanders": "WAS"
-    };
-    
-    return teamMap[teamName] || teamName.split(' ').map(word => word[0]).join('');
-  };
-
   return (
     <div className="mock-draft-container">
       {/* CSS Styles */}
       <style>
         {`
+          @font-face {
+            font-family: 'Orbitron';
+            src: url('/fonts/Orbitron-Regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+          }
+          
+          @font-face {
+            font-family: 'Orbitron';
+            src: url('/fonts/Orbitron-Bold.woff2') format('woff2');
+            font-weight: bold;
+            font-style: normal;
+          }
+          
           .mock-draft-container {
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
             font-family: 'Inter', 'Roboto', sans-serif;
-            background-color: #000000;
-            color: white;
+            background-color: #f8f9fa;
+            color: #333;
           }
           
           .mock-draft-header {
             background-color: #d4001c;
-            padding: 1.5rem;
+            padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
           }
           
           .gameday-logo {
+            font-family: 'Orbitron', sans-serif;
             font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: 0.05em;
             text-transform: uppercase;
+            color: white;
           }
           
           .mock-draft-title {
+            font-family: 'Orbitron', sans-serif;
             font-size: 1.8rem;
             font-weight: 700;
             text-transform: uppercase;
+            color: white;
           }
           
           .mock-draft-controls {
-            background-color: #1a1a1a;
+            background-color: white;
             padding: 1rem;
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #eee;
           }
           
           .search-input {
             flex: 1;
             min-width: 200px;
-            background-color: #333;
-            border: none;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
             border-radius: 4px;
             padding: 0.5rem 1rem;
-            color: white;
+            color: #333;
             display: flex;
             align-items: center;
           }
@@ -793,7 +777,7 @@ const DraftNews = () => {
           .search-input input {
             background: transparent;
             border: none;
-            color: white;
+            color: #333;
             margin-left: 0.5rem;
             flex: 1;
           }
@@ -803,11 +787,11 @@ const DraftNews = () => {
           }
           
           .filter-select {
-            background-color: #333;
-            border: none;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
             border-radius: 4px;
             padding: 0.5rem 1rem;
-            color: white;
+            color: #333;
             display: flex;
             align-items: center;
             min-width: 120px;
@@ -816,7 +800,7 @@ const DraftNews = () => {
           .filter-select select {
             background: transparent;
             border: none;
-            color: white;
+            color: #333;
             margin-left: 0.5rem;
             appearance: none;
           }
@@ -830,13 +814,14 @@ const DraftNews = () => {
             grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
             padding: 1rem;
-            background-color: #1a1a1a;
+            background-color: #f8f9fa;
           }
           
           .draft-pick-card {
-            background-color: #222;
+            background-color: white;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
           }
           
           .draft-pick-main {
@@ -857,7 +842,6 @@ const DraftNews = () => {
             justify-content: center;
             font-weight: 700;
             font-size: 1.2rem;
-            background-color: #333;
             color: white;
           }
           
@@ -881,11 +865,12 @@ const DraftNews = () => {
           .player-name {
             font-weight: 700;
             font-size: 1.15rem;
+            color: #333;
           }
           
           .player-position {
-            background-color: #333;
-            color: white;
+            background-color: #f0f0f0;
+            color: #333;
             padding: 0.15rem 0.4rem;
             border-radius: 3px;
             font-size: 0.8rem;
@@ -893,7 +878,7 @@ const DraftNews = () => {
           }
           
           .player-college {
-            color: #aaa;
+            color: #666;
             font-size: 0.9rem;
           }
           
@@ -906,7 +891,6 @@ const DraftNews = () => {
             justify-content: center;
             font-weight: 700;
             font-size: 0.9rem;
-            background-color: #333;
           }
           
           .teams-container {
@@ -922,17 +906,20 @@ const DraftNews = () => {
             background-color: white;
             padding: 0.15rem;
             object-fit: contain;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           }
           
           .player-icon {
             width: 2.2rem;
             height: 2.2rem;
             border-radius: 50%;
-            background-color: #444;
+            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #999;
+            color: #666;
+            border: 1px solid #ddd;
           }
           
           .arrow-icon {
@@ -941,9 +928,9 @@ const DraftNews = () => {
           }
           
           .player-expanded-details {
-            background-color: #333;
+            background-color: #f8f9fa;
             padding: 1rem;
-            border-top: 1px solid #444;
+            border-top: 1px solid #eee;
             animation: slideDown 0.3s ease;
           }
           
@@ -953,11 +940,12 @@ const DraftNews = () => {
           
           .player-stat-group h4 {
             font-size: 0.85rem;
-            color: #aaa;
+            color: #666;
             margin-bottom: 0.5rem;
             text-transform: uppercase;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid #ddd;
             padding-bottom: 0.25rem;
+            font-weight: 600;
           }
           
           .player-stat {
@@ -966,6 +954,7 @@ const DraftNews = () => {
             gap: 0.5rem;
             margin-bottom: 0.25rem;
             font-size: 0.9rem;
+            color: #333;
           }
           
           .player-stat svg {
@@ -984,11 +973,12 @@ const DraftNews = () => {
           }
           
           .loading-error-container {
-            background-color: #222;
+            background-color: white;
             padding: 2rem;
             border-radius: 8px;
             text-align: center;
-            color: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
           }
           
           .loading-spinner {
@@ -1153,7 +1143,7 @@ const DraftNews = () => {
                     </div>
                   </div>
                   
-                  {selectedPlayer === pick.overall && (
+                  {expandedPlayers.includes(pick.overall) && (
                     <div className="player-expanded-details">
                       <div className="player-stat-group">
                         <h4>Draft Information</h4>
