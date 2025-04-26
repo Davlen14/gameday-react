@@ -553,7 +553,7 @@ const DraftNews = () => {
       hometownInfo: { city: "Jefferson", state: "GA", country: "USA" },
       preDraftRanking: 8,
       preDraftPositionRanking: 1,
-      preDraftGrade: 87.5,
+      preDraftGrade: 88.5,
       collegeAthleteId: "157069",
       nflAthleteId: "MAS157069"
     },
