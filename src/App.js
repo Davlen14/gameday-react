@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { WeekProvider } from "./context/WeekContext"; // ✅ Import WeekProvider
+import { WeekProvider } from "./context/WeekContext";
 import Home from "./components/Home";
 import Teams from "./components/Teams";
 import Games from "./components/Games";
@@ -9,32 +9,21 @@ import More from "./components/More";
 import Chatbot from "./components/Chatbot";
 import GameDetailView from "./components/GameDetailView";
 import TeamDetail from "./components/TeamDetailView";
-import Scoreboard from "./components/Scoreboard"; // Import the Scoreboard component
-import LatestUpdates from "./components/LatestUpdates"; // ✅ Import the Latest Updates page
-import FanHub from "./components/FanHub"; // ✅ Import FanHub for the Fan Hub UI
-import TeamAnalytics from "./components/TeamAnalytics"; // ✅ Import the new Team Analytics component
-import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail"; // ✅ Import the Team Analytics Detail component
-import Lines from "./components/Lines"; // ✅ Import Lines for Spread + Analysis
-import AdvancedGameDetailView from "./components/AdvancedGameDetailView"; // Import the new AdvancedGameDetailView component
-import DraftNews from "./components/DraftNews"; // Import the DraftNews component
-
-// New ArbitrageEV Component Import
+import Scoreboard from "./components/Scoreboard";
+import LatestUpdates from "./components/LatestUpdates";
+import FanHub from "./components/FanHub";
+import TeamAnalytics from "./components/TeamAnalytics";
+import TeamAnalyticsDetail from "./components/TeamAnalyticsDetail";
+import Lines from "./components/Lines";
+import AdvancedGameDetailView from "./components/AdvancedGameDetailView";
+import DraftNews from "./components/DraftNews";
 import ArbitrageEV from "./components/ArbitrageEV";
-
-// NEW: Import CoachOverview Component
 import CoachOverview from "./components/CoachOverview";
-
-// NEW: Import PlayerGrade Component
 import PlayerGrade from "./components/PlayerGrade";
-
-// NEW: Import PlayerGameGrade Component
 import PlayerGameGrade from "./components/PlayerGameGrade";
-
-// NEW: Import VisualizeTrends Component (for Visualize Trends route)
 import VisualizeTrends from "./components/VisualizeTrends";
-
-// NEW: Import GetStarted Component for the Get Started page
 import GetStarted from "./components/GetStarted";
+import TeamOutlook from "./components/TeamOutlook"; // <-- Import TeamOutlook
 
 // Conference Components
 import SEC from "./conferences/SEC";
@@ -51,16 +40,12 @@ import FBSIndependents from "./conferences/FBSIndependents";
 import "./App.css";
 import "./Navbar.css";
 import "./Header.css";
-import "./styles/Scoreboard.css"; // Import the Scoreboard CSS
+import "./styles/Scoreboard.css";
 
-// Recruiting Imports (excluding the Recruiting component)
 import TopProspects from "./components/TopProspects";
 import Commitments from "./components/Commitments";
 import TransferPortal from "./components/TransferPortal";
 
-// ------------------------
-// Conference Logos, Full Names & Abbreviations
-// ------------------------
 const conferenceLogos = {
   "ACC": "ACC.png",
   "American Athletic": "American Athletic.png",
@@ -87,7 +72,6 @@ const conferenceList = [
   "FBS Independents",
 ];
 
-// Abbreviations for conferences
 const conferenceAbbr = {
   "SEC": "SEC",
   "Big Ten": "B1G",
@@ -105,23 +89,15 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [scoreboardVisible, setScoreboardVisible] = useState(true);
-  // Add state for mobile navigation
   const [mobileNavActive, setMobileNavActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check if screen is mobile size
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
-    // Initial check
     checkMobile();
-    
-    // Add event listener for resize
     window.addEventListener('resize', checkMobile);
-    
-    // Clean up
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -130,28 +106,21 @@ function App() {
   };
 
   const toggleDropdown = (menu) => {
-    if (isMobile) return; // Don't toggle dropdowns on hover for mobile
+    if (isMobile) return;
     setDropdownOpen((prev) => (prev === menu ? null : menu));
   };
 
-  // Toggle mobile navigation
   const toggleMobileNav = () => {
     setMobileNavActive(!mobileNavActive);
-    if (!mobileNavActive) {
-      // When opening mobile nav, close any open dropdowns
-      setDropdownOpen(null);
-    }
-    // Toggle body scroll
+    if (!mobileNavActive) setDropdownOpen(null);
     document.body.style.overflow = !mobileNavActive ? 'hidden' : '';
   };
 
-  // Close mobile navigation when a link is clicked
   const closeMobileNav = () => {
     setMobileNavActive(false);
     document.body.style.overflow = '';
   };
 
-  // Toggle mobile dropdown menus
   const toggleMobileDropdown = (menu) => {
     setDropdownOpen((prev) => (prev === menu ? null : menu));
   };
@@ -160,16 +129,10 @@ function App() {
     <WeekProvider>
       <Router>
         <div className={`app ${dropdownOpen ? 'dropdown-active' : ''} ${mobileNavActive ? 'mobile-nav-active' : ''}`}>
-          {/* TOP SCOREBOARD BAR */}
           <Scoreboard setScoreboardVisible={setScoreboardVisible} />
-
-          {/* TOP NAVBAR */}
           <header className="top-bar">
             <div className="top-bar-container">
-              {/* Logo on the Left */}
               <Link to="/" className="top-bar-logo">GAMEDAY+</Link>
-
-              {/* Hamburger Menu for Mobile */}
               <div 
                 className={`hamburger-menu ${mobileNavActive ? 'active' : ''}`} 
                 onClick={toggleMobileNav}
@@ -178,8 +141,6 @@ function App() {
                 <span className="hamburger-line"></span>
                 <span className="hamburger-line"></span>
               </div>
-
-              {/* Navigation with Multiple Dropdowns */}
               <nav className="top-bar-nav">
                 <div className="dropdown-group">
                   {/* Conferences Dropdown */}
@@ -193,7 +154,7 @@ function App() {
                       <div className="dropdown-menu">
                         {conferenceList.map((conf) => (
                           <Link
-                            to={`/${conf.toLowerCase().replace(/ /g, "")}`} // e.g., '/sec'
+                            to={`/${conf.toLowerCase().replace(/ /g, "")}`}
                             key={conf}
                             style={{
                               display: "flex",
@@ -217,7 +178,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   {/* Lines Dropdown */}
                   <div
                     className="dropdown"
@@ -234,7 +194,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   {/* GamedayGPT Dropdown */}
                   <div
                     className="dropdown"
@@ -250,7 +209,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   {/* News Dropdown */}
                   <div
                     className="dropdown"
@@ -268,7 +226,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   {/* Metrics Dropdown */}
                   <div
                     className="dropdown"
@@ -280,12 +237,12 @@ function App() {
                       <div className="dropdown-menu">
                         <Link to="/team-metrics">Team Analytics</Link>
                         <Link to="/player-metrics">Player Stats</Link>
-                        {/* NEW: Added Visualize Trends link */}
                         <Link to="/betting-models">Visualize Trends</Link>
+                        {/* --- Add 2025 Team Outlook link here --- */}
+                        <Link to="/team-outlook">2025 Team Outlook</Link>
                       </div>
                     )}
                   </div>
-
                   {/* Videos Dropdown */}
                   <div
                     className="dropdown"
@@ -301,7 +258,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   {/* Recruiting Dropdown */}
                   <div
                     className="dropdown"
@@ -314,17 +270,13 @@ function App() {
                         <Link to="/top-prospects">Top Prospects</Link>
                         <Link to="/commitments">Commitments</Link>
                         <Link to="/transfer-portal">Transfer Portal</Link>
-                        {/* NEW: Coach Overview link */}
                         <Link to="/coach-overview">Coach Overview</Link>
-                        {/* NEW: Player Grade link */}
                         <Link to="/player-grade">Player Grading</Link>
                       </div>
                     )}
                   </div>
                 </div>
               </nav>
-
-              {/* Right Side Buttons */}
               <div className="top-bar-actions">
                 <Link to="/get-started" className="top-bar-button get-started">
                   Get Started
@@ -338,19 +290,16 @@ function App() {
               </div>
             </div>
           </header>
-
           {/* Mobile Navigation Overlay */}
           <div 
             className={`mobile-nav-overlay ${mobileNavActive ? 'active' : ''}`}
             onClick={closeMobileNav}
           ></div>
-
           {/* Mobile Navigation Menu */}
           <div className={`mobile-nav ${mobileNavActive ? 'active' : ''}`}>
             <div className="mobile-nav-header">
               <h2 className="mobile-nav-title">GAMEDAY+</h2>
             </div>
-            
             {/* Main Navigation Section */}
             <div className="mobile-nav-section">
               <h3 className="mobile-nav-section-title">Navigation</h3>
@@ -360,7 +309,6 @@ function App() {
               <Link to="/stats" className="mobile-nav-link" onClick={closeMobileNav}>Stats</Link>
               <Link to="/pickem-predictions" className="mobile-nav-link" onClick={closeMobileNav}>Pick'em &amp; Predictions</Link>
               <Link to="/fan-hub" className="mobile-nav-link" onClick={closeMobileNav}>Fan Hub</Link>
-              
               {/* Conferences */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-conferences")}>
                 Conferences <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -380,7 +328,6 @@ function App() {
                   ))}
                 </>
               )}
-              
               {/* Lines */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-lines")}>
                 Lines <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -393,7 +340,6 @@ function App() {
                   <Link to="/over-under-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Over/Under Metrics</Link>
                 </>
               )}
-              
               {/* GamedayGPT */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-gamedaygpt")}>
                 GamedayGPT <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -405,7 +351,6 @@ function App() {
                   <Link to="/betting-suggestions" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Betting Suggestions</Link>
                 </>
               )}
-              
               {/* News */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-news")}>
                 News <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -419,7 +364,6 @@ function App() {
                   <Link to="/coaching-changes" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Coaching Changes</Link>
                 </>
               )}
-              
               {/* Metrics */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-metrics")}>
                 Metrics <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -429,9 +373,10 @@ function App() {
                   <Link to="/team-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Team Analytics</Link>
                   <Link to="/player-metrics" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Player Stats</Link>
                   <Link to="/betting-models" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Visualize Trends</Link>
+                  {/* --- Add 2025 Team Outlook link here --- */}
+                  <Link to="/team-outlook" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>2025 Team Outlook</Link>
                 </>
               )}
-              
               {/* Videos */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-videos")}>
                 Videos <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -443,7 +388,6 @@ function App() {
                   <Link to="/press-conferences" className="mobile-nav-link" style={{ paddingLeft: '25px', fontSize: '14px' }} onClick={closeMobileNav}>Press Conferences</Link>
                 </>
               )}
-              
               {/* Recruiting */}
               <div className="mobile-nav-link" onClick={() => toggleMobileDropdown("mobile-recruiting")}>
                 Recruiting <span style={{ marginLeft: 'auto' }}>▼</span>
@@ -458,43 +402,23 @@ function App() {
                 </>
               )}
             </div>
-            
-            {/* Action Buttons Section */}
             <div className="mobile-nav-actions">
               <Link to="/get-started" className="mobile-nav-button" onClick={closeMobileNav}>Get Started</Link>
               <a href="/upgrade" className="mobile-nav-button" onClick={closeMobileNav}>Upgrade</a>
               <a href="/signin" className="mobile-nav-button" onClick={closeMobileNav}>Login</a>
             </div>
           </div>
-
-          {/* SECONDARY NAVBAR (Home, Teams, Games, etc.) */}
           <nav className={`secondary-bar ${menuOpen ? "active" : ""}`}>
             <div className="secondary-bar-container">
-              <Link to="/" className="nav-item" onClick={toggleMenu}>
-                Home
-              </Link>
-              <Link to="/teams" className="nav-item" onClick={toggleMenu}>
-                Teams
-              </Link>
-              <Link to="/games" className="nav-item" onClick={toggleMenu}>
-                Games
-              </Link>
-              <Link to="/stats" className="nav-item" onClick={toggleMenu}>
-                Stats
-              </Link>
-              <Link to="/more" className="nav-item" onClick={toggleMenu}>
-                More
-              </Link>
-              <Link to="/pickem-predictions" className="nav-item">
-                Pick'em &amp; Predictions
-              </Link>
-              <Link to="/fan-hub" className="nav-item">
-                Fan Hub
-              </Link>
+              <Link to="/" className="nav-item" onClick={toggleMenu}>Home</Link>
+              <Link to="/teams" className="nav-item" onClick={toggleMenu}>Teams</Link>
+              <Link to="/games" className="nav-item" onClick={toggleMenu}>Games</Link>
+              <Link to="/stats" className="nav-item" onClick={toggleMenu}>Stats</Link>
+              <Link to="/more" className="nav-item" onClick={toggleMenu}>More</Link>
+              <Link to="/pickem-predictions" className="nav-item">Pick'em &amp; Predictions</Link>
+              <Link to="/fan-hub" className="nav-item">Fan Hub</Link>
             </div>
           </nav>
-
-          {/* MAIN CONTENT */}
           <main className="app-content">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -509,34 +433,19 @@ function App() {
               <Route path="/latest-news" element={<LatestUpdates />} />
               <Route path="/fan-hub" element={<FanHub scoreboardVisible={scoreboardVisible} />} />
               <Route path="/draft-news" element={<DraftNews />} />
-
-              {/* New Recruiting Routes */}
               <Route path="/top-prospects" element={<TopProspects />} />
               <Route path="/commitments" element={<Commitments />} />
               <Route path="/transfer-portal" element={<TransferPortal />} />
-
-              {/* NEW: Coach Overview Route */}
               <Route path="/coach-overview" element={<CoachOverview />} />
-              
-              {/* NEW: Player Grade Routes */}
               <Route path="/playerGameGrade/:gameId" element={<PlayerGameGrade />} />
               <Route path="/player-grade" element={<PlayerGrade />} />
               <Route path="/player-grade/:teamId" element={<PlayerGrade />} />
               <Route path="/player-grade/:teamId/:gameId" element={<PlayerGrade />} />
-
-              {/* New Team Analytics Routes */}
               <Route path="/team-metrics" element={<TeamAnalytics />} />
               <Route path="/team-metrics/:teamId" element={<TeamAnalyticsDetail />} />
-
-              {/* New Lines Route for Spread + Analysis */}
               <Route path="/spread-analysis" element={<Lines />} />
-
-              {/* New Route for Arbitrage + EV */}
               <Route path="/arbitrage-ev" element={<ArbitrageEV />} />
-
-              {/* NEW: Get Started Route */}
               <Route path="/get-started" element={<GetStarted />} />
-
               {/* Conference Routes */}
               <Route path="/sec" element={<SEC />} />
               <Route path="/bigten" element={<BigTen />} />
@@ -548,9 +457,9 @@ function App() {
               <Route path="/conferenceusa" element={<ConferenceUSA />} />
               <Route path="/mid-american" element={<MidAmerican />} />
               <Route path="/fbsindependents" element={<FBSIndependents />} />
-
-              {/* NEW: Visualize Trends Route */}
               <Route path="/betting-models" element={<VisualizeTrends />} />
+              {/* --- Add 2025 Team Outlook route here --- */}
+              <Route path="/team-outlook" element={<TeamOutlook />} />
             </Routes>
           </main>
         </div>
