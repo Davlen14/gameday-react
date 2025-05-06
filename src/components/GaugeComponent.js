@@ -313,21 +313,21 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     // Generate color gradient stops based on gauge type
     const getGradientStops = () => {
       if (isInverted) {
-        // Defense: green (left/low) to yellow to red (right/high)
-        return (
-          <>
-            <stop offset="0%" stopColor="#04aa6d" />
-            <stop offset="50%" stopColor="#ffc700" />
-            <stop offset="100%" stopColor="#ff4d4d" />
-          </>
-        );
-      } else {
-        // Offense/Overall: red (left/low) to yellow to green (right/high)
+        // Defense: red (left/high) to yellow to green (right/low)
         return (
           <>
             <stop offset="0%" stopColor="#ff4d4d" />
             <stop offset="50%" stopColor="#ffc700" />
             <stop offset="100%" stopColor="#04aa6d" />
+          </>
+        );
+      } else {
+        // Offense/Overall: green (left/low) to yellow to red (right/high)
+        return (
+          <>
+            <stop offset="0%" stopColor="#04aa6d" />
+            <stop offset="50%" stopColor="#ffc700" />
+            <stop offset="100%" stopColor="#ff4d4d" />
           </>
         );
       }
