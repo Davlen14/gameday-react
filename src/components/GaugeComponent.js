@@ -131,7 +131,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       min: -30, // Allow for negative values
       max: 40,
       isInverted: false,
-      flipNumbers: true, // Flip numbers for overall
       color: "#3B82F6", // Blue
       ...getPerformanceDetails("overall", ratings.overall)
     },
@@ -143,7 +142,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       min: 10,
       max: 50,
       isInverted: false,
-      flipNumbers: true, // Flip numbers for offense
       color: "#F59E0B", // Orange
       ...getPerformanceDetails("offense", ratings.offense)
     },
@@ -155,7 +153,6 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       min: 1,
       max: 40,
       isInverted: true, // Defense is inverted (lower is better)
-      flipNumbers: false, // Don't flip numbers for defense
       color: "#10B981", // Green
       ...getPerformanceDetails("defense", ratings.defense)
     }
@@ -163,7 +160,7 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
 
   // Create a modern circular gauge for each metric
   const CircularGauge = ({ metric }) => {
-    const { id, label, value, min, max, isInverted, flipNumbers, color, level } = metric;
+    const { id, label, value, min, max, isInverted, color, level } = metric;
     const svgRef = useRef(null);
     const [tooltip, setTooltip] = useState({ visible: false, value: 0, x: 0, y: 0 });
     
@@ -270,11 +267,8 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         if (isInverted) {
           // For defense: higher tick angle = lower value
           tickValue = max - (tickPercent * valueRange);
-        } else if (flipNumbers) {
-          // For offense/overall with flipped numbers: higher tick angle = lower value (like defense)
-          tickValue = max - (tickPercent * valueRange);
         } else {
-          // For offense/overall without flipped numbers: higher tick angle = higher value
+          // For offense/overall: higher tick angle = higher value
           tickValue = min + (tickPercent * valueRange);
         }
         
