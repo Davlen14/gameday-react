@@ -215,12 +215,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
       
       // Calculate angle between center and mouse position
       // atan2 returns angle in radians, convert to degrees
-      let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
-      
-      // Adjust angle to be in 0-180 range for the semi-circle gauge
+      let angle = Math.atan2(centerY - mouseY, mouseX - centerX) * (180 / Math.PI);
       if (angle < 0) angle += 360;
-      if (angle > 180) angle = 180 - (angle - 180);
-      
+      if (angle > 180) angle = 180;
+
       // Only show tooltip when mouse is near the arc
       const distanceFromCenter = Math.sqrt(
         Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2)
