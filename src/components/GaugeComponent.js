@@ -257,8 +257,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         // Calculate the tick position as normalized value (0-1)
         const tickPercent = i / numTicks;
         
-        // Calculate the angle for this tick (0-180°)
-        const tickAngle = tickPercent * 180;
+        // FIX: Reverse tickAngle for non-inverted gauges so high numbers are on the right (green)
+        const tickAngle = isInverted
+          ? tickPercent * 180
+          : (1 - tickPercent) * 180;
         
         // Calculate the value for this tick based on the gauge type
         let tickValue;
