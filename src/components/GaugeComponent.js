@@ -257,18 +257,17 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         // Calculate the tick position as normalized value (0-1)
         const tickPercent = i / numTicks;
         
-        // FIX: Reverse tickAngle for non-inverted gauges so high numbers are on the right (green)
-        const tickAngle = isInverted
-          ? tickPercent * 180
-          : (1 - tickPercent) * 180;
+        // Keep the angle calculation as is
+        const tickAngle = tickPercent * 180;
         
         // Calculate the value for this tick based on the gauge type
         let tickValue;
+        
         if (isInverted) {
-          // For defense: reversed scale so higher numbers on left, lower on right
+          // For defense: highest values on LEFT, lowest on RIGHT
           tickValue = max - (tickPercent * valueRange);
         } else {
-          // For offense/overall: normal scale with lower numbers on left, higher on right
+          // For offense/overall: lowest values on LEFT, highest on RIGHT
           tickValue = min + (tickPercent * valueRange);
         }
         
@@ -312,14 +311,25 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // Generate color gradient stops based on gauge type
     const getGradientStops = () => {
-      // All gauges have same color gradient (red → yellow → green from left to right)
-      return (
-        <>
-          <stop offset="0%" stopColor="#ff4d4d" />
-          <stop offset="50%" stopColor="#ffc700" />
-          <stop offset="100%" stopColor="#04aa6d" />
-        </>
-      );
+      if (isInverted) {
+        // Defense gauge: red (high/bad) to green (low/good)
+        return (
+          <>
+            <stop offset="0%" stopColor="#ff4d4d" /> {/* Red (high/bad) on left */}
+            <stop offset="50%" stopColor="#ffc700" /> {/* Yellow in middle */}
+            <stop offset="100%" stopColor="#04aa6d" /> {/* Green (low/good) on right */}
+          </>
+        );
+      } else {
+        // Offense and Overall gauges: red (low/bad) to green (high/good) 
+        return (
+          <>
+            <stop offset="0%" stopColor="#ff4d4d" /> {/* Red (low/bad) on left */}
+            <stop offset="50%" stopColor="#ffc700" /> {/* Yellow in middle */}
+            <stop offset="100%" stopColor="#04aa6d" /> {/* Green (high/good) on right */}
+          </>
+        );
+      }
     };
     
     // Generate tick marks
