@@ -263,10 +263,10 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
         // Calculate the value for this tick based on the gauge type
         let tickValue;
         if (isInverted) {
-          // For defense: higher tick angle = lower value
+          // For defense: reversed scale so higher numbers on left, lower on right
           tickValue = max - (tickPercent * valueRange);
         } else {
-          // For offense/overall: higher tick angle = higher value
+          // For offense/overall: normal scale with lower numbers on left, higher on right
           tickValue = min + (tickPercent * valueRange);
         }
         
@@ -310,25 +310,14 @@ const GaugeComponent = ({ teamName, year, teamColor = "#1a73e8" }) => {
     
     // Generate color gradient stops based on gauge type
     const getGradientStops = () => {
-      if (isInverted) {
-        // Defense: red (left/high) to yellow to green (right/low)
-        return (
-          <>
-            <stop offset="0%" stopColor="#ff4d4d" />
-            <stop offset="50%" stopColor="#ffc700" />
-            <stop offset="100%" stopColor="#04aa6d" />
-          </>
-        );
-      } else {
-        // Offense/Overall: red (left/low) to yellow to green (right/high)
-        return (
-          <>
-            <stop offset="0%" stopColor="#ff4d4d" />
-            <stop offset="50%" stopColor="#ffc700" />
-            <stop offset="100%" stopColor="#04aa6d" />
-          </>
-        );
-      }
+      // All gauges have same color gradient (red → yellow → green from left to right)
+      return (
+        <>
+          <stop offset="0%" stopColor="#ff4d4d" />
+          <stop offset="50%" stopColor="#ffc700" />
+          <stop offset="100%" stopColor="#04aa6d" />
+        </>
+      );
     };
     
     // Generate tick marks
