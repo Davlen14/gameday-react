@@ -413,238 +413,246 @@ const FanHub = () => {
   );
   
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="fanhub-wrapper">
+        <LoadingSpinner />
+      </div>
+    );
   }
   
   if (error) {
     return (
-      <div className="fh-error-container">
-        <h2>Error loading data</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="fh-reload-btn">
-          Try Again
-        </button>
+      <div className="fanhub-wrapper">
+        <div className="fh-error-container">
+          <h2>Error loading data</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="fh-reload-btn">
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fh-container">
-      {/* Welcome Banner */}
-      {!userTeams.length && (
-        <motion.div 
-          className="fh-welcome-banner"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="fh-welcome-content">
-            <h2>Welcome to FanHub</h2>
-            <p>Your personalized college football experience starts here. Select your favorite teams to customize your feed.</p>
-            <button 
-              className="fh-welcome-btn"
-              onClick={() => setShowTeamSelector(true)}
-            >
-              <FaUserCircle /> Pick Your Teams
-            </button>
-          </div>
-          <div className="fh-welcome-illustration">
-            <FaFootballBall className="fh-football-icon" />
-            <FaTrophy className="fh-trophy-icon" />
-          </div>
-        </motion.div>
-      )}
-      
-      {/* Team Selection Modal */}
-      <AnimatePresence>
-        {showTeamSelector && (
+    <div className="fanhub-wrapper">
+      <div className="fh-container">
+        {/* Welcome Banner */}
+        {!userTeams.length && (
           <motion.div 
-            className="fh-team-selector-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="fh-welcome-banner"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
           >
-            <motion.div 
-              className="fh-team-selector"
-              ref={teamSelectorRef}
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-            >
-              <div className="fh-team-selector-header">
-                <h2>Select Your Favorite Teams</h2>
-                <p>Choose up to 5 teams to follow closely</p>
-                <div className="fh-search-box">
-                  <input 
-                    type="text" 
-                    placeholder="Search for teams..." 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="fh-selected-count">
-                  Selected: {userTeams.length}/5
-                </div>
-              </div>
-              
-              <div className="fh-team-grid">
-                {filteredTeams.map(team => (
-                  <TeamSelectionCard 
-                    key={team.id} 
-                    team={team} 
-                    onSelect={handleTeamSelect}
-                    isSelected={userTeams.some(t => t.school === team.school)}
-                  />
-                ))}
-                {filteredTeams.length === 0 && (
-                  <div className="fh-no-teams">
-                    <p>No teams found matching "{searchTerm}"</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="fh-team-selector-footer">
-                <button 
-                  className="fh-done-btn"
-                  onClick={() => setShowTeamSelector(false)}
-                >
-                  Done
-                </button>
-              </div>
-            </motion.div>
+            <div className="fh-welcome-content">
+              <h2>Welcome to FanHub</h2>
+              <p>Your personalized college football experience starts here. Select your favorite teams to customize your feed.</p>
+              <button 
+                className="fh-welcome-btn"
+                onClick={() => setShowTeamSelector(true)}
+              >
+                <FaUserCircle /> Pick Your Teams
+              </button>
+            </div>
+            <div className="fh-welcome-illustration">
+              <FaFootballBall className="fh-football-icon" />
+              <FaTrophy className="fh-trophy-icon" />
+            </div>
           </motion.div>
         )}
-      </AnimatePresence>
-      
-      {/* Main Content Area with Tabs */}
-      <div className="fh-content-area">
-        <TabSystem 
-          tabs={tabs} 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab}
-        />
         
-        <div className="fh-tab-content">
-          {/* Featured Games Tab */}
-          {activeTab === "featured" && (
-            <section className="fh-games-showcase">
-              <div className="fh-section-header">
-                <h2><FaStar className="fh-section-icon" /> Featured Games of the Week</h2>
-                <div className="fh-carousel-controls">
-                  <button 
-                    className="fh-carousel-control left"
-                    onClick={() => scrollGames('left')}
-                    aria-label="Scroll left"
-                  >
-                    &lsaquo;
-                  </button>
-                  <button 
-                    className="fh-carousel-control right"
-                    onClick={() => scrollGames('right')}
-                    aria-label="Scroll right"
-                  >
-                    &rsaquo;
-                  </button>
+        {/* Team Selection Modal */}
+        <AnimatePresence>
+          {showTeamSelector && (
+            <motion.div 
+              className="fh-team-selector-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div 
+                className="fh-team-selector"
+                ref={teamSelectorRef}
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 50, opacity: 0 }}
+              >
+                <div className="fh-team-selector-header">
+                  <h2>Select Your Favorite Teams</h2>
+                  <p>Choose up to 5 teams to follow closely</p>
+                  <div className="fh-search-box">
+                    <input 
+                      type="text" 
+                      placeholder="Search for teams..." 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <div className="fh-selected-count">
+                    Selected: {userTeams.length}/5
+                  </div>
                 </div>
-              </div>
-              
-              <div className="fh-games-carousel" ref={gamesContainerRef}>
-                {featuredGames.map((game, index) => (
-                  <GameCard 
-                    key={game.id || index} 
-                    game={game} 
-                    isHighlighted={game.isGameOfWeek}
-                    onPredictionClick={handlePredictionClick}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-          
-          {/* My Teams Tab */}
-          {activeTab === "my-teams" && (
-            <section className="fh-my-teams">
-              <div className="fh-section-header">
-                <h2><FaUserCircle className="fh-section-icon" /> My Teams</h2>
-                <button 
-                  className="fh-add-team-btn"
-                  onClick={() => setShowTeamSelector(true)}
-                >
-                  + Add Teams
-                </button>
-              </div>
-              
-              {userTeams.length === 0 ? (
-                <div className="fh-empty-state">
-                  <FaUserCircle className="fh-empty-icon" />
-                  <h3>No teams selected yet</h3>
-                  <p>Select your favorite teams to see their schedules, news, and more</p>
-                  <button 
-                    className="fh-select-teams-btn"
-                    onClick={() => setShowTeamSelector(true)}
-                  >
-                    Select Teams
-                  </button>
-                </div>
-              ) : (
-                <div className="fh-my-teams-content">
-                  {userTeams.map(team => (
-                    <div key={team.id} className="fh-my-team-card">
-                      <img 
-                        src={team.logos?.[0]} 
-                        alt={team.school}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/photos/default_team.png";
-                        }}
-                      />
-                      <h3>{team.school}</h3>
-                      <Link to={`/team/${team.id}`} className="fh-view-team-btn">
-                        View Team
-                      </Link>
+                
+                <div className="fh-team-grid">
+                  {filteredTeams.map(team => (
+                    <TeamSelectionCard 
+                      key={team.id} 
+                      team={team} 
+                      onSelect={handleTeamSelect}
+                      isSelected={userTeams.some(t => t.school === team.school)}
+                    />
+                  ))}
+                  {filteredTeams.length === 0 && (
+                    <div className="fh-no-teams">
+                      <p>No teams found matching "{searchTerm}"</p>
                     </div>
+                  )}
+                </div>
+                
+                <div className="fh-team-selector-footer">
+                  <button 
+                    className="fh-done-btn"
+                    onClick={() => setShowTeamSelector(false)}
+                  >
+                    Done
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Main Content Area with Tabs */}
+        <div className="fh-content-area">
+          <TabSystem 
+            tabs={tabs} 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab}
+          />
+          
+          <div className="fh-tab-content">
+            {/* Featured Games Tab */}
+            {activeTab === "featured" && (
+              <section className="fh-games-showcase">
+                <div className="fh-section-header">
+                  <h2><FaStar className="fh-section-icon" /> Featured Games of the Week</h2>
+                  <div className="fh-carousel-controls">
+                    <button 
+                      className="fh-carousel-control left"
+                      onClick={() => scrollGames('left')}
+                      aria-label="Scroll left"
+                    >
+                      &lsaquo;
+                    </button>
+                    <button 
+                      className="fh-carousel-control right"
+                      onClick={() => scrollGames('right')}
+                      aria-label="Scroll right"
+                    >
+                      &rsaquo;
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="fh-games-carousel" ref={gamesContainerRef}>
+                  {featuredGames.map((game, index) => (
+                    <GameCard 
+                      key={game.id || index} 
+                      game={game} 
+                      isHighlighted={game.isGameOfWeek}
+                      onPredictionClick={handlePredictionClick}
+                    />
                   ))}
                 </div>
-              )}
-            </section>
-          )}
-          
-          {/* Trending Tab */}
-          {activeTab === "trending" && (
-            <section className="fh-trending">
-              <div className="fh-section-header">
-                <h2><FaChartLine className="fh-section-icon" /> Trending in College Football</h2>
-              </div>
-              
-              <div className="fh-empty-state">
-                <FaChartLine className="fh-empty-icon" />
-                <h3>Trending topics coming soon</h3>
-                <p>We're working on bringing you the hottest topics in college football</p>
-              </div>
-            </section>
-          )}
-          
-          {/* Community Tab */}
-          {activeTab === "community" && (
-            <section className="fh-community">
-              <div className="fh-section-header">
-                <h2><FaUsers className="fh-section-icon" /> Fan Zone</h2>
-              </div>
-              
-              <div className="fh-empty-state">
-                <FaUsers className="fh-empty-icon" />
-                <h3>Fan discussions coming soon</h3>
-                <p>Connect with other fans and join the conversation</p>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
+            
+            {/* My Teams Tab */}
+            {activeTab === "my-teams" && (
+              <section className="fh-my-teams">
+                <div className="fh-section-header">
+                  <h2><FaUserCircle className="fh-section-icon" /> My Teams</h2>
+                  <button 
+                    className="fh-add-team-btn"
+                    onClick={() => setShowTeamSelector(true)}
+                  >
+                    + Add Teams
+                  </button>
+                </div>
+                
+                {userTeams.length === 0 ? (
+                  <div className="fh-empty-state">
+                    <FaUserCircle className="fh-empty-icon" />
+                    <h3>No teams selected yet</h3>
+                    <p>Select your favorite teams to see their schedules, news, and more</p>
+                    <button 
+                      className="fh-select-teams-btn"
+                      onClick={() => setShowTeamSelector(true)}
+                    >
+                      Select Teams
+                    </button>
+                  </div>
+                ) : (
+                  <div className="fh-my-teams-content">
+                    {userTeams.map(team => (
+                      <div key={team.id} className="fh-my-team-card">
+                        <img 
+                          src={team.logos?.[0]} 
+                          alt={team.school}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/photos/default_team.png";
+                          }}
+                        />
+                        <h3>{team.school}</h3>
+                        <Link to={`/team/${team.id}`} className="fh-view-team-btn">
+                          View Team
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+            
+            {/* Trending Tab */}
+            {activeTab === "trending" && (
+              <section className="fh-trending">
+                <div className="fh-section-header">
+                  <h2><FaChartLine className="fh-section-icon" /> Trending in College Football</h2>
+                </div>
+                
+                <div className="fh-empty-state">
+                  <FaChartLine className="fh-empty-icon" />
+                  <h3>Trending topics coming soon</h3>
+                  <p>We're working on bringing you the hottest topics in college football</p>
+                </div>
+              </section>
+            )}
+            
+            {/* Community Tab */}
+            {activeTab === "community" && (
+              <section className="fh-community">
+                <div className="fh-section-header">
+                  <h2><FaUsers className="fh-section-icon" /> Fan Zone</h2>
+                </div>
+                
+                <div className="fh-empty-state">
+                  <FaUsers className="fh-empty-icon" />
+                  <h3>Fan discussions coming soon</h3>
+                  <p>Connect with other fans and join the conversation</p>
+                </div>
+              </section>
+            )}
+          </div>
         </div>
-      </div>
-      
-      {/* Floating Notification Button for Mobile */}
-      <div className="fh-notification-button">
-        <FaBell />
-        <span className="fh-notification-badge">3</span>
+        
+        {/* Floating Notification Button for Mobile */}
+        <div className="fh-notification-button">
+          <FaBell />
+          <span className="fh-notification-badge">3</span>
+        </div>
       </div>
     </div>
   );
