@@ -29,20 +29,31 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Game Card Component
+// Game Card Component - Optimized for alignment and consistent rendering
 const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
+  // Format date more concisely for better display
   const formatGameDate = (dateString) => {
     if (!dateString) return "TBD";
     
     const gameDate = new Date(dateString);
     if (isNaN(gameDate.getTime())) return "TBD";
     
+    // More compact format for better alignment
     return gameDate.toLocaleDateString(undefined, {
-      weekday: 'short',
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    }) + ' • ' + gameDate.toLocaleTimeString(undefined, {
+    });
+  };
+
+  // Format time separately for better layout
+  const formatGameTime = (dateString) => {
+    if (!dateString) return "";
+    
+    const gameDate = new Date(dateString);
+    if (isNaN(gameDate.getTime())) return "";
+    
+    return gameDate.toLocaleTimeString(undefined, {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -65,6 +76,12 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
     return `${diffDays} days`;
   };
 
+  // Truncate text helper function
+  const truncateText = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
   const daysUntil = getDaysUntilGame(game.startDate);
 
   return (
@@ -75,7 +92,7 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
     >
       <div className="fh-game-card-header">
         <span className="fh-game-week">Week {game.week}</span>
-        {isHighlighted && <span className="fh-game-featured"><FaFire /> Game of the Week</span>}
+        {isHighlighted && <span className="fh-game-featured"><FaFire /> Featured</span>}
         {daysUntil && <span className="fh-days-until">{daysUntil}</span>}
       </div>
       
@@ -89,7 +106,7 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
               e.target.src = "/photos/default_team.png";
             }}
           />
-          <h3>{game.homeTeam}</h3>
+          <h3 title={game.homeTeam}>{truncateText(game.homeTeam, 15)}</h3>
           {game.homeRank && <span className="fh-team-rank">#{game.homeRank}</span>}
           <div className="fh-team-stats">
             {game.homeRecord ? game.homeRecord : "0-0"}
@@ -101,16 +118,18 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
           <div className="fh-game-details">
             <div className="fh-detail-item">
               <FaCalendarAlt className="fh-detail-icon" />
-              <span>{formatGameDate(game.startDate)}</span>
+              <span title={formatGameDate(game.startDate) + " " + formatGameTime(game.startDate)}>
+                {formatGameDate(game.startDate)}
+              </span>
             </div>
             <div className="fh-detail-item">
               <FaMapMarkerAlt className="fh-detail-icon" />
-              <span>{game.venue}</span>
+              <span title={game.venue}>{truncateText(game.venue, 20)}</span>
             </div>
             {game.media?.network && (
               <div className="fh-detail-item">
                 <FaTv className="fh-detail-icon" />
-                <span>{game.media.network}</span>
+                <span title={game.media.network}>{truncateText(game.media.network, 12)}</span>
               </div>
             )}
           </div>
@@ -143,7 +162,7 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
               e.target.src = "/photos/default_team.png";
             }}
           />
-          <h3>{game.awayTeam}</h3>
+          <h3 title={game.awayTeam}>{truncateText(game.awayTeam, 15)}</h3>
           {game.awayRank && <span className="fh-team-rank">#{game.awayRank}</span>}
           <div className="fh-team-stats">
             {game.awayRecord ? game.awayRecord : "0-0"}
@@ -156,13 +175,13 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
           className="fh-predict-btn"
           onClick={() => onPredictionClick(game.id)}
         >
-          <FaPoll /> Make Prediction
+          <FaPoll /> Predict
         </button>
         <Link to={`/game/${game.id}`} className="fh-game-details-btn">
-          Game Details <FaArrowRight />
+          Details <FaArrowRight />
         </Link>
         <button className="fh-join-discussion-btn">
-          <FaComments /> Join Discussion
+          <FaComments /> Discuss
         </button>
       </div>
     </motion.div>
@@ -186,7 +205,7 @@ const TeamSelectionCard = ({ team, onSelect, isSelected }) => {
           e.target.src = "/photos/default_team.png";
         }}
       />
-      <h3>{team.school}</h3>
+      <h3 title={team.school}>{team.school}</h3>
       {team.mascot && <p className="fh-team-mascot">{team.mascot}</p>}
     </motion.div>
   );
@@ -246,7 +265,10 @@ const FanHub = () => {
     if (isAlreadySelected) {
       setUserTeams(userTeams.filter(t => t.school !== team.school));
     } else {
-      setUserTeams([...userTeams, team]);
+      // Limit to 5 teams max
+      if (userTeams.length < 5) {
+        setUserTeams([...userTeams, team]);
+      }
     }
   };
 
@@ -264,7 +286,6 @@ const FanHub = () => {
         
         // Fetch games for week 1 of 2025
         const gamesData = await teamsService.getGames(week, year);
-        console.log("Games data:", gamesData);
         
         // Find featured games (Alabama at FSU, LSU at Clemson, Texas at Ohio State, ND at Miami)
         const targetMatchups = [
@@ -354,7 +375,7 @@ const FanHub = () => {
             
             return {
               ...game,
-              media: gameMedia || {},
+              media: gameMedia || { network: "TBD" },
               homeTeamData: homeTeam || {},
               awayTeamData: awayTeam || {},
               homeRank,
@@ -366,7 +387,19 @@ const FanHub = () => {
             };
           }));
           
-          setFeaturedGames(enhancedGames);
+          // Sort the games to ensure consistent order
+          const sortedGames = [...enhancedGames].sort((a, b) => {
+            // Game of the Week first
+            if (a.isGameOfWeek && !b.isGameOfWeek) return -1;
+            if (!a.isGameOfWeek && b.isGameOfWeek) return 1;
+            
+            // Then by rankings (higher rank first)
+            const aHighestRank = Math.min(a.homeRank || 999, a.awayRank || 999);
+            const bHighestRank = Math.min(b.homeRank || 999, b.awayRank || 999);
+            return aHighestRank - bHighestRank;
+          });
+          
+          setFeaturedGames(sortedGames);
         }
         
       } catch (err) {
@@ -394,10 +427,14 @@ const FanHub = () => {
     };
   }, [teamSelectorRef]);
   
-  // Scroll games left/right
+  // Scroll games left/right with improved scrolling amount
   const scrollGames = (direction) => {
     if (gamesContainerRef.current) {
-      const scrollAmount = direction === 'left' ? -400 : 400;
+      // Calculate scroll amount based on card width
+      const cardWidth = 330; // Match the CSS width
+      const gap = 24; // 1.5rem gap
+      const scrollAmount = direction === 'left' ? -(cardWidth + gap) : (cardWidth + gap);
+      
       gamesContainerRef.current.scrollBy({
         top: 0,
         left: scrollAmount,

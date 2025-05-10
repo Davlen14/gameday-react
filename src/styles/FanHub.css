@@ -1,4 +1,4 @@
-/* FanHub.css - Modern, Responsive Styling 4.0 */
+/* FanHub.css - Modern, Responsive Styling 5.0 */
 .fanhub-wrapper {
   /* Namespace CSS Variables for FanHub only */
   --fh-primary-color: #D4001C;  /* Gameday+ Red */
@@ -21,7 +21,9 @@
   --fh-box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
   --fh-card-border: 1px solid rgba(0, 0, 0, 0.05);
   --fh-content-width: 99%;  
-  --fh-max-content-width: 1800px;  
+  --fh-max-content-width: 1800px;
+  color: var(--fh-text-color);
+  font-family: 'Inter', 'Roboto', 'Titillium Web', system-ui, sans-serif;
 }
 
 /* Global Container */
@@ -31,8 +33,6 @@
   margin: 0 auto;
   padding: 0;
   background-color: var(--fh-background-color);
-  font-family: 'Inter', 'Roboto', 'Titillium Web', system-ui, sans-serif;
-  color: var(--fh-text-color);
   line-height: 1.5;
   position: relative;
 }
@@ -229,6 +229,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .fanhub-wrapper .fh-tab-active {
@@ -461,6 +463,7 @@
   transform: translateY(-2px);
 }
 
+/* Game Cards Carousel - Fixed alignments */
 .fanhub-wrapper .fh-games-carousel {
   display: flex;
   gap: 1.5rem;
@@ -477,15 +480,15 @@
   display: none;
 }
 
-/* Game Card */
+/* Game Card - Fixed dimensions */
 .fanhub-wrapper .fh-game-card {
   flex: 0 0 auto;
-  width: 380px;
-  min-width: 380px;
-  max-width: 380px;
-  height: 420px;
-  min-height: 420px;
-  max-height: 420px;
+  width: 330px;
+  min-width: 330px;
+  max-width: 330px;
+  height: 440px;
+  min-height: 440px;
+  max-height: 440px;
   background-color: var(--fh-card-background);
   border-radius: var(--fh-border-radius);
   box-shadow: var(--fh-box-shadow);
@@ -494,7 +497,8 @@
   transition: var(--fh-transition);
   display: flex;
   flex-direction: column;
-  animation: fh-slideUp 0.5s ease-out;
+  position: relative;
+  margin: 0;
 }
 
 .fanhub-wrapper .fh-game-card:hover {
@@ -505,24 +509,27 @@
 .fanhub-wrapper .fh-game-card-highlighted {
   box-shadow: 0 6px 18px rgba(212, 0, 28, 0.2);
   border: 2px solid var(--fh-primary-color);
-  position: relative;
 }
 
+/* Game Card Header - Fixed height */
 .fanhub-wrapper .fh-game-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   background-color: var(--fh-light-gray);
   border-bottom: var(--fh-card-border);
   flex-wrap: wrap;
   gap: 0.5rem;
+  height: 50px;
+  min-height: 50px;
+  position: relative;
 }
 
 .fanhub-wrapper .fh-game-week {
   font-weight: 600;
   color: var(--fh-text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .fanhub-wrapper .fh-game-featured {
@@ -531,38 +538,47 @@
   gap: 0.4rem;
   font-weight: 600;
   color: white;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   background-color: var(--fh-primary-color);
-  padding: 0.3rem 0.8rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 20px;
+  white-space: nowrap;
 }
 
 .fanhub-wrapper .fh-days-until {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: white;
   background-color: var(--fh-primary-color);
-  padding: 0.2rem 0.8rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 20px;
   margin-left: auto;
+  white-space: nowrap;
 }
 
+/* Teams matchup container - Fixed layout */
 .fanhub-wrapper .fh-teams-matchup {
   display: flex;
   align-items: center;
-  padding: 1.5rem;
-  gap: 1rem;
+  padding: 1rem;
+  gap: 0.5rem;
   flex: 1;
   flex-grow: 1;
+  height: 280px;
+  min-height: 280px;
+  position: relative;
 }
 
+/* Team styling - Fixed dimensions */
 .fanhub-wrapper .fh-team {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex: 1;
   text-align: center;
+  max-width: 110px;
+  height: 100%;
 }
 
 .fanhub-wrapper .fh-home-team, 
@@ -570,122 +586,122 @@
   position: relative;
 }
 
+/* Team logo styling - Consistent size */
 .fanhub-wrapper .fh-team img {
-  width: 100px;
-  height: 100px;
+  width: 85px;
+  height: 85px;
   object-fit: contain;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.75rem;
   transition: transform 0.3s ease;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(240,240,240,1) 100%);
   padding: 0.5rem;
   border: 1px solid #eee;
-  box-shadow: 
-    0 5px 15px rgba(0,0,0,0.1),
-    inset 0 -2px 5px rgba(0,0,0,0.05),
-    inset 0 2px 5px rgba(255,255,255,0.5);
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   position: relative;
-  overflow: hidden;
-  z-index: 1;
 }
 
 .fanhub-wrapper .fh-team img:hover {
   transform: scale(1.05);
 }
 
-.fanhub-wrapper .fh-team img:before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    to bottom right,
-    rgba(255,255,255,0.8) 0%,
-    rgba(255,255,255,0) 70%
-  );
-  transform: rotate(30deg);
-  pointer-events: none;
-}
-
+/* Team text elements */
 .fanhub-wrapper .fh-team h3 {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0 0 0.3rem;
   color: var(--fh-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
 }
 
 .fanhub-wrapper .fh-team-rank {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: white;
   background-color: var(--fh-primary-color);
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
+  margin-bottom: 0.3rem;
 }
 
 .fanhub-wrapper .fh-team-stats {
   font-size: 0.85rem;
   color: var(--fh-text-secondary);
-  margin-top: 0.3rem;
+  white-space: nowrap;
 }
 
+/* VS container styling */
 .fanhub-wrapper .fh-vs-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 120px;
+  min-width: 100px;
+  flex: 0.8;
+  height: 100%;
+  justify-content: flex-start;
 }
 
 .fanhub-wrapper .fh-vs-badge {
   background: linear-gradient(145deg, #e6e6e6, #f5f5f5);
   color: var(--fh-primary-color);
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
   box-shadow: inset 0 2px 5px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Game details in VS container */
 .fanhub-wrapper .fh-game-details {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .fanhub-wrapper .fh-detail-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  gap: 0.4rem;
+  font-size: 0.8rem;
   color: var(--fh-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.fanhub-wrapper .fh-detail-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fanhub-wrapper .fh-detail-icon {
   color: var(--fh-primary-color);
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
-/* Prediction Meter */
+/* Prediction meter */
 .fanhub-wrapper .fh-prediction-meter {
   width: 100%;
   margin-top: 0.5rem;
 }
 
 .fanhub-wrapper .fh-prediction-bar {
-  height: 8px;
+  height: 6px;
   width: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   display: flex;
   background-color: #f0f0f0;
@@ -706,33 +722,37 @@
 .fanhub-wrapper .fh-prediction-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--fh-text-secondary);
   margin-top: 0.25rem;
 }
 
+/* Game actions footer - Fixed height */
 .fanhub-wrapper .fh-game-actions {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   background-color: var(--fh-light-gray);
   border-top: var(--fh-card-border);
-  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: auto;
+  height: 60px;
+  min-height: 60px;
 }
 
+/* Action buttons */
 .fanhub-wrapper .fh-game-details-btn, 
 .fanhub-wrapper .fh-join-discussion-btn, 
 .fanhub-wrapper .fh-predict-btn {
-  padding: 0.6rem 1rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: var(--fh-transition);
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .fanhub-wrapper .fh-predict-btn {
@@ -756,7 +776,7 @@
 
 .fanhub-wrapper .fh-game-details-btn:hover {
   color: white;
-  transform: translateX(3px);
+  transform: translateX(2px);
   background-color: var(--fh-primary-color);
 }
 
@@ -974,33 +994,7 @@
   100% { transform: scale(1); }
 }
 
-/* Enhanced 3D Effect for Team Logos */
-.fanhub-wrapper .fh-team:hover img {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 12px 20px rgba(0,0,0,0.15);
-}
-
-/* Game Card Specific Fixes for Highlighted Cards */
-.fanhub-wrapper .fh-game-card-highlighted {
-  border: 2px solid var(--fh-primary-color);
-  box-shadow: 0 8px 24px rgba(212, 0, 28, 0.2);
-}
-
-.fanhub-wrapper .fh-game-card-highlighted .fh-game-card-header {
-  background-color: rgba(212, 0, 28, 0.05);
-}
-
-.fanhub-wrapper .fh-game-card-highlighted .fh-game-featured {
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
 /* Tab Hover Animations */
-.fanhub-wrapper .fh-tab {
-  position: relative;
-  overflow: hidden;
-}
-
 .fanhub-wrapper .fh-tab:after {
   content: '';
   position: absolute;
@@ -1018,7 +1012,7 @@
   width: 70%;
 }
 
-/* Responsive Design with added wrapper */
+/* Responsive Design - All with improved fixed dimensions */
 @media (max-width: 1200px) {
   .fanhub-wrapper .fh-games-carousel {
     overflow-x: scroll;
@@ -1032,8 +1026,8 @@
   .fanhub-wrapper .fh-predict-btn, 
   .fanhub-wrapper .fh-game-details-btn, 
   .fanhub-wrapper .fh-join-discussion-btn {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.7rem;
   }
 }
 
@@ -1063,18 +1057,18 @@
     width: 320px;
     min-width: 320px;
     max-width: 320px;
-    height: 400px;
-    min-height: 400px;
-    max-height: 400px;
+    height: 440px;
+    min-height: 440px;
+    max-height: 440px;
   }
   
   .fanhub-wrapper .fh-team img {
-    width: 80px;
-    height: 80px;
+    width: 75px;
+    height: 75px;
   }
   
   .fanhub-wrapper .fh-vs-container {
-    min-width: 80px;
+    min-width: 90px;
   }
   
   .fanhub-wrapper .fh-team-grid {
@@ -1090,18 +1084,16 @@
   }
   
   .fanhub-wrapper .fh-game-card {
-    width: 280px;
-    min-width: 280px;
-    max-width: 280px;
-    height: 400px;
-    min-height: 400px;
-    max-height: 400px;
+    width: 290px;
+    min-width: 290px;
+    max-width: 290px;
+    height: 440px;
+    min-height: 440px;
+    max-height: 440px;
   }
   
   .fanhub-wrapper .fh-teams-matchup {
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 1rem;
+    padding: 0.75rem;
   }
   
   .fanhub-wrapper .fh-game-details {
@@ -1109,33 +1101,18 @@
   }
   
   .fanhub-wrapper .fh-vs-container {
-    order: 2;
-    width: 100%;
-  }
-  
-  .fanhub-wrapper .fh-away-team {
-    order: 1;
-  }
-  
-  .fanhub-wrapper .fh-home-team {
-    order: 3;
-  }
-  
-  .fanhub-wrapper .fh-vs-badge {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    min-width: 80px;
   }
   
   .fanhub-wrapper .fh-game-actions {
-    flex-direction: column;
-    gap: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
   
   .fanhub-wrapper .fh-predict-btn, 
   .fanhub-wrapper .fh-game-details-btn, 
   .fanhub-wrapper .fh-join-discussion-btn {
-    width: 100%;
-    justify-content: center;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
   }
   
   .fanhub-wrapper .fh-tab {
