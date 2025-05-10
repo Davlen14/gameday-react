@@ -1,15 +1,18 @@
-/* FanHub.css - Modern, Responsive Styling 2.0 */
+/* FanHub.css - Modern, Responsive Styling 3.0 */
 :root {
   --primary-color: #E01F31;  /* Brighter Gameday+ Scarlet */
   --primary-dark: #C01828;
   --primary-light: rgba(224, 31, 49, 0.1);
   --secondary-color: #212B36;
   --background-color: #F7F9FC;
-  --card-background: #F9F9FC;  
+  --card-background: #FFFFFF;  
   --text-color: #2A2A2A;
   --text-secondary: #6B7A90;
   --accent-color: #3355FF;
   --accent-light: rgba(51, 85, 255, 0.1);
+  --success-color: #10B981;
+  --warning-color: #F59E0B;
+  --info-color: #3B82F6;
   --border-radius-sm: 8px;
   --border-radius: 12px;
   --border-radius-lg: 16px;
@@ -32,6 +35,7 @@
   font-family: 'Inter', 'Roboto', 'Titillium Web', system-ui, sans-serif;
   color: var(--text-color);
   line-height: 1.5;
+  position: relative;
 }
 
 /* Loading & Error States */
@@ -102,6 +106,294 @@
   box-shadow: var(--box-shadow);
 }
 
+/* Welcome Banner */
+.fh-welcome-banner {
+  background: linear-gradient(to right, var(--primary-color), #f05545);
+  border-radius: var(--border-radius);
+  margin: 1.5rem auto 2rem;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  box-shadow: var(--box-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.fh-welcome-content {
+  max-width: 70%;
+  position: relative;
+  z-index: 2;
+}
+
+.fh-welcome-banner h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.fh-welcome-banner p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.fh-welcome-btn {
+  background-color: white;
+  color: var(--primary-color);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fh-welcome-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fh-welcome-illustration {
+  position: relative;
+  height: 100px;
+  width: 150px;
+}
+
+.fh-football-icon, .fh-trophy-icon {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 4rem;
+}
+
+.fh-football-icon {
+  top: -20px;
+  right: 30px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.fh-trophy-icon {
+  bottom: -10px;
+  right: -10px;
+  font-size: 5rem;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Tab System */
+.fh-content-area {
+  margin: 0 auto;
+  width: 100%;
+}
+
+.fh-tabs {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fh-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.fh-tab {
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fh-tab-active {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.fh-tab:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fh-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fh-tab-content {
+  width: 100%;
+  min-height: 300px;
+}
+
+/* Team Selector Modal */
+.fh-team-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.fh-team-selector {
+  background-color: white;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 900px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.fh-team-selector-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.fh-team-selector h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.fh-team-selector p {
+  margin: 0 0 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.fh-search-box {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.fh-search-box input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.fh-search-box input:focus {
+  border-color: var(--primary-color);
+}
+
+.fh-selected-count {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.fh-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.fh-team-selection-card {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+}
+
+.fh-team-selection-card:hover {
+  box-shadow: var(--box-shadow);
+}
+
+.fh-team-selected {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+}
+
+.fh-team-selection-card img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 0.8rem;
+}
+
+.fh-team-selection-card h3 {
+  font-size: 0.9rem;
+  margin: 0 0 0.3rem;
+  line-height: 1.2;
+}
+
+.fh-team-mascot {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.fh-team-selector-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fh-done-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fh-done-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.fh-no-teams {
+  grid-column: 1 / -1;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
 /* Game Showcase Section */
 .fh-games-showcase {
   margin: 1rem auto 3rem;
@@ -119,7 +411,7 @@
 }
 
 .fh-section-header h2 {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--secondary-color);
   display: flex;
@@ -203,6 +495,8 @@
   padding: 1rem 1.5rem;
   background-color: #f2f4f8;
   border-bottom: var(--card-border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .fh-game-week {
@@ -221,6 +515,16 @@
   background-color: var(--primary-light);
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
+}
+
+.fh-days-until {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background-color: var(--accent-light);
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  margin-left: auto;
 }
 
 .fh-teams-matchup {
@@ -276,6 +580,12 @@
   border-radius: 12px;
 }
 
+.fh-team-stats {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+}
+
 .fh-vs-container {
   display: flex;
   flex-direction: column;
@@ -303,6 +613,7 @@
   flex-direction: column;
   gap: 0.6rem;
   width: 100%;
+  margin-bottom: 1rem;
 }
 
 .fh-detail-item {
@@ -319,15 +630,52 @@
   opacity: 0.9;
 }
 
+/* Prediction Meter */
+.fh-prediction-meter {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.fh-prediction-bar {
+  height: 8px;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  background-color: #f0f0f0;
+}
+
+.fh-prediction-fill {
+  height: 100%;
+}
+
+.fh-prediction-fill.home {
+  background-color: var(--primary-color);
+}
+
+.fh-prediction-fill.away {
+  background-color: var(--accent-color);
+}
+
+.fh-prediction-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
 .fh-game-actions {
   display: flex;
   justify-content: space-between;
   padding: 1rem 1.5rem;
   background-color: #f2f4f8;
   border-top: var(--card-border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.fh-game-details-btn, .fh-join-discussion-btn {
+.fh-game-details-btn, .fh-join-discussion-btn, .fh-predict-btn {
   padding: 0.6rem 1rem;
   border-radius: 20px;
   font-weight: 600;
@@ -336,6 +684,18 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.fh-predict-btn {
+  color: var(--accent-color);
+  background-color: var(--accent-light);
+  border: none;
+  cursor: pointer;
+}
+
+.fh-predict-btn:hover {
+  background-color: rgba(51, 85, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .fh-game-details-btn {
@@ -366,6 +726,174 @@
   box-shadow: 0 4px 10px rgba(224, 31, 49, 0.3);
 }
 
+/* My Teams Tab */
+.fh-my-teams {
+  padding: 0 1rem;
+}
+
+.fh-add-team-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fh-add-team-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.fh-my-teams-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.fh-my-team-card {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: var(--card-border);
+}
+
+.fh-my-team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-lg);
+}
+
+.fh-my-team-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.fh-my-team-card h3 {
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+}
+
+.fh-view-team-btn {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.fh-view-team-btn:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Empty States */
+.fh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.fh-empty-icon {
+  font-size: 3rem;
+  color: #ddd;
+  margin-bottom: 1rem;
+}
+
+.fh-empty-state h3 {
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+  color: var(--text-secondary);
+}
+
+.fh-empty-state p {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  max-width: 400px;
+}
+
+.fh-select-teams-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fh-select-teams-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+/* Trending and Community */
+.fh-trending, .fh-community {
+  padding: 0 1rem;
+}
+
+/* Floating Notification Button for Mobile */
+.fh-notification-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(224, 31, 49, 0.3);
+  z-index: 100;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fh-notification-button:hover {
+  transform: scale(1.05) translateY(-3px);
+}
+
+.fh-notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
 /* Animation Keyframes */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -393,9 +921,34 @@
   .fh-games-carousel {
     overflow-x: scroll;
   }
+  
+  .fh-game-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .fh-predict-btn, .fh-game-details-btn, .fh-join-discussion-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+  }
 }
 
 @media (max-width: 768px) {
+  .fh-welcome-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+  
+  .fh-welcome-content {
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .fh-welcome-btn {
+    margin: 0 auto;
+  }
+  
   .fh-section-header {
     flex-direction: column;
     align-items: flex-start;
@@ -413,6 +966,10 @@
   
   .fh-vs-container {
     min-width: 80px;
+  }
+  
+  .fh-team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
 
@@ -448,33 +1005,23 @@
     order: 3;
   }
   
-  .fh-vs-badge::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -40px;
-    width: 30px;
-    height: 2px;
-    background-color: #ddd;
-  }
-  
-  .fh-vs-badge::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -40px;
-    width: 30px;
-    height: 2px;
-    background-color: #ddd;
-  }
-  
   .fh-game-actions {
     flex-direction: column;
     gap: 0.8rem;
   }
   
-  .fh-game-details-btn, .fh-join-discussion-btn {
+  .fh-predict-btn, .fh-game-details-btn, .fh-join-discussion-btn {
     width: 100%;
     justify-content: center;
+  }
+  
+  .fh-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .fh-team-selector {
+    width: 95%;
+    max-height: 90vh;
   }
 }
