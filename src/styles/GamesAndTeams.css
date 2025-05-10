@@ -659,6 +659,248 @@
     color: #D4001C;
 }
 
+/* 🔴 ADDED: Comment Section Styling */
+.gtcomment-section {
+    margin-top: 2rem;
+    position: relative;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 1.5rem;
+}
+
+.gtcomment-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.25rem;
+}
+
+.gtcomment-section h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #D4001C, transparent);
+}
+
+.gtcomments-container {
+    margin-bottom: 1.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #D4001C #f1f5f9;
+}
+
+.gtcomments-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.gtcomments-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.gtcomments-container::-webkit-scrollbar-thumb {
+    background-color: rgba(212, 0, 28, 0.5);
+    border-radius: 10px;
+}
+
+.gtcomment {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    border: 1px solid #edf2f7;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.gtcomment::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #D4001C, rgba(212, 0, 28, 0.3));
+    border-radius: 4px 0 0 4px;
+}
+
+.gtcomment:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.gtcomment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    align-items: center;
+}
+
+.gtcomment-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gtcomment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gtcomment-user {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.gtcomment-time {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.gtcomment-text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #1e293b;
+}
+
+.gtno-comments {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    border: 1px dashed #e2e8f0;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.gtno-comments svg {
+    opacity: 0.7;
+}
+
+.gtno-comments p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* Comment Form */
+.gtcomment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    position: relative;
+}
+
+.gtcomment-input {
+    resize: none;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: "Titillium Web", sans-serif;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: #1e293b;
+    transition: all 0.3s ease;
+}
+
+.gtcomment-input:focus {
+    outline: none;
+    border-color: #D4001C;
+    box-shadow: 0 0 0 3px rgba(212, 0, 28, 0.15);
+}
+
+.gtcomment-input::placeholder {
+    color: #94a3b8;
+}
+
+.gtcomment-submit {
+    align-self: flex-end;
+    background-color: #D4001C;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1.5rem;
+    font-family: "Orbitron", "Titillium Web", sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(212, 0, 28, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.gtcomment-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 50%);
+    transition: opacity 0.3s ease;
+}
+
+.gtcomment-submit:hover {
+    background-color: #c1001a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 0, 28, 0.3);
+}
+
+.gtcomment-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(212, 0, 28, 0.2);
+}
+
+.gtcomment-submit:disabled {
+    background-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.gtcomment-submit svg {
+    transition: transform 0.3s ease;
+}
+
+.gtcomment-submit:hover svg {
+    transform: translateX(2px);
+}
+
+/* Advanced Comment Animations */
+@keyframes gtcommentPulse {
+    0% { box-shadow: 0 0 0 0 rgba(212, 0, 28, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(212, 0, 28, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 0, 28, 0); }
+}
+
+.gtcomment-form:focus-within .gtcomment-submit:not(:disabled) {
+    animation: gtcommentPulse 2s infinite;
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
     .gtheader {
@@ -682,6 +924,21 @@
     .gtgame-info-grid {
         grid-template-columns: 1fr;
     }
+
+    .gtcomment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .gtcomment-form {
+        gap: 0.5rem;
+    }
+
+    .gtcomment-submit {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -692,5 +949,14 @@
     
     .gtgames-grid {
         gap: 0.75rem;
+    }
+
+    .gtcomment-user-info {
+        gap: 0.5rem;
+    }
+
+    .gtcomment-avatar {
+        width: 28px;
+        height: 28px;
     }
 }

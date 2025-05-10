@@ -20,12 +20,45 @@ const Games = () => {
 
     // 🔴 ADDED: New state variable for toggling the detailed view of a game
     const [expandedGames, setExpandedGames] = useState({});
+    // 🔴 ADDED: State for game comments
+    const [gameComments, setGameComments] = useState({});
+    const [newComment, setNewComment] = useState({});
 
     // 🔴 ADDED: Function to toggle game details
     const toggleGameDetails = (gameId) => {
         setExpandedGames(prev => ({
             ...prev,
             [gameId]: !prev[gameId]
+        }));
+    };
+
+    // 🔴 ADDED: Function to handle comment submission
+    const handleCommentSubmit = (gameId) => {
+        if (!newComment[gameId] || newComment[gameId].trim() === '') return;
+        
+        setGameComments(prev => ({
+            ...prev,
+            [gameId]: [...(prev[gameId] || []), {
+                id: Date.now(),
+                text: newComment[gameId],
+                timestamp: new Date().toISOString(),
+                user: 'Fan', // This would be replaced with actual user info in a real app
+                avatar: '/photos/default_avatar.png' // Default avatar
+            }]
+        }));
+        
+        // Clear the input after submission
+        setNewComment(prev => ({
+            ...prev,
+            [gameId]: ''
+        }));
+    };
+
+    // 🔴 ADDED: Function to handle comment input change
+    const handleCommentChange = (gameId, value) => {
+        setNewComment(prev => ({
+            ...prev,
+            [gameId]: value
         }));
     };
 
@@ -516,6 +549,60 @@ const Games = () => {
                                         >
                                             Advanced Player Stats
                                         </button>
+                                    </div>
+
+                                    {/* 🔴 ADDED: Comment Section */}
+                                    <div className="gtcomment-section">
+                                        <h4>Fan Comments</h4>
+                                        <div className="gtcomments-container">
+                                            {(gameComments[game.id] || []).map(comment => (
+                                                <div key={comment.id} className="gtcomment">
+                                                    <div className="gtcomment-header">
+                                                        <div className="gtcomment-user-info">
+                                                            <img src={comment.avatar} alt="User" className="gtcomment-avatar" />
+                                                            <span className="gtcomment-user">{comment.user}</span>
+                                                        </div>
+                                                        <span className="gtcomment-time">
+                                                            {new Date(comment.timestamp).toLocaleString(undefined, {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="gtcomment-text">{comment.text}</p>
+                                                </div>
+                                            ))}
+                                            {(gameComments[game.id] || []).length === 0 && (
+                                                <div className="gtno-comments">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 13.4876 3.36093 14.891 4 16.1272L3 21L7.8728 20C9.10904 20.6391 10.5124 21 12 21Z" stroke="#D4001C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                    <p>Be the first to comment on this game!</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="gtcomment-form">
+                                            <textarea
+                                                className="gtcomment-input"
+                                                placeholder="Share your thoughts about this matchup..."
+                                                value={newComment[game.id] || ''}
+                                                onChange={(e) => handleCommentChange(game.id, e.target.value)}
+                                                rows="3"
+                                            ></textarea>
+                                            <button
+                                                className="gtcomment-submit"
+                                                onClick={() => handleCommentSubmit(game.id)}
+                                                disabled={!newComment[game.id] || newComment[game.id].trim() === ''}
+                                            >
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                                Post Comment
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}
