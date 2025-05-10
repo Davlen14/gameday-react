@@ -26,7 +26,7 @@
 }
 
 /* Global Container */
-.fanhub-container {
+.fh-container {
   width: var(--content-width);
   max-width: var(--max-content-width);
   margin: 0 auto;
@@ -38,7 +38,7 @@
 }
 
 /* Loading & Error States */
-.loading-container {
+.fh-loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -48,7 +48,7 @@
   padding: 2rem;
 }
 
-.loading-icon {
+.fh-loading-icon {
   font-size: 3rem;
   color: var(--primary-color);
   animation: spin 1.5s linear infinite;
@@ -60,13 +60,13 @@
   100% { transform: rotate(360deg); }
 }
 
-.loading-container p {
+.fh-loading-container p {
   font-size: 1.2rem;
   color: var(--text-secondary);
   max-width: 600px;
 }
 
-.error-container {
+.fh-error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,18 +76,18 @@
   padding: 2rem;
 }
 
-.error-container h2 {
+.fh-error-container h2 {
   color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
-.error-container p {
+.fh-error-container p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
   max-width: 600px;
 }
 
-.reload-btn {
+.fh-reload-btn {
   background-color: var(--primary-color);
   color: white;
   border: none;
@@ -99,59 +99,23 @@
   transition: var(--transition);
 }
 
-.reload-btn:hover {
+.fh-reload-btn:hover {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: var(--box-shadow);
 }
 
-/* Header Styling */
-.fanhub-header {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: var(--header-gradient);
-  color: white;
-  box-shadow: var(--box-shadow);
-  margin-bottom: 2rem;
-  border-radius: 0 0 var(--border-radius) var(--border-radius);
-}
-
-.header-content {
-  max-width: var(--max-content-width);
-  margin: 0 auto;
-}
-
-.header-icon {
-  font-size: 3.5rem;
-  margin-bottom: 1.2rem;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
-}
-
-.fanhub-header h1 {
-  font-size: 3rem;
-  margin-bottom: 0.7rem;
-  font-weight: 800;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  letter-spacing: 0.5px;
-}
-
-.fanhub-header p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.3rem;
-  font-weight: 300;
-  max-width: 600px;
-  margin: 0 auto;
-}
+/* Header section removed as requested */
 
 /* Game Showcase Section */
-.games-showcase {
+.fh-games-showcase {
   margin: 0 auto 3rem;
   width: var(--content-width);
   max-width: var(--max-content-width);
   position: relative;
 }
 
-.section-header {
+.fh-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -159,7 +123,7 @@
   padding: 0 1rem;
 }
 
-.section-header h2 {
+.fh-section-header h2 {
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--secondary-color);
@@ -168,16 +132,16 @@
   gap: 0.5rem;
 }
 
-.section-icon {
+.fh-section-icon {
   color: var(--primary-color);
 }
 
-.carousel-controls {
+.fh-carousel-controls {
   display: flex;
   gap: 0.5rem;
 }
 
-.carousel-control {
+.fh-carousel-control {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -193,13 +157,13 @@
   transition: var(--transition);
 }
 
-.carousel-control:hover {
+.fh-carousel-control:hover {
   background-color: var(--primary-light);
   color: var(--primary-color);
   transform: translateY(-2px);
 }
 
-.games-carousel {
+.fh-games-carousel {
   display: flex;
   gap: 1.5rem;
   width: 100%;
@@ -210,12 +174,12 @@
   scrollbar-width: none;  /* Hide scrollbar in Firefox */
 }
 
-.games-carousel::-webkit-scrollbar { 
+.fh-games-carousel::-webkit-scrollbar { 
   display: none;  /* Hide scrollbar in Chrome and Safari */
 }
 
 /* Game Card */
-.game-card {
+.fh-game-card {
   flex: 0 0 auto;
   width: 380px;
   background-color: var(--card-background);
@@ -226,13 +190,13 @@
   transition: var(--transition);
 }
 
-.game-card-highlighted {
+.fh-game-card-highlighted {
   box-shadow: 0 6px 18px rgba(224, 31, 49, 0.2);
   border: 1px solid rgba(224, 31, 49, 0.3);
   position: relative;
 }
 
-.game-card-header {
+.fh-game-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -241,13 +205,13 @@
   border-bottom: var(--card-border);
 }
 
-.game-week {
+.fh-game-week {
   font-weight: 600;
   color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
-.game-featured {
+.fh-game-featured {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -259,14 +223,14 @@
   border-radius: 20px;
 }
 
-.teams-matchup {
+.fh-teams-matchup {
   display: flex;
   align-items: center;
   padding: 1.5rem;
   gap: 1rem;
 }
 
-.team {
+.fh-team {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,11 +239,11 @@
   text-align: center;
 }
 
-.home-team, .away-team {
+.fh-home-team, .fh-away-team {
   position: relative;
 }
 
-.team img {
+.fh-team img {
   width: 100px;
   height: 100px;
   object-fit: contain;
@@ -292,18 +256,18 @@
   box-shadow: var(--box-shadow-sm);
 }
 
-.team img:hover {
+.fh-team img:hover {
   transform: scale(1.05);
 }
 
-.team h3 {
+.fh-team h3 {
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 0.3rem;
   color: var(--text-color);
 }
 
-.team-rank {
+.fh-team-rank {
   font-size: 0.9rem;
   font-weight: 700;
   color: #555;
@@ -312,14 +276,14 @@
   border-radius: 12px;
 }
 
-.vs-container {
+.fh-vs-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 120px;
 }
 
-.vs-badge {
+.fh-vs-badge {
   background-color: #f0f0f0;
   color: var(--text-secondary);
   width: 50px;
@@ -334,14 +298,14 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.game-details {
+.fh-game-details {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   width: 100%;
 }
 
-.detail-item {
+.fh-detail-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -349,13 +313,13 @@
   color: var(--text-secondary);
 }
 
-.detail-icon {
+.fh-detail-icon {
   color: var(--primary-color);
   font-size: 0.9rem;
   opacity: 0.9;
 }
 
-.game-actions {
+.fh-game-actions {
   display: flex;
   justify-content: space-between;
   padding: 1rem 1.5rem;
@@ -363,7 +327,7 @@
   border-top: var(--card-border);
 }
 
-.game-details-btn, .join-discussion-btn {
+.fh-game-details-btn, .fh-join-discussion-btn {
   padding: 0.6rem 1rem;
   border-radius: 20px;
   font-weight: 600;
@@ -374,18 +338,18 @@
   gap: 0.4rem;
 }
 
-.game-details-btn {
+.fh-game-details-btn {
   color: var(--text-secondary);
   background-color: transparent;
   text-decoration: none;
 }
 
-.game-details-btn:hover {
+.fh-game-details-btn:hover {
   color: var(--primary-color);
   transform: translateX(3px);
 }
 
-.join-discussion-btn {
+.fh-join-discussion-btn {
   color: white;
   background-color: var(--primary-color);
   border: none;
@@ -393,14 +357,14 @@
   box-shadow: 0 2px 5px rgba(224, 31, 49, 0.2);
 }
 
-.join-discussion-btn:hover {
+.fh-join-discussion-btn:hover {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(224, 31, 49, 0.3);
 }
 
 /* Navigation Tabs */
-.fanhub-tabs {
+.fh-tabs {
   display: flex;
   justify-content: center;
   margin: 2.5rem auto;
@@ -410,7 +374,7 @@
   padding: 0 1rem;
 }
 
-.tab-button {
+.fh-tab-button {
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -425,24 +389,24 @@
   box-shadow: var(--box-shadow-sm);
 }
 
-.tab-icon {
+.fh-tab-icon {
   font-size: 1.2rem;
 }
 
-.tab-button:hover {
+.fh-tab-button:hover {
   background-color: var(--primary-light);
   color: var(--primary-color);
   transform: translateY(-2px);
   box-shadow: var(--box-shadow);
 }
 
-.tab-button.active {
+.fh-tab-button.active {
   background-color: var(--primary-color);
   color: white;
 }
 
 /* Content Filters */
-.content-filters {
+.fh-content-filters {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -455,13 +419,13 @@
   padding: 0 1rem;
 }
 
-.search-container {
+.fh-search-container {
   flex-grow: 1;
   position: relative;
   max-width: 500px;
 }
 
-.search-icon {
+.fh-search-icon {
   position: absolute;
   left: 15px;
   top: 50%;
@@ -470,7 +434,7 @@
   font-size: 1rem;
 }
 
-.search-container input {
+.fh-search-container input {
   width: 100%;
   padding: 0.9rem 1rem 0.9rem 2.8rem;
   border: var(--card-border);
@@ -481,18 +445,18 @@
   transition: var(--transition);
 }
 
-.search-container input:focus {
+.fh-search-container input:focus {
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(51, 85, 255, 0.1);
 }
 
-.filter-container {
+.fh-filter-container {
   display: flex;
   gap: 1rem;
 }
 
-.filter-select {
+.fh-filter-select {
   padding: 0.9rem 1.5rem;
   border: var(--card-border);
   border-radius: 30px;
@@ -510,14 +474,14 @@
   padding-right: 3rem;
 }
 
-.filter-select:focus {
+.fh-filter-select:focus {
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(51, 85, 255, 0.1);
 }
 
 /* Main Content Area */
-.fanhub-content {
+.fh-content {
   width: var(--content-width);
   max-width: var(--max-content-width);
   margin: 0 auto 4rem;
@@ -525,7 +489,7 @@
 }
 
 /* Content Title */
-.content-title {
+.fh-content-title {
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0 0 1.5rem;
@@ -534,7 +498,7 @@
   padding-bottom: 0.8rem;
 }
 
-.content-title::after {
+.fh-content-title::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -545,7 +509,7 @@
 }
 
 /* Discussions Container */
-.discussions-container {
+.fh-discussions-container {
   background-color: var(--card-background);
   border-radius: var(--border-radius);
   padding: 2rem;
@@ -553,13 +517,13 @@
   border: var(--card-border);
 }
 
-.discussion-topics {
+.fh-discussion-topics {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
-.discussion-card {
+.fh-discussion-card {
   background-color: white;
   border: var(--card-border);
   border-radius: var(--border-radius);
@@ -571,25 +535,25 @@
   height: 100%;
 }
 
-.discussion-card:hover {
+.fh-discussion-card:hover {
   box-shadow: var(--box-shadow);
   border-color: #ddd;
 }
 
-.discussion-header {
+.fh-discussion-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.discussion-author {
+.fh-discussion-author {
   display: flex;
   align-items: center;
   gap: 0.7rem;
 }
 
-.author-avatar {
+.fh-author-avatar {
   width: 35px;
   height: 35px;
   border-radius: 50%;
@@ -597,32 +561,32 @@
   border: 2px solid #f0f0f0;
 }
 
-.author-name {
+.fh-author-name {
   font-weight: 600;
   color: var(--text-color);
   font-size: 0.95rem;
 }
 
-.discussion-time {
+.fh-discussion-time {
   color: var(--text-secondary);
   font-size: 0.85rem;
 }
 
-.discussion-title {
+.fh-discussion-title {
   margin: 0 0 1rem 0;
   font-size: 1.15rem;
   line-height: 1.4;
   color: var(--text-color);
 }
 
-.discussion-tags {
+.fh-discussion-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.2rem;
 }
 
-.topic-category {
+.fh-topic-category {
   font-weight: 600;
   color: var(--accent-color);
   background-color: var(--accent-light);
@@ -631,7 +595,7 @@
   font-size: 0.85rem;
 }
 
-.topic-tag {
+.fh-topic-tag {
   font-weight: 500;
   color: var(--text-secondary);
   background-color: #f0f0f0;
@@ -640,7 +604,7 @@
   font-size: 0.8rem;
 }
 
-.discussion-stats {
+.fh-discussion-stats {
   display: flex;
   gap: 1rem;
   margin-top: auto;
@@ -648,7 +612,7 @@
   border-top: 1px solid #f0f0f0;
 }
 
-.stat-item {
+.fh-stat-item {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -656,18 +620,18 @@
   font-size: 0.85rem;
 }
 
-.stat-icon {
+.fh-stat-icon {
   color: var(--text-secondary);
   opacity: 0.8;
 }
 
-.no-discussions {
+.fh-no-discussions {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--text-secondary);
 }
 
-.reset-filters-btn {
+.fh-reset-filters-btn {
   display: inline-block;
   margin-top: 1rem;
   padding: 0.7rem 1.5rem;
@@ -681,12 +645,12 @@
   transition: var(--transition);
 }
 
-.reset-filters-btn:hover {
+.fh-reset-filters-btn:hover {
   background-color: rgba(51, 85, 255, 0.2);
 }
 
 /* Polls Container */
-.polls-container {
+.fh-polls-container {
   background-color: var(--card-background);
   border-radius: var(--border-radius);
   padding: 2rem;
@@ -694,14 +658,14 @@
   border: var(--card-border);
 }
 
-.live-polls {
+.fh-live-polls {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
 }
 
-.poll-card {
+.fh-poll-card {
   background-color: white;
   border: var(--card-border);
   border-radius: var(--border-radius);
@@ -710,11 +674,11 @@
   transition: var(--transition);
 }
 
-.poll-card:hover {
+.fh-poll-card:hover {
   box-shadow: var(--box-shadow);
 }
 
-.poll-question {
+.fh-poll-question {
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-color);
@@ -722,36 +686,36 @@
   line-height: 1.4;
 }
 
-.poll-options {
+.fh-poll-options {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.poll-option {
+.fh-poll-option {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 
-.option-text {
+.fh-option-text {
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.3rem;
 }
 
-.option-label {
+.fh-option-label {
   font-weight: 500;
   color: var(--text-color);
 }
 
-.option-percentage {
+.fh-option-percentage {
   font-weight: 700;
   color: var(--primary-color);
 }
 
-.option-bar-container {
+.fh-option-bar-container {
   width: 100%;
   height: 12px;
   background-color: #f0f0f0;
@@ -759,20 +723,20 @@
   overflow: hidden;
 }
 
-.option-bar {
+.fh-option-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   border-radius: 10px;
 }
 
-.option-votes {
+.fh-option-votes {
   text-align: right;
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-top: 0.2rem;
 }
 
-.poll-footer {
+.fh-poll-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -781,12 +745,12 @@
   border-top: 1px solid #f0f0f0;
 }
 
-.poll-total {
+.fh-poll-total {
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
-.vote-btn {
+.fh-vote-btn {
   padding: 0.6rem 1.2rem;
   background-color: var(--primary-color);
   color: white;
@@ -798,39 +762,39 @@
   transition: var(--transition);
 }
 
-.vote-btn:hover {
+.fh-vote-btn:hover {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(224, 31, 49, 0.2);
 }
 
 /* AP Poll Section */
-.ap-poll-section {
+.fh-ap-poll-section {
   margin-top: 3rem;
   padding-top: 2rem;
   border-top: 1px solid #eee;
 }
 
-.ap-poll-header {
+.fh-ap-poll-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.poll-note {
+.fh-poll-note {
   color: var(--accent-color);
   font-size: 1.1rem;
   font-weight: 500;
   font-style: italic;
 }
 
-.ap-poll-grid {
+.fh-ap-poll-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.ap-team-card {
+.fh-ap-team-card {
   display: flex;
   align-items: center;
   padding: 1rem;
@@ -839,12 +803,12 @@
   transition: var(--transition);
 }
 
-.ap-team-card:hover {
+.fh-ap-team-card:hover {
   background-color: #f0f0f0;
   transform: translateY(-2px);
 }
 
-.ap-team-rank {
+.fh-ap-team-rank {
   font-weight: 800;
   font-size: 1.3rem;
   width: 50px;
@@ -859,31 +823,31 @@
   margin-right: 1rem;
 }
 
-.ap-team-details {
+.fh-ap-team-details {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.ap-team-name {
+.fh-ap-team-name {
   font-weight: 600;
   color: var(--text-color);
   margin-bottom: 0.2rem;
 }
 
-.ap-team-points {
+.fh-ap-team-points {
   font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
-.ap-first-votes {
+.fh-ap-first-votes {
   font-size: 0.8rem;
   color: var(--primary-color);
   font-weight: 600;
   margin-top: 0.3rem;
 }
 
-.view-all-link {
+.fh-view-all-link {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -897,12 +861,12 @@
   transition: var(--transition);
 }
 
-.view-all-link:hover {
+.fh-view-all-link:hover {
   background-color: rgba(51, 85, 255, 0.2);
 }
 
 /* Coming Soon Section */
-.coming-soon {
+.fh-coming-soon {
   text-align: center;
   padding: 4rem 2rem;
   background-color: var(--card-background);
@@ -911,27 +875,27 @@
   border: var(--card-border);
 }
 
-.coming-soon-icon {
+.fh-coming-soon-icon {
   font-size: 4rem;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
   opacity: 0.9;
 }
 
-.coming-soon h2 {
+.fh-coming-soon h2 {
   color: var(--text-color);
   margin-bottom: 1rem;
   font-size: 2rem;
 }
 
-.coming-soon p {
+.fh-coming-soon p {
   color: var(--text-secondary);
   font-size: 1.1rem;
   max-width: 600px;
   margin: 0 auto 1rem;
 }
 
-.coming-soon-details {
+.fh-coming-soon-details {
   color: var(--text-secondary);
   font-size: 1rem;
   font-style: italic;
@@ -972,130 +936,110 @@
 }
 
 /* Apply animations */
-.fanhub-header {
-  animation: fadeIn 0.8s ease-out;
-}
-
-.game-card {
+.fh-game-card {
   animation: slideUp 0.5s ease-out;
 }
 
-.discussion-card, .poll-card, .ap-team-card {
+.fh-discussion-card, .fh-poll-card, .fh-ap-team-card {
   animation: slideInRight 0.5s ease-out;
 }
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .discussion-topics {
+  .fh-discussion-topics {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
   
-  .live-polls {
+  .fh-live-polls {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .fanhub-header h1 {
-    font-size: 2.3rem;
-  }
-  
-  .fanhub-header p {
-    font-size: 1.1rem;
-  }
-  
-  .content-filters {
+  .fh-content-filters {
     flex-direction: column;
   }
 
-  .search-container {
+  .fh-search-container {
     max-width: 100%;
   }
 
-  .filter-container {
+  .fh-filter-container {
     width: 100%;
     justify-content: space-between;
   }
 
-  .filter-select {
+  .fh-filter-select {
     flex: 1;
     max-width: 48%;
   }
 
-  .fanhub-tabs {
+  .fh-tabs {
     overflow-x: auto;
     justify-content: flex-start;
     padding-bottom: 0.5rem;
   }
   
-  .tab-button {
+  .fh-tab-button {
     flex: 0 0 auto;
     padding: 0.8rem 1.2rem;
   }
   
-  .game-card {
+  .fh-game-card {
     width: 320px;
   }
   
-  .team img {
+  .fh-team img {
     width: 80px;
     height: 80px;
   }
   
-  .vs-container {
+  .fh-vs-container {
     min-width: 80px;
   }
   
-  .discussion-topics {
+  .fh-discussion-topics {
     grid-template-columns: 1fr;
   }
   
-  .ap-poll-grid {
+  .fh-ap-poll-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .fanhub-header h1 {
-    font-size: 2rem;
-  }
-  
-  .fanhub-header p {
-    font-size: 1rem;
-  }
-  
-  .section-header {
+  .fh-section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
   
-  .game-card {
+  .fh-game-card {
     width: 280px;
   }
   
-  .teams-matchup {
+  .fh-teams-matchup {
     flex-direction: column;
     gap: 1.5rem;
   }
   
-  .game-details {
+  .fh-game-details {
     width: 100%;
   }
   
-  .vs-container {
+  .fh-vs-container {
     order: 2;
   }
   
-  .away-team {
+  .fh-away-team {
     order: 1;
   }
   
-  .home-team {
+  .fh-home-team {
     order: 3;
   }
   
-  .vs-badge::before {
+  .fh-vs-badge::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -1105,7 +1049,7 @@
     background-color: #ddd;
   }
   
-  .vs-badge::after {
+  .fh-vs-badge::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -1115,12 +1059,12 @@
     background-color: #ddd;
   }
   
-  .game-actions {
+  .fh-game-actions {
     flex-direction: column;
     gap: 0.8rem;
   }
   
-  .game-details-btn, .join-discussion-btn {
+  .fh-game-details-btn, .fh-join-discussion-btn {
     width: 100%;
     justify-content: center;
   }

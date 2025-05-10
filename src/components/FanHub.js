@@ -26,8 +26,8 @@ import "../styles/FanHub.css";
 
 // Loading spinner component
 const LoadingSpinner = () => (
-  <div className="loading-container">
-    <FaSpinner className="loading-icon" />
+  <div className="fh-loading-container">
+    <FaSpinner className="fh-loading-icon" />
     <p>Loading the latest college football updates...</p>
   </div>
 );
@@ -53,17 +53,17 @@ const GameCard = ({ game, isHighlighted }) => {
 
   return (
     <motion.div 
-      className={`game-card ${isHighlighted ? 'game-card-highlighted' : ''}`}
+      className={`fh-game-card ${isHighlighted ? 'fh-game-card-highlighted' : ''}`}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="game-card-header">
-        <span className="game-week">Week {game.week}</span>
-        {isHighlighted && <span className="game-featured"><FaFire /> Game of the Week</span>}
+      <div className="fh-game-card-header">
+        <span className="fh-game-week">Week {game.week}</span>
+        {isHighlighted && <span className="fh-game-featured"><FaFire /> Game of the Week</span>}
       </div>
       
-      <div className="teams-matchup">
-        <div className="team home-team">
+      <div className="fh-teams-matchup">
+        <div className="fh-team fh-home-team">
           <img 
             src={game.homeTeamData?.logos?.[0] || `/photos/teams/${game.homeTeam.toLowerCase().replace(/\s+/g, '')}.png`} 
             alt={game.homeTeam} 
@@ -73,30 +73,30 @@ const GameCard = ({ game, isHighlighted }) => {
             }}
           />
           <h3>{game.homeTeam}</h3>
-          {game.homeRank && <span className="team-rank">#{game.homeRank}</span>}
+          {game.homeRank && <span className="fh-team-rank">#{game.homeRank}</span>}
         </div>
         
-        <div className="vs-container">
-          <div className="vs-badge">VS</div>
-          <div className="game-details">
-            <div className="detail-item">
-              <FaCalendarAlt className="detail-icon" />
+        <div className="fh-vs-container">
+          <div className="fh-vs-badge">VS</div>
+          <div className="fh-game-details">
+            <div className="fh-detail-item">
+              <FaCalendarAlt className="fh-detail-icon" />
               <span>{formatGameDate(game.startDate)}</span>
             </div>
-            <div className="detail-item">
-              <FaMapMarkerAlt className="detail-icon" />
+            <div className="fh-detail-item">
+              <FaMapMarkerAlt className="fh-detail-icon" />
               <span>{game.venue}</span>
             </div>
             {game.media?.network && (
-              <div className="detail-item">
-                <FaTv className="detail-icon" />
+              <div className="fh-detail-item">
+                <FaTv className="fh-detail-icon" />
                 <span>{game.media.network}</span>
               </div>
             )}
           </div>
         </div>
         
-        <div className="team away-team">
+        <div className="fh-team fh-away-team">
           <img 
             src={game.awayTeamData?.logos?.[0] || `/photos/teams/${game.awayTeam.toLowerCase().replace(/\s+/g, '')}.png`} 
             alt={game.awayTeam}
@@ -106,15 +106,15 @@ const GameCard = ({ game, isHighlighted }) => {
             }}
           />
           <h3>{game.awayTeam}</h3>
-          {game.awayRank && <span className="team-rank">#{game.awayRank}</span>}
+          {game.awayRank && <span className="fh-team-rank">#{game.awayRank}</span>}
         </div>
       </div>
       
-      <div className="game-actions">
-        <Link to={`/game/${game.id}`} className="game-details-btn">
+      <div className="fh-game-actions">
+        <Link to={`/game/${game.id}`} className="fh-game-details-btn">
           Game Details <FaArrowRight />
         </Link>
-        <button className="join-discussion-btn">
+        <button className="fh-join-discussion-btn">
           <FaComments /> Join Discussion
         </button>
       </div>
@@ -537,10 +537,10 @@ const FanHub = () => {
   
   if (error) {
     return (
-      <div className="error-container">
+      <div className="fh-error-container">
         <h2>Error loading data</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="reload-btn">
+        <button onClick={() => window.location.reload()} className="fh-reload-btn">
           Try Again
         </button>
       </div>
@@ -548,30 +548,23 @@ const FanHub = () => {
   }
 
   return (
-    <div className="fanhub-container">
-      {/* Header */}
-      <header className="fanhub-header">
-        <div className="header-content">
-          <FaFootballBall className="header-icon" />
-          <h1>Fan Hub</h1>
-          <p>Connect with college football fans across the nation</p>
-        </div>
-      </header>
-
-      {/* Featured Games Section */}
-      <section className="games-showcase">
-        <div className="section-header">
-          <h2><FaStar className="section-icon" /> Featured Games of the Week</h2>
-          <div className="carousel-controls">
+    <div className="fh-container">
+      {/* Note: FanHub header removed as requested */}
+      
+      {/* Featured Games Section - Moved to the top area where header was */}
+      <section className="fh-games-showcase">
+        <div className="fh-section-header">
+          <h2><FaStar className="fh-section-icon" /> Featured Games of the Week</h2>
+          <div className="fh-carousel-controls">
             <button 
-              className="carousel-control left"
+              className="fh-carousel-control left"
               onClick={() => scrollGames('left')}
               aria-label="Scroll left"
             >
               &lsaquo;
             </button>
             <button 
-              className="carousel-control right"
+              className="fh-carousel-control right"
               onClick={() => scrollGames('right')}
               aria-label="Scroll right"
             >
@@ -580,7 +573,7 @@ const FanHub = () => {
           </div>
         </div>
         
-        <div className="games-carousel" ref={gamesContainerRef}>
+        <div className="fh-games-carousel" ref={gamesContainerRef}>
           {featuredGames.map((game, index) => (
             <GameCard 
               key={game.id || index} 
@@ -592,28 +585,28 @@ const FanHub = () => {
       </section>
 
       {/* Navigation Tabs */}
-      <div className="fanhub-tabs">
+      <div className="fh-tabs">
         {tabs.map(tab => (
           <motion.button
             key={tab.name}
-            className={`tab-button ${activeTab === tab.name ? 'active' : ''}`}
+            className={`fh-tab-button ${activeTab === tab.name ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.name)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-label">{tab.label}</span>
+            <span className="fh-tab-icon">{tab.icon}</span>
+            <span className="fh-tab-label">{tab.label}</span>
           </motion.button>
         ))}
       </div>
 
       {/* Main Content Area */}
-      <div className="fanhub-content">
+      <div className="fh-content">
         {/* Search and Filter Section */}
         {activeTab === 'discussions' && (
-          <div className="content-filters">
-            <div className="search-container">
-              <FaSearch className="search-icon" />
+          <div className="fh-content-filters">
+            <div className="fh-search-container">
+              <FaSearch className="fh-search-icon" />
               <input 
                 type="text" 
                 placeholder="Search discussions..."
@@ -621,14 +614,14 @@ const FanHub = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="filter-container">
+            <div className="fh-filter-container">
               <select 
                 value={selectedFilters.category}
                 onChange={(e) => setSelectedFilters(prev => ({
                   ...prev, 
                   category: e.target.value
                 }))}
-                className="filter-select"
+                className="fh-filter-select"
               >
                 <option value="All">All Categories</option>
                 <option value="Game Analysis">Game Analysis</option>
@@ -645,7 +638,7 @@ const FanHub = () => {
                   ...prev, 
                   sortBy: e.target.value
                 }))}
-                className="filter-select"
+                className="fh-filter-select"
               >
                 <option value="Recent">Most Recent</option>
                 <option value="Popular">Most Popular</option>
@@ -663,47 +656,47 @@ const FanHub = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="discussions-container"
+              className="fh-discussions-container"
               ref={discussionContainerRef}
             >
-              <h2 className="content-title">Community Discussions</h2>
+              <h2 className="fh-content-title">Community Discussions</h2>
               {filteredTopics.length > 0 ? (
-                <div className="discussion-topics">
+                <div className="fh-discussion-topics">
                   {filteredTopics.map(topic => (
                     <motion.div 
                       key={topic.id} 
-                      className="discussion-card"
+                      className="fh-discussion-card"
                       whileHover={{ y: -5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div className="discussion-header">
-                        <div className="discussion-author">
-                          <img src={topic.avatar || "/photos/default_avatar.png"} alt={topic.author} className="author-avatar" />
-                          <span className="author-name">{topic.author}</span>
+                      <div className="fh-discussion-header">
+                        <div className="fh-discussion-author">
+                          <img src={topic.avatar || "/photos/default_avatar.png"} alt={topic.author} className="fh-author-avatar" />
+                          <span className="fh-author-name">{topic.author}</span>
                         </div>
-                        <span className="discussion-time">{topic.lastActivity}</span>
+                        <span className="fh-discussion-time">{topic.lastActivity}</span>
                       </div>
                       
-                      <h3 className="discussion-title">{topic.title}</h3>
+                      <h3 className="fh-discussion-title">{topic.title}</h3>
                       
-                      <div className="discussion-tags">
-                        <span className="topic-category">{topic.category}</span>
+                      <div className="fh-discussion-tags">
+                        <span className="fh-topic-category">{topic.category}</span>
                         {topic.tags && topic.tags.map((tag, i) => (
-                          <span key={i} className="topic-tag">#{tag}</span>
+                          <span key={i} className="fh-topic-tag">#{tag}</span>
                         ))}
                       </div>
                       
-                      <div className="discussion-stats">
-                        <div className="stat-item">
-                          <FaUserFriends className="stat-icon" />
+                      <div className="fh-discussion-stats">
+                        <div className="fh-stat-item">
+                          <FaUserFriends className="fh-stat-icon" />
                           <span>{topic.activeUsers} active</span>
                         </div>
-                        <div className="stat-item">
-                          <FaComments className="stat-icon" />
+                        <div className="fh-stat-item">
+                          <FaComments className="fh-stat-icon" />
                           <span>{topic.comments}</span>
                         </div>
-                        <div className="stat-item">
-                          <FaRegClock className="stat-icon" />
+                        <div className="fh-stat-item">
+                          <FaRegClock className="fh-stat-icon" />
                           <span>{topic.lastActivity}</span>
                         </div>
                       </div>
@@ -711,7 +704,7 @@ const FanHub = () => {
                   ))}
                 </div>
               ) : (
-                <div className="no-discussions">
+                <div className="fh-no-discussions">
                   <p>No discussions found matching your search criteria.</p>
                   <button 
                     onClick={() => {
@@ -721,7 +714,7 @@ const FanHub = () => {
                         sortBy: 'Recent'
                       });
                     }}
-                    className="reset-filters-btn"
+                    className="fh-reset-filters-btn"
                   >
                     Reset Filters
                   </button>
@@ -736,38 +729,38 @@ const FanHub = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="polls-container"
+              className="fh-polls-container"
             >
-              <h2 className="content-title">Live Community Polls</h2>
+              <h2 className="fh-content-title">Live Community Polls</h2>
               
-              <div className="live-polls">
+              <div className="fh-live-polls">
                 {getLivePolls().map(poll => (
-                  <div key={poll.id} className="poll-card">
-                    <h3 className="poll-question">{poll.question}</h3>
-                    <div className="poll-options">
+                  <div key={poll.id} className="fh-poll-card">
+                    <h3 className="fh-poll-question">{poll.question}</h3>
+                    <div className="fh-poll-options">
                       {poll.options.map((option, index) => (
-                        <div key={index} className="poll-option">
-                          <div className="option-text">
-                            <span className="option-label">{option.text}</span>
-                            <span className="option-percentage">{option.percentage}%</span>
+                        <div key={index} className="fh-poll-option">
+                          <div className="fh-option-text">
+                            <span className="fh-option-label">{option.text}</span>
+                            <span className="fh-option-percentage">{option.percentage}%</span>
                           </div>
-                          <div className="option-bar-container">
+                          <div className="fh-option-bar-container">
                             <motion.div 
-                              className="option-bar"
+                              className="fh-option-bar"
                               initial={{ width: 0 }}
                               animate={{ width: `${option.percentage}%` }}
                               transition={{ duration: 1, delay: index * 0.1 }}
                             />
                           </div>
-                          <div className="option-votes">
+                          <div className="fh-option-votes">
                             {option.votes} votes
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="poll-footer">
-                      <span className="poll-total">Total votes: {poll.totalVotes}</span>
-                      <button className="vote-btn">Cast Your Vote</button>
+                    <div className="fh-poll-footer">
+                      <span className="fh-poll-total">Total votes: {poll.totalVotes}</span>
+                      <button className="fh-vote-btn">Cast Your Vote</button>
                     </div>
                   </div>
                 ))}
@@ -775,28 +768,28 @@ const FanHub = () => {
               
               {/* AP Top 25 Poll Display */}
               {polls && polls.length > 0 && polls[0]?.rankings && (
-                <div className="ap-poll-section">
-                  <h2 className="content-title">AP Top 25 Rankings</h2>
-                  <div className="ap-poll-header">
-                    <p className="poll-note">Looking ahead to the 2025 Season</p>
+                <div className="fh-ap-poll-section">
+                  <h2 className="fh-content-title">AP Top 25 Rankings</h2>
+                  <div className="fh-ap-poll-header">
+                    <p className="fh-poll-note">Looking ahead to the 2025 Season</p>
                   </div>
                   
-                  <div className="ap-poll-grid">
+                  <div className="fh-ap-poll-grid">
                     {polls[0].rankings.slice(0, 10).map((team, index) => (
-                      <div key={index} className="ap-team-card">
-                        <div className="ap-team-rank">#{team.rank}</div>
-                        <div className="ap-team-details">
-                          <span className="ap-team-name">{team.school}</span>
-                          <span className="ap-team-points">{team.points} pts</span>
+                      <div key={index} className="fh-ap-team-card">
+                        <div className="fh-ap-team-rank">#{team.rank}</div>
+                        <div className="fh-ap-team-details">
+                          <span className="fh-ap-team-name">{team.school}</span>
+                          <span className="fh-ap-team-points">{team.points} pts</span>
                           {team.firstPlaceVotes > 0 && (
-                            <span className="ap-first-votes">({team.firstPlaceVotes} first)</span>
+                            <span className="fh-ap-first-votes">({team.firstPlaceVotes} first)</span>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                   
-                  <Link to="/polls" className="view-all-link">
+                  <Link to="/polls" className="fh-view-all-link">
                     View Complete AP Poll Rankings <FaArrowRight />
                   </Link>
                 </div>
@@ -811,12 +804,12 @@ const FanHub = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="coming-soon"
+              className="fh-coming-soon"
             >
-              <FaTrophy className="coming-soon-icon" />
+              <FaTrophy className="fh-coming-soon-icon" />
               <h2>Coming Soon!</h2>
               <p>We're working on bringing you amazing {activeTab === 'gameday' ? 'game day' : 'prediction'} features.</p>
-              <p className="coming-soon-details">
+              <p className="fh-coming-soon-details">
                 {activeTab === 'gameday' ? 
                   'Experience live game discussions, check-ins at stadiums, and interactive game threads.' : 
                   'Make your own predictions, compete with other fans, and track your accuracy throughout the season.'}
