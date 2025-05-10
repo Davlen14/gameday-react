@@ -76,7 +76,7 @@ const styles = `
 /* Game Cards Carousel */
 .fh-games-carousel {
   display: flex;
-  gap: 1.8rem;
+  gap: 1.5rem;
   width: 100%;
   overflow-x: auto;
   padding: 0.5rem 1rem 1.5rem;
@@ -93,12 +93,12 @@ const styles = `
 /* Game Card */
 .fh-game-card {
   flex: 0 0 auto;
-  width: 360px;
-  min-width: 360px;
-  max-width: 360px;
-  height: 480px;
-  min-height: 480px;
-  max-height: 480px;
+  width: 330px;
+  min-width: 330px;
+  max-width: 330px;
+  height: 440px;
+  min-height: 440px;
+  max-height: 440px;
   background-color: var(--fh-card-background, #FFFFFF);
   border-radius: var(--fh-border-radius, 12px);
   box-shadow: var(--fh-box-shadow, 0 4px 12px rgba(0, 0, 0, 0.08));
@@ -125,14 +125,14 @@ const styles = `
 .fh-game-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 0.75rem 1rem;
   background-color: var(--fh-light-gray, #F2F2F2);
   border-bottom: var(--fh-card-border, 1px solid rgba(0, 0, 0, 0.05));
   flex-wrap: wrap;
   gap: 0.5rem;
-  height: 80px;
-  min-height: 80px;
+  height: 50px;
+  min-height: 50px;
   position: relative;
 }
 
@@ -172,7 +172,10 @@ const styles = `
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 0.25rem;
+  padding: 8px 0;
+  background-color: var(--fh-light-gray, #F2F2F2);
+  margin-top: auto;
+  border-top: var(--fh-card-border, 1px solid rgba(0, 0, 0, 0.05));
 }
 
 .fh-countdown-title {
@@ -243,7 +246,7 @@ const styles = `
   justify-content: flex-start;
   flex: 1;
   text-align: center;
-  max-width: 120px;
+  max-width: 110px;
   height: 100%;
 }
 
@@ -280,7 +283,7 @@ const styles = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 110px;
+  max-width: 100px;
 }
 
 .fh-team-rank {
@@ -401,7 +404,6 @@ const styles = `
   background-color: var(--fh-light-gray, #F2F2F2);
   border-top: var(--fh-card-border, 1px solid rgba(0, 0, 0, 0.05));
   gap: 0.5rem;
-  margin-top: auto;
   height: 60px;
   min-height: 60px;
 }
@@ -537,15 +539,6 @@ const styles = `
     gap: 1rem;
   }
   
-  .fh-game-card {
-    width: 340px;
-    min-width: 340px;
-    max-width: 340px;
-    height: 480px;
-    min-height: 480px;
-    max-height: 480px;
-  }
-  
   .fh-team img {
     width: 75px;
     height: 75px;
@@ -561,15 +554,6 @@ const styles = `
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-  }
-  
-  .fh-game-card {
-    width: 310px;
-    min-width: 310px;
-    max-width: 310px;
-    height: 480px;
-    min-height: 480px;
-    max-height: 480px;
   }
   
   .fh-teams-matchup {
@@ -725,11 +709,8 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
       transition={{ duration: 0.3 }}
     >
       <div className="fh-game-card-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <span className="fh-game-week">Week {game.week}</span>
-          {isHighlighted && <span className="fh-game-featured"><FaFire /> Featured</span>}
-        </div>
-        <CountdownTimer startDate={game.startDate} />
+        <span className="fh-game-week">Week {game.week}</span>
+        {isHighlighted && <span className="fh-game-featured"><FaFire /> Featured</span>}
       </div>
       
       <div className="fh-teams-matchup">
@@ -805,6 +786,8 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
           </div>
         </div>
       </div>
+      
+      <CountdownTimer startDate={game.startDate} />
       
       <div className="fh-game-actions">
         <button 
@@ -977,9 +960,9 @@ const FeaturedGames = ({ year = 2025, week = 1 }) => {
   // Scroll games left/right with improved scrolling amount
   const scrollGames = (direction) => {
     if (gamesContainerRef.current) {
-      // Calculate scroll amount based on card width plus gap
-      const cardWidth = 360; // Match the updated CSS width
-      const gap = 28; // 1.8rem gap (increased gap)
+      // Calculate scroll amount based on card width
+      const cardWidth = 330; // Match the CSS width
+      const gap = 24; // 1.5rem gap
       const scrollAmount = direction === 'left' ? -(cardWidth + gap) : (cardWidth + gap);
       
       gamesContainerRef.current.scrollBy({
