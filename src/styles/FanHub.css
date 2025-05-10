@@ -5,7 +5,7 @@
   --primary-light: rgba(224, 31, 49, 0.1);
   --secondary-color: #212B36;
   --background-color: #F7F9FC;
-  --card-background: #F9F9FC;  /* Slightly off-white for cards */
+  --card-background: #F9F9FC;  
   --text-color: #2A2A2A;
   --text-secondary: #6B7A90;
   --accent-color: #3355FF;
@@ -21,8 +21,8 @@
   --box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
   --header-gradient: linear-gradient(135deg, #E01F31 0%, #BB0000 100%);
   --card-border: 1px solid rgba(0, 0, 0, 0.05);
-  --content-width: 99%;  /* Increased from 98% to 99% */
-  --max-content-width: 1800px;  /* Increased from 1400px */
+  --content-width: 99%;  
+  --max-content-width: 1800px;  
 }
 
 /* Global Container */
@@ -345,16 +345,19 @@
   color: var(--text-secondary);
   background-color: rgba(242, 244, 248, 0.8);
   text-decoration: none;
+  border: 1px solid rgba(107, 122, 144, 0.2);
 }
 
 .fh-game-details-btn:hover {
   color: var(--primary-color);
   transform: translateX(3px);
   background-color: var(--primary-light);
+  border-color: var(--primary-color);
 }
 
+/* Fix for Join Discussion button - ensure text is visible */
 .fh-join-discussion-btn {
-  color: white;
+  color: white !important;
   background-color: var(--primary-color);
   border: none;
   cursor: pointer;
@@ -367,7 +370,14 @@
   box-shadow: 0 4px 10px rgba(224, 31, 49, 0.3);
 }
 
-/* Navigation Tabs */
+.fh-join-discussion-btn:active, 
+.fh-join-discussion-btn:focus {
+  background-color: #a01520;
+  color: white !important;
+  outline: none;
+}
+
+/* Navigation Tabs - Fixed to ensure text visibility */
 .fh-tabs {
   display: flex;
   justify-content: center;
@@ -383,8 +393,8 @@
   align-items: center;
   gap: 0.7rem;
   padding: 1rem 1.8rem;
-  background-color: var(--card-background);
-  border: none;
+  background-color: #eaedf2;
+  border: 1px solid rgba(107, 122, 144, 0.15);
   color: var(--text-secondary);
   border-radius: 30px;
   transition: var(--transition);
@@ -406,7 +416,14 @@
 
 .fh-tab-button.active {
   background-color: var(--primary-color);
-  color: white;
+  color: white !important;
+  border-color: var(--primary-dark);
+}
+
+.fh-tab-button:active,
+.fh-tab-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(224, 31, 49, 0.3);
 }
 
 /* Content Filters */
@@ -759,7 +776,7 @@
 .fh-vote-btn {
   padding: 0.6rem 1.2rem;
   background-color: var(--primary-color);
-  color: white;
+  color: white !important;
   border: none;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -772,6 +789,12 @@
   background-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(224, 31, 49, 0.2);
+}
+
+.fh-vote-btn:active,
+.fh-vote-btn:focus {
+  background-color: #a01520;
+  outline: none;
 }
 
 /* AP Poll Section */
@@ -949,6 +972,26 @@
 
 .fh-discussion-card, .fh-poll-card, .fh-ap-team-card {
   animation: slideInRight 0.5s ease-out;
+}
+
+/* Fixed tab button and join discussion button styling */
+button[class*="tab-button"], 
+button[class*="join-discussion"],
+button[tabindex] {
+  color: inherit !important;
+}
+
+button[class*="tab-button"].active {
+  color: white !important;
+}
+
+button[class*="join-discussion"] {
+  color: white !important;
+}
+
+/* Ensure all buttons have visible text */
+button, a.fh-game-details-btn {
+  color: inherit !important;
 }
 
 /* Responsive Design */
