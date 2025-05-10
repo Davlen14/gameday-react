@@ -173,9 +173,8 @@ const styles = `
   flex-direction: column;
   align-items: center;
   padding: 8px 0;
-  background-color: var(--fh-light-gray, #F2F2F2);
   margin-top: auto;
-  border-top: var(--fh-card-border, 1px solid rgba(0, 0, 0, 0.05));
+  background: transparent;
 }
 
 .fh-countdown-title {
@@ -185,6 +184,7 @@ const styles = `
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  font-weight: 600;
 }
 
 .fh-countdown-timer {
@@ -233,8 +233,8 @@ const styles = `
   gap: 0.5rem;
   flex: 1;
   flex-grow: 1;
-  height: 280px;
-  min-height: 280px;
+  height: 260px;
+  min-height: 260px;
   position: relative;
 }
 
@@ -257,8 +257,8 @@ const styles = `
 
 /* Team logo styling */
 .fh-team img {
-  width: 85px;
-  height: 85px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   margin-bottom: 0.75rem;
   transition: transform 0.3s ease;
@@ -325,7 +325,7 @@ const styles = `
   font-weight: 800;
   font-size: 1rem;
   margin-bottom: 0.75rem;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   box-shadow: inset 0 2px 5px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -540,8 +540,8 @@ const styles = `
   }
   
   .fh-team img {
-    width: 75px;
-    height: 75px;
+    width: 70px;
+    height: 70px;
   }
   
   .fh-vs-container {
