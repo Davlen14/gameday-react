@@ -10,7 +10,8 @@ import {
   FaArrowRight,
   FaComments,
   FaPoll,
-  FaStar
+  FaStar,
+  FaClock
 } from 'react-icons/fa';
 import teamsService from '../services/teamsService';
 
@@ -75,7 +76,7 @@ const styles = `
 /* Game Cards Carousel */
 .fh-games-carousel {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.8rem;
   width: 100%;
   overflow-x: auto;
   padding: 0.5rem 1rem 1.5rem;
@@ -92,12 +93,12 @@ const styles = `
 /* Game Card */
 .fh-game-card {
   flex: 0 0 auto;
-  width: 330px;
-  min-width: 330px;
-  max-width: 330px;
-  height: 440px;
-  min-height: 440px;
-  max-height: 440px;
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
+  height: 480px;
+  min-height: 480px;
+  max-height: 480px;
   background-color: var(--fh-card-background, #FFFFFF);
   border-radius: var(--fh-border-radius, 12px);
   box-shadow: var(--fh-box-shadow, 0 4px 12px rgba(0, 0, 0, 0.08));
@@ -124,14 +125,14 @@ const styles = `
 .fh-game-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 0.75rem 1rem;
   background-color: var(--fh-light-gray, #F2F2F2);
   border-bottom: var(--fh-card-border, 1px solid rgba(0, 0, 0, 0.05));
   flex-wrap: wrap;
   gap: 0.5rem;
-  height: 50px;
-  min-height: 50px;
+  height: 80px;
+  min-height: 80px;
   position: relative;
 }
 
@@ -165,6 +166,62 @@ const styles = `
   white-space: nowrap;
 }
 
+/* Countdown Timer Styles */
+.fh-countdown-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.fh-countdown-title {
+  font-size: 0.7rem;
+  color: var(--fh-text-secondary, #666666);
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.fh-countdown-timer {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.fh-time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--fh-primary-color, #D4001C);
+  color: white;
+  border-radius: 4px;
+  padding: 0.2rem 0.35rem;
+  min-width: 2.2rem;
+}
+
+.fh-time-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.fh-time-label {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  text-transform: lowercase;
+}
+
+.fh-countdown-final {
+  background-color: var(--fh-primary-color, #D4001C);
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
 /* Teams matchup container */
 .fh-teams-matchup {
   display: flex;
@@ -186,7 +243,7 @@ const styles = `
   justify-content: flex-start;
   flex: 1;
   text-align: center;
-  max-width: 110px;
+  max-width: 120px;
   height: 100%;
 }
 
@@ -223,7 +280,7 @@ const styles = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
+  max-width: 110px;
 }
 
 .fh-team-rank {
@@ -481,12 +538,12 @@ const styles = `
   }
   
   .fh-game-card {
-    width: 320px;
-    min-width: 320px;
-    max-width: 320px;
-    height: 440px;
-    min-height: 440px;
-    max-height: 440px;
+    width: 340px;
+    min-width: 340px;
+    max-width: 340px;
+    height: 480px;
+    min-height: 480px;
+    max-height: 480px;
   }
   
   .fh-team img {
@@ -507,12 +564,12 @@ const styles = `
   }
   
   .fh-game-card {
-    width: 290px;
-    min-width: 290px;
-    max-width: 290px;
-    height: 440px;
-    min-height: 440px;
-    max-height: 440px;
+    width: 310px;
+    min-width: 310px;
+    max-width: 310px;
+    height: 480px;
+    min-height: 480px;
+    max-height: 480px;
   }
   
   .fh-teams-matchup {
@@ -548,6 +605,83 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Countdown Timer Component
+const CountdownTimer = ({ startDate }) => {
+  const [timeLeft, setTimeLeft] = useState(null);
+  
+  // Calculate time until game
+  const calculateTimeLeft = () => {
+    if (!startDate) return null;
+    
+    const gameDate = new Date(startDate);
+    if (isNaN(gameDate.getTime())) return null;
+    
+    const now = new Date();
+    
+    // If game is in the past
+    if (gameDate < now) return "Final";
+    
+    // Calculate difference in milliseconds
+    const difference = gameDate - now;
+    
+    // Calculate days, hours, minutes, seconds
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+    
+    return { days, hours, minutes, seconds };
+  };
+  
+  // Update countdown every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    
+    // Set initial value
+    setTimeLeft(calculateTimeLeft());
+    
+    return () => clearInterval(timer);
+  }, [startDate]);
+  
+  if (!timeLeft) return null;
+  
+  if (timeLeft === "Final") {
+    return (
+      <div className="fh-countdown-container">
+        <span className="fh-countdown-final">Final</span>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="fh-countdown-container">
+      <div className="fh-countdown-title">
+        <FaClock /> Kickoff In
+      </div>
+      <div className="fh-countdown-timer">
+        <div className="fh-time-unit">
+          <span className="fh-time-value">{timeLeft.days}</span>
+          <span className="fh-time-label">d</span>
+        </div>
+        <div className="fh-time-unit">
+          <span className="fh-time-value">{timeLeft.hours.toString().padStart(2, '0')}</span>
+          <span className="fh-time-label">h</span>
+        </div>
+        <div className="fh-time-unit">
+          <span className="fh-time-value">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+          <span className="fh-time-label">m</span>
+        </div>
+        <div className="fh-time-unit">
+          <span className="fh-time-value">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+          <span className="fh-time-label">s</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Game Card Component - Optimized for alignment and consistent rendering
 const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
   // Format date more concisely for better display
@@ -578,30 +712,11 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
     });
   };
 
-  // Calculate days until game
-  const getDaysUntilGame = (dateString) => {
-    if (!dateString) return null;
-    
-    const gameDate = new Date(dateString);
-    if (isNaN(gameDate.getTime())) return null;
-    
-    const today = new Date();
-    const diffTime = gameDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "Final";
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Tomorrow";
-    return `${diffDays} days`;
-  };
-
   // Truncate text helper function
   const truncateText = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
-
-  const daysUntil = getDaysUntilGame(game.startDate);
 
   return (
     <motion.div 
@@ -610,9 +725,11 @@ const GameCard = ({ game, isHighlighted, onPredictionClick }) => {
       transition={{ duration: 0.3 }}
     >
       <div className="fh-game-card-header">
-        <span className="fh-game-week">Week {game.week}</span>
-        {isHighlighted && <span className="fh-game-featured"><FaFire /> Featured</span>}
-        {daysUntil && <span className="fh-days-until">{daysUntil}</span>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <span className="fh-game-week">Week {game.week}</span>
+          {isHighlighted && <span className="fh-game-featured"><FaFire /> Featured</span>}
+        </div>
+        <CountdownTimer startDate={game.startDate} />
       </div>
       
       <div className="fh-teams-matchup">
@@ -860,9 +977,9 @@ const FeaturedGames = ({ year = 2025, week = 1 }) => {
   // Scroll games left/right with improved scrolling amount
   const scrollGames = (direction) => {
     if (gamesContainerRef.current) {
-      // Calculate scroll amount based on card width
-      const cardWidth = 330; // Match the CSS width
-      const gap = 24; // 1.5rem gap
+      // Calculate scroll amount based on card width plus gap
+      const cardWidth = 360; // Match the updated CSS width
+      const gap = 28; // 1.8rem gap (increased gap)
       const scrollAmount = direction === 'left' ? -(cardWidth + gap) : (cardWidth + gap);
       
       gamesContainerRef.current.scrollBy({
