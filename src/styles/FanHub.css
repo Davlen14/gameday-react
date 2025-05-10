@@ -1,18 +1,16 @@
-/* FanHub.css - Modern, Responsive Styling 3.0 */
+/* FanHub.css - Modern, Responsive Styling 4.0 */
 :root {
-  --primary-color: #E01F31;  /* Brighter Gameday+ Scarlet */
-  --primary-dark: #C01828;
-  --primary-light: rgba(224, 31, 49, 0.1);
-  --secondary-color: #212B36;
-  --background-color: #F7F9FC;
+  --primary-color: #D4001C;  /* Gameday+ Red */
+  --primary-dark: #B5001A;
+  --primary-light: rgba(212, 0, 28, 0.1);
+  --secondary-color: #333333;
+  --background-color: #FFFFFF;
   --card-background: #FFFFFF;  
-  --text-color: #2A2A2A;
-  --text-secondary: #6B7A90;
-  --accent-color: #3355FF;
-  --accent-light: rgba(51, 85, 255, 0.1);
-  --success-color: #10B981;
-  --warning-color: #F59E0B;
-  --info-color: #3B82F6;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --accent-color: #D4001C;
+  --accent-light: rgba(212, 0, 28, 0.1);
+  --light-gray: #F2F2F2;
   --border-radius-sm: 8px;
   --border-radius: 12px;
   --border-radius-lg: 16px;
@@ -108,7 +106,7 @@
 
 /* Welcome Banner */
 .fh-welcome-banner {
-  background: linear-gradient(to right, var(--primary-color), #f05545);
+  background: linear-gradient(to right, var(--primary-color), #FF3D4F);
   border-radius: var(--border-radius);
   margin: 1.5rem auto 2rem;
   padding: 1.5rem 2rem;
@@ -131,12 +129,14 @@
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
+  color: white;
 }
 
 .fh-welcome-banner p {
   font-size: 1rem;
   margin-bottom: 1.5rem;
   opacity: 0.9;
+  color: white;
 }
 
 .fh-welcome-btn {
@@ -157,6 +157,7 @@
 .fh-welcome-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background-color: #f0f0f0;
 }
 
 .fh-welcome-illustration {
@@ -205,6 +206,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 0.5rem;
 }
 
 .fh-tabs::-webkit-scrollbar {
@@ -227,12 +230,13 @@
 }
 
 .fh-tab-active {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .fh-tab:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--primary-light);
+  color: var(--primary-color);
 }
 
 .fh-tab-icon {
@@ -281,6 +285,7 @@
 .fh-team-selector h2 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
+  color: var(--primary-color);
 }
 
 .fh-team-selector p {
@@ -333,6 +338,7 @@
   cursor: pointer;
   transition: var(--transition);
   border: 2px solid transparent;
+  box-shadow: var(--box-shadow-sm);
 }
 
 .fh-team-selection-card:hover {
@@ -349,12 +355,15 @@
   height: 60px;
   object-fit: contain;
   margin-bottom: 0.8rem;
+  border-radius: 50%;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
 }
 
 .fh-team-selection-card h3 {
   font-size: 0.9rem;
   margin: 0 0 0.3rem;
   line-height: 1.2;
+  color: var(--text-color);
 }
 
 .fh-team-mascot {
@@ -413,7 +422,7 @@
 .fh-section-header h2 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--secondary-color);
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -435,7 +444,7 @@
   background-color: var(--card-background);
   border: var(--card-border);
   box-shadow: var(--box-shadow-sm);
-  color: var(--text-color);
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -469,12 +478,15 @@
 .fh-game-card {
   flex: 0 0 auto;
   width: 380px;
+  height: 420px;
   background-color: var(--card-background);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   overflow: hidden;
   border: var(--card-border);
   transition: var(--transition);
+  display: flex;
+  flex-direction: column;
 }
 
 .fh-game-card:hover {
@@ -483,8 +495,8 @@
 }
 
 .fh-game-card-highlighted {
-  box-shadow: 0 6px 18px rgba(224, 31, 49, 0.2);
-  border: 1px solid rgba(224, 31, 49, 0.3);
+  box-shadow: 0 6px 18px rgba(212, 0, 28, 0.2);
+  border: 1px solid rgba(212, 0, 28, 0.3);
   position: relative;
 }
 
@@ -493,7 +505,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background-color: #f2f4f8;
+  background-color: var(--light-gray);
   border-bottom: var(--card-border);
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -510,9 +522,9 @@
   align-items: center;
   gap: 0.4rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: white;
   font-size: 0.95rem;
-  background-color: var(--primary-light);
+  background-color: var(--primary-color);
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
 }
@@ -520,8 +532,8 @@
 .fh-days-until {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--accent-color);
-  background-color: var(--accent-light);
+  color: white;
+  background-color: var(--primary-color);
   padding: 0.2rem 0.8rem;
   border-radius: 20px;
   margin-left: auto;
@@ -532,6 +544,7 @@
   align-items: center;
   padding: 1.5rem;
   gap: 1rem;
+  flex: 1;
 }
 
 .fh-team {
@@ -554,10 +567,11 @@
   margin-bottom: 0.8rem;
   transition: transform 0.3s ease;
   border-radius: 50%;
-  background-color: #f9f9f9;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(240,240,240,1) 100%);
   padding: 0.5rem;
   border: 1px solid #eee;
-  box-shadow: var(--box-shadow-sm);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
 }
 
 .fh-team img:hover {
@@ -574,8 +588,8 @@
 .fh-team-rank {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #555;
-  background-color: #f0f0f0;
+  color: white;
+  background-color: var(--primary-color);
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
 }
@@ -594,8 +608,8 @@
 }
 
 .fh-vs-badge {
-  background-color: #f0f0f0;
-  color: var(--text-secondary);
+  background: linear-gradient(145deg, #e6e6e6, #f5f5f5);
+  color: var(--primary-color);
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -605,7 +619,7 @@
   font-weight: 800;
   font-size: 1.2rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .fh-game-details {
@@ -654,7 +668,7 @@
 }
 
 .fh-prediction-fill.away {
-  background-color: var(--accent-color);
+  background-color: var(--secondary-color);
 }
 
 .fh-prediction-labels {
@@ -669,7 +683,7 @@
   display: flex;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  background-color: #f2f4f8;
+  background-color: var(--light-gray);
   border-top: var(--card-border);
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -687,29 +701,28 @@
 }
 
 .fh-predict-btn {
-  color: var(--accent-color);
-  background-color: var(--accent-light);
+  color: white;
+  background-color: var(--primary-color);
   border: none;
   cursor: pointer;
 }
 
 .fh-predict-btn:hover {
-  background-color: rgba(51, 85, 255, 0.2);
+  background-color: var(--primary-dark);
   transform: translateY(-2px);
 }
 
 .fh-game-details-btn {
-  color: var(--text-secondary);
-  background-color: rgba(242, 244, 248, 0.8);
+  color: var(--primary-color);
+  background-color: white;
   text-decoration: none;
-  border: 1px solid rgba(107, 122, 144, 0.2);
+  border: 1px solid var(--primary-color);
 }
 
 .fh-game-details-btn:hover {
-  color: var(--primary-color);
+  color: white;
   transform: translateX(3px);
-  background-color: var(--primary-light);
-  border-color: var(--primary-color);
+  background-color: var(--primary-color);
 }
 
 .fh-join-discussion-btn {
@@ -717,13 +730,13 @@
   background-color: var(--primary-color);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(224, 31, 49, 0.2);
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.2);
 }
 
 .fh-join-discussion-btn:hover {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(224, 31, 49, 0.3);
+  box-shadow: 0 4px 10px rgba(212, 0, 28, 0.3);
 }
 
 /* My Teams Tab */
@@ -779,16 +792,21 @@
   object-fit: contain;
   margin-bottom: 1rem;
   transition: transform 0.3s ease;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(240,240,240,1) 100%);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  padding: 0.5rem;
 }
 
 .fh-my-team-card h3 {
   font-size: 1.2rem;
   margin: 0 0 1rem;
+  color: var(--text-color);
 }
 
 .fh-view-team-btn {
-  background-color: var(--accent-light);
-  color: var(--accent-color);
+  background-color: var(--primary-color);
+  color: white;
   text-decoration: none;
   padding: 0.6rem 1.2rem;
   border-radius: 20px;
@@ -798,8 +816,8 @@
 }
 
 .fh-view-team-btn:hover {
-  background-color: var(--accent-color);
-  color: white;
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
 }
 
 /* Empty States */
@@ -814,14 +832,15 @@
 
 .fh-empty-icon {
   font-size: 3rem;
-  color: #ddd;
+  color: var(--primary-color);
   margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 .fh-empty-state h3 {
   font-size: 1.3rem;
   margin: 0 0 0.5rem;
-  color: var(--text-secondary);
+  color: var(--primary-color);
 }
 
 .fh-empty-state p {
@@ -867,7 +886,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  box-shadow: 0 4px 12px rgba(224, 31, 49, 0.3);
+  box-shadow: 0 4px 12px rgba(212, 0, 28, 0.3);
   z-index: 100;
   cursor: pointer;
   transition: var(--transition);
@@ -881,7 +900,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  background-color: var(--accent-color);
+  background-color: var(--secondary-color);
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
@@ -957,6 +976,7 @@
   
   .fh-game-card {
     width: 320px;
+    height: 400px;
   }
   
   .fh-team img {
@@ -972,7 +992,6 @@
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
-
 @media (max-width: 480px) {
   .fh-section-header {
     flex-direction: column;
@@ -982,11 +1001,13 @@
   
   .fh-game-card {
     width: 280px;
+    height: 400px;
   }
   
   .fh-teams-matchup {
     flex-direction: column;
     gap: 1.5rem;
+    padding: 1rem;
   }
   
   .fh-game-details {
@@ -995,6 +1016,7 @@
   
   .fh-vs-container {
     order: 2;
+    width: 100%;
   }
   
   .fh-away-team {
@@ -1003,6 +1025,11 @@
   
   .fh-home-team {
     order: 3;
+  }
+  
+  .fh-vs-badge {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
   
   .fh-game-actions {
@@ -1024,4 +1051,172 @@
     width: 95%;
     max-height: 90vh;
   }
+  
+  .fh-welcome-banner {
+    margin: 1rem 0.5rem;
+    padding: 1.5rem 1rem;
+  }
+  
+  .fh-welcome-banner h2 {
+    font-size: 1.5rem;
+  }
+  
+  .fh-team img {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .fh-notification-button {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
+/* Additional Custom Styles for Modern Look */
+.fh-team img {
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.fh-team img:after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 20%;
+  bottom: -10px;
+  left: 0;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  z-index: -1;
+}
+
+/* Enhanced 3D Effect for Team Logos */
+.fh-team:hover img {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+}
+
+/* Consistent Game Card Dimensions */
+.fh-games-carousel {
+  align-items: stretch;
+}
+
+.fh-game-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.fh-teams-matchup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Enhanced Button Styles */
+.fh-join-discussion-btn {
+  background-color: var(--primary-color);
+  color: white !important;
+  border: none;
+  box-shadow: 0 2px 5px rgba(212, 0, 28, 0.2);
+}
+
+.fh-join-discussion-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Game of Week Enhancement */
+.fh-game-card-highlighted {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 8px 24px rgba(212, 0, 28, 0.2);
+}
+
+.fh-game-card-highlighted .fh-game-card-header {
+  background-color: rgba(212, 0, 28, 0.05);
+}
+
+.fh-game-card-highlighted .fh-game-featured {
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Metallic 3D Effect for Team Logos */
+.fh-team img {
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  box-shadow: 
+    0 5px 15px rgba(0,0,0,0.1),
+    inset 0 -2px 5px rgba(0,0,0,0.05),
+    inset 0 2px 5px rgba(255,255,255,0.5);
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.fh-team img:before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255,255,255,0.8) 0%,
+    rgba(255,255,255,0) 70%
+  );
+  transform: rotate(30deg);
+  pointer-events: none;
+}
+
+/* Notification Badge Animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.fh-notification-badge {
+  animation: pulse 2s infinite;
+}
+
+/* Tab Hover Animations */
+.fh-tab {
+  overflow: hidden;
+  position: relative;
+}
+
+.fh-tab:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: var(--primary-color);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.fh-tab:hover:after,
+.fh-tab-active:after {
+  width: 70%;
+}
+
+/* Card Consistent Heights */
+.fh-game-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.fh-teams-matchup {
+  flex-grow: 1;
+}
+
+.fh-game-actions {
+  margin-top: auto;
 }
